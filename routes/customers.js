@@ -40,7 +40,7 @@ router.get('/:id', (req, res) => {
 
 // Maak nieuwe klant aan
 router.post('/', (req, res) => {
-    const { name, email, phone, street, city, postalCode, notes } = req.body;
+    const { name, email, phone, street, city, postalCode, country, formattedAddress, placeId, lat, lng, notes } = req.body;
     
     if (!name) {
         return res.status(400).json({ error: 'Naam is verplicht' });
@@ -53,6 +53,11 @@ router.post('/', (req, res) => {
         street,
         city,
         postalCode,
+        country,
+        formattedAddress,
+        placeId,
+        lat,
+        lng,
         notes
     });
     
@@ -67,7 +72,7 @@ router.put('/:id', (req, res) => {
         return res.status(404).json({ error: 'Klant niet gevonden' });
     }
     
-    const { name, email, phone, street, city, postalCode, notes } = req.body;
+    const { name, email, phone, street, city, postalCode, country, formattedAddress, placeId, lat, lng, notes } = req.body;
     
     const customer = customerStore.saveCustomer({
         id: req.params.id,
@@ -77,6 +82,11 @@ router.put('/:id', (req, res) => {
         street: street !== undefined ? street : existing.address.street,
         city: city !== undefined ? city : existing.address.city,
         postalCode: postalCode !== undefined ? postalCode : existing.address.postalCode,
+        country: country !== undefined ? country : existing.address.country,
+        formattedAddress: formattedAddress !== undefined ? formattedAddress : existing.address.formattedAddress,
+        placeId: placeId !== undefined ? placeId : existing.address.placeId,
+        lat: lat !== undefined ? lat : existing.address.lat,
+        lng: lng !== undefined ? lng : existing.address.lng,
         notes: notes !== undefined ? notes : existing.notes,
         pianos: existing.pianos
     });

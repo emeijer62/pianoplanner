@@ -1,7 +1,7 @@
 const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
-const { calculateTravelTime, findFirstAvailableSlot } = require('../utils/travelTime');
+const { calculateTravelTime, findFirstAvailableSlot, getPlaceAutocomplete, getPlaceDetails, geocodeAddress } = require('../utils/travelTime');
 const serviceStore = require('../utils/serviceStore');
 const customerStore = require('../utils/customerStore');
 const companyStore = require('../utils/companyStore');
@@ -20,6 +20,60 @@ const getAuthClient = (req) => {
     oauth2Client.setCredentials(req.session.tokens);
     return oauth2Client;
 };
+
+/**
+ * Autocomplete voor adressen (wereldwijd)
+ * GET /api/booking/address-autocomplete
+ */
+router.get('/address-autocomplete', async (req, res) => {
+    try {
+        const { input, sessionToken } = req.query;
+        
+        if (!input || input.length < 3) {
+            return res.json({ predictions: [] });
+        }
+        
+        const predictions = await getPlaceAutocomplete(input, sessionToken);
+        res.json({ predictions });
+    } catch (error) {
+        console.error('Autocomplete error:', error);
+        res.json({ predictions: [] });
+    }
+});
+
+/**
+ * Haal place details op via place_id
+ * GET /api/booking/place-details/:placeId
+ */
+router.get('/place-details/:placeId', async (req, res) => {
+    try {
+        const details = await getPlaceDetails(req.params.placeId);
+        res.json(details);
+    } catch (error) {
+        console.error('Place details error:', error);
+        res.status(404).json({ error: 'Place niet gevonden' });
+    }
+});
+
+/**
+ * Geocode een adres naar coördinaten
+ * POST /api/booking/geocode
+ */
+router.post('/geocode', async (req, res) => {
+    try {
+        const { address } = req.body;
+        
+        if (!address) {
+            return res.status(400).json({ error: 'Adres is verplicht' });
+        }
+        
+        const result = await geocodeAddress(address);
+        res.json(result);
+    } catch (error) {
+        console.error('Geocode error:', error);
+        res.status(404).json({ error: 'Adres niet gevonden' });
+    }
+});
 
 /**
  * Bereken reistijd naar een adres

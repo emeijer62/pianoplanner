@@ -15,15 +15,20 @@ if (!fs.existsSync(DATA_DIR)) {
 
 // Standaard bedrijfsinstellingen
 const defaultSettings = {
-    name: 'Edward Meijer Pianotechniek',
-    ownerName: 'Edward Meijer',
-    email: 'info@edwardmeijer.nl',
+    name: '',
+    ownerName: '',
+    email: '',
     phone: '',
     address: {
         street: '',
         postalCode: '',
-        city: 'Tilburg',
-        country: 'Nederland'
+        city: '',
+        country: '',
+        // Geolocation voor wereldwijde ondersteuning
+        formattedAddress: '',
+        placeId: '',
+        lat: null,
+        lng: null
     },
     // Beschikbaarheid per dag (0 = zondag, 1 = maandag, etc.)
     availability: {
@@ -35,6 +40,8 @@ const defaultSettings = {
         5: { available: true, start: '09:00', end: '18:00' },  // Vrijdag
         6: { available: false, start: '09:00', end: '18:00' }  // Zaterdag
     },
+    // Tijdzone voor internationale gebruikers
+    timezone: 'Europe/Amsterdam',
     createdAt: null,
     updatedAt: null
 };
@@ -77,20 +84,44 @@ const saveSettings = (settings) => {
 // Haal volledig adres op (voor reistijd berekening)
 const getOriginAddress = () => {
     const settings = getSettings();
-    const { street, postalCode, city, country } = settings.address;
+    const { street, postalCode, city, country, formattedAddress, lat, lng } = settings.address;
     
+    // Als coördinaten beschikbaar, gebruik die (meest nauwkeurig)
+    if (lat && lng) {
+        return `${lat},${lng}`;
+    }
+    
+    // Als geformatteerd adres beschikbaar
+    if (formattedAddress) {
+        return formattedAddress;
+    }
+    
+    // Bouw adres op uit componenten
     if (city) {
         const parts = [street, postalCode, city, country].filter(Boolean);
         return parts.join(', ');
     }
     
-    // Fallback
-    return 'Tilburg, Nederland';
+    // Geen adres ingesteld
+    return null;
+};
+
+// Haal coördinaten op
+const getOriginCoordinates = () => {
+    const settings = getSettings();
+    if (settings.address.lat && settings.address.lng) {
+        return {
+            lat: settings.address.lat,
+            lng: settings.address.lng
+        };
+    }
+    return null;
 };
 
 module.exports = {
     getSettings,
     saveSettings,
     getOriginAddress,
+    getOriginCoordinates,
     defaultSettings
 };

@@ -15,7 +15,13 @@ router.get('/company', requireAuth, (req, res) => {
 // Update bedrijfsinstellingen
 router.put('/company', requireAuth, (req, res) => {
     try {
-        const { name, owner, email, phone, street, postalCode, city, country, workHours, workDays } = req.body;
+        const { 
+            name, owner, email, phone, 
+            street, postalCode, city, country, 
+            formattedAddress, placeId, lat, lng,
+            timezone,
+            workHours, workDays 
+        } = req.body;
         
         const settings = companyStore.saveSettings({
             name,
@@ -26,8 +32,13 @@ router.put('/company', requireAuth, (req, res) => {
                 street,
                 postalCode,
                 city,
-                country: country || 'Nederland'
+                country,
+                formattedAddress,
+                placeId,
+                lat,
+                lng
             },
+            timezone: timezone || 'Europe/Amsterdam',
             workHours: workHours || { start: '09:00', end: '18:00' },
             workDays: workDays || [1, 2, 3, 4, 5]
         });

@@ -51,7 +51,12 @@ const saveCustomer = (customerData) => {
             street: customerData.street || '',
             city: customerData.city || '',
             postalCode: customerData.postalCode || '',
-            country: customerData.country || 'Nederland'
+            country: customerData.country || '',
+            // Geolocation voor wereldwijde ondersteuning
+            formattedAddress: customerData.formattedAddress || '',
+            placeId: customerData.placeId || '',
+            lat: customerData.lat || null,
+            lng: customerData.lng || null
         },
         // Piano informatie
         pianos: customerData.pianos || [],
