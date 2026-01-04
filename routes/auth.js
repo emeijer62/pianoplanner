@@ -1,6 +1,5 @@
 const express = require('express');
 const { google } = require('googleapis');
-const crypto = require('crypto');
 const router = express.Router();
 const userStore = require('../utils/userStore');
 
@@ -14,11 +13,6 @@ const oauth2Client = new google.auth.OAuth2(
 // Admin credentials (uit environment of defaults)
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'PianoAdmin2026!';
-
-// Hash password voor vergelijking
-const hashPassword = (password) => {
-    return crypto.createHash('sha256').update(password).digest('hex');
-};
 
 // Scopes voor Google Calendar
 const SCOPES = [
