@@ -166,7 +166,7 @@
             const password = document.getElementById('password').value;
 
             try {
-                const response = await fetch('/auth/admin/login', {
+                const response = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -175,7 +175,7 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    window.location.href = '/admin.html';
+                    window.location.href = '/admin-dashboard.html';
                 } else {
                     errorAlert.textContent = data.error || 'Ongeldige inloggegevens';
                     errorAlert.style.display = 'block';
@@ -190,9 +190,9 @@
         });
 
         // Check of al ingelogd
-        fetch('/api/user').then(r => r.json()).then(data => {
-            if (data.loggedIn && data.isAdmin) {
-                window.location.href = '/admin.html';
+        fetch('/api/admin/status').then(r => r.json()).then(data => {
+            if (data.isAdmin) {
+                window.location.href = '/admin-dashboard.html';
             }
         });
     </script>

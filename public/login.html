@@ -130,6 +130,53 @@
             margin-bottom: 1rem;
             display: none;
         }
+        
+        .info-message {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: var(--transition);
+        }
+        
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+        
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -142,26 +189,57 @@
 
     <div class="login-container">
         <div class="login-header">
-            <h1>🎹 Welkom terug</h1>
-            <p>Log in om je agenda te beheren</p>
+            <h1>🎹 PianoPlanner</h1>
+            <p>Beheer je stemafspraken professioneel</p>
+        </div>
+        
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="showTab('login')">Inloggen</button>
+            <button class="tab-btn" onclick="showTab('register')">Registreren</button>
         </div>
         
         <div id="error-message" class="error-message"></div>
         <div id="success-message" class="success-message"></div>
+        <div id="info-message" class="info-message"></div>
         
-        <form id="login-form">
-            <div class="form-group">
-                <label for="email">E-mailadres</label>
-                <input type="email" id="email" name="email" required placeholder="jouw@email.nl">
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Wachtwoord</label>
-                <input type="password" id="password" name="password" required placeholder="••••••••">
-            </div>
-            
-            <button type="submit" class="btn-login">Inloggen</button>
-        </form>
+        <!-- Login Tab -->
+        <div id="login-tab" class="tab-content active">
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">E-mailadres</label>
+                    <input type="email" id="login-email" name="email" required placeholder="jouw@email.nl">
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-password">Wachtwoord</label>
+                    <input type="password" id="login-password" name="password" required placeholder="••••••••">
+                </div>
+                
+                <button type="submit" class="btn-login">Inloggen</button>
+            </form>
+        </div>
+        
+        <!-- Register Tab -->
+        <div id="register-tab" class="tab-content">
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="register-name">Naam</label>
+                    <input type="text" id="register-name" name="name" required placeholder="Je volledige naam">
+                </div>
+                
+                <div class="form-group">
+                    <label for="register-email">E-mailadres</label>
+                    <input type="email" id="register-email" name="email" required placeholder="jouw@email.nl">
+                </div>
+                
+                <div class="form-group">
+                    <label for="register-password">Wachtwoord</label>
+                    <input type="password" id="register-password" name="password" required placeholder="Minimaal 6 tekens" minlength="6">
+                </div>
+                
+                <button type="submit" class="btn-login">Account Aanvragen</button>
+            </form>
+        </div>
         
         <div class="divider">
             <span>of</span>
@@ -179,16 +257,33 @@
     </div>
 
     <script>
+        // Tab switching
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`.tab-btn[onclick="showTab('${tab}')"]`).classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            
+            // Hide messages
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('success-message').style.display = 'none';
+            document.getElementById('info-message').style.display = 'none';
+        }
+        
+        // Login form
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
             const errorEl = document.getElementById('error-message');
             const successEl = document.getElementById('success-message');
+            const infoEl = document.getElementById('info-message');
             
             errorEl.style.display = 'none';
             successEl.style.display = 'none';
+            infoEl.style.display = 'none';
             
             try {
                 const response = await fetch('/auth/login', {
@@ -207,6 +302,49 @@
                     }, 500);
                 } else {
                     errorEl.textContent = data.error || 'Inloggen mislukt';
+                    errorEl.style.display = 'block';
+                }
+            } catch (error) {
+                errorEl.textContent = 'Er ging iets mis. Probeer het opnieuw.';
+                errorEl.style.display = 'block';
+            }
+        });
+        
+        // Register form
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const errorEl = document.getElementById('error-message');
+            const successEl = document.getElementById('success-message');
+            const infoEl = document.getElementById('info-message');
+            
+            errorEl.style.display = 'none';
+            successEl.style.display = 'none';
+            infoEl.style.display = 'none';
+            
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.needsApproval) {
+                        infoEl.innerHTML = '✅ <strong>Account aangevraagd!</strong><br>Je aanvraag wordt zo snel mogelijk door een beheerder beoordeeld. Je ontvangt bericht zodra je account is goedgekeurd.';
+                        infoEl.style.display = 'block';
+                        document.getElementById('register-form').reset();
+                    } else {
+                        successEl.textContent = data.message || 'Account aangemaakt!';
+                        successEl.style.display = 'block';
+                    }
+                } else {
+                    errorEl.textContent = data.error || 'Registratie mislukt';
                     errorEl.style.display = 'block';
                 }
             } catch (error) {

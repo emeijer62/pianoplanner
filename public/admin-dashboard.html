@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - PianoPlanner</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .admin-header h1 {
+            margin: 0;
+            font-size: 1.75rem;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .admin-nav a {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .admin-nav a:hover,
+        .admin-nav a.active {
+            background: var(--light-gray);
+            color: var(--text-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-card.pending .value {
+            color: #f59e0b;
+        }
+
+        .pending-section {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .pending-section h2 {
+            margin: 0 0 1rem 0;
+            color: #92400e;
+            font-size: 1.1rem;
+        }
+
+        .pending-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .pending-user {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pending-user-info {
+            flex: 1;
+        }
+
+        .pending-user-info .name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .pending-user-info .email {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .pending-user-info .date {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .pending-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-approve {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .btn-approve:hover {
+            background: #059669;
+        }
+
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .btn-reject:hover {
+            background: #dc2626;
+        }
+
+        .users-table {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .users-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .users-table th {
+            background: var(--light-gray);
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .users-table tr:hover td {
+            background: var(--off-white);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-trial {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-expired {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="piano-icon">🎹</span>
+            <span>PianoPlanner Admin</span>
+        </div>
+        <div class="nav-user">
+            <span id="admin-username">Admin</span>
+            <button onclick="logout()" class="btn btn-small">Uitloggen</button>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>👥 Gebruikersbeheer</h1>
+            <div class="admin-nav">
+                <a href="#" class="active">Gebruikers</a>
+            </div>
+        </div>
+
+        <!-- Statistieken -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Totaal Gebruikers</h3>
+                <div class="value" id="total-users">-</div>
+            </div>
+            <div class="stat-card pending">
+                <h3>Wachtend op Goedkeuring</h3>
+                <div class="value" id="pending-users">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Actieve Trials</h3>
+                <div class="value" id="trial-users">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Betaalde Abonnementen</h3>
+                <div class="value" id="paid-users">-</div>
+            </div>
+        </div>
+
+        <!-- Wachtende Goedkeuringen -->
+        <div class="pending-section" id="pending-section" style="display: none;">
+            <h2>⏳ Wachtend op Goedkeuring</h2>
+            <div class="pending-list" id="pending-list">
+                <!-- Pending users komen hier -->
+            </div>
+        </div>
+
+        <!-- Alle Gebruikers -->
+        <div class="users-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Naam</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Abonnement</th>
+                        <th>Geregistreerd</th>
+                        <th>Acties</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <tr>
+                        <td colspan="6" class="loading">Laden...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal" id="reject-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Gebruiker Afwijzen</h2>
+                <button class="modal-close" onclick="closeRejectModal()">&times;</button>
+            </div>
+            <form id="reject-form">
+                <input type="hidden" id="reject-user-id">
+                <div class="form-group">
+                    <label>Reden (optioneel)</label>
+                    <textarea id="reject-reason" rows="3" placeholder="Geef een reden voor de afwijzing..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Annuleren</button>
+                    <button type="submit" class="btn-reject">Afwijzen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Set Plan Modal -->
+    <div class="modal" id="plan-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Abonnement Instellen</h2>
+                <button class="modal-close" onclick="closePlanModal()">&times;</button>
+            </div>
+            <form id="plan-form">
+                <input type="hidden" id="plan-user-id">
+                <div class="form-group">
+                    <label>Plan</label>
+                    <select id="plan-select">
+                        <option value="trial">Trial (14 dagen)</option>
+                        <option value="starter">Starter</option>
+                        <option value="professional">Professional</option>
+                        <option value="enterprise">Enterprise</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closePlanModal()">Annuleren</button>
+                    <button type="submit" class="btn btn-primary">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check admin status bij laden
+        async function checkAdminStatus() {
+            try {
+                const response = await fetch('/api/admin/status');
+                const data = await response.json();
+                
+                if (!data.isAdmin) {
+                    window.location.href = '/admin-login.html';
+                    return false;
+                }
+                
+                document.getElementById('admin-username').textContent = data.username;
+                return true;
+            } catch (error) {
+                console.error('Error checking admin status:', error);
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+        }
+
+        // Laad alle gebruikers
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users');
+                if (!response.ok) {
+                    throw new Error('Niet geautoriseerd');
+                }
+                
+                const users = await response.json();
+                
+                // Update statistieken
+                const pendingCount = users.filter(u => u.approvalStatus === 'pending').length;
+                const trialCount = users.filter(u => u.subscription?.status === 'trialing').length;
+                const paidCount = users.filter(u => u.subscription?.status === 'active' && u.subscription?.plan !== 'trial').length;
+                
+                document.getElementById('total-users').textContent = users.length;
+                document.getElementById('pending-users').textContent = pendingCount;
+                document.getElementById('trial-users').textContent = trialCount;
+                document.getElementById('paid-users').textContent = paidCount;
+                
+                // Toon pending section als er wachtende zijn
+                const pendingUsers = users.filter(u => u.approvalStatus === 'pending');
+                const pendingSection = document.getElementById('pending-section');
+                const pendingList = document.getElementById('pending-list');
+                
+                if (pendingUsers.length > 0) {
+                    pendingSection.style.display = 'block';
+                    pendingList.innerHTML = pendingUsers.map(user => `
+                        <div class="pending-user">
+                            <div class="pending-user-info">
+                                <div class="name">${user.name || 'Geen naam'}</div>
+                                <div class="email">${user.email}</div>
+                                <div class="date">Geregistreerd: ${formatDate(user.createdAt)}</div>
+                            </div>
+                            <div class="pending-actions">
+                                <button class="btn-approve" onclick="approveUser('${user.id}')">✓ Goedkeuren</button>
+                                <button class="btn-reject" onclick="showRejectModal('${user.id}')">✗ Afwijzen</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    pendingSection.style.display = 'none';
+                }
+                
+                // Vul de tabel
+                const tbody = document.getElementById('users-table-body');
+                
+                if (users.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <div class="icon">👥</div>
+                                <p>Nog geen gebruikers geregistreerd</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Sorteer: pending eerst, dan op datum
+                users.sort((a, b) => {
+                    if (a.approvalStatus === 'pending' && b.approvalStatus !== 'pending') return -1;
+                    if (b.approvalStatus === 'pending' && a.approvalStatus !== 'pending') return 1;
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+                
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td><strong>${user.name || 'Geen naam'}</strong></td>
+                        <td>${user.email}</td>
+                        <td>${getApprovalBadge(user.approvalStatus)}</td>
+                        <td>${getSubscriptionBadge(user.subscription)}</td>
+                        <td>${formatDate(user.createdAt)}</td>
+                        <td class="user-actions">
+                            ${user.approvalStatus === 'pending' ? `
+                                <button class="btn-approve btn-small" onclick="approveUser('${user.id}')">Goedkeuren</button>
+                                <button class="btn-reject btn-small" onclick="showRejectModal('${user.id}')">Afwijzen</button>
+                            ` : `
+                                <button class="btn btn-small btn-secondary" onclick="showPlanModal('${user.id}')">Plan</button>
+                                <button class="btn btn-small btn-secondary" onclick="deleteUser('${user.id}')" style="color: #ef4444;">Verwijder</button>
+                            `}
+                        </td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('users-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state" style="color: #ef4444;">
+                            Fout bij laden van gebruikers
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Keur gebruiker goed
+        async function approveUser(userId) {
+            if (!confirm('Weet je zeker dat je deze gebruiker wilt goedkeuren?')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ startTrial: true })
+                });
+                
+                if (response.ok) {
+                    alert('Gebruiker goedgekeurd! Een trial periode van 14 dagen is gestart.');
+                    loadUsers();
+                } else {
+                    const data = await response.json();
+                    alert('Fout: ' + (data.error || 'Kon niet goedkeuren'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Er ging iets mis');
+            }
+        }
+
+        // Toon reject modal
+        function showRejectModal(userId) {
+            document.getElementById('reject-user-id').value = userId;
+            document.getElementById('reject-reason').value = '';
+            document.getElementById('reject-modal').classList.add('active');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('reject-modal').classList.remove('active');
+        }
+
+        // Wijs gebruiker af
+        document.getElementById('reject-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userId = document.getElementById('reject-user-id').value;
+            const reason = document.getElementById('reject-reason').value;
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                });
+                
+                if (response.ok) {
+                    alert('Gebruiker afgewezen');
+                    closeRejectModal();
+                    loadUsers();
+                } else {
+                    const data = await response.json();
+                    alert('Fout: ' + (data.error || 'Kon niet afwijzen'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Er ging iets mis');
+            }
+        });
+
+        // Toon plan modal
+        function showPlanModal(userId) {
+            document.getElementById('plan-user-id').value = userId;
+            document.getElementById('plan-modal').classList.add('active');
+        }
+
+        function closePlanModal() {
+            document.getElementById('plan-modal').classList.remove('active');
+        }
+
+        // Stel plan in
+        document.getElementById('plan-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userId = document.getElementById('plan-user-id').value;
+            const plan = document.getElementById('plan-select').value;
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/set-plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plan })
+                });
+                
+                if (response.ok) {
+                    alert('Plan bijgewerkt');
+                    closePlanModal();
+                    loadUsers();
+                } else {
+                    const data = await response.json();
+                    alert('Fout: ' + (data.error || 'Kon plan niet instellen'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Er ging iets mis');
+            }
+        });
+
+        // Verwijder gebruiker
+        async function deleteUser(userId) {
+            if (!confirm('Weet je zeker dat je deze gebruiker wilt verwijderen? Dit kan niet ongedaan worden gemaakt!')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('Gebruiker verwijderd');
+                    loadUsers();
+                } else {
+                    const data = await response.json();
+                    alert('Fout: ' + (data.error || 'Kon niet verwijderen'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Er ging iets mis');
+            }
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                await fetch('/api/admin/logout', { method: 'POST' });
+                window.location.href = '/admin-login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // Helper functies
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('nl-NL', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        function getApprovalBadge(status) {
+            switch (status) {
+                case 'pending':
+                    return '<span class="status-badge status-pending">Wachtend</span>';
+                case 'approved':
+                    return '<span class="status-badge status-approved">Goedgekeurd</span>';
+                case 'rejected':
+                    return '<span class="status-badge status-rejected">Afgewezen</span>';
+                default:
+                    return '<span class="status-badge status-approved">Goedgekeurd</span>';
+            }
+        }
+
+        function getSubscriptionBadge(sub) {
+            if (!sub) return '<span class="status-badge status-expired">Geen</span>';
+            
+            switch (sub.status) {
+                case 'trialing':
+                    return '<span class="status-badge status-trial">Trial</span>';
+                case 'active':
+                    return `<span class="status-badge status-active">${sub.plan || 'Actief'}</span>`;
+                case 'trial_expired':
+                    return '<span class="status-badge status-expired">Trial verlopen</span>';
+                default:
+                    return `<span class="status-badge status-expired">${sub.status || 'Onbekend'}</span>`;
+            }
+        }
+
+        // Init
+        (async () => {
+            const isAdmin = await checkAdminStatus();
+            if (isAdmin) {
+                loadUsers();
+            }
+        })();
+    </script>
+</body>
+</html>

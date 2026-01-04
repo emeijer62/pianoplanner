@@ -44,22 +44,13 @@ router.post('/register', (req, res) => {
         return res.status(400).json({ error: result.error });
     }
 
-    // Start trial voor nieuwe gebruiker
-    userStore.startTrial(result.user.id);
-    console.log(`🎁 Nieuwe gebruiker geregistreerd (email): ${email}`);
-
-    // Log gebruiker direct in
-    req.session.user = {
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.name,
-        picture: result.user.picture,
-        authType: 'email'
-    };
+    // NIET direct inloggen - wacht op goedkeuring
+    console.log(`📋 Nieuwe registratie wacht op goedkeuring: ${email}`);
 
     res.json({ 
         success: true, 
-        message: 'Account aangemaakt! Je bent nu ingelogd.',
+        needsApproval: true,
+        message: 'Je account is aangemaakt! Je ontvangt bericht zodra een beheerder je account heeft goedgekeurd.',
         user: {
             id: result.user.id,
             email: result.user.email,

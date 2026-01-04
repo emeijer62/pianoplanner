@@ -257,6 +257,10 @@ const registerUser = (email, password, name) => {
         authType: 'email', // 'email' of 'google'
         picture: null,
         tokens: null,
+        // Goedkeuringsstatus - nieuwe gebruikers moeten goedgekeurd worden
+        approvalStatus: 'pending', // 'pending', 'approved', 'rejected'
+        approvedAt: null,
+        approvedBy: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         // Calendar sync settings
@@ -269,7 +273,8 @@ const registerUser = (email, password, name) => {
     };
     
     saveUsers(users);
-    return { user: users[userId] };
+    console.log(`📋 Nieuwe registratie wacht op goedkeuring: ${email}`);
+    return { user: users[userId], needsApproval: true };
 };
 
 // Login met email/wachtwoord
@@ -289,6 +294,15 @@ const loginWithEmail = (email, password) => {
     // Verifieer wachtwoord
     if (!user.passwordHash || !verifyPassword(password, user.passwordHash)) {
         return { error: 'Onjuist wachtwoord' };
+    }
+    
+    // Check goedkeuringsstatus
+    if (user.approvalStatus === 'pending') {
+        return { error: 'Je account wacht nog op goedkeuring door de beheerder.' };
+    }
+    
+    if (user.approvalStatus === 'rejected') {
+        return { error: 'Je account is helaas afgewezen. Neem contact op met de beheerder.' };
     }
     
     return { user };
@@ -412,6 +426,82 @@ const getCalendarSync = (userId) => {
     };
 };
 
+// ============================================
+// ADMIN APPROVAL FUNCTIONS
+// ============================================
+
+// Haal alle gebruikers op die wachten op goedkeuring
+const getPendingUsers = () => {
+    const users = loadUsers();
+    return Object.values(users).filter(u => u.approvalStatus === 'pending');
+};
+
+// Keur gebruiker goed
+const approveUser = (userId, adminEmail) => {
+    const users = loadUsers();
+    if (!users[userId]) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    users[userId].approvalStatus = 'approved';
+    users[userId].approvedAt = new Date().toISOString();
+    users[userId].approvedBy = adminEmail;
+    users[userId].updatedAt = new Date().toISOString();
+    
+    saveUsers(users);
+    console.log(`✅ Gebruiker goedgekeurd: ${users[userId].email} door ${adminEmail}`);
+    return { success: true, user: users[userId] };
+};
+
+// Wijs gebruiker af
+const rejectUser = (userId, adminEmail, reason) => {
+    const users = loadUsers();
+    if (!users[userId]) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    users[userId].approvalStatus = 'rejected';
+    users[userId].rejectedAt = new Date().toISOString();
+    users[userId].rejectedBy = adminEmail;
+    users[userId].rejectionReason = reason || null;
+    users[userId].updatedAt = new Date().toISOString();
+    
+    saveUsers(users);
+    console.log(`❌ Gebruiker afgewezen: ${users[userId].email} door ${adminEmail}`);
+    return { success: true, user: users[userId] };
+};
+
+// Check of gebruiker is goedgekeurd
+const isUserApproved = (userId) => {
+    const users = loadUsers();
+    const user = users[userId];
+    if (!user) return false;
+    
+    // Bestaande gebruikers zonder approvalStatus zijn automatisch goedgekeurd
+    if (!user.approvalStatus) return true;
+    
+    return user.approvalStatus === 'approved';
+};
+
+// Update gebruiker plan (voor admin)
+const setUserPlan = (userId, plan) => {
+    const users = loadUsers();
+    if (!users[userId]) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    users[userId].subscription = {
+        plan: plan,
+        status: 'active',
+        startedAt: new Date().toISOString(),
+        expiresAt: null
+    };
+    users[userId].updatedAt = new Date().toISOString();
+    
+    saveUsers(users);
+    return { success: true, user: users[userId] };
+};
+
 module.exports = {
     saveUser,
     getUser,
@@ -436,5 +526,11 @@ module.exports = {
     changePassword,
     // Calendar sync functions
     updateCalendarSync,
-    getCalendarSync
+    getCalendarSync,
+    // Admin approval functions
+    getPendingUsers,
+    approveUser,
+    rejectUser,
+    isUserApproved,
+    setUserPlan
 };
