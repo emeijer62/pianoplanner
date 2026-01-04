@@ -583,7 +583,8 @@ const updateUserByAdmin = (userId, { email, name, password }) => {
         users[userId].name = name;
     }
     if (password) {
-        users[userId].password = hashPassword(password);
+        users[userId].passwordHash = hashPassword(password);
+        users[userId].authType = 'email'; // Zet authType naar email als wachtwoord wordt ingesteld
     }
     
     users[userId].updatedAt = new Date().toISOString();
@@ -591,7 +592,7 @@ const updateUserByAdmin = (userId, { email, name, password }) => {
     saveUsers(users);
     
     // Return zonder wachtwoord
-    const { password: _, ...safeUser } = users[userId];
+    const { passwordHash: _, ...safeUser } = users[userId];
     return { success: true, user: safeUser };
 };
 
