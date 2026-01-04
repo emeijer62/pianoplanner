@@ -127,6 +127,62 @@ app.post('/api/admin/users/:userId/extend-trial', requireAdmin, (req, res) => {
     res.json({ success: true, message: 'Proefperiode verlengd met 14 dagen' });
 });
 
+// Admin: zet gebruiker op een plan (zonder Stripe)
+app.post('/api/admin/users/:userId/set-plan', requireAdmin, (req, res) => {
+    const { userId } = req.params;
+    const { plan } = req.body; // 'active', 'trialing', 'none'
+    
+    const user = userStore.getUser(userId);
+    
+    if (!user) {
+        return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+    }
+    
+    if (plan === 'active') {
+        // Zet op actief abonnement (1 jaar)
+        const endDate = new Date();
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        
+        userStore.updateSubscription(userId, {
+            status: 'active',
+            plan: 'pro',
+            manualActivation: true,
+            startDate: new Date().toISOString(),
+            currentPeriodEnd: endDate.toISOString()
+        });
+        
+        console.log(`✅ ${user.email} handmatig geactiveerd tot ${endDate.toLocaleDateString('nl-NL')}`);
+        res.json({ success: true, message: 'Gebruiker geactiveerd voor 1 jaar' });
+        
+    } else if (plan === 'trialing') {
+        // Start nieuwe proefperiode (14 dagen)
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + 14);
+        
+        userStore.updateSubscription(userId, {
+            status: 'trialing',
+            trialStart: new Date().toISOString(),
+            trialEndsAt: trialEnd.toISOString()
+        });
+        
+        console.log(`🕐 Trial gestart voor ${user.email} tot ${trialEnd.toLocaleDateString('nl-NL')}`);
+        res.json({ success: true, message: 'Proefperiode van 14 dagen gestart' });
+        
+    } else if (plan === 'none') {
+        // Verwijder abonnement
+        userStore.updateSubscription(userId, {
+            status: 'canceled',
+            canceledAt: new Date().toISOString()
+        });
+        
+        console.log(`❌ Abonnement geannuleerd voor ${user.email}`);
+        res.json({ success: true, message: 'Abonnement geannuleerd' });
+        
+    } else {
+        res.status(400).json({ error: 'Ongeldig plan. Kies: active, trialing, of none' });
+    }
+});
+
 // Hoofdpagina
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));

@@ -211,6 +211,30 @@
             background: #bbdefb;
         }
 
+        .plan-select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            background: white;
+            margin-right: 6px;
+        }
+
+        .plan-select:focus {
+            outline: none;
+            border-color: #1a1a1a;
+        }
+
+        .action-btn.activate {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .action-btn.activate:hover {
+            background: #c8e6c9;
+        }
+
         .empty-state {
             padding: 48px 24px;
             text-align: center;
@@ -412,6 +436,12 @@
                         <td>${status}</td>
                         <td>${createdAt}</td>
                         <td>
+                            <select class="plan-select" onchange="setPlan('${user.id}', this.value)">
+                                <option value="">Zet plan...</option>
+                                <option value="active">✓ Actief (1 jaar)</option>
+                                <option value="trialing">🕐 Trial (14 dagen)</option>
+                                <option value="none">✕ Annuleren</option>
+                            </select>
                             <button class="action-btn extend" onclick="extendTrial('${user.id}')">+14 dagen</button>
                             <button class="action-btn delete" onclick="deleteUser('${user.id}', '${user.email}')">Verwijderen</button>
                         </td>
@@ -456,6 +486,43 @@
                 }
             } catch (error) {
                 alert('Er ging iets mis');
+            }
+        }
+
+        // Set plan (handmatig zonder Stripe)
+        async function setPlan(userId, plan) {
+            if (!plan) return;
+            
+            const planNames = {
+                'active': 'Actief abonnement (1 jaar)',
+                'trialing': 'Proefperiode (14 dagen)',
+                'none': 'Abonnement annuleren'
+            };
+            
+            if (!confirm(`Weet je zeker dat je wilt instellen: ${planNames[plan]}?`)) {
+                loadUsers(); // Reset dropdown
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/set-plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plan })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    loadUsers();
+                } else {
+                    alert(data.error || 'Kon plan niet instellen');
+                    loadUsers();
+                }
+            } catch (error) {
+                alert('Er ging iets mis');
+                loadUsers();
             }
         }
 
