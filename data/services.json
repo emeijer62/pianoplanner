@@ -64,5 +64,18 @@
     "price": 0,
     "color": "#607D8B",
     "active": true
+  },
+  {
+    "id": "22c647f8-bc97-49ff-a4a9-81fba0937a7d",
+    "name": "Stemmen",
+    "duration": 60,
+    "bufferBefore": 10,
+    "bufferAfter": 15,
+    "description": "Stemmen en onderhoud van uw piano",
+    "price": 125,
+    "color": "#4CAF50",
+    "active": true,
+    "updatedAt": "2026-01-04T18:47:41.848Z",
+    "createdAt": "2026-01-04T18:47:41.848Z"
   }
 ]

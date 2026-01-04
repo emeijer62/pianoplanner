@@ -1,0 +1,58 @@
+{
+  "name": "Edward Meijer Piano- & Vleugelonderhoud",
+  "ownerName": "",
+  "email": "info@edwardmeijer.nl",
+  "phone": "0630817307",
+  "address": {},
+  "availability": {
+    "0": {
+      "available": false,
+      "start": "09:00",
+      "end": "18:00"
+    },
+    "1": {
+      "available": true,
+      "start": "09:00",
+      "end": "18:00"
+    },
+    "2": {
+      "available": true,
+      "start": "09:00",
+      "end": "18:00"
+    },
+    "3": {
+      "available": true,
+      "start": "09:00",
+      "end": "18:00"
+    },
+    "4": {
+      "available": true,
+      "start": "09:00",
+      "end": "18:00"
+    },
+    "5": {
+      "available": true,
+      "start": "09:00",
+      "end": "18:00"
+    },
+    "6": {
+      "available": false,
+      "start": "09:00",
+      "end": "18:00"
+    }
+  },
+  "timezone": "Europe/Amsterdam",
+  "createdAt": "2026-01-04T18:47:14.145Z",
+  "updatedAt": "2026-01-04T18:48:41.998Z",
+  "workHours": {
+    "start": "09:00",
+    "end": "18:00"
+  },
+  "workDays": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ]
+}

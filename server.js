@@ -11,6 +11,7 @@ const settingsRoutes = require('./routes/settings');
 const stripeRoutes = require('./routes/stripe');
 const stripeWebhookRoutes = require('./routes/stripeWebhook');
 const pianoRoutes = require('./routes/pianos');
+const appointmentRoutes = require('./routes/appointments');
 const userStore = require('./utils/userStore');
 const { requireAdmin, isAdmin } = require('./middleware/auth');
 
@@ -49,6 +50,7 @@ app.use('/api/booking', bookingRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/pianos', pianoRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
 // API route om ingelogde gebruiker te checken
 app.get('/api/user', (req, res) => {

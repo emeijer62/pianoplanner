@@ -5,6 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
@@ -13,6 +14,24 @@ const USERS_FILE = path.join(DATA_DIR, 'users.json');
 if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
 }
+
+// ============================================
+// PASSWORD HASHING
+// ============================================
+
+// Hash wachtwoord met salt
+const hashPassword = (password) => {
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+    return `${salt}:${hash}`;
+};
+
+// Verifieer wachtwoord
+const verifyPassword = (password, storedHash) => {
+    const [salt, hash] = storedHash.split(':');
+    const verifyHash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+    return hash === verifyHash;
+};
 
 // Laad gebruikers uit bestand
 const loadUsers = () => {
@@ -203,6 +222,196 @@ const getUserByStripeCustomerId = (stripeCustomerId) => {
     ) || null;
 };
 
+// ============================================
+// EMAIL/PASSWORD REGISTRATION & LOGIN
+// ============================================
+
+// Genereer unieke gebruikers-ID
+const generateUserId = () => {
+    return 'user_' + crypto.randomBytes(12).toString('hex');
+};
+
+// Registreer nieuwe gebruiker met email/wachtwoord
+const registerUser = (email, password, name) => {
+    const users = loadUsers();
+    
+    // Check of email al bestaat
+    const existingUser = Object.values(users).find(u => u.email === email);
+    if (existingUser) {
+        return { error: 'Email is al geregistreerd' };
+    }
+    
+    // Valideer wachtwoord
+    if (password.length < 6) {
+        return { error: 'Wachtwoord moet minimaal 6 tekens zijn' };
+    }
+    
+    const userId = generateUserId();
+    const hashedPassword = hashPassword(password);
+    
+    users[userId] = {
+        id: userId,
+        email: email,
+        name: name || email.split('@')[0],
+        passwordHash: hashedPassword,
+        authType: 'email', // 'email' of 'google'
+        picture: null,
+        tokens: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        // Calendar sync settings
+        calendarSync: {
+            enabled: false,
+            googleCalendarId: null,
+            lastSync: null,
+            syncDirection: 'both' // 'both', 'toGoogle', 'fromGoogle'
+        }
+    };
+    
+    saveUsers(users);
+    return { user: users[userId] };
+};
+
+// Login met email/wachtwoord
+const loginWithEmail = (email, password) => {
+    const users = loadUsers();
+    const user = Object.values(users).find(u => u.email === email);
+    
+    if (!user) {
+        return { error: 'Email niet gevonden' };
+    }
+    
+    // Check of gebruiker via email is geregistreerd
+    if (user.authType === 'google' && !user.passwordHash) {
+        return { error: 'Deze account gebruikt Google login. Klik op "Inloggen met Google".' };
+    }
+    
+    // Verifieer wachtwoord
+    if (!user.passwordHash || !verifyPassword(password, user.passwordHash)) {
+        return { error: 'Onjuist wachtwoord' };
+    }
+    
+    return { user };
+};
+
+// Voeg wachtwoord toe aan bestaande Google gebruiker (optioneel)
+const setPasswordForUser = (userId, password) => {
+    const users = loadUsers();
+    if (!users[userId]) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    if (password.length < 6) {
+        return { error: 'Wachtwoord moet minimaal 6 tekens zijn' };
+    }
+    
+    users[userId].passwordHash = hashPassword(password);
+    users[userId].updatedAt = new Date().toISOString();
+    saveUsers(users);
+    
+    return { success: true };
+};
+
+// Update gebruikersprofiel (naam en email)
+const updateUserProfile = (userId, updates) => {
+    const users = loadUsers();
+    if (!users[userId]) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    // Als email wordt gewijzigd, check of deze al bestaat
+    if (updates.email && updates.email !== users[userId].email) {
+        const existingUser = Object.values(users).find(u => u.email === updates.email && u.id !== userId);
+        if (existingUser) {
+            return { error: 'Dit e-mailadres is al in gebruik' };
+        }
+        users[userId].email = updates.email;
+    }
+    
+    // Update naam als opgegeven
+    if (updates.name) {
+        users[userId].name = updates.name;
+    }
+    
+    users[userId].updatedAt = new Date().toISOString();
+    saveUsers(users);
+    
+    return { user: users[userId] };
+};
+
+// Wijzig wachtwoord (met verificatie van huidige wachtwoord)
+const changePassword = (userId, currentPassword, newPassword) => {
+    const users = loadUsers();
+    if (!users[userId]) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    const user = users[userId];
+    
+    // Google-only gebruikers moeten eerst een wachtwoord instellen
+    if (user.authType === 'google' && !user.passwordHash) {
+        // Voor Google gebruikers zonder wachtwoord, stel nieuw wachtwoord in
+        if (newPassword.length < 6) {
+            return { error: 'Wachtwoord moet minimaal 6 tekens zijn' };
+        }
+        users[userId].passwordHash = hashPassword(newPassword);
+        users[userId].updatedAt = new Date().toISOString();
+        saveUsers(users);
+        return { success: true, message: 'Wachtwoord ingesteld' };
+    }
+    
+    // Verifieer huidig wachtwoord
+    if (!verifyPassword(currentPassword, user.passwordHash)) {
+        return { error: 'Huidig wachtwoord is onjuist' };
+    }
+    
+    // Valideer nieuw wachtwoord
+    if (newPassword.length < 6) {
+        return { error: 'Nieuw wachtwoord moet minimaal 6 tekens zijn' };
+    }
+    
+    if (currentPassword === newPassword) {
+        return { error: 'Nieuw wachtwoord moet anders zijn dan huidig wachtwoord' };
+    }
+    
+    users[userId].passwordHash = hashPassword(newPassword);
+    users[userId].updatedAt = new Date().toISOString();
+    saveUsers(users);
+    
+    return { success: true, message: 'Wachtwoord gewijzigd' };
+};
+
+// Update calendar sync settings
+const updateCalendarSync = (userId, syncSettings) => {
+    const users = loadUsers();
+    if (!users[userId]) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    users[userId].calendarSync = {
+        ...users[userId].calendarSync,
+        ...syncSettings,
+        updatedAt: new Date().toISOString()
+    };
+    
+    saveUsers(users);
+    return { user: users[userId] };
+};
+
+// Get calendar sync settings
+const getCalendarSync = (userId) => {
+    const users = loadUsers();
+    const user = users[userId];
+    if (!user) return null;
+    
+    return user.calendarSync || {
+        enabled: false,
+        googleCalendarId: null,
+        lastSync: null,
+        syncDirection: 'both'
+    };
+};
+
 module.exports = {
     saveUser,
     getUser,
@@ -215,5 +424,17 @@ module.exports = {
     getSubscriptionStatus,
     setStripeCustomerId,
     getUserByStripeCustomerId,
-    TRIAL_DAYS
+    TRIAL_DAYS,
+    // Email/Password functions
+    registerUser,
+    loginWithEmail,
+    setPasswordForUser,
+    hashPassword,
+    verifyPassword,
+    // Profile functions
+    updateUserProfile,
+    changePassword,
+    // Calendar sync functions
+    updateCalendarSync,
+    getCalendarSync
 };

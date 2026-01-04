@@ -365,7 +365,7 @@
                     return;
                 }
 
-                const sub = data.subscription;
+                const sub = data.subscription || { status: 'none', hasAccess: false };
                 updateUI(sub);
             } catch (error) {
                 console.error('Failed to load subscription:', error);
@@ -377,6 +377,11 @@
             const statusBadge = document.getElementById('statusBadge');
             const planDetails = document.getElementById('planDetails');
             const actionButtons = document.getElementById('actionButtons');
+
+            // Handle null/undefined subscription
+            if (!sub) {
+                sub = { status: 'none', hasAccess: false };
+            }
 
             // Status badge
             let badgeClass = 'trial';

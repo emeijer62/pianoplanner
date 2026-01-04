@@ -368,16 +368,210 @@
                 justify-content: center;
             }
         }
+        
+        /* Calendar Sync Styles */
+        .sync-status {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        .sync-status.connected {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .sync-status.disconnected {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+        }
+        .sync-direction-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .radio-option {
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .radio-option:hover {
+            border-color: #1a1a1a;
+        }
+        .radio-option input[type="radio"] {
+            margin-right: 8px;
+        }
+        .radio-option span {
+            font-weight: 500;
+        }
+        .radio-option small {
+            color: #666;
+            font-size: 0.85rem;
+            margin-left: 24px;
+        }
+        .sync-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+                <span class="piano-icon">🎹</span>
+                <span>PianoPlanner</span>
+            </a>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard.html">📅 Dashboard</a>
+            <a href="/customers.html">👥 Klanten</a>
+            <a href="/pianos.html">🎹 Piano's</a>
+            <a href="/settings.html" class="active">⚙️ Instellingen</a>
+        </div>
+        <div class="nav-user">
+            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+        </div>
+    </nav>
+
     <div class="settings-container">
         <div class="page-header">
             <h1>⚙️ Instellingen</h1>
-            <a href="dashboard.html" class="back-link">← Terug naar Dashboard</a>
         </div>
         
         <div id="alertContainer"></div>
+        
+        <!-- Google Calendar Sync -->
+        <div class="settings-section">
+            <h2>🔄 Google Agenda Synchronisatie</h2>
+            <p style="color: #666; margin-bottom: 16px;">
+                Synchroniseer je lokale PianoPlanner agenda met Google Agenda. 
+                Zo heb je al je afspraken op één plek.
+            </p>
+            
+            <div id="calendar-sync-status" class="sync-status">
+                <!-- Status wordt dynamisch geladen -->
+            </div>
+            
+            <div id="calendar-sync-options" style="display: none;">
+                <div class="form-group">
+                    <label>Synchronisatie richting</label>
+                    <div class="sync-direction-options">
+                        <label class="radio-option">
+                            <input type="radio" name="syncDirection" value="both" checked>
+                            <span>🔄 Beide richtingen</span>
+                            <small>PianoPlanner ↔ Google (aanbevolen)</small>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="syncDirection" value="toGoogle">
+                            <span>➡️ Alleen naar Google</span>
+                            <small>PianoPlanner → Google</small>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="syncDirection" value="fromGoogle">
+                            <span>⬅️ Alleen van Google</span>
+                            <small>Google → PianoPlanner</small>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="calendar-select-group" style="display: none;">
+                    <label for="googleCalendarId">Google Agenda selecteren</label>
+                    <select id="googleCalendarId">
+                        <option value="">Laden...</option>
+                    </select>
+                </div>
+                
+                <div class="sync-buttons">
+                    <button type="button" class="btn btn-primary" onclick="enableCalendarSync()">
+                        ✓ Synchronisatie inschakelen
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="syncNow()" id="sync-now-btn" style="display: none;">
+                        🔄 Nu synchroniseren
+                    </button>
+                </div>
+                
+                <div id="last-sync-info" style="display: none; margin-top: 12px; color: #666; font-size: 0.9rem;">
+                    Laatste sync: <span id="last-sync-time">Nooit</span>
+                </div>
+            </div>
+            
+            <div id="calendar-not-connected">
+                <p style="margin-bottom: 16px;">
+                    <strong>Niet verbonden met Google</strong><br>
+                    Log in met je Google account om agenda synchronisatie in te schakelen.
+                </p>
+                <a href="/auth/google" class="btn btn-secondary">
+                    <svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align: middle; margin-right: 8px;">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Verbinden met Google
+                </a>
+            </div>
+        </div>
+        
+        <!-- Account Instellingen -->
+        <div class="settings-section">
+            <h2>👤 Account Instellingen</h2>
+            <p style="color: #666; margin-bottom: 16px;">
+                Beheer je account gegevens en wachtwoord.
+            </p>
+            
+            <!-- Profiel formulier -->
+            <form id="profileForm">
+                <h3>Profiel</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="profileName">Naam</label>
+                        <input type="text" id="profileName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileEmail">E-mailadres</label>
+                        <input type="email" id="profileEmail" name="email" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Login methode</label>
+                    <p id="authTypeInfo" style="margin: 0; padding: 8px 12px; background: var(--light-gray); border-radius: var(--radius-sm); font-size: 0.9rem;">
+                        <!-- Wordt dynamisch ingevuld -->
+                    </p>
+                </div>
+                <button type="submit" class="btn btn-primary">💾 Profiel Opslaan</button>
+            </form>
+            
+            <!-- Wachtwoord formulier -->
+            <form id="passwordForm" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                <h3 id="passwordSectionTitle">🔐 Wachtwoord wijzigen</h3>
+                <p id="passwordSectionDesc" style="color: #666; font-size: 0.9rem; margin-bottom: 16px;">
+                    <!-- Wordt dynamisch ingevuld -->
+                </p>
+                
+                <div id="currentPasswordGroup" class="form-group">
+                    <label for="currentPassword">Huidig wachtwoord</label>
+                    <input type="password" id="currentPassword" name="currentPassword" autocomplete="current-password">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="newPassword">Nieuw wachtwoord</label>
+                        <input type="password" id="newPassword" name="newPassword" required minlength="6" autocomplete="new-password">
+                        <small style="color: #666;">Minimaal 6 tekens</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Bevestig nieuw wachtwoord</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6" autocomplete="new-password">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="passwordSubmitBtn">🔐 Wachtwoord Wijzigen</button>
+            </form>
+        </div>
         
         <!-- Bedrijfsprofiel -->
         <div class="settings-section">
@@ -516,5 +710,166 @@
     </div>
     
     <script src="settings.js"></script>
+    <script>
+        // Calendar Sync Functions
+        let calendarSyncSettings = null;
+        let userAuthType = null;
+        
+        async function loadCalendarSyncStatus() {
+            try {
+                // Check user info first
+                const userResponse = await fetch('/api/user');
+                const userData = await userResponse.json();
+                
+                if (!userData.loggedIn) return;
+                
+                userAuthType = userData.user.authType;
+                
+                // Load sync settings
+                const syncResponse = await fetch('/api/calendar/sync-settings');
+                const syncData = await syncResponse.json();
+                
+                calendarSyncSettings = syncData.settings || {};
+                
+                updateCalendarSyncUI(userData.user, calendarSyncSettings);
+            } catch (error) {
+                console.error('Error loading calendar sync status:', error);
+            }
+        }
+        
+        function updateCalendarSyncUI(user, settings) {
+            const statusEl = document.getElementById('calendar-sync-status');
+            const optionsEl = document.getElementById('calendar-sync-options');
+            const notConnectedEl = document.getElementById('calendar-not-connected');
+            
+            // Check if user has Google tokens (logged in with Google)
+            if (user.authType === 'google') {
+                notConnectedEl.style.display = 'none';
+                optionsEl.style.display = 'block';
+                
+                if (settings.enabled) {
+                    statusEl.className = 'sync-status connected';
+                    statusEl.innerHTML = `
+                        <strong>✅ Synchronisatie actief</strong><br>
+                        <span style="color: #666;">Richting: ${getSyncDirectionLabel(settings.syncDirection)}</span>
+                    `;
+                    document.getElementById('sync-now-btn').style.display = 'inline-block';
+                    document.getElementById('last-sync-info').style.display = 'block';
+                    
+                    if (settings.lastSync) {
+                        document.getElementById('last-sync-time').textContent = 
+                            new Date(settings.lastSync).toLocaleString('nl-NL');
+                    }
+                    
+                    // Set saved direction
+                    const directionRadio = document.querySelector(`input[name="syncDirection"][value="${settings.syncDirection}"]`);
+                    if (directionRadio) directionRadio.checked = true;
+                } else {
+                    statusEl.className = 'sync-status disconnected';
+                    statusEl.innerHTML = `
+                        <strong>⚠️ Synchronisatie uitgeschakeld</strong><br>
+                        <span style="color: #666;">Je Google account is verbonden, maar sync is niet actief.</span>
+                    `;
+                }
+                
+                // Load calendars list
+                loadGoogleCalendars();
+            } else {
+                // Email login - show connect option
+                notConnectedEl.style.display = 'block';
+                optionsEl.style.display = 'none';
+                statusEl.innerHTML = '';
+            }
+        }
+        
+        function getSyncDirectionLabel(direction) {
+            switch(direction) {
+                case 'both': return '🔄 Beide richtingen';
+                case 'toGoogle': return '➡️ Alleen naar Google';
+                case 'fromGoogle': return '⬅️ Alleen van Google';
+                default: return 'Onbekend';
+            }
+        }
+        
+        async function loadGoogleCalendars() {
+            try {
+                const response = await fetch('/api/calendar/list');
+                const data = await response.json();
+                
+                if (data.calendars && data.calendars.length > 0) {
+                    const select = document.getElementById('googleCalendarId');
+                    select.innerHTML = '<option value="">Selecteer een agenda...</option>';
+                    
+                    data.calendars.forEach(cal => {
+                        const option = document.createElement('option');
+                        option.value = cal.id;
+                        option.textContent = cal.summary + (cal.primary ? ' (Primair)' : '');
+                        if (calendarSyncSettings?.googleCalendarId === cal.id) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+                    
+                    document.getElementById('calendar-select-group').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error loading calendars:', error);
+            }
+        }
+        
+        async function enableCalendarSync() {
+            const direction = document.querySelector('input[name="syncDirection"]:checked')?.value || 'both';
+            const calendarId = document.getElementById('googleCalendarId').value;
+            
+            try {
+                const response = await fetch('/api/calendar/sync-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        enabled: true,
+                        syncDirection: direction,
+                        googleCalendarId: calendarId || 'primary'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Synchronisatie ingeschakeld!', 'success');
+                    loadCalendarSyncStatus();
+                } else {
+                    showAlert(data.error || 'Er ging iets mis', 'error');
+                }
+            } catch (error) {
+                showAlert('Fout bij opslaan instellingen', 'error');
+            }
+        }
+        
+        async function syncNow() {
+            const btn = document.getElementById('sync-now-btn');
+            btn.disabled = true;
+            btn.textContent = '🔄 Bezig...';
+            
+            try {
+                const response = await fetch('/api/calendar/sync', { method: 'POST' });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert(`Synchronisatie voltooid! ${data.synced || 0} items gesynchroniseerd.`, 'success');
+                    loadCalendarSyncStatus();
+                } else {
+                    showAlert(data.error || 'Sync mislukt', 'error');
+                }
+            } catch (error) {
+                showAlert('Fout bij synchroniseren', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 Nu synchroniseren';
+            }
+        }
+        
+        // Load on page load
+        document.addEventListener('DOMContentLoaded', loadCalendarSyncStatus);
+    </script>
 </body>
 </html>

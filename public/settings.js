@@ -31,6 +31,136 @@ function showAlert(message, type = 'success') {
     setTimeout(() => alert.remove(), 5000);
 }
 
+// ========== ACCOUNT/PROFIEL INSTELLINGEN ==========
+
+async function loadProfileSettings() {
+    try {
+        const response = await fetch('/auth/profile');
+        if (!response.ok) throw new Error('Kon profiel niet laden');
+        
+        const profile = await response.json();
+        
+        // Vul profiel formulier
+        document.getElementById('profileName').value = profile.name || '';
+        document.getElementById('profileEmail').value = profile.email || '';
+        
+        // Toon login methode info
+        const authTypeInfo = document.getElementById('authTypeInfo');
+        if (profile.authType === 'google') {
+            authTypeInfo.innerHTML = `
+                <span style="color: #4285F4;">🔵 Google Account</span>
+                ${profile.hasPassword ? ' + Wachtwoord ingesteld' : ' - <em>Geen wachtwoord ingesteld</em>'}
+            `;
+        } else {
+            authTypeInfo.innerHTML = '<span style="color: #333;">📧 E-mail/Wachtwoord</span>';
+        }
+        
+        // Pas wachtwoord sectie aan op basis van situatie
+        const currentPasswordGroup = document.getElementById('currentPasswordGroup');
+        const passwordSectionTitle = document.getElementById('passwordSectionTitle');
+        const passwordSectionDesc = document.getElementById('passwordSectionDesc');
+        const passwordSubmitBtn = document.getElementById('passwordSubmitBtn');
+        
+        if (profile.authType === 'google' && !profile.hasPassword) {
+            // Google gebruiker zonder wachtwoord - kan wachtwoord instellen
+            currentPasswordGroup.style.display = 'none';
+            passwordSectionTitle.textContent = '🔐 Wachtwoord instellen';
+            passwordSectionDesc.textContent = 'Je bent ingelogd via Google. Stel een wachtwoord in om ook met e-mail/wachtwoord in te kunnen loggen.';
+            passwordSubmitBtn.textContent = '🔐 Wachtwoord Instellen';
+        } else {
+            // Normale situatie - wachtwoord wijzigen
+            currentPasswordGroup.style.display = 'block';
+            passwordSectionTitle.textContent = '🔐 Wachtwoord wijzigen';
+            passwordSectionDesc.textContent = 'Voer je huidige wachtwoord in om een nieuw wachtwoord in te stellen.';
+            passwordSubmitBtn.textContent = '🔐 Wachtwoord Wijzigen';
+        }
+        
+    } catch (error) {
+        console.error('Kon profiel niet laden:', error);
+    }
+}
+
+// Profiel opslaan
+async function saveProfile(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('profileName').value.trim();
+    const email = document.getElementById('profileEmail').value.trim();
+    
+    if (!name || !email) {
+        showAlert('Naam en e-mail zijn verplicht', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/auth/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Kon profiel niet opslaan');
+        }
+        
+        showAlert('Profiel opgeslagen!', 'success');
+        
+    } catch (error) {
+        showAlert(error.message, 'error');
+    }
+}
+
+// Wachtwoord wijzigen
+async function changePassword(e) {
+    e.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!newPassword || !confirmPassword) {
+        showAlert('Vul alle wachtwoord velden in', 'error');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showAlert('Nieuwe wachtwoorden komen niet overeen', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showAlert('Wachtwoord moet minimaal 6 tekens zijn', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/auth/password', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Kon wachtwoord niet wijzigen');
+        }
+        
+        showAlert(data.message || 'Wachtwoord gewijzigd!', 'success');
+        
+        // Reset formulier
+        document.getElementById('passwordForm').reset();
+        
+        // Herlaad profiel om UI bij te werken (voor Google gebruikers die wachtwoord instellen)
+        await loadProfileSettings();
+        
+    } catch (error) {
+        showAlert(error.message, 'error');
+    }
+}
+
 // ========== BEDRIJFSPROFIEL ==========
 
 const DAY_NAMES = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
@@ -182,7 +312,8 @@ async function loadServices() {
     try {
         const response = await fetch('/api/settings/services');
         if (response.ok) {
-            services = await response.json();
+            const data = await response.json();
+            services = data.services || data || [];
             renderServices();
         }
     } catch (error) {
@@ -338,10 +469,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (await checkAuth()) {
         loadCompanySettings();
         loadServices();
+        loadProfileSettings();
         
         // Event listeners
         document.getElementById('companyForm').addEventListener('submit', saveCompanySettings);
         document.getElementById('serviceForm').addEventListener('submit', saveService);
+        document.getElementById('profileForm').addEventListener('submit', saveProfile);
+        document.getElementById('passwordForm').addEventListener('submit', changePassword);
         
         // Close modal on click outside
         document.getElementById('serviceModal').addEventListener('click', (e) => {

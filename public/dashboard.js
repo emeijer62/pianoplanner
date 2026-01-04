@@ -102,23 +102,25 @@ function updateNavbar(user) {
 
 async function loadAllEvents() {
     try {
-        // Laad events voor een ruime periode (3 maanden voor en na)
+        // Laad lokale afspraken voor een ruime periode (3 maanden voor en na)
         const startDate = new Date(currentDate);
         startDate.setMonth(startDate.getMonth() - 1);
         const endDate = new Date(currentDate);
         endDate.setMonth(endDate.getMonth() + 2);
         
-        const response = await fetch(`/api/calendar/events?timeMin=${startDate.toISOString()}&timeMax=${endDate.toISOString()}`);
+        const response = await fetch(`/api/appointments?start=${startDate.toISOString()}&end=${endDate.toISOString()}`);
         
         if (!response.ok) {
-            throw new Error('Failed to load events');
+            throw new Error('Failed to load appointments');
         }
         
+        // De API retourneert al het juiste formaat (met summary, start.dateTime, etc.)
         allEvents = await response.json();
-        console.log(`📅 ${allEvents.length} events geladen`);
+        
+        console.log(`📅 ${allEvents.length} afspraken geladen`);
         
     } catch (err) {
-        console.error('Error loading events:', err);
+        console.error('Error loading appointments:', err);
         allEvents = [];
     }
 }
@@ -126,26 +128,20 @@ async function loadAllEvents() {
 async function loadCalendars() {
     const container = document.getElementById('calendars-list');
     
-    try {
-        const response = await fetch('/api/calendar/calendars');
-        
-        if (!response.ok) {
-            throw new Error('Failed to load calendars');
-        }
-        
-        const calendars = await response.json();
-        
-        container.innerHTML = calendars.map(cal => `
-            <div class="calendar-item">
-                <div class="calendar-color" style="background: ${cal.backgroundColor || '#4CAF50'}"></div>
-                <span>${escapeHtml(cal.summary)}</span>
-            </div>
-        `).join('');
-        
-    } catch (err) {
-        console.error('Error loading calendars:', err);
-        container.innerHTML = '<div class="error-message">Kon agenda\'s niet laden</div>';
-    }
+    // Toon lokale agenda categorieën
+    const categories = [
+        { name: 'Stemmen', color: '#4CAF50' },
+        { name: 'Reparatie', color: '#2196F3' },
+        { name: 'Onderhoud', color: '#FF9800' },
+        { name: 'Transport', color: '#9C27B0' }
+    ];
+    
+    container.innerHTML = categories.map(cat => `
+        <div class="calendar-item">
+            <div class="calendar-color" style="background: ${cat.color}"></div>
+            <span>${escapeHtml(cat.name)}</span>
+        </div>
+    `).join('');
 }
 
 // ========== CALENDAR NAVIGATION ==========
@@ -467,11 +463,11 @@ async function handleEventSubmit(e) {
     const end = document.getElementById('event-end').value;
     
     try {
-        const response = await fetch('/api/calendar/events', {
+        const response = await fetch('/api/appointments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                summary: title,
+                title,
                 description,
                 location,
                 start: new Date(start).toISOString(),
@@ -480,7 +476,7 @@ async function handleEventSubmit(e) {
         });
         
         if (!response.ok) {
-            throw new Error('Failed to create event');
+            throw new Error('Failed to create appointment');
         }
         
         closeModal();
@@ -488,31 +484,31 @@ async function handleEventSubmit(e) {
         renderCalendar();
         
     } catch (err) {
-        console.error('Error creating event:', err);
-        alert('Kon event niet aanmaken. Probeer het opnieuw.');
+        console.error('Error creating appointment:', err);
+        alert('Kon afspraak niet aanmaken. Probeer het opnieuw.');
     }
 }
 
 async function deleteEvent(eventId) {
-    if (!confirm('Weet je zeker dat je dit event wilt verwijderen?')) {
+    if (!confirm('Weet je zeker dat je deze afspraak wilt verwijderen?')) {
         return;
     }
     
     try {
-        const response = await fetch(`/api/calendar/events/${eventId}`, {
+        const response = await fetch(`/api/appointments/${eventId}`, {
             method: 'DELETE'
         });
         
         if (!response.ok) {
-            throw new Error('Failed to delete event');
+            throw new Error('Failed to delete appointment');
         }
         
         await loadAllEvents();
         renderCalendar();
         
     } catch (err) {
-        console.error('Error deleting event:', err);
-        alert('Kon event niet verwijderen. Probeer het opnieuw.');
+        console.error('Error deleting appointment:', err);
+        alert('Kon afspraak niet verwijderen. Probeer het opnieuw.');
     }
 }
 

@@ -22,6 +22,91 @@ const SCOPES = [
     'https://www.googleapis.com/auth/userinfo.profile'
 ];
 
+// ==================== EMAIL/PASSWORD AUTH ====================
+
+// Registreren met email/wachtwoord
+router.post('/register', (req, res) => {
+    const { email, password, name } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email en wachtwoord zijn verplicht' });
+    }
+
+    // Valideer email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Ongeldig email formaat' });
+    }
+
+    const result = userStore.registerUser(email, password, name);
+
+    if (result.error) {
+        return res.status(400).json({ error: result.error });
+    }
+
+    // Start trial voor nieuwe gebruiker
+    userStore.startTrial(result.user.id);
+    console.log(`🎁 Nieuwe gebruiker geregistreerd (email): ${email}`);
+
+    // Log gebruiker direct in
+    req.session.user = {
+        id: result.user.id,
+        email: result.user.email,
+        name: result.user.name,
+        picture: result.user.picture,
+        authType: 'email'
+    };
+
+    res.json({ 
+        success: true, 
+        message: 'Account aangemaakt! Je bent nu ingelogd.',
+        user: {
+            id: result.user.id,
+            email: result.user.email,
+            name: result.user.name
+        }
+    });
+});
+
+// Inloggen met email/wachtwoord
+router.post('/login', (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email en wachtwoord zijn verplicht' });
+    }
+
+    const result = userStore.loginWithEmail(email, password);
+
+    if (result.error) {
+        console.log(`⚠️ Mislukte login poging: ${email}`);
+        return res.status(401).json({ error: result.error });
+    }
+
+    // Zet sessie
+    req.session.user = {
+        id: result.user.id,
+        email: result.user.email,
+        name: result.user.name,
+        picture: result.user.picture,
+        authType: result.user.authType
+    };
+
+    console.log(`✅ Gebruiker ingelogd (email): ${email}`);
+
+    res.json({ 
+        success: true, 
+        message: 'Succesvol ingelogd',
+        user: {
+            id: result.user.id,
+            email: result.user.email,
+            name: result.user.name
+        }
+    });
+});
+
+// ==================== GOOGLE OAUTH ====================
+
 // Start Google OAuth flow
 router.get('/google', (req, res) => {
     const authUrl = oauth2Client.generateAuthUrl({
@@ -59,7 +144,14 @@ router.get('/google/callback', async (req, res) => {
             email: userInfo.email,
             name: userInfo.name,
             picture: userInfo.picture,
-            tokens: tokens
+            tokens: tokens,
+            authType: 'google',
+            calendarSync: existingUser?.calendarSync || {
+                enabled: false,
+                googleCalendarId: null,
+                lastSync: null,
+                syncDirection: 'both'
+            }
         });
 
         // Start trial voor nieuwe gebruikers
@@ -73,12 +165,20 @@ router.get('/google/callback', async (req, res) => {
             id: user.id,
             email: user.email,
             name: user.name,
-            picture: user.picture
+            picture: user.picture,
+            authType: 'google'
         };
         req.session.tokens = tokens;
 
-        console.log(`✅ Gebruiker ingelogd: ${user.email}`);
-        res.redirect('/dashboard.html');
+        // Sla sessie expliciet op voor redirect
+        req.session.save((err) => {
+            if (err) {
+                console.error('Session save error:', err);
+                return res.redirect('/?error=session_failed');
+            }
+            console.log(`✅ Gebruiker ingelogd (Google): ${user.email}`);
+            res.redirect('/dashboard.html');
+        });
 
     } catch (error) {
         console.error('OAuth error:', error);
@@ -129,6 +229,117 @@ router.post('/admin/login', (req, res) => {
 router.get('/admin/status', (req, res) => {
     const isAdmin = req.session.isAdmin || false;
     res.json({ isAdmin });
+});
+
+// ==================== PROFILE MANAGEMENT ====================
+
+// Update profiel (naam en email)
+router.put('/profile', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Niet ingelogd' });
+    }
+
+    const { name, email } = req.body;
+
+    if (!name && !email) {
+        return res.status(400).json({ error: 'Geen wijzigingen opgegeven' });
+    }
+
+    // Valideer email format als opgegeven
+    if (email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Ongeldig email formaat' });
+        }
+    }
+
+    const result = userStore.updateUserProfile(req.session.user.id, { name, email });
+
+    if (result.error) {
+        return res.status(400).json({ error: result.error });
+    }
+
+    // Update sessie met nieuwe gegevens
+    if (name) req.session.user.name = name;
+    if (email) req.session.user.email = email;
+
+    console.log(`✏️ Profiel bijgewerkt: ${req.session.user.email}`);
+    res.json({ 
+        success: true, 
+        message: 'Profiel bijgewerkt',
+        user: {
+            id: result.user.id,
+            name: result.user.name,
+            email: result.user.email
+        }
+    });
+});
+
+// Wijzig wachtwoord
+router.put('/password', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Niet ingelogd' });
+    }
+
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const user = userStore.getUser(req.session.user.id);
+
+    // Voor Google gebruikers die voor het eerst een wachtwoord instellen
+    if (user.authType === 'google' && !user.passwordHash) {
+        if (!newPassword) {
+            return res.status(400).json({ error: 'Nieuw wachtwoord is verplicht' });
+        }
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ error: 'Wachtwoorden komen niet overeen' });
+        }
+        
+        const result = userStore.changePassword(req.session.user.id, '', newPassword);
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        console.log(`🔐 Wachtwoord ingesteld voor Google gebruiker: ${req.session.user.email}`);
+        return res.json({ success: true, message: 'Wachtwoord ingesteld! Je kunt nu ook inloggen met email en wachtwoord.' });
+    }
+
+    // Normale wachtwoord wijziging
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: 'Huidig en nieuw wachtwoord zijn verplicht' });
+    }
+
+    if (newPassword !== confirmPassword) {
+        return res.status(400).json({ error: 'Nieuwe wachtwoorden komen niet overeen' });
+    }
+
+    const result = userStore.changePassword(req.session.user.id, currentPassword, newPassword);
+
+    if (result.error) {
+        return res.status(400).json({ error: result.error });
+    }
+
+    console.log(`🔐 Wachtwoord gewijzigd: ${req.session.user.email}`);
+    res.json({ success: true, message: 'Wachtwoord succesvol gewijzigd' });
+});
+
+// Haal huidige profiel gegevens op
+router.get('/profile', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Niet ingelogd' });
+    }
+
+    const user = userStore.getUser(req.session.user.id);
+    if (!user) {
+        return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+    }
+
+    res.json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        authType: user.authType,
+        hasPassword: !!user.passwordHash,
+        createdAt: user.createdAt
+    });
 });
 
 module.exports = router;

@@ -2,11 +2,24 @@ const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
 const userStore = require('../utils/userStore');
+const fs = require('fs');
+const path = require('path');
 
 // Middleware: check of gebruiker ingelogd is
 const requireAuth = (req, res, next) => {
-    if (!req.session.user || !req.session.tokens) {
+    if (!req.session.user) {
         return res.status(401).json({ error: 'Niet ingelogd' });
+    }
+    next();
+};
+
+// Middleware: check of gebruiker Google tokens heeft
+const requireGoogleAuth = (req, res, next) => {
+    if (!req.session.user) {
+        return res.status(401).json({ error: 'Niet ingelogd' });
+    }
+    if (!req.session.tokens) {
+        return res.status(400).json({ error: 'Geen Google verbinding', hint: 'Log in met Google' });
     }
     next();
 };
@@ -41,7 +54,7 @@ const getAuthClient = (req) => {
 };
 
 // Haal agenda's op
-router.get('/calendars', requireAuth, async (req, res) => {
+router.get('/calendars', requireGoogleAuth, async (req, res) => {
     try {
         const auth = getAuthClient(req);
         const calendar = google.calendar({ version: 'v3', auth });
@@ -55,7 +68,7 @@ router.get('/calendars', requireAuth, async (req, res) => {
 });
 
 // Haal events op van komende week
-router.get('/events', requireAuth, async (req, res) => {
+router.get('/events', requireGoogleAuth, async (req, res) => {
     try {
         const auth = getAuthClient(req);
         const calendar = google.calendar({ version: 'v3', auth });
@@ -80,7 +93,7 @@ router.get('/events', requireAuth, async (req, res) => {
 });
 
 // Maak nieuw event aan
-router.post('/events', requireAuth, async (req, res) => {
+router.post('/events', requireGoogleAuth, async (req, res) => {
     try {
         const { summary, description, start, end, location } = req.body;
         
@@ -118,7 +131,7 @@ router.post('/events', requireAuth, async (req, res) => {
 });
 
 // Verwijder event
-router.delete('/events/:eventId', requireAuth, async (req, res) => {
+router.delete('/events/:eventId', requireGoogleAuth, async (req, res) => {
     try {
         const { eventId } = req.params;
         const auth = getAuthClient(req);
@@ -133,6 +146,177 @@ router.delete('/events/:eventId', requireAuth, async (req, res) => {
     } catch (error) {
         console.error('Delete event error:', error);
         res.status(500).json({ error: 'Kon event niet verwijderen' });
+    }
+});
+
+// ==================== SYNC SETTINGS ====================
+
+// Get sync settings
+router.get('/sync-settings', requireAuth, (req, res) => {
+    const settings = userStore.getCalendarSync(req.session.user.id);
+    res.json({ settings: settings || {} });
+});
+
+// Update sync settings
+router.post('/sync-settings', requireAuth, (req, res) => {
+    const { enabled, syncDirection, googleCalendarId } = req.body;
+    
+    const result = userStore.updateCalendarSync(req.session.user.id, {
+        enabled: enabled,
+        syncDirection: syncDirection || 'both',
+        googleCalendarId: googleCalendarId || 'primary'
+    });
+    
+    if (result.error) {
+        return res.status(400).json({ error: result.error });
+    }
+    
+    console.log(`🔄 Calendar sync settings updated for user ${req.session.user.email}`);
+    res.json({ success: true, settings: result.user.calendarSync });
+});
+
+// List user's calendars
+router.get('/list', requireGoogleAuth, async (req, res) => {
+    try {
+        const auth = getAuthClient(req);
+        const calendar = google.calendar({ version: 'v3', auth });
+        
+        const response = await calendar.calendarList.list();
+        const calendars = response.data.items.map(cal => ({
+            id: cal.id,
+            summary: cal.summary,
+            primary: cal.primary || false,
+            accessRole: cal.accessRole
+        }));
+        
+        res.json({ calendars });
+    } catch (error) {
+        console.error('Error listing calendars:', error);
+        res.status(500).json({ error: 'Kon agenda\'s niet ophalen' });
+    }
+});
+
+// ==================== SYNC OPERATIONS ====================
+
+// Perform sync
+router.post('/sync', requireGoogleAuth, async (req, res) => {
+    const syncSettings = userStore.getCalendarSync(req.session.user.id);
+    
+    if (!syncSettings?.enabled) {
+        return res.status(400).json({ error: 'Synchronisatie is niet ingeschakeld' });
+    }
+    
+    const auth = getAuthClient(req);
+    const calendar = google.calendar({ version: 'v3', auth });
+    
+    const calendarId = syncSettings.googleCalendarId || 'primary';
+    const direction = syncSettings.syncDirection || 'both';
+    
+    let synced = 0;
+    
+    try {
+        // Load local appointments
+        const appointmentsFile = path.join(__dirname, '..', 'data', `appointments_${req.session.user.id}.json`);
+        let localAppointments = [];
+        
+        if (fs.existsSync(appointmentsFile)) {
+            localAppointments = JSON.parse(fs.readFileSync(appointmentsFile, 'utf8'));
+        }
+        
+        // Sync TO Google (local → Google)
+        if (direction === 'both' || direction === 'toGoogle') {
+            for (const appointment of localAppointments) {
+                // Skip if already synced
+                if (appointment.googleEventId) continue;
+                
+                try {
+                    const event = {
+                        summary: appointment.title || appointment.serviceName || 'PianoPlanner Afspraak',
+                        description: `Klant: ${appointment.customerName || 'Onbekend'}\n${appointment.notes || ''}`,
+                        start: {
+                            dateTime: appointment.startTime,
+                            timeZone: 'Europe/Amsterdam'
+                        },
+                        end: {
+                            dateTime: appointment.endTime,
+                            timeZone: 'Europe/Amsterdam'
+                        },
+                        location: appointment.address || ''
+                    };
+                    
+                    const response = await calendar.events.insert({
+                        calendarId: calendarId,
+                        resource: event
+                    });
+                    
+                    // Save Google Event ID back to local appointment
+                    appointment.googleEventId = response.data.id;
+                    appointment.lastSynced = new Date().toISOString();
+                    synced++;
+                } catch (err) {
+                    console.error('Error syncing event to Google:', err.message);
+                }
+            }
+            
+            // Save updated appointments with Google IDs
+            fs.writeFileSync(appointmentsFile, JSON.stringify(localAppointments, null, 2));
+        }
+        
+        // Sync FROM Google (Google → local)
+        if (direction === 'both' || direction === 'fromGoogle') {
+            const timeMin = new Date().toISOString();
+            const timeMax = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
+            
+            const response = await calendar.events.list({
+                calendarId: calendarId,
+                timeMin: timeMin,
+                timeMax: timeMax,
+                singleEvents: true,
+                orderBy: 'startTime'
+            });
+            
+            const googleEvents = response.data.items || [];
+            
+            for (const event of googleEvents) {
+                // Skip if already have this event locally
+                const existingLocal = localAppointments.find(a => a.googleEventId === event.id);
+                if (existingLocal) continue;
+                
+                // Skip all-day events
+                if (!event.start.dateTime) continue;
+                
+                // Create local appointment from Google event
+                const newAppointment = {
+                    id: 'google_' + event.id,
+                    googleEventId: event.id,
+                    title: event.summary || 'Google Agenda',
+                    startTime: event.start.dateTime,
+                    endTime: event.end.dateTime,
+                    address: event.location || '',
+                    notes: event.description || '',
+                    source: 'google',
+                    lastSynced: new Date().toISOString()
+                };
+                
+                localAppointments.push(newAppointment);
+                synced++;
+            }
+            
+            // Save updated appointments
+            fs.writeFileSync(appointmentsFile, JSON.stringify(localAppointments, null, 2));
+        }
+        
+        // Update last sync time
+        userStore.updateCalendarSync(req.session.user.id, {
+            lastSync: new Date().toISOString()
+        });
+        
+        console.log(`🔄 Sync completed for ${req.session.user.email}: ${synced} items`);
+        res.json({ success: true, synced: synced });
+        
+    } catch (error) {
+        console.error('Sync error:', error);
+        res.status(500).json({ error: 'Synchronisatie mislukt' });
     }
 });
 

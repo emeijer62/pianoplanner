@@ -346,6 +346,25 @@ body {
     gap: 0.5rem;
 }
 
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.nav-links a:hover {
+    background: var(--light-gray);
+    color: var(--text-primary);
+}
+
+.nav-links a.active {
+    background: var(--accent);
+    color: white;
+}
+
 .nav-user-picture {
     width: 32px;
     height: 32px;

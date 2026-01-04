@@ -1,0 +1,22 @@
+{
+  "piano_1767552804364_oatrn64ta": {
+    "id": "piano_1767552804364_oatrn64ta",
+    "customerId": "71239611-c8c4-4a6a-85e5-08ef40941704",
+    "brand": "Overig",
+    "model": "123456",
+    "serialNumber": "",
+    "year": null,
+    "type": "upright",
+    "finish": "",
+    "location": "",
+    "floor": "",
+    "hasElevator": false,
+    "lastTuningDate": null,
+    "lastTuningPitch": "440",
+    "condition": "good",
+    "notes": "",
+    "serviceInterval": 6,
+    "createdAt": "2026-01-04T18:53:24.364Z",
+    "updatedAt": "2026-01-04T18:53:24.364Z"
+  }
+}
