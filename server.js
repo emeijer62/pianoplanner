@@ -4,6 +4,7 @@ const session = require('express-session');
 const path = require('path');
 const authRoutes = require('./routes/auth');
 const calendarRoutes = require('./routes/calendar');
+const userStore = require('./utils/userStore');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,6 +39,24 @@ app.get('/api/user', (req, res) => {
     } else {
         res.json({ loggedIn: false });
     }
+});
+
+// Admin: bekijk alle geregistreerde gebruikers (alleen emails, geen tokens)
+app.get('/api/admin/users', (req, res) => {
+    // Optioneel: voeg authenticatie toe voor admin
+    const users = userStore.getAllUsers();
+    const safeUsers = Object.values(users).map(user => ({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+    }));
+    res.json({
+        total: safeUsers.length,
+        users: safeUsers
+    });
 });
 
 // Hoofdpagina

@@ -1,6 +1,7 @@
 const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
+const userStore = require('../utils/userStore');
 
 // Middleware: check of gebruiker ingelogd is
 const requireAuth = (req, res, next) => {
@@ -10,21 +11,39 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-// Helper: maak OAuth2 client met user tokens
-const getAuthClient = (tokens) => {
+// Helper: maak OAuth2 client met user tokens (met auto-refresh)
+const getAuthClient = (req) => {
     const oauth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
         process.env.GOOGLE_REDIRECT_URI
     );
-    oauth2Client.setCredentials(tokens);
+    oauth2Client.setCredentials(req.session.tokens);
+    
+    // Automatisch tokens refreshen als ze verlopen zijn
+    oauth2Client.on('tokens', (tokens) => {
+        console.log(`🔄 Tokens refreshed voor gebruiker ${req.session.user.email}`);
+        
+        // Update sessie
+        req.session.tokens = { ...req.session.tokens, ...tokens };
+        
+        // Update opgeslagen gebruiker
+        const user = userStore.getUser(req.session.user.id);
+        if (user) {
+            userStore.saveUser({
+                ...user,
+                tokens: { ...user.tokens, ...tokens }
+            });
+        }
+    });
+    
     return oauth2Client;
 };
 
 // Haal agenda's op
 router.get('/calendars', requireAuth, async (req, res) => {
     try {
-        const auth = getAuthClient(req.session.tokens);
+        const auth = getAuthClient(req);
         const calendar = google.calendar({ version: 'v3', auth });
         
         const response = await calendar.calendarList.list();
@@ -38,7 +57,7 @@ router.get('/calendars', requireAuth, async (req, res) => {
 // Haal events op van komende week
 router.get('/events', requireAuth, async (req, res) => {
     try {
-        const auth = getAuthClient(req.session.tokens);
+        const auth = getAuthClient(req);
         const calendar = google.calendar({ version: 'v3', auth });
         
         const now = new Date();
@@ -69,7 +88,7 @@ router.post('/events', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Titel, start en eind zijn verplicht' });
         }
 
-        const auth = getAuthClient(req.session.tokens);
+        const auth = getAuthClient(req);
         const calendar = google.calendar({ version: 'v3', auth });
         
         const event = {
@@ -102,7 +121,7 @@ router.post('/events', requireAuth, async (req, res) => {
 router.delete('/events/:eventId', requireAuth, async (req, res) => {
     try {
         const { eventId } = req.params;
-        const auth = getAuthClient(req.session.tokens);
+        const auth = getAuthClient(req);
         const calendar = google.calendar({ version: 'v3', auth });
         
         await calendar.events.delete({
