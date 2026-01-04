@@ -8,7 +8,8 @@
     "description": "Standaard stembeurt voor piano of vleugel",
     "price": 95,
     "color": "#4CAF50",
-    "active": true
+    "active": false,
+    "updatedAt": "2026-01-04T20:57:24.568Z"
   },
   {
     "id": "stemmen-concert",

@@ -1,18 +1,1 @@
-{
-  "71239611-c8c4-4a6a-85e5-08ef40941704": {
-    "id": "71239611-c8c4-4a6a-85e5-08ef40941704",
-    "name": "Edward",
-    "email": "",
-    "phone": "",
-    "address": {
-      "street": "Aalsterweg 77",
-      "city": "Eindhoven",
-      "postalCode": "",
-      "country": "Nederland"
-    },
-    "pianos": [],
-    "notes": "",
-    "createdAt": "2026-01-04T15:18:54.254Z",
-    "updatedAt": "2026-01-04T15:18:54.254Z"
-  }
-}
+{}

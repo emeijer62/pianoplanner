@@ -7,97 +7,200 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Dashboard - PianoPlanner</title>
-    <!-- VERSIE: 2026-01-04 v3 - Lichte minimale stijl met lokale agenda -->
-    <link rel="stylesheet" href="styles.css?v=2026010403">
+    <!-- VERSIE: 2026-01-04 v4 - Compacte Cockpit Layout -->
+    <link rel="stylesheet" href="styles.css?v=2026010404">
     <style>
-        /* Calendar Layout Styles - Minimal White */
+        /* Cockpit Layout - Alles op 1 scherm */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .dashboard {
+            height: calc(100vh - 50px);
+            display: flex;
+            flex-direction: column;
+            padding: 0.5rem 0.75rem;
+            gap: 0.5rem;
+            overflow: hidden;
+        }
+        
+        /* Compacte header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+            flex-shrink: 0;
+        }
+        
+        .dashboard-header h1 {
+            font-size: 1rem;
+            margin: 0;
+        }
+        
+        .header-actions .btn {
+            padding: 0.35rem 0.7rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Main cockpit grid */
+        .cockpit-grid {
+            display: grid;
+            grid-template-columns: 180px 1fr 220px;
+            gap: 0.5rem;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        
+        /* Links panel - Stats & Quick actions */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            overflow-y: auto;
+        }
+        
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 0.6rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-card h3 {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            margin: 0 0 0.15rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+        
+        .stat-card .value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.1;
+        }
+        
+        .stat-card .label {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+        }
+        
+        .quick-actions {
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 0.6rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .quick-actions h3 {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin: 0 0 0.4rem 0;
+            font-weight: 600;
+        }
+        
+        .quick-btn {
+            display: block;
+            width: 100%;
+            padding: 0.4rem 0.5rem;
+            margin-bottom: 0.3rem;
+            background: var(--light-gray);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 0.7rem;
+            text-align: left;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        
+        .quick-btn:hover {
+            background: var(--accent-light);
+            border-color: var(--accent);
+        }
+        
+        .quick-btn:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Midden - Kalender */
         .calendar-container {
             background: var(--white);
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
-            flex: 1;
+            min-height: 0;
         }
         
         .calendar-toolbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 1.25rem;
+            padding: 0.35rem 0.6rem;
             background: var(--light-gray);
             border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 0.75rem;
+            flex-shrink: 0;
         }
         
         .calendar-nav {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.2rem;
         }
         
         .calendar-nav button {
             background: var(--white);
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            padding: 0.5rem 0.875rem;
+            border-radius: 3px;
+            padding: 0.25rem 0.5rem;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.7rem;
             transition: var(--transition);
             color: var(--text-primary);
         }
         
         .calendar-nav button:hover {
             background: var(--off-white);
-            border-color: #d1d5db;
         }
         
         .calendar-title {
-            font-size: 1.1rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-primary);
-            min-width: 180px;
-            text-align: center;
-        }
-        
-        .view-selector {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .view-selector label {
-            font-weight: 500;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
         }
         
         .view-selector select {
-            padding: 0.5rem 0.75rem;
+            padding: 0.25rem 0.4rem;
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
             background: var(--white);
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: var(--transition);
         }
         
-        .view-selector select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-light);
-        }
-        
-        /* Day View */
-        .day-view {
+        #calendarContent {
+            flex: 1;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
         }
         
+        /* Day View Compact */
+        .day-view {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
         .day-header {
-            padding: 1rem 1.25rem;
+            padding: 0.35rem;
             background: var(--light-gray);
             border-bottom: 1px solid var(--border-color);
             text-align: center;
@@ -105,55 +208,52 @@
         
         .day-header h3 {
             margin: 0;
-            color: var(--text-primary);
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 0.8rem;
         }
         
         .time-grid {
-            position: relative;
+            flex: 1;
             overflow-y: auto;
-            max-height: calc(100vh - 280px);
         }
         
         .time-slot {
             display: flex;
             border-bottom: 1px solid var(--border-color);
-            min-height: 60px;
+            min-height: 36px;
         }
         
         .time-label {
-            width: 70px;
-            padding: 0.5rem 0.75rem;
-            font-size: 0.75rem;
+            width: 45px;
+            padding: 0.15rem 0.3rem;
+            font-size: 0.6rem;
             color: var(--text-muted);
             text-align: right;
             border-right: 1px solid var(--border-color);
-            flex-shrink: 0;
             background: var(--off-white);
         }
         
         .time-content {
             flex: 1;
-            padding: 4px 8px;
-            position: relative;
+            padding: 1px 3px;
         }
         
-        /* Week View */
+        /* Week View Compact */
         .week-view {
             display: flex;
             flex-direction: column;
+            height: 100%;
         }
         
         .week-header {
             display: grid;
-            grid-template-columns: 70px repeat(7, 1fr);
+            grid-template-columns: 45px repeat(7, 1fr);
             border-bottom: 1px solid var(--border-color);
             background: var(--light-gray);
+            flex-shrink: 0;
         }
         
         .week-header-cell {
-            padding: 0.75rem 0.5rem;
+            padding: 0.3rem 0.15rem;
             text-align: center;
             border-left: 1px solid var(--border-color);
         }
@@ -163,66 +263,57 @@
         }
         
         .week-header-day {
-            font-size: 0.7rem;
+            font-size: 0.55rem;
             color: var(--text-secondary);
             text-transform: uppercase;
-            letter-spacing: 0.03em;
         }
         
         .week-header-date {
-            font-size: 1.15rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin-top: 4px;
         }
         
         .week-header-cell.today .week-header-date {
             background: var(--accent);
             color: white;
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
+            width: 22px;
+            height: 22px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.75rem;
         }
         
         .week-grid {
             display: grid;
-            grid-template-columns: 70px repeat(7, 1fr);
+            grid-template-columns: 45px repeat(7, 1fr);
+            flex: 1;
             overflow-y: auto;
-            max-height: calc(100vh - 320px);
-        }
-        
-        .week-time-col {
-            border-right: 1px solid var(--border-color);
-        }
-        
-        .week-day-col {
-            border-left: 1px solid var(--border-color);
-            position: relative;
         }
         
         .week-time-slot {
-            height: 60px;
+            height: 36px;
             border-bottom: 1px solid var(--border-color);
-            padding: 4px 8px;
-            font-size: 0.75rem;
+            padding: 1px 4px;
+            font-size: 0.6rem;
             color: var(--text-muted);
             text-align: right;
             background: var(--off-white);
         }
         
         .week-day-slot {
-            height: 60px;
+            height: 36px;
             border-bottom: 1px solid var(--border-color);
-            position: relative;
+            border-left: 1px solid var(--border-color);
         }
         
-        /* Month View */
+        /* Month View Compact */
         .month-view {
             display: flex;
             flex-direction: column;
+            height: 100%;
         }
         
         .month-header {
@@ -230,30 +321,31 @@
             grid-template-columns: repeat(7, 1fr);
             background: var(--light-gray);
             border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
         
         .month-header-cell {
-            padding: 0.75rem 0.5rem;
+            padding: 0.3rem;
             text-align: center;
             font-weight: 600;
             color: var(--text-secondary);
-            font-size: 0.75rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
         }
         
         .month-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            grid-auto-rows: minmax(90px, 1fr);
+            flex: 1;
+            overflow-y: auto;
         }
         
         .month-day {
             border: 1px solid var(--border-color);
             border-top: none;
             border-left: none;
-            padding: 0.5rem;
-            min-height: 90px;
+            padding: 0.2rem;
+            min-height: 55px;
             cursor: pointer;
             transition: var(--transition);
         }
@@ -270,18 +362,9 @@
             background: var(--off-white);
         }
         
-        .month-day.other-month .month-day-number {
-            color: var(--text-muted);
-        }
-        
-        .month-day.today {
-            background: var(--accent-light);
-        }
-        
         .month-day-number {
             font-weight: 600;
-            font-size: 0.85rem;
-            margin-bottom: 4px;
+            font-size: 0.7rem;
             color: var(--text-primary);
         }
         
@@ -289,152 +372,212 @@
             background: var(--accent);
             color: white;
             border-radius: 50%;
-            width: 26px;
-            height: 26px;
+            width: 18px;
+            height: 18px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.65rem;
         }
         
         .month-events {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 1px;
+            margin-top: 1px;
         }
         
         .month-event {
-            font-size: 0.7rem;
-            padding: 2px 6px;
+            font-size: 0.55rem;
+            padding: 1px 3px;
             background: var(--accent);
             color: white;
-            border-radius: 3px;
+            border-radius: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            cursor: pointer;
-            transition: var(--transition);
         }
         
-        .month-event:hover {
-            opacity: 0.85;
-        }
-        
-        .month-more {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            padding: 2px 6px;
-        }
-        
-        /* Event items in day/week view */
+        /* Calendar events compact */
         .calendar-event {
             background: var(--accent);
             color: white;
-            padding: 4px 8px;
-            border-radius: var(--radius-sm);
-            font-size: 0.75rem;
-            margin-bottom: 2px;
-            cursor: pointer;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 0.6rem;
+            margin-bottom: 1px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            transition: var(--transition);
-        }
-        
-        .calendar-event:hover {
-            opacity: 0.85;
         }
         
         .calendar-event-time {
-            font-size: 0.65rem;
+            font-size: 0.55rem;
             opacity: 0.9;
         }
         
-        /* Dashboard layout */
-        .dashboard-content {
+        /* Rechts panel - Vandaag & Upcoming */
+        .right-panel {
             display: flex;
-            gap: 1.25rem;
-            padding: 0;
-            min-height: calc(100vh - 160px);
+            flex-direction: column;
+            gap: 0.4rem;
+            overflow: hidden;
         }
         
-        .calendars-section {
-            width: 280px;
-            flex-shrink: 0;
-        }
-        
-        .sidebar-card {
+        .today-card, .upcoming-card {
             background: var(--white);
-            border-radius: var(--radius-lg);
-            padding: 1.25rem;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         
-        .sidebar-card h2 {
-            margin: 0 0 1rem 0;
-            font-size: 1rem;
+        .today-card {
+            flex: 0 0 auto;
+            max-height: 35%;
+        }
+        
+        .upcoming-card {
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .panel-header {
+            padding: 0.35rem 0.5rem;
+            background: var(--light-gray);
+            border-bottom: 1px solid var(--border-color);
             font-weight: 600;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.35rem;
+        }
+        
+        .event-item {
+            padding: 0.35rem;
+            border-radius: 3px;
+            margin-bottom: 0.3rem;
+            background: var(--light-gray);
+            border-left: 3px solid var(--accent);
+        }
+        
+        .event-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .event-item-time {
+            font-size: 0.6rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        .event-item-title {
+            font-size: 0.7rem;
+            font-weight: 500;
             color: var(--text-primary);
+            margin-top: 1px;
         }
         
-        /* Responsive */
-        @media (max-width: 900px) {
-            .dashboard-content {
-                flex-direction: column-reverse;
-            }
-            
-            .calendars-section {
-                width: 100%;
-            }
-            
-            .week-view {
-                overflow-x: auto;
-            }
-            
-            .week-header,
-            .week-grid {
-                min-width: 700px;
-            }
+        .event-item-location {
+            font-size: 0.6rem;
+            color: var(--text-muted);
         }
         
-        @media (max-width: 600px) {
-            .calendar-toolbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .calendar-nav {
-                justify-content: space-between;
-            }
-            
-            .calendar-title {
-                order: -1;
-                text-align: center;
-            }
-            
-            .view-selector {
-                justify-content: center;
-            }
+        .no-events-small {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            padding: 0.6rem;
+            font-style: italic;
         }
         
-        /* Loading state */
+        /* Compacte navbar */
+        .navbar {
+            padding: 0.4rem 0.75rem;
+        }
+        
+        .nav-brand {
+            font-size: 0.9rem;
+        }
+        
+        .nav-links a {
+            padding: 0.3rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .nav-user {
+            font-size: 0.75rem;
+        }
+        
+        .nav-user .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+        }
+        
+        .nav-user-picture {
+            width: 24px !important;
+            height: 24px !important;
+        }
+        
+        /* Loading & Empty states */
         .calendar-loading {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 3rem;
+            padding: 1.5rem;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.75rem;
         }
         
-        /* Empty state */
-        .no-events {
-            padding: 1.25rem;
-            text-align: center;
-            color: var(--text-muted);
-            font-style: italic;
-            font-size: 0.9rem;
+        /* Modal compact */
+        .modal-content {
+            max-width: 380px;
+        }
+        
+        .modal-header h2 {
+            font-size: 0.95rem;
+        }
+        
+        .form-group label {
+            font-size: 0.75rem;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 0.4rem;
+            font-size: 0.8rem;
+        }
+        
+        .form-group textarea {
+            min-height: 50px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1000px) {
+            .cockpit-grid {
+                grid-template-columns: 1fr 180px;
+            }
+            .left-panel {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 700px) {
+            .cockpit-grid {
+                grid-template-columns: 1fr;
+            }
+            .right-panel {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -445,41 +588,68 @@
             <span>PianoPlanner</span>
         </div>
         <div class="nav-links">
-            <a href="/dashboard.html" class="active">📅 Dashboard</a>
+            <a href="/dashboard.html" class="active">📅 Agenda</a>
             <a href="/customers.html">👥 Klanten</a>
             <a href="/pianos.html">🎹 Piano's</a>
-            <a href="/settings.html">⚙️ Instellingen</a>
+            <a href="/settings.html">⚙️</a>
         </div>
         <div class="nav-user">
-            <a href="/admin.html" id="admin-link" class="btn btn-small btn-secondary" style="display: none;">👤 Admin</a>
+            <a href="/admin-dashboard.html" id="admin-link" class="btn btn-small btn-secondary" style="display: none;">Admin</a>
             <img id="nav-user-picture" src="" alt="" class="nav-user-picture">
             <span id="nav-user-name"></span>
-            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+            <a href="/auth/logout" class="btn btn-small">Uit</a>
         </div>
     </nav>
 
     <main class="dashboard">
         <div class="dashboard-header">
-            <h1>📅 Jouw Agenda</h1>
+            <h1>📅 Agenda</h1>
             <div class="header-actions">
-                <a href="/booking.html" class="btn btn-primary">+ Nieuwe Afspraak</a>
+                <button id="add-event-btn" class="btn btn-primary">+ Afspraak</button>
             </div>
         </div>
 
-        <div class="dashboard-content">
-            <!-- Agenda kalender -->
+        <div class="cockpit-grid">
+            <!-- Links: Stats & Quick Actions -->
+            <div class="left-panel">
+                <div class="stat-card">
+                    <h3>Vandaag</h3>
+                    <div class="value" id="stat-today">0</div>
+                    <div class="label">afspraken</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Deze Week</h3>
+                    <div class="value" id="stat-week">0</div>
+                    <div class="label">afspraken</div>
+                </div>
+                
+                <div class="stat-card">
+                    <h3>Piano's</h3>
+                    <div class="value" id="stat-pianos">-</div>
+                    <div class="label">in beheer</div>
+                </div>
+                
+                <div class="quick-actions">
+                    <h3>Snelkoppelingen</h3>
+                    <a href="/customers.html" class="quick-btn">👥 Klanten</a>
+                    <a href="/pianos.html" class="quick-btn">🎹 Piano's</a>
+                    <a href="/billing.html" class="quick-btn">💳 Abonnement</a>
+                </div>
+            </div>
+
+            <!-- Midden: Kalender -->
             <div class="calendar-container">
                 <div class="calendar-toolbar">
                     <div class="calendar-nav">
-                        <button onclick="navigateCalendar(-1)">◀ Vorige</button>
+                        <button onclick="navigateCalendar(-1)">◀</button>
                         <button onclick="goToToday()">Vandaag</button>
-                        <button onclick="navigateCalendar(1)">Volgende ▶</button>
+                        <button onclick="navigateCalendar(1)">▶</button>
                     </div>
                     
                     <div class="calendar-title" id="calendarTitle">Januari 2026</div>
                     
                     <div class="view-selector">
-                        <label for="viewSelect">Weergave:</label>
                         <select id="viewSelect" onchange="changeView(this.value)">
                             <option value="day">Dag</option>
                             <option value="week" selected>Week</option>
@@ -493,17 +663,22 @@
                 </div>
             </div>
 
-            <!-- Sidebar -->
-            <aside class="calendars-section">
-                <div class="sidebar-card">
-                    <h2>📋 Je Agenda's</h2>
-                    <div id="calendars-list" class="calendars-list">
-                        <div class="loading">Laden...</div>
+            <!-- Rechts: Vandaag & Upcoming -->
+            <div class="right-panel">
+                <div class="today-card">
+                    <div class="panel-header">📍 Vandaag</div>
+                    <div class="panel-content" id="today-events">
+                        <div class="no-events-small">Geen afspraken</div>
                     </div>
                 </div>
                 
-                <button id="add-event-btn" class="btn btn-primary" style="width: 100%;">+ Snel Event Toevoegen</button>
-            </aside>
+                <div class="upcoming-card">
+                    <div class="panel-header">📆 Binnenkort</div>
+                    <div class="panel-content" id="upcoming-events">
+                        <div class="no-events-small">Geen komende afspraken</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -511,21 +686,17 @@
     <div id="event-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Nieuw Event</h2>
+                <h2>Nieuwe Afspraak</h2>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <form id="event-form">
                 <div class="form-group">
                     <label for="event-title">Titel *</label>
-                    <input type="text" id="event-title" required placeholder="bijv. Stemmen bij fam. De Vries">
-                </div>
-                <div class="form-group">
-                    <label for="event-description">Beschrijving</label>
-                    <textarea id="event-description" placeholder="Optionele details..."></textarea>
+                    <input type="text" id="event-title" required placeholder="bijv. Stemmen Steinway">
                 </div>
                 <div class="form-group">
                     <label for="event-location">Locatie</label>
-                    <input type="text" id="event-location" placeholder="bijv. Muziekschool Amsterdam">
+                    <input type="text" id="event-location" placeholder="Adres">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -537,6 +708,10 @@
                         <input type="datetime-local" id="event-end" required>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="event-description">Notities</label>
+                    <textarea id="event-description" rows="2" placeholder="Extra info..."></textarea>
+                </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
                     <button type="submit" class="btn btn-primary">Opslaan</button>
@@ -545,6 +720,121 @@
         </div>
     </div>
 
-    <script src="dashboard.js?v=20260104"></script>
+    <script src="dashboard.js?v=2026010404"></script>
+    <script>
+        // Update cockpit stats
+        function updateCockpitStats() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            const weekStart = getWeekStart(today);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+            
+            // Tel afspraken vandaag
+            const todayCount = allEvents.filter(e => {
+                const start = new Date(e.start?.dateTime || e.start?.date);
+                return start >= today && start < tomorrow;
+            }).length;
+            document.getElementById('stat-today').textContent = todayCount;
+            
+            // Tel afspraken deze week
+            const weekCount = allEvents.filter(e => {
+                const start = new Date(e.start?.dateTime || e.start?.date);
+                return start >= weekStart && start < weekEnd;
+            }).length;
+            document.getElementById('stat-week').textContent = weekCount;
+            
+            updateTodayPanel();
+            updateUpcomingPanel();
+        }
+        
+        function updateTodayPanel() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            const todayEvents = allEvents.filter(e => {
+                const start = new Date(e.start?.dateTime || e.start?.date);
+                return start >= today && start < tomorrow;
+            }).sort((a, b) => new Date(a.start?.dateTime) - new Date(b.start?.dateTime));
+            
+            const container = document.getElementById('today-events');
+            if (todayEvents.length === 0) {
+                container.innerHTML = '<div class="no-events-small">Geen afspraken</div>';
+                return;
+            }
+            
+            container.innerHTML = todayEvents.map(e => {
+                const start = new Date(e.start?.dateTime);
+                const time = start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                return `
+                    <div class="event-item">
+                        <div class="event-item-time">${time}</div>
+                        <div class="event-item-title">${escapeHtml(e.summary || 'Geen titel')}</div>
+                        ${e.location ? `<div class="event-item-location">📍 ${escapeHtml(e.location)}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateUpcomingPanel() {
+            const now = new Date();
+            const nextWeek = new Date(now);
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            
+            const tomorrow = new Date(now);
+            tomorrow.setHours(0, 0, 0, 0);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            const upcomingEvents = allEvents.filter(e => {
+                const start = new Date(e.start?.dateTime || e.start?.date);
+                return start >= tomorrow && start < nextWeek;
+            }).sort((a, b) => new Date(a.start?.dateTime) - new Date(b.start?.dateTime))
+            .slice(0, 6);
+            
+            const container = document.getElementById('upcoming-events');
+            if (upcomingEvents.length === 0) {
+                container.innerHTML = '<div class="no-events-small">Geen komende afspraken</div>';
+                return;
+            }
+            
+            container.innerHTML = upcomingEvents.map(e => {
+                const start = new Date(e.start?.dateTime);
+                const dateStr = start.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric' });
+                const time = start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                return `
+                    <div class="event-item">
+                        <div class="event-item-time">${dateStr} ${time}</div>
+                        <div class="event-item-title">${escapeHtml(e.summary || 'Geen titel')}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        async function loadPianoCount() {
+            try {
+                const response = await fetch('/api/pianos');
+                const data = await response.json();
+                document.getElementById('stat-pianos').textContent = data.pianos?.length || 0;
+            } catch (e) {
+                document.getElementById('stat-pianos').textContent = '-';
+            }
+        }
+        
+        // Hook into calendar render
+        const originalRenderCalendar = window.renderCalendar;
+        window.renderCalendar = function() {
+            if (originalRenderCalendar) originalRenderCalendar();
+            updateCockpitStats();
+        };
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPianoCount();
+        });
+    </script>
 </body>
 </html>
