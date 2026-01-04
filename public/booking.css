@@ -1,57 +1,64 @@
-/* Booking Page Styles */
+/* Booking Page Styles - Minimal White Design */
 
 .booking-page {
-    padding: 2rem;
+    padding: 1.5rem;
     max-width: 900px;
     margin: 0 auto;
 }
 
 .booking-page h1 {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .booking-wizard {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .wizard-step {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
+    background: var(--white);
+    border-radius: var(--radius-lg);
     padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .wizard-step h2 {
-    margin-bottom: 1.5rem;
-    font-size: 1.25rem;
-    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 1.25rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 /* Services Grid */
 .services-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1rem;
 }
 
 .service-card {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
+    background: var(--light-gray);
+    border-radius: var(--radius);
     padding: 1.25rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: var(--transition);
     border: 2px solid transparent;
 }
 
 .service-card:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--off-white);
     transform: translateY(-2px);
+    box-shadow: var(--shadow);
 }
 
 .service-card.selected {
-    border-color: #4CAF50;
-    background: rgba(76, 175, 80, 0.1);
+    border-color: var(--accent);
+    background: var(--accent-light);
 }
 
 .service-card-header {
@@ -62,27 +69,31 @@
 }
 
 .service-color {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .service-card h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .service-card-meta {
     display: flex;
     gap: 1rem;
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
 }
 
 .service-card-description {
     margin-top: 0.75rem;
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
 }
 
 /* Customer Search */
@@ -93,12 +104,23 @@
 
 .customer-search-box input {
     width: 100%;
-    padding: 1rem;
-    font-size: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    padding: 0.875rem 1rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--white);
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+.customer-search-box input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.customer-search-box input::placeholder {
+    color: var(--text-muted);
 }
 
 .search-results {
@@ -106,13 +128,15 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: #1a1a2e;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
     max-height: 300px;
     overflow-y: auto;
     z-index: 100;
     display: none;
+    box-shadow: var(--shadow-md);
+    margin-top: 4px;
 }
 
 .search-results.active {
@@ -120,13 +144,14 @@
 }
 
 .search-result-item {
-    padding: 1rem;
+    padding: 0.875rem 1rem;
     cursor: pointer;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
 }
 
 .search-result-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--light-gray);
 }
 
 .search-result-item:last-child {
@@ -135,11 +160,12 @@
 
 .search-result-name {
     font-weight: 600;
+    color: var(--text-primary);
 }
 
 .search-result-details {
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    color: var(--text-muted);
     margin-top: 0.25rem;
 }
 
@@ -147,8 +173,9 @@
 .divider {
     text-align: center;
     margin: 1.5rem 0;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--text-muted);
     position: relative;
+    font-size: 0.85rem;
 }
 
 .divider::before,
@@ -158,7 +185,7 @@
     top: 50%;
     width: 40%;
     height: 1px;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--border-color);
 }
 
 .divider::before {
@@ -173,7 +200,7 @@
 .customer-form {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .form-row {
@@ -194,30 +221,39 @@
 }
 
 .info-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--light-gray);
     padding: 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius);
     flex: 1;
     min-width: 200px;
 }
 
 .info-card strong {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary);
     margin-right: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.info-card span {
+    color: var(--text-primary);
 }
 
 .badge {
-    display: inline-block;
-    background: #4CAF50;
-    padding: 2px 8px;
-    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    background: var(--accent);
+    color: var(--white);
+    padding: 2px 10px;
+    border-radius: 999px;
     font-size: 0.75rem;
+    font-weight: 500;
     margin-left: 0.5rem;
 }
 
 .text-muted {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-muted);
     margin-left: 0.5rem;
+    font-size: 0.85rem;
 }
 
 /* Date Picker */
@@ -228,40 +264,54 @@
     flex-wrap: wrap;
 }
 
+.date-picker-section label {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
 .date-picker-section input[type="date"] {
-    padding: 0.75rem;
-    font-size: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
+    padding: 0.65rem 0.875rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+.date-picker-section input[type="date"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
 }
 
 /* Slot Result */
 .slot-result {
     margin-top: 1.5rem;
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
+    padding: 1.25rem;
+    background: var(--light-gray);
+    border-radius: var(--radius);
 }
 
 .slot-found {
-    border-left: 4px solid #4CAF50;
+    border-left: 3px solid var(--success);
 }
 
 .slot-not-found {
-    border-left: 4px solid #F44336;
+    border-left: 3px solid var(--danger);
 }
 
 .slot-time {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1.35rem;
+    font-weight: 700;
     margin-bottom: 0.5rem;
+    color: var(--text-primary);
 }
 
 .slot-details {
     display: flex;
-    gap: 2rem;
+    gap: 1.5rem;
     margin-top: 1rem;
     flex-wrap: wrap;
 }
@@ -270,21 +320,22 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
 }
 
 /* Confirmation */
 .confirmation-card {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 1.5rem;
+    background: var(--light-gray);
+    border-radius: var(--radius);
+    padding: 1.25rem;
 }
 
 .confirm-row {
     display: flex;
     padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
 }
 
 .confirm-row:last-of-type {
@@ -292,15 +343,21 @@
 }
 
 .confirm-row.highlight {
-    background: rgba(76, 175, 80, 0.1);
-    margin: 0.5rem -1.5rem;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
+    background: var(--accent-light);
+    margin: 0.5rem -1.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-sm);
 }
 
 .confirm-label {
-    width: 150px;
-    color: rgba(255, 255, 255, 0.6);
+    width: 140px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.confirm-value {
+    color: var(--text-primary);
+    font-weight: 500;
 }
 
 .confirm-actions {
@@ -311,28 +368,31 @@
 }
 
 .btn-large {
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
 }
 
 /* Success */
 .success-message {
     text-align: center;
-    padding: 3rem;
+    padding: 2.5rem 1.5rem;
 }
 
 .success-icon {
-    font-size: 4rem;
+    font-size: 3.5rem;
     margin-bottom: 1rem;
 }
 
 .success-message h2 {
     margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 600;
 }
 
 .success-message p {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary);
     margin-bottom: 2rem;
+    font-size: 0.95rem;
 }
 
 .success-actions {
@@ -342,6 +402,20 @@
 }
 
 /* Responsive */
+@media (max-width: 768px) {
+    .booking-page {
+        padding: 1rem;
+    }
+    
+    .wizard-step {
+        padding: 1.25rem;
+    }
+    
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 600px) {
     .form-row {
         flex-direction: column;
@@ -354,5 +428,14 @@
     
     .confirm-actions {
         flex-direction: column;
+    }
+    
+    .info-card {
+        min-width: 100%;
+    }
+    
+    .slot-details {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 }

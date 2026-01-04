@@ -6,122 +6,118 @@
     <title>Instellingen - PianoPlanner</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* Settings Page - Minimal White Design */
         .settings-container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 1.5rem;
         }
         
         .settings-section {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
         }
         
         .settings-section h2 {
             margin-top: 0;
-            color: #333;
-            border-bottom: 2px solid #4CAF50;
-            padding-bottom: 10px;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-        
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .form-group label {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.75rem;
+            font-size: 1.15rem;
             font-weight: 600;
-            margin-bottom: 6px;
-            color: #555;
         }
         
-        .form-group input,
-        .form-group select {
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
+        .settings-section h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
         }
         
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: #4CAF50;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        .settings-section p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
         }
         
         /* Availability Grid */
         .availability-grid {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 20px;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
         }
         
         .availability-row {
             display: grid;
-            grid-template-columns: 120px auto 100px 20px 100px;
-            gap: 12px;
+            grid-template-columns: 100px auto 90px 20px 90px;
+            gap: 0.75rem;
             align-items: center;
-            padding: 12px 16px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            transition: background 0.2s;
+            padding: 0.875rem 1rem;
+            background: var(--light-gray);
+            border-radius: var(--radius);
+            transition: var(--transition);
         }
         
         .availability-row.disabled {
-            background: #f0f0f0;
-            opacity: 0.7;
+            background: var(--off-white);
+            opacity: 0.6;
         }
         
         .availability-row .day-name {
             font-weight: 600;
-            color: #333;
+            color: var(--text-primary);
+            font-size: 0.9rem;
         }
         
         .availability-row .toggle-container {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.5rem;
         }
         
         .availability-row .time-range {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.5rem;
         }
         
         .availability-row .time-range span {
-            color: #888;
+            color: var(--text-muted);
+            font-size: 0.85rem;
         }
         
         .availability-row input[type="time"] {
-            padding: 6px 8px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 13px;
+            padding: 0.4rem 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            background: var(--white);
+            color: var(--text-primary);
+        }
+        
+        .availability-row input[type="time"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-light);
         }
         
         .availability-row.disabled input[type="time"] {
-            background: #e0e0e0;
-            color: #999;
+            background: var(--border-color);
+            color: var(--text-muted);
         }
         
         /* Toggle Switch */
         .toggle-switch {
             position: relative;
-            width: 50px;
-            height: 26px;
+            width: 44px;
+            height: 24px;
         }
         
         .toggle-switch input {
@@ -137,107 +133,65 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
-            transition: 0.3s;
-            border-radius: 26px;
+            background-color: var(--border-color);
+            transition: var(--transition);
+            border-radius: 24px;
         }
         
         .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
+            height: 18px;
+            width: 18px;
             left: 3px;
             bottom: 3px;
             background-color: white;
-            transition: 0.3s;
+            transition: var(--transition);
             border-radius: 50%;
+            box-shadow: var(--shadow-sm);
         }
         
         .toggle-switch input:checked + .toggle-slider {
-            background-color: #4CAF50;
+            background-color: var(--accent);
         }
         
         .toggle-switch input:checked + .toggle-slider:before {
-            transform: translateX(24px);
+            transform: translateX(20px);
         }
         
         .toggle-label {
-            font-size: 13px;
-            color: #666;
-        }
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary {
-            background: #4CAF50;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #45a049;
-        }
-        
-        .btn-secondary {
-            background: #f5f5f5;
-            color: #333;
-            border: 1px solid #ddd;
-        }
-        
-        .btn-secondary:hover {
-            background: #e5e5e5;
-        }
-        
-        .btn-danger {
-            background: #f44336;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #d32f2f;
-        }
-        
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 12px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
         
         /* Services list */
         .services-list {
-            margin-top: 20px;
+            margin-top: 1.25rem;
         }
         
         .service-item {
             display: grid;
             grid-template-columns: 1fr auto;
-            gap: 16px;
-            padding: 16px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 12px;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--light-gray);
+            border-radius: var(--radius);
+            margin-bottom: 0.75rem;
             align-items: center;
         }
         
         .service-info h4 {
-            margin: 0 0 8px 0;
-            color: #333;
+            margin: 0 0 0.5rem 0;
+            color: var(--text-primary);
+            font-size: 0.95rem;
         }
         
         .service-meta {
             display: flex;
-            gap: 16px;
+            gap: 1rem;
             flex-wrap: wrap;
-            font-size: 13px;
-            color: #666;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
         
         .service-meta span {
@@ -247,18 +201,18 @@
         }
         
         .service-color {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             display: inline-block;
         }
         
         .service-actions {
             display: flex;
-            gap: 8px;
+            gap: 0.5rem;
         }
         
-        /* Modal */
+        /* Modal Override */
         .modal {
             display: none;
             position: fixed;
@@ -266,10 +220,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            padding: 1rem;
         }
         
         .modal.active {
@@ -277,71 +233,74 @@
         }
         
         .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
             max-width: 500px;
-            width: 90%;
+            width: 100%;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: var(--shadow-lg);
         }
         
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .modal-header h3 {
             margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
         }
         
         .modal-close {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 1.5rem;
             cursor: pointer;
-            color: #666;
+            color: var(--text-muted);
+            padding: 0;
+            line-height: 1;
+            transition: var(--transition);
+        }
+        
+        .modal-close:hover {
+            color: var(--text-primary);
         }
         
         .modal-footer {
             display: flex;
-            gap: 12px;
+            gap: 0.75rem;
             justify-content: flex-end;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        
-        /* Time inputs */
-        .time-inputs {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
-        
-        .time-inputs span {
-            color: #666;
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
         }
         
         /* Alert messages */
         .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
+            padding: 0.875rem 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
         }
         
         .alert-success {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border: 1px solid #a5d6a7;
+            background: var(--success-light);
+            color: #047857;
+            border: 1px solid #6ee7b7;
         }
         
         .alert-error {
-            background: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
+            background: var(--danger-light);
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
         }
         
         /* Header */
@@ -349,23 +308,65 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
         
         .page-header h1 {
             margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
         }
         
         .back-link {
-            color: #4CAF50;
+            color: var(--accent);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
         }
         
         .back-link:hover {
-            text-decoration: underline;
+            color: var(--accent-hover);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .settings-container {
+                padding: 1rem;
+            }
+            
+            .settings-section {
+                padding: 1.25rem;
+            }
+            
+            .availability-row {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+                text-align: center;
+            }
+            
+            .availability-row .toggle-container {
+                justify-content: center;
+            }
+            
+            .availability-row .time-range {
+                justify-content: center;
+            }
+            
+            .service-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .service-actions {
+                justify-content: center;
+            }
         }
     </style>
 </head>
