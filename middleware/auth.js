@@ -6,7 +6,7 @@
 const isAdmin = (email) => {
     const adminEmails = process.env.ADMIN_EMAILS || '';
     const admins = adminEmails.split(',').map(e => e.trim().toLowerCase());
-    return admins.includes(email.toLowerCase());
+    return admins.includes(email?.toLowerCase());
 };
 
 // Middleware: vereist admin rechten
@@ -15,11 +15,12 @@ const requireAdmin = (req, res, next) => {
         return res.status(401).json({ error: 'Niet ingelogd' });
     }
     
-    if (!isAdmin(req.session.user.email)) {
-        return res.status(403).json({ error: 'Geen admin rechten' });
+    // Check voor admin sessie (via admin login) OF via email lijst
+    if (req.session.isAdmin || req.session.user.isAdminUser || isAdmin(req.session.user.email)) {
+        return next();
     }
     
-    next();
+    return res.status(403).json({ error: 'Geen admin rechten' });
 };
 
 // Middleware: vereist ingelogd

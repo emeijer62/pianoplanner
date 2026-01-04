@@ -51,11 +51,19 @@ app.use('/api/stripe', stripeRoutes);
 // API route om ingelogde gebruiker te checken
 app.get('/api/user', (req, res) => {
     if (req.session.user) {
-        const subscriptionStatus = userStore.getSubscriptionStatus(req.session.user.id);
+        // Check admin status via sessie of email
+        const isAdminUser = req.session.isAdmin || req.session.user.isAdminUser || isAdmin(req.session.user.email);
+        
+        // Subscription alleen voor normale gebruikers
+        let subscriptionStatus = null;
+        if (!req.session.user.isAdminUser) {
+            subscriptionStatus = userStore.getSubscriptionStatus(req.session.user.id);
+        }
+        
         res.json({ 
             loggedIn: true, 
             user: req.session.user,
-            isAdmin: isAdmin(req.session.user.email),
+            isAdmin: isAdminUser,
             subscription: subscriptionStatus
         });
     } else {
@@ -63,7 +71,7 @@ app.get('/api/user', (req, res) => {
     }
 });
 
-// Admin: bekijk alle geregistreerde gebruikers (alleen emails, geen tokens)
+// Admin: bekijk alle geregistreerde gebruikers (inclusief subscription status)
 app.get('/api/admin/users', requireAdmin, (req, res) => {
     const users = userStore.getAllUsers();
     const safeUsers = Object.values(users).map(user => ({
@@ -72,7 +80,8 @@ app.get('/api/admin/users', requireAdmin, (req, res) => {
         name: user.name,
         picture: user.picture,
         createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        updatedAt: user.updatedAt,
+        subscription: userStore.getSubscriptionStatus(user.id)
     }));
     res.json({
         total: safeUsers.length,
@@ -90,6 +99,32 @@ app.delete('/api/admin/users/:userId', requireAdmin, (req, res) => {
     } else {
         res.status(404).json({ error: 'Gebruiker niet gevonden' });
     }
+});
+
+// Admin: verleng proefperiode
+app.post('/api/admin/users/:userId/extend-trial', requireAdmin, (req, res) => {
+    const { userId } = req.params;
+    const user = userStore.getUser(userId);
+    
+    if (!user) {
+        return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+    }
+    
+    // Verleng trial met 14 dagen
+    const currentEnd = user.subscription?.trialEndsAt 
+        ? new Date(user.subscription.trialEndsAt) 
+        : new Date();
+    
+    const newEndDate = new Date(currentEnd);
+    newEndDate.setDate(newEndDate.getDate() + 14);
+    
+    userStore.updateSubscription(userId, {
+        status: 'trialing',
+        trialEndsAt: newEndDate
+    });
+    
+    console.log(`📅 Trial verlengd voor ${user.email} tot ${newEndDate.toLocaleDateString('nl-NL')}`);
+    res.json({ success: true, message: 'Proefperiode verlengd met 14 dagen' });
 });
 
 // Hoofdpagina

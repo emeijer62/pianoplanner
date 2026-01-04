@@ -1,5 +1,6 @@
 const express = require('express');
 const { google } = require('googleapis');
+const crypto = require('crypto');
 const router = express.Router();
 const userStore = require('../utils/userStore');
 
@@ -9,6 +10,15 @@ const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_SECRET,
     process.env.GOOGLE_REDIRECT_URI
 );
+
+// Admin credentials (uit environment of defaults)
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'PianoAdmin2026!';
+
+// Hash password voor vergelijking
+const hashPassword = (password) => {
+    return crypto.createHash('sha256').update(password).digest('hex');
+};
 
 // Scopes voor Google Calendar
 const SCOPES = [
@@ -90,6 +100,41 @@ router.get('/logout', (req, res) => {
         }
         res.redirect('/');
     });
+});
+
+// ==================== ADMIN LOGIN ====================
+
+// Admin login met username/password
+router.post('/admin/login', (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Gebruikersnaam en wachtwoord zijn verplicht' });
+    }
+
+    // Check credentials
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        // Zet admin sessie
+        req.session.user = {
+            id: 'admin',
+            email: 'admin@pianoplanner.com',
+            name: 'Administrator',
+            isAdminUser: true
+        };
+        req.session.isAdmin = true;
+
+        console.log(`🔐 Admin ingelogd: ${username}`);
+        res.json({ success: true, message: 'Ingelogd als admin' });
+    } else {
+        console.log(`⚠️ Mislukte admin login poging: ${username}`);
+        res.status(401).json({ error: 'Ongeldige gebruikersnaam of wachtwoord' });
+    }
+});
+
+// Check admin status
+router.get('/admin/status', (req, res) => {
+    const isAdmin = req.session.isAdmin || false;
+    res.json({ isAdmin });
 });
 
 module.exports = router;
