@@ -101,6 +101,88 @@ app.delete('/api/admin/users/:userId', requireAdmin, (req, res) => {
     }
 });
 
+// Admin: maak nieuwe gebruiker aan (zonder Google OAuth)
+app.post('/api/admin/users', requireAdmin, (req, res) => {
+    const { email, name } = req.body;
+    
+    if (!email) {
+        return res.status(400).json({ error: 'Email is verplicht' });
+    }
+    
+    // Check of email al bestaat
+    const existingUser = userStore.getUserByEmail(email);
+    if (existingUser) {
+        return res.status(400).json({ error: 'Er bestaat al een gebruiker met dit emailadres' });
+    }
+    
+    // Genereer een unieke ID
+    const userId = 'manual_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    // Maak gebruiker aan
+    const user = userStore.saveUser({
+        id: userId,
+        email: email,
+        name: name || email.split('@')[0],
+        manuallyCreated: true
+    });
+    
+    // Start trial
+    userStore.startTrial(userId);
+    
+    console.log(`👤 Nieuwe gebruiker aangemaakt door admin: ${email}`);
+    res.json({ success: true, message: 'Gebruiker aangemaakt', user: { id: user.id, email: user.email, name: user.name } });
+});
+
+// Admin: update gebruiker
+app.put('/api/admin/users/:userId', requireAdmin, (req, res) => {
+    const { userId } = req.params;
+    const { email, name } = req.body;
+    
+    const user = userStore.getUser(userId);
+    if (!user) {
+        return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+    }
+    
+    // Check of nieuwe email al bestaat bij andere gebruiker
+    if (email && email !== user.email) {
+        const existingUser = userStore.getUserByEmail(email);
+        if (existingUser && existingUser.id !== userId) {
+            return res.status(400).json({ error: 'Er bestaat al een gebruiker met dit emailadres' });
+        }
+    }
+    
+    // Update gebruiker
+    const updatedUser = userStore.saveUser({
+        ...user,
+        email: email || user.email,
+        name: name || user.name
+    });
+    
+    console.log(`✏️ Gebruiker bijgewerkt: ${updatedUser.email}`);
+    res.json({ success: true, message: 'Gebruiker bijgewerkt', user: { id: updatedUser.id, email: updatedUser.email, name: updatedUser.name } });
+});
+
+// Admin: haal enkele gebruiker op
+app.get('/api/admin/users/:userId', requireAdmin, (req, res) => {
+    const { userId } = req.params;
+    const user = userStore.getUser(userId);
+    
+    if (!user) {
+        return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+    }
+    
+    res.json({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        manuallyCreated: user.manuallyCreated || false,
+        subscription: userStore.getSubscriptionStatus(user.id)
+    });
+});
+
 // Admin: verleng proefperiode
 app.post('/api/admin/users/:userId/extend-trial', requireAdmin, (req, res) => {
     const { userId } = req.params;

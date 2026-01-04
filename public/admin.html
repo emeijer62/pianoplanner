@@ -256,6 +256,82 @@
             margin-bottom: 12px;
         }
 
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .modal h2 {
+            margin: 0 0 24px 0;
+            font-size: 1.25rem;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #1a1a1a;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+        }
+
+        .action-btn.edit {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .action-btn.edit:hover {
+            background: #ffe0b2;
+        }
+
         @media (max-width: 768px) {
             .users-table {
                 display: block;
@@ -282,6 +358,28 @@
     </nav>
 
     <main>
+        <!-- User Modal -->
+        <div id="user-modal" class="modal-overlay">
+            <div class="modal">
+                <h2 id="modal-title">Nieuwe gebruiker</h2>
+                <form id="user-form">
+                    <input type="hidden" id="user-id">
+                    <div class="form-group">
+                        <label for="user-email">Email *</label>
+                        <input type="email" id="user-email" required placeholder="email@voorbeeld.nl">
+                    </div>
+                    <div class="form-group">
+                        <label for="user-name">Naam</label>
+                        <input type="text" id="user-name" placeholder="Volledige naam">
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
+                        <button type="submit" class="btn btn-primary" id="modal-submit">Aanmaken</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div id="not-admin" class="not-admin" style="display: none;">
             <h2>⛔ Geen toegang</h2>
             <p>Je hebt geen admin rechten om deze pagina te bekijken.</p>
@@ -291,7 +389,10 @@
         <div id="admin-content" class="admin-container" style="display: none;">
             <div class="admin-header">
                 <h1>👥 Gebruikersbeheer</h1>
-                <button id="refresh-btn" class="btn btn-secondary">🔄 Vernieuwen</button>
+                <div style="display: flex; gap: 8px;">
+                    <button id="add-user-btn" class="btn btn-primary">+ Nieuwe gebruiker</button>
+                    <button id="refresh-btn" class="btn btn-secondary">🔄 Vernieuwen</button>
+                </div>
             </div>
 
             <div class="stats-grid">
@@ -436,6 +537,7 @@
                         <td>${status}</td>
                         <td>${createdAt}</td>
                         <td>
+                            <button class="action-btn edit" onclick="editUser('${user.id}')">✏️</button>
                             <select class="plan-select" onchange="setPlan('${user.id}', this.value)">
                                 <option value="">Zet plan...</option>
                                 <option value="active">✓ Actief (1 jaar)</option>
@@ -443,7 +545,7 @@
                                 <option value="none">✕ Annuleren</option>
                             </select>
                             <button class="action-btn extend" onclick="extendTrial('${user.id}')">+14 dagen</button>
-                            <button class="action-btn delete" onclick="deleteUser('${user.id}', '${user.email}')">Verwijderen</button>
+                            <button class="action-btn delete" onclick="deleteUser('${user.id}', '${user.email}')">🗑️</button>
                         </td>
                     </tr>
                 `;
@@ -561,6 +663,103 @@
 
         // Refresh button
         document.getElementById('refresh-btn').addEventListener('click', loadUsers);
+
+        // ==================== MODAL FUNCTIONS ====================
+
+        // Open modal for new user
+        function openModal(mode = 'create', user = null) {
+            const modal = document.getElementById('user-modal');
+            const title = document.getElementById('modal-title');
+            const submitBtn = document.getElementById('modal-submit');
+            const form = document.getElementById('user-form');
+            
+            form.reset();
+            document.getElementById('user-id').value = '';
+            
+            if (mode === 'edit' && user) {
+                title.textContent = '✏️ Gebruiker bewerken';
+                submitBtn.textContent = 'Opslaan';
+                document.getElementById('user-id').value = user.id;
+                document.getElementById('user-email').value = user.email || '';
+                document.getElementById('user-name').value = user.name || '';
+            } else {
+                title.textContent = '➕ Nieuwe gebruiker';
+                submitBtn.textContent = 'Aanmaken';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('user-modal').classList.remove('active');
+        }
+
+        // Edit user - fetch user data and open modal
+        async function editUser(userId) {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`);
+                const user = await response.json();
+                
+                if (response.ok) {
+                    openModal('edit', user);
+                } else {
+                    alert(user.error || 'Kon gebruiker niet laden');
+                }
+            } catch (error) {
+                alert('Er ging iets mis bij het laden van de gebruiker');
+            }
+        }
+
+        // Handle form submit (create or update)
+        document.getElementById('user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userId = document.getElementById('user-id').value;
+            const email = document.getElementById('user-email').value;
+            const name = document.getElementById('user-name').value;
+            
+            const isEdit = !!userId;
+            const url = isEdit ? `/api/admin/users/${userId}` : '/api/admin/users';
+            const method = isEdit ? 'PUT' : 'POST';
+            
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, name })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(data.message);
+                    closeModal();
+                    loadUsers();
+                } else {
+                    alert(data.error || 'Er ging iets mis');
+                }
+            } catch (error) {
+                alert('Er ging iets mis');
+            }
+        });
+
+        // Add user button
+        document.getElementById('add-user-btn').addEventListener('click', () => openModal('create'));
+
+        // Close modal on overlay click
+        document.getElementById('user-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'user-modal') {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
 
         // Init
         checkAdmin();
