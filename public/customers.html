@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klanten - PianoPlanner</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="piano-icon">🎹</span>
+            <span>PianoPlanner</span>
+        </div>
+        <div class="nav-user">
+            <a href="/dashboard.html" class="btn btn-small btn-secondary">← Dashboard</a>
+            <a href="/booking.html" class="btn btn-small btn-primary">+ Afspraak</a>
+            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <div class="dashboard-header">
+            <h1>👥 Klantenbeheer</h1>
+            <button id="add-customer-btn" class="btn btn-primary">+ Nieuwe Klant</button>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="🔍 Zoek op naam, email, stad of telefoon...">
+        </div>
+
+        <section class="events-section">
+            <div id="customers-list" class="users-list">
+                <div class="loading">Klanten laden...</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal voor klant toevoegen/bewerken -->
+    <div id="customer-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Nieuwe Klant</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="customer-form">
+                <input type="hidden" id="customer-id">
+                
+                <div class="form-group">
+                    <label for="customer-name">Naam *</label>
+                    <input type="text" id="customer-name" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer-email">Email</label>
+                        <input type="email" id="customer-email">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-phone">Telefoon</label>
+                        <input type="tel" id="customer-phone">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customer-street">Straat + huisnummer</label>
+                    <input type="text" id="customer-street">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer-postalcode">Postcode</label>
+                        <input type="text" id="customer-postalcode">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-city">Stad</label>
+                        <input type="text" id="customer-city">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customer-notes">Notities</label>
+                    <textarea id="customer-notes" rows="3"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
+                    <button type="submit" class="btn btn-primary">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="customers.js"></script>
+</body>
+</html>

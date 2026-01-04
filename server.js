@@ -4,6 +4,9 @@ const session = require('express-session');
 const path = require('path');
 const authRoutes = require('./routes/auth');
 const calendarRoutes = require('./routes/calendar');
+const customerRoutes = require('./routes/customers');
+const serviceRoutes = require('./routes/services');
+const bookingRoutes = require('./routes/booking');
 const userStore = require('./utils/userStore');
 const { requireAdmin, isAdmin } = require('./middleware/auth');
 
@@ -29,6 +32,9 @@ app.use(session({
 // Routes
 app.use('/auth', authRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/services', serviceRoutes);
+app.use('/api/booking', bookingRoutes);
 
 // API route om ingelogde gebruiker te checken
 app.get('/api/user', (req, res) => {
