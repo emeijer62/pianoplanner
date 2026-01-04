@@ -5,6 +5,7 @@ const path = require('path');
 const authRoutes = require('./routes/auth');
 const calendarRoutes = require('./routes/calendar');
 const userStore = require('./utils/userStore');
+const { requireAdmin, isAdmin } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,7 +35,8 @@ app.get('/api/user', (req, res) => {
     if (req.session.user) {
         res.json({ 
             loggedIn: true, 
-            user: req.session.user 
+            user: req.session.user,
+            isAdmin: isAdmin(req.session.user.email)
         });
     } else {
         res.json({ loggedIn: false });
@@ -42,8 +44,7 @@ app.get('/api/user', (req, res) => {
 });
 
 // Admin: bekijk alle geregistreerde gebruikers (alleen emails, geen tokens)
-app.get('/api/admin/users', (req, res) => {
-    // Optioneel: voeg authenticatie toe voor admin
+app.get('/api/admin/users', requireAdmin, (req, res) => {
     const users = userStore.getAllUsers();
     const safeUsers = Object.values(users).map(user => ({
         id: user.id,
@@ -57,6 +58,18 @@ app.get('/api/admin/users', (req, res) => {
         total: safeUsers.length,
         users: safeUsers
     });
+});
+
+// Admin: verwijder gebruiker
+app.delete('/api/admin/users/:userId', requireAdmin, (req, res) => {
+    const { userId } = req.params;
+    const deleted = userStore.deleteUser(userId);
+    
+    if (deleted) {
+        res.json({ success: true, message: 'Gebruiker verwijderd' });
+    } else {
+        res.status(404).json({ error: 'Gebruiker niet gevonden' });
+    }
 });
 
 // Hoofdpagina

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - PianoPlanner</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="piano-icon">🎹</span>
+            <span>PianoPlanner Admin</span>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard.html" class="btn btn-small btn-secondary">Dashboard</a>
+            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <div class="dashboard-header">
+            <h1>👥 Gebruikersbeheer</h1>
+            <button id="refresh-btn" class="btn btn-secondary">🔄 Vernieuwen</button>
+        </div>
+
+        <div id="not-admin" class="error-message" style="display: none;">
+            <h2>⛔ Geen toegang</h2>
+            <p>Je hebt geen admin rechten om deze pagina te bekijken.</p>
+            <a href="/dashboard.html" class="btn btn-primary">Terug naar Dashboard</a>
+        </div>
+
+        <div id="admin-content" style="display: none;">
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-users">0</div>
+                    <div class="stat-label">Totaal gebruikers</div>
+                </div>
+            </div>
+
+            <section class="events-section">
+                <h2>Alle gebruikers</h2>
+                <div id="users-list" class="users-list">
+                    <div class="loading">Laden...</div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="admin.js"></script>
+</body>
+</html>

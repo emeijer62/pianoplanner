@@ -1,5 +1,6 @@
 // Dashboard JavaScript
 let currentUser = null;
+let isAdmin = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         currentUser = data.user;
+        isAdmin = data.isAdmin || false;
         updateNavbar(currentUser);
         
         // Load data
@@ -35,6 +37,11 @@ function updateNavbar(user) {
     document.getElementById('nav-user-name').textContent = user.name;
     if (user.picture) {
         document.getElementById('nav-user-picture').src = user.picture;
+    }
+    
+    // Toon admin link alleen voor admins
+    if (isAdmin) {
+        document.getElementById('admin-link').style.display = 'inline-block';
     }
 }
 
