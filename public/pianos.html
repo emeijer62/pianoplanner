@@ -436,9 +436,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="piano-brand">Merk *</label>
-                            <select id="piano-brand" required>
-                                <option value="">Selecteer merk...</option>
-                            </select>
+                            <input type="text" id="piano-brand" required placeholder="Steinway, Yamaha, Bösendorfer, etc.">
                         </div>
                         <div class="form-group">
                             <label for="piano-model">Model</label>
@@ -610,20 +608,7 @@
             }
         }
 
-        // Laad piano merken
-        async function loadBrands() {
-            try {
-                const response = await fetch('/api/pianos/brands');
-                const data = await response.json();
-                const select = document.getElementById('piano-brand');
-                select.innerHTML = '<option value="">Selecteer merk...</option>';
-                data.brands.forEach(brand => {
-                    select.innerHTML += `<option value="${brand}">${brand}</option>`;
-                });
-            } catch (error) {
-                console.error('Error loading brands:', error);
-            }
-        }
+        // Merk wordt nu als vrij tekstveld ingevoerd
 
         // Laad klanten voor dropdown
         async function loadCustomers() {
@@ -923,7 +908,7 @@
         // Init
         async function init() {
             if (await checkAuth()) {
-                await Promise.all([loadBrands(), loadCustomers()]);
+                await loadCustomers();
                 await loadPianos();
             }
         }
