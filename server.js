@@ -7,6 +7,7 @@ const calendarRoutes = require('./routes/calendar');
 const customerRoutes = require('./routes/customers');
 const serviceRoutes = require('./routes/services');
 const bookingRoutes = require('./routes/booking');
+const settingsRoutes = require('./routes/settings');
 const userStore = require('./utils/userStore');
 const { requireAdmin, isAdmin } = require('./middleware/auth');
 
@@ -19,12 +20,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Session configuratie
+const isProduction = process.env.NODE_ENV === 'production';
+app.set('trust proxy', 1); // Trust Railway's proxy
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'pianoplanner-secret-2026',
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: false, // Zet op true in productie met HTTPS
+        secure: isProduction, // HTTPS in productie
+        sameSite: isProduction ? 'none' : 'lax',
         maxAge: 24 * 60 * 60 * 1000 // 24 uur
     }
 }));
@@ -35,6 +40,7 @@ app.use('/api/calendar', calendarRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/booking', bookingRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // API route om ingelogde gebruiker te checken
 app.get('/api/user', (req, res) => {

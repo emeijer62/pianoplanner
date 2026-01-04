@@ -1,0 +1,96 @@
+/**
+ * Bedrijfsinstellingen opslag
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const DATA_DIR = path.join(__dirname, '..', 'data');
+const SETTINGS_FILE = path.join(DATA_DIR, 'company.json');
+
+// Zorg dat data directory bestaat
+if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Standaard bedrijfsinstellingen
+const defaultSettings = {
+    name: 'Edward Meijer Pianotechniek',
+    ownerName: 'Edward Meijer',
+    email: 'info@edwardmeijer.nl',
+    phone: '',
+    address: {
+        street: '',
+        postalCode: '',
+        city: 'Tilburg',
+        country: 'Nederland'
+    },
+    // Beschikbaarheid per dag (0 = zondag, 1 = maandag, etc.)
+    availability: {
+        0: { available: false, start: '09:00', end: '18:00' }, // Zondag
+        1: { available: true, start: '09:00', end: '18:00' },  // Maandag
+        2: { available: true, start: '09:00', end: '18:00' },  // Dinsdag
+        3: { available: true, start: '09:00', end: '18:00' },  // Woensdag
+        4: { available: true, start: '09:00', end: '18:00' },  // Donderdag
+        5: { available: true, start: '09:00', end: '18:00' },  // Vrijdag
+        6: { available: false, start: '09:00', end: '18:00' }  // Zaterdag
+    },
+    createdAt: null,
+    updatedAt: null
+};
+
+// Laad instellingen
+const getSettings = () => {
+    try {
+        if (fs.existsSync(SETTINGS_FILE)) {
+            const data = fs.readFileSync(SETTINGS_FILE, 'utf8');
+            return { ...defaultSettings, ...JSON.parse(data) };
+        }
+    } catch (error) {
+        console.error('Error loading company settings:', error);
+    }
+    return { ...defaultSettings };
+};
+
+// Sla instellingen op
+const saveSettings = (settings) => {
+    try {
+        const current = getSettings();
+        const updated = {
+            ...current,
+            ...settings,
+            updatedAt: new Date().toISOString()
+        };
+        
+        if (!updated.createdAt) {
+            updated.createdAt = new Date().toISOString();
+        }
+        
+        fs.writeFileSync(SETTINGS_FILE, JSON.stringify(updated, null, 2));
+        return updated;
+    } catch (error) {
+        console.error('Error saving company settings:', error);
+        throw error;
+    }
+};
+
+// Haal volledig adres op (voor reistijd berekening)
+const getOriginAddress = () => {
+    const settings = getSettings();
+    const { street, postalCode, city, country } = settings.address;
+    
+    if (city) {
+        const parts = [street, postalCode, city, country].filter(Boolean);
+        return parts.join(', ');
+    }
+    
+    // Fallback
+    return 'Tilburg, Nederland';
+};
+
+module.exports = {
+    getSettings,
+    saveSettings,
+    getOriginAddress,
+    defaultSettings
+};

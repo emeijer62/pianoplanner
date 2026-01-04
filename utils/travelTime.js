@@ -104,14 +104,16 @@ const estimateTravelTime = (origin, destination) => {
 };
 
 /**
- * Bereken het eerste beschikbare tijdslot rekening houdend met reistijd
+ * Bereken het eerste beschikbare tijdslot rekening houdend met reistijd en buffertijden
  * @param {Array} existingEvents - Bestaande events van de dag
  * @param {number} travelTime - Reistijd in minuten
  * @param {number} serviceDuration - Duur van de dienst in minuten
  * @param {Date} date - De gewenste datum
  * @param {Object} workHours - Werktijden {start: '09:00', end: '18:00'}
+ * @param {number} bufferBefore - Buffer voor afspraak in minuten (bijv. opzetten)
+ * @param {number} bufferAfter - Buffer na afspraak in minuten (bijv. opruimen)
  */
-const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, date, workHours = { start: '09:00', end: '18:00' }) => {
+const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, date, workHours = { start: '09:00', end: '18:00' }, bufferBefore = 0, bufferAfter = 0) => {
     const dayStart = new Date(date);
     const [startHour, startMin] = workHours.start.split(':').map(Number);
     dayStart.setHours(startHour, startMin, 0, 0);
@@ -120,8 +122,8 @@ const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, dat
     const [endHour, endMin] = workHours.end.split(':').map(Number);
     dayEnd.setHours(endHour, endMin, 0, 0);
     
-    // Totale benodigde tijd = reistijd + dienst
-    const totalNeeded = travelTime + serviceDuration;
+    // Totale benodigde tijd = reistijd + buffer voor + dienst + buffer na
+    const totalNeeded = travelTime + bufferBefore + serviceDuration + bufferAfter;
     
     // Sorteer events op starttijd
     const sortedEvents = existingEvents
@@ -140,16 +142,24 @@ const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, dat
         const availableMinutes = (event.start - currentTime) / (1000 * 60);
         
         if (availableMinutes >= totalNeeded) {
-            // Er is ruimte! Return de starttijd (na reistijd)
-            const appointmentStart = new Date(currentTime.getTime() + travelTime * 60 * 1000);
+            // Er is ruimte! Bereken tijden met buffers
+            const travelStart = new Date(currentTime);
+            const bufferBeforeStart = new Date(travelStart.getTime() + travelTime * 60 * 1000);
+            const appointmentStart = new Date(bufferBeforeStart.getTime() + bufferBefore * 60 * 1000);
             const appointmentEnd = new Date(appointmentStart.getTime() + serviceDuration * 60 * 1000);
+            const slotEnd = new Date(appointmentEnd.getTime() + bufferAfter * 60 * 1000);
             
             return {
-                travelStart: currentTime,
+                travelStart,
+                bufferBeforeStart,
                 appointmentStart,
                 appointmentEnd,
+                slotEnd,
                 travelTime,
-                serviceDuration
+                serviceDuration,
+                bufferBefore,
+                bufferAfter,
+                totalDuration: totalNeeded
             };
         }
         
@@ -161,15 +171,23 @@ const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, dat
     const remainingMinutes = (dayEnd - currentTime) / (1000 * 60);
     
     if (remainingMinutes >= totalNeeded) {
-        const appointmentStart = new Date(currentTime.getTime() + travelTime * 60 * 1000);
+        const travelStart = new Date(currentTime);
+        const bufferBeforeStart = new Date(travelStart.getTime() + travelTime * 60 * 1000);
+        const appointmentStart = new Date(bufferBeforeStart.getTime() + bufferBefore * 60 * 1000);
         const appointmentEnd = new Date(appointmentStart.getTime() + serviceDuration * 60 * 1000);
+        const slotEnd = new Date(appointmentEnd.getTime() + bufferAfter * 60 * 1000);
         
         return {
-            travelStart: currentTime,
+            travelStart,
+            bufferBeforeStart,
             appointmentStart,
             appointmentEnd,
+            slotEnd,
             travelTime,
-            serviceDuration
+            serviceDuration,
+            bufferBefore,
+            bufferAfter,
+            totalDuration: totalNeeded
         };
     }
     

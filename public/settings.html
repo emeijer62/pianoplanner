@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instellingen - PianoPlanner</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .settings-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .settings-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .settings-section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+        
+        /* Availability Grid */
+        .availability-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .availability-row {
+            display: grid;
+            grid-template-columns: 120px auto 100px 20px 100px;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        
+        .availability-row.disabled {
+            background: #f0f0f0;
+            opacity: 0.7;
+        }
+        
+        .availability-row .day-name {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .availability-row .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .availability-row .time-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .availability-row .time-range span {
+            color: #888;
+        }
+        
+        .availability-row input[type="time"] {
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        
+        .availability-row.disabled input[type="time"] {
+            background: #e0e0e0;
+            color: #999;
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: #4CAF50;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        .toggle-label {
+            font-size: 13px;
+            color: #666;
+        }
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #45a049;
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e5e5;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        /* Services list */
+        .services-list {
+            margin-top: 20px;
+        }
+        
+        .service-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 16px;
+            padding: 16px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        
+        .service-info h4 {
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        
+        .service-meta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .service-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .service-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .service-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Time inputs */
+        .time-inputs {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .time-inputs span {
+            color: #666;
+        }
+        
+        /* Alert messages */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+        
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .page-header h1 {
+            margin: 0;
+        }
+        
+        .back-link {
+            color: #4CAF50;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="page-header">
+            <h1>⚙️ Instellingen</h1>
+            <a href="dashboard.html" class="back-link">← Terug naar Dashboard</a>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <!-- Bedrijfsprofiel -->
+        <div class="settings-section">
+            <h2>🏢 Bedrijfsprofiel</h2>
+            <form id="companyForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="companyName">Bedrijfsnaam</label>
+                        <input type="text" id="companyName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ownerName">Naam eigenaar</label>
+                        <input type="text" id="ownerName" name="ownerName">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Telefoon</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+                </div>
+                
+                <h3>📍 Adres (vertrekpunt reistijd)</h3>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2">
+                        <label for="street">Straat en huisnummer</label>
+                        <input type="text" id="street" name="street" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="postalCode">Postcode</label>
+                        <input type="text" id="postalCode" name="postalCode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="city">Plaats</label>
+                        <input type="text" id="city" name="city" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="country">Land</label>
+                        <input type="text" id="country" name="country" value="Nederland">
+                    </div>
+                </div>
+                
+                <h3>🕐 Beschikbaarheid per dag</h3>
+                <p style="color: #666; margin-bottom: 16px;">Stel per dag in wanneer je beschikbaar bent voor afspraken.</p>
+                
+                <div class="availability-grid" id="availabilityGrid">
+                    <!-- Wordt dynamisch geladen -->
+                </div>
+                
+                <button type="submit" class="btn btn-primary">💾 Bedrijfsprofiel Opslaan</button>
+            </form>
+        </div>
+        
+        <!-- Diensten -->
+        <div class="settings-section">
+            <h2>🎹 Diensten</h2>
+            <p>Beheer de diensten die je aanbiedt. De buffertijden worden meegerekend bij het plannen van afspraken.</p>
+            
+            <button class="btn btn-primary" onclick="openServiceModal()">+ Nieuwe Dienst</button>
+            
+            <div class="services-list" id="servicesList">
+                <!-- Diensten worden hier geladen -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Service Modal -->
+    <div class="modal" id="serviceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Nieuwe Dienst</h3>
+                <button class="modal-close" onclick="closeServiceModal()">&times;</button>
+            </div>
+            
+            <form id="serviceForm">
+                <input type="hidden" id="serviceId" name="id">
+                
+                <div class="form-group">
+                    <label for="serviceName">Naam dienst *</label>
+                    <input type="text" id="serviceName" name="name" required placeholder="bijv. Stemmen vleugel">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="serviceDuration">Duur (minuten) *</label>
+                        <input type="number" id="serviceDuration" name="duration" required min="15" step="15" value="60">
+                    </div>
+                    <div class="form-group">
+                        <label for="servicePrice">Tarief (€) *</label>
+                        <input type="number" id="servicePrice" name="price" required min="0" step="0.01" value="95">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bufferBefore">Buffer vóór (min)</label>
+                        <input type="number" id="bufferBefore" name="bufferBefore" min="0" step="5" value="0" placeholder="bijv. 15 voor opzetten">
+                    </div>
+                    <div class="form-group">
+                        <label for="bufferAfter">Buffer na (min)</label>
+                        <input type="number" id="bufferAfter" name="bufferAfter" min="0" step="5" value="0" placeholder="bijv. 10 voor opruimen">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="serviceDescription">Beschrijving</label>
+                    <input type="text" id="serviceDescription" name="description" placeholder="Korte omschrijving van de dienst">
+                </div>
+                
+                <div class="form-group">
+                    <label for="serviceColor">Kleur in agenda</label>
+                    <select id="serviceColor" name="color">
+                        <option value="#4CAF50">🟢 Groen</option>
+                        <option value="#2196F3">🔵 Blauw</option>
+                        <option value="#FF9800">🟠 Oranje</option>
+                        <option value="#F44336">🔴 Rood</option>
+                        <option value="#9C27B0">🟣 Paars</option>
+                        <option value="#607D8B">⚫ Grijs</option>
+                    </select>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Annuleren</button>
+                    <button type="submit" class="btn btn-primary">💾 Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="settings.js"></script>
+</body>
+</html>

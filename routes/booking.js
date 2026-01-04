@@ -1,9 +1,10 @@
 const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
-const { calculateTravelTime, findFirstAvailableSlot, DEFAULT_ORIGIN } = require('../utils/travelTime');
-const { getService } = require('../config/services');
+const { calculateTravelTime, findFirstAvailableSlot } = require('../utils/travelTime');
+const serviceStore = require('../utils/serviceStore');
 const customerStore = require('../utils/customerStore');
+const companyStore = require('../utils/companyStore');
 const { requireAuth } = require('../middleware/auth');
 
 // Alle routes vereisen authenticatie
@@ -32,7 +33,7 @@ router.post('/travel-time', async (req, res) => {
             return res.status(400).json({ error: 'Bestemming is verplicht' });
         }
         
-        const from = origin || DEFAULT_ORIGIN.address;
+        const from = origin || companyStore.getOriginAddress();
         const travelInfo = await calculateTravelTime(from, destination);
         
         res.json({
@@ -59,13 +60,16 @@ router.post('/find-slot', async (req, res) => {
             return res.status(400).json({ error: 'Dienst en datum zijn verplicht' });
         }
         
-        const service = getService(serviceId);
+        const service = serviceStore.getService(serviceId);
         if (!service) {
             return res.status(404).json({ error: 'Dienst niet gevonden' });
         }
         
+        // Haal bedrijfsadres op als vertrekpunt
+        const companyAddress = companyStore.getOriginAddress();
+        
         // Bepaal bestemming
-        let destination = DEFAULT_ORIGIN.address;
+        let destination = companyAddress;
         if (customerId) {
             const customer = customerStore.getCustomer(customerId);
             if (customer && customer.address.city) {
@@ -74,8 +78,33 @@ router.post('/find-slot', async (req, res) => {
         }
         
         // Bereken reistijd
-        const fromLocation = origin || DEFAULT_ORIGIN.address;
+        const fromLocation = origin || companyAddress;
         const travelInfo = await calculateTravelTime(fromLocation, destination);
+        
+        // Bereken totale benodigde tijd (buffer voor + reistijd + dienst + buffer na)
+        const totalServiceTime = (service.bufferBefore || 0) + service.duration + (service.bufferAfter || 0);
+        
+        // Haal beschikbaarheid op voor deze dag
+        const companySettings = companyStore.getSettings();
+        const requestedDate = new Date(date);
+        const dayOfWeek = requestedDate.getDay(); // 0 = zondag, 1 = maandag, etc.
+        
+        const dayAvailability = companySettings.availability?.[dayOfWeek];
+        
+        // Check of deze dag beschikbaar is
+        if (!dayAvailability || !dayAvailability.available) {
+            return res.json({
+                available: false,
+                message: `Niet beschikbaar op ${['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'][dayOfWeek]}`,
+                service,
+                travelInfo
+            });
+        }
+        
+        const workHours = {
+            start: dayAvailability.start || '09:00',
+            end: dayAvailability.end || '18:00'
+        };
         
         // Haal events van die dag op
         const auth = getAuthClient(req);
@@ -96,12 +125,15 @@ router.post('/find-slot', async (req, res) => {
         
         const existingEvents = eventsResponse.data.items || [];
         
-        // Vind eerste beschikbare slot
+        // Vind eerste beschikbare slot (met buffertijden)
         const slot = findFirstAvailableSlot(
             existingEvents,
             travelInfo.duration,
             service.duration,
-            new Date(date)
+            new Date(date),
+            workHours,
+            service.bufferBefore || 0,
+            service.bufferAfter || 0
         );
         
         if (!slot) {
@@ -117,12 +149,18 @@ router.post('/find-slot', async (req, res) => {
             available: true,
             slot: {
                 travelStart: slot.travelStart,
+                bufferBeforeStart: slot.bufferBeforeStart,
                 appointmentStart: slot.appointmentStart,
-                appointmentEnd: slot.appointmentEnd
+                appointmentEnd: slot.appointmentEnd,
+                slotEnd: slot.slotEnd
             },
             service,
             travelInfo,
-            totalDuration: travelInfo.duration + service.duration
+            buffers: {
+                before: service.bufferBefore || 0,
+                after: service.bufferAfter || 0
+            },
+            totalDuration: slot.totalDuration
         });
         
     } catch (error) {
@@ -150,7 +188,7 @@ router.post('/create', async (req, res) => {
             return res.status(400).json({ error: 'Dienst en starttijd zijn verplicht' });
         }
         
-        const service = getService(serviceId);
+        const service = serviceStore.getService(serviceId);
         if (!service) {
             return res.status(404).json({ error: 'Dienst niet gevonden' });
         }
