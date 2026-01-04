@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# User data (lokale opslag)
+data/users.json
+
+# Google credentials (NOOIT committen!)
+credentials.json
+token.json
+
+# IDE
+.vscode/
+.idea/
