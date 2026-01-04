@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abonnement - PianoPlanner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .billing-container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: #666;
+        }
+
+        .billing-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e8e8e8;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .billing-card h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-badge.trial {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-badge.expired {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-badge.canceled {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .plan-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .plan-info:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .plan-label {
+            color: #666;
+            font-size: 0.9375rem;
+        }
+
+        .plan-value {
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .trial-progress {
+            margin-top: 20px;
+        }
+
+        .trial-progress-bar {
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .trial-progress-fill {
+            height: 100%;
+            background: #1565c0;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .trial-progress-text {
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffe0b2;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #333;
+            font-size: 0.9375rem;
+        }
+
+        .feature-item .icon {
+            width: 20px;
+            height: 20px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9375rem;
+            margin-bottom: 24px;
+        }
+
+        .back-link:hover {
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/dashboard.html" class="logo">
+                <span class="logo-icon">🎹</span>
+                <span>PianoPlanner</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/settings.html" class="nav-link">Instellingen</a>
+                <a href="/billing.html" class="nav-link active">Abonnement</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="billing-container">
+            <a href="/dashboard.html" class="back-link">
+                ← Terug naar dashboard
+            </a>
+
+            <div class="page-header">
+                <h1>Mijn abonnement</h1>
+                <p>Beheer je abonnement en facturen</p>
+            </div>
+
+            <!-- Alerts -->
+            <div id="alerts"></div>
+
+            <!-- Current Plan -->
+            <div class="billing-card" id="currentPlan">
+                <h2>
+                    Huidig abonnement
+                    <span class="status-badge trial" id="statusBadge">Laden...</span>
+                </h2>
+
+                <div id="planDetails">
+                    <!-- Filled by JS -->
+                </div>
+
+                <div class="action-buttons" id="actionButtons">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="billing-card">
+                <h2>✨ Inbegrepen in PianoPlanner Pro</h2>
+                
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <span class="icon">✓</span>
+                        Onbeperkt afspraken
+                    </div>
+                    <div class="feature-item">
+                        <span class="icon">✓</span>
+                        Google Agenda sync
+                    </div>
+                    <div class="feature-item">
+                        <span class="icon">✓</span>
+                        Online boekingspagina
+                    </div>
+                    <div class="feature-item">
+                        <span class="icon">✓</span>
+                        Klantenbeheer
+                    </div>
+                    <div class="feature-item">
+                        <span class="icon">✓</span>
+                        Aanpasbare diensten
+                    </div>
+                    <div class="feature-item">
+                        <span class="icon">✓</span>
+                        E-mail herinneringen
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help -->
+            <div class="billing-card">
+                <h2>💬 Hulp nodig?</h2>
+                <p style="color: #666; margin-bottom: 16px;">
+                    Heb je vragen over je abonnement of facturen? Neem contact met ons op.
+                </p>
+                <a href="mailto:support@pianoplanner.com" class="btn btn-secondary">
+                    Contact opnemen
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Check URL params for success/cancel messages
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (urlParams.get('success') === 'true') {
+            showAlert('success', '🎉 Je abonnement is geactiveerd! Veel plezier met PianoPlanner.');
+            // Clean URL
+            window.history.replaceState({}, '', '/billing.html');
+        }
+        
+        if (urlParams.get('canceled') === 'true') {
+            showAlert('warning', 'Je hebt de betaling geannuleerd. Je kunt het later opnieuw proberen.');
+            window.history.replaceState({}, '', '/billing.html');
+        }
+
+        // Load subscription status
+        async function loadSubscription() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+
+                if (!data.loggedIn) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                const sub = data.subscription;
+                updateUI(sub);
+            } catch (error) {
+                console.error('Failed to load subscription:', error);
+                showAlert('error', 'Kon abonnementgegevens niet laden.');
+            }
+        }
+
+        function updateUI(sub) {
+            const statusBadge = document.getElementById('statusBadge');
+            const planDetails = document.getElementById('planDetails');
+            const actionButtons = document.getElementById('actionButtons');
+
+            // Status badge
+            let badgeClass = 'trial';
+            let badgeText = 'Laden...';
+
+            switch (sub.status) {
+                case 'trialing':
+                    badgeClass = 'trial';
+                    badgeText = `🕐 Proefperiode (${sub.daysLeft} dagen)`;
+                    break;
+                case 'active':
+                    badgeClass = 'active';
+                    badgeText = '✓ Actief';
+                    break;
+                case 'trial_expired':
+                    badgeClass = 'expired';
+                    badgeText = '⚠ Proefperiode verlopen';
+                    break;
+                case 'canceled':
+                    badgeClass = 'canceled';
+                    badgeText = '✕ Geannuleerd';
+                    break;
+                default:
+                    badgeClass = 'expired';
+                    badgeText = 'Geen abonnement';
+            }
+
+            statusBadge.className = `status-badge ${badgeClass}`;
+            statusBadge.textContent = badgeText;
+
+            // Plan details
+            let detailsHTML = '';
+
+            if (sub.status === 'trialing') {
+                const progress = Math.round(((14 - sub.daysLeft) / 14) * 100);
+                detailsHTML = `
+                    <div class="plan-info">
+                        <span class="plan-label">Plan</span>
+                        <span class="plan-value">PianoPlanner Pro (proefperiode)</span>
+                    </div>
+                    <div class="plan-info">
+                        <span class="plan-label">Prijs na proefperiode</span>
+                        <span class="plan-value">€30/maand excl. BTW</span>
+                    </div>
+                    <div class="trial-progress">
+                        <div class="trial-progress-bar">
+                            <div class="trial-progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="trial-progress-text">
+                            Nog ${sub.daysLeft} dagen in je proefperiode
+                        </div>
+                    </div>
+                `;
+            } else if (sub.status === 'active') {
+                const endDate = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('nl-NL') : '-';
+                detailsHTML = `
+                    <div class="plan-info">
+                        <span class="plan-label">Plan</span>
+                        <span class="plan-value">PianoPlanner Pro</span>
+                    </div>
+                    <div class="plan-info">
+                        <span class="plan-label">Prijs</span>
+                        <span class="plan-value">€30/maand excl. BTW</span>
+                    </div>
+                    <div class="plan-info">
+                        <span class="plan-label">Volgende factuurdatum</span>
+                        <span class="plan-value">${endDate}</span>
+                    </div>
+                `;
+            } else if (sub.status === 'trial_expired') {
+                detailsHTML = `
+                    <div class="plan-info">
+                        <span class="plan-label">Status</span>
+                        <span class="plan-value">Je proefperiode is verlopen</span>
+                    </div>
+                    <div class="plan-info">
+                        <span class="plan-label">Prijs</span>
+                        <span class="plan-value">€30/maand excl. BTW</span>
+                    </div>
+                `;
+            } else {
+                detailsHTML = `
+                    <div class="plan-info">
+                        <span class="plan-label">Status</span>
+                        <span class="plan-value">Geen actief abonnement</span>
+                    </div>
+                `;
+            }
+
+            planDetails.innerHTML = detailsHTML;
+
+            // Action buttons
+            let buttonsHTML = '';
+
+            if (sub.status === 'trialing' || sub.status === 'trial_expired' || sub.status === 'canceled' || !sub.status) {
+                buttonsHTML = `
+                    <button class="btn btn-primary" onclick="startSubscription()">
+                        💳 Abonnement starten
+                    </button>
+                `;
+            } else if (sub.status === 'active') {
+                buttonsHTML = `
+                    <button class="btn btn-secondary" onclick="manageSubscription()">
+                        Abonnement beheren
+                    </button>
+                `;
+            }
+
+            actionButtons.innerHTML = buttonsHTML;
+        }
+
+        async function startSubscription() {
+            try {
+                const response = await fetch('/api/stripe/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    showAlert('error', data.error || 'Kon checkout niet starten.');
+                }
+            } catch (error) {
+                console.error('Checkout error:', error);
+                showAlert('error', 'Er ging iets mis. Probeer het opnieuw.');
+            }
+        }
+
+        async function manageSubscription() {
+            try {
+                const response = await fetch('/api/stripe/create-portal-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    showAlert('error', data.error || 'Kon portal niet openen.');
+                }
+            } catch (error) {
+                console.error('Portal error:', error);
+                showAlert('error', 'Er ging iets mis. Probeer het opnieuw.');
+            }
+        }
+
+        function showAlert(type, message) {
+            const alertsDiv = document.getElementById('alerts');
+            alertsDiv.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${message}
+                </div>
+            `;
+        }
+
+        loadSubscription();
+    </script>
+</body>
+</html>

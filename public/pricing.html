@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prijzen - PianoPlanner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .pricing-hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+        }
+
+        .pricing-hero h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .pricing-hero p {
+            font-size: 1.125rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .pricing-container {
+            max-width: 500px;
+            margin: -40px auto 80px;
+            padding: 0 20px;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 48px 40px;
+            text-align: center;
+            border: 2px solid #e8e8e8;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card.popular::before {
+            content: 'Meest gekozen';
+            position: absolute;
+            top: 20px;
+            right: -35px;
+            background: #1a1a1a;
+            color: white;
+            padding: 6px 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transform: rotate(45deg);
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .plan-description {
+            color: #666;
+            font-size: 0.9375rem;
+            margin-bottom: 32px;
+        }
+
+        .price-container {
+            margin-bottom: 32px;
+        }
+
+        .price {
+            font-size: 4rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            line-height: 1;
+        }
+
+        .price-currency {
+            font-size: 1.5rem;
+            vertical-align: super;
+            margin-right: 4px;
+        }
+
+        .price-period {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .price-note {
+            font-size: 0.875rem;
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 32px;
+            text-align: left;
+        }
+
+        .features-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #333;
+        }
+
+        .features-list li:last-child {
+            border-bottom: none;
+        }
+
+        .features-list li::before {
+            content: '✓';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 50%;
+            font-size: 0.875rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .cta-button {
+            width: 100%;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 500;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cta-button:hover {
+            background: #333;
+            transform: translateY(-1px);
+        }
+
+        .cta-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .trial-badge {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        .guarantee {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+            color: #666;
+            font-size: 0.875rem;
+        }
+
+        .guarantee svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .faq-section {
+            max-width: 700px;
+            margin: 0 auto 80px;
+            padding: 0 20px;
+        }
+
+        .faq-section h2 {
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 40px;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #e8e8e8;
+            padding: 24px 0;
+        }
+
+        .faq-question {
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .payment-method {
+            background: #f8f9fa;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            .pricing-hero h1 {
+                font-size: 1.75rem;
+            }
+
+            .price {
+                font-size: 3rem;
+            }
+
+            .pricing-card {
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <span class="logo-icon">🎹</span>
+                <span>PianoPlanner</span>
+            </a>
+            <nav class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/pricing.html" class="nav-link active">Prijzen</a>
+                <a href="/auth/google" class="btn btn-primary" id="loginBtn">Inloggen</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero -->
+        <section class="pricing-hero">
+            <h1>Simpele, transparante prijzen</h1>
+            <p>Eén abonnement, alle functies. Start vandaag nog met 14 dagen gratis uitproberen.</p>
+        </section>
+
+        <!-- Pricing Card -->
+        <div class="pricing-container">
+            <div class="pricing-card popular">
+                <div class="trial-badge">14 dagen gratis proberen</div>
+                
+                <h2 class="plan-name">PianoPlanner Pro</h2>
+                <p class="plan-description">Alles wat je nodig hebt als pianotechnicus</p>
+                
+                <div class="price-container">
+                    <div class="price">
+                        <span class="price-currency">€</span>30
+                        <span class="price-period">/maand</span>
+                    </div>
+                    <p class="price-note">excl. BTW (€36,30 incl. BTW)</p>
+                </div>
+
+                <ul class="features-list">
+                    <li>Onbeperkt afspraken inplannen</li>
+                    <li>Google Agenda synchronisatie</li>
+                    <li>Online boekingspagina voor klanten</li>
+                    <li>Klantenbeheer met historie</li>
+                    <li>Aanpasbare diensten & prijzen</li>
+                    <li>Automatische reistijd buffers</li>
+                    <li>E-mail herinneringen</li>
+                    <li>Geen opstartkosten</li>
+                </ul>
+
+                <button class="cta-button" id="startTrialBtn" onclick="startTrial()">
+                    Start gratis proefperiode
+                </button>
+
+                <div class="guarantee">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    Geen creditcard nodig voor proefperiode
+                </div>
+
+                <div class="payment-methods">
+                    <span class="payment-method">💳 Creditcard</span>
+                    <span class="payment-method">🏦 iDEAL</span>
+                    <span class="payment-method">🇧🇪 Bancontact</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ -->
+        <section class="faq-section">
+            <h2>Veelgestelde vragen</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">Kan ik opzeggen wanneer ik wil?</div>
+                <div class="faq-answer">Ja, je kunt op elk moment opzeggen. Je behoudt toegang tot het einde van de betaalperiode.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Wat gebeurt er na de proefperiode?</div>
+                <div class="faq-answer">Na 14 dagen krijg je de optie om een betaald abonnement te starten. We rekenen nooit automatisch af zonder jouw toestemming.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Welke betaalmethodes accepteren jullie?</div>
+                <div class="faq-answer">We accepteren creditcard, iDEAL en Bancontact via onze betaalpartner Stripe.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Is mijn data veilig?</div>
+                <div class="faq-answer">Ja, we gebruiken versleutelde verbindingen en slaan je data veilig op. Je gegevens worden nooit gedeeld met derden.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">Kan ik mijn data exporteren?</div>
+                <div class="faq-answer">Ja, je kunt al je klant- en afspraakgegevens exporteren naar CSV.</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="background: #f8f9fa; padding: 40px 20px; text-align: center; color: #666;">
+        <p>&copy; 2025 PianoPlanner. Alle rechten voorbehouden.</p>
+    </footer>
+
+    <script>
+        // Check login status
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                
+                if (data.loggedIn) {
+                    const loginBtn = document.getElementById('loginBtn');
+                    loginBtn.textContent = 'Dashboard';
+                    loginBtn.href = '/dashboard.html';
+                    
+                    const startBtn = document.getElementById('startTrialBtn');
+                    
+                    if (data.subscription?.hasAccess) {
+                        startBtn.textContent = 'Ga naar Dashboard';
+                        startBtn.onclick = () => window.location.href = '/dashboard.html';
+                    } else if (data.subscription?.status === 'trial_expired') {
+                        startBtn.textContent = 'Abonnement starten';
+                        startBtn.onclick = startSubscription;
+                    }
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
+
+        // Start trial (login first if needed)
+        function startTrial() {
+            window.location.href = '/auth/google';
+        }
+
+        // Start paid subscription
+        async function startSubscription() {
+            try {
+                const response = await fetch('/api/stripe/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert('Kon checkout niet starten. Probeer het opnieuw.');
+                }
+            } catch (error) {
+                console.error('Checkout error:', error);
+                alert('Er ging iets mis. Probeer het opnieuw.');
+            }
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>

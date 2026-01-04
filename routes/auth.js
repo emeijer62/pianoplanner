@@ -45,6 +45,10 @@ router.get('/google/callback', async (req, res) => {
         const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
         const { data: userInfo } = await oauth2.userinfo.get();
 
+        // Check of dit een nieuwe gebruiker is
+        const existingUser = userStore.getUser(userInfo.id);
+        const isNewUser = !existingUser;
+
         // Sla gebruiker op (of update)
         const user = userStore.saveUser({
             id: userInfo.id,
@@ -53,6 +57,12 @@ router.get('/google/callback', async (req, res) => {
             picture: userInfo.picture,
             tokens: tokens
         });
+
+        // Start trial voor nieuwe gebruikers
+        if (isNewUser) {
+            userStore.startTrial(user.id);
+            console.log(`🎁 Nieuwe gebruiker, trial gestart: ${user.email}`);
+        }
 
         // Zet sessie
         req.session.user = {

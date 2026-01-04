@@ -82,10 +82,138 @@ const deleteUser = (userId) => {
     return false;
 };
 
+// ============================================
+// SUBSCRIPTION MANAGEMENT
+// ============================================
+
+const TRIAL_DAYS = 14;
+
+// Start trial voor een gebruiker
+const startTrial = (userId) => {
+    const users = loadUsers();
+    if (users[userId]) {
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
+        
+        users[userId].subscription = {
+            status: 'trialing',
+            trialStart: new Date().toISOString(),
+            trialEnd: trialEnd.toISOString(),
+            stripeCustomerId: null,
+            stripeSubscriptionId: null,
+            currentPeriodEnd: null
+        };
+        
+        saveUsers(users);
+        return users[userId];
+    }
+    return null;
+};
+
+// Update subscription na Stripe betaling
+const updateSubscription = (userId, subscriptionData) => {
+    const users = loadUsers();
+    if (users[userId]) {
+        users[userId].subscription = {
+            ...users[userId].subscription,
+            ...subscriptionData,
+            updatedAt: new Date().toISOString()
+        };
+        saveUsers(users);
+        return users[userId];
+    }
+    return null;
+};
+
+// Check subscription status
+const getSubscriptionStatus = (userId) => {
+    const users = loadUsers();
+    const user = users[userId];
+    
+    if (!user || !user.subscription) {
+        return { status: 'none', hasAccess: false };
+    }
+    
+    const sub = user.subscription;
+    const now = new Date();
+    
+    // Check trial
+    if (sub.status === 'trialing') {
+        const trialEnd = new Date(sub.trialEnd);
+        if (now < trialEnd) {
+            const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+            return { 
+                status: 'trialing', 
+                hasAccess: true, 
+                daysLeft,
+                trialEnd: sub.trialEnd
+            };
+        } else {
+            // Trial expired
+            return { status: 'trial_expired', hasAccess: false };
+        }
+    }
+    
+    // Check active subscription
+    if (sub.status === 'active') {
+        const periodEnd = new Date(sub.currentPeriodEnd);
+        if (now < periodEnd) {
+            return { 
+                status: 'active', 
+                hasAccess: true,
+                currentPeriodEnd: sub.currentPeriodEnd
+            };
+        }
+    }
+    
+    // Check canceled but still in period
+    if (sub.status === 'canceled' && sub.currentPeriodEnd) {
+        const periodEnd = new Date(sub.currentPeriodEnd);
+        if (now < periodEnd) {
+            return { 
+                status: 'canceled', 
+                hasAccess: true,
+                currentPeriodEnd: sub.currentPeriodEnd
+            };
+        }
+    }
+    
+    return { status: sub.status || 'inactive', hasAccess: false };
+};
+
+// Update Stripe customer ID
+const setStripeCustomerId = (userId, stripeCustomerId) => {
+    const users = loadUsers();
+    if (users[userId]) {
+        if (!users[userId].subscription) {
+            users[userId].subscription = {};
+        }
+        users[userId].subscription.stripeCustomerId = stripeCustomerId;
+        saveUsers(users);
+        return users[userId];
+    }
+    return null;
+};
+
+// Haal gebruiker op via Stripe Customer ID
+const getUserByStripeCustomerId = (stripeCustomerId) => {
+    const users = loadUsers();
+    return Object.values(users).find(
+        u => u.subscription?.stripeCustomerId === stripeCustomerId
+    ) || null;
+};
+
 module.exports = {
     saveUser,
     getUser,
     getUserByEmail,
     getAllUsers,
-    deleteUser
+    deleteUser,
+    // Subscription functions
+    startTrial,
+    updateSubscription,
+    getSubscriptionStatus,
+    setStripeCustomerId,
+    getUserByStripeCustomerId,
+    TRIAL_DAYS
 };

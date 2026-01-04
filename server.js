@@ -8,11 +8,16 @@ const customerRoutes = require('./routes/customers');
 const serviceRoutes = require('./routes/services');
 const bookingRoutes = require('./routes/booking');
 const settingsRoutes = require('./routes/settings');
+const stripeRoutes = require('./routes/stripe');
+const stripeWebhookRoutes = require('./routes/stripeWebhook');
 const userStore = require('./utils/userStore');
 const { requireAdmin, isAdmin } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Stripe webhook moet raw body hebben - VOOR json middleware
+app.use('/webhook/stripe', express.raw({ type: 'application/json' }), stripeWebhookRoutes);
 
 // Middleware
 app.use(express.json());
@@ -41,14 +46,17 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/booking', bookingRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 // API route om ingelogde gebruiker te checken
 app.get('/api/user', (req, res) => {
     if (req.session.user) {
+        const subscriptionStatus = userStore.getSubscriptionStatus(req.session.user.id);
         res.json({ 
             loggedIn: true, 
             user: req.session.user,
-            isAdmin: isAdmin(req.session.user.email)
+            isAdmin: isAdmin(req.session.user.email),
+            subscription: subscriptionStatus
         });
     } else {
         res.json({ loggedIn: false });

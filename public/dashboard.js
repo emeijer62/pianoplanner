@@ -1,6 +1,7 @@
 // Dashboard JavaScript met Kalender Views
 let currentUser = null;
 let isAdmin = false;
+let subscription = null;
 let allEvents = [];
 let currentView = 'week';
 let currentDate = new Date();
@@ -22,7 +23,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         currentUser = data.user;
         isAdmin = data.isAdmin || false;
+        subscription = data.subscription;
+        
+        // Check subscription access
+        if (!subscription?.hasAccess) {
+            window.location.href = '/billing.html';
+            return;
+        }
+        
         updateNavbar(currentUser);
+        showTrialBanner();
         
         // Load data
         await Promise.all([
@@ -42,6 +52,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('add-event-btn').addEventListener('click', openModal);
     document.getElementById('event-form').addEventListener('submit', handleEventSubmit);
 });
+
+// Show trial banner if user is in trial period
+function showTrialBanner() {
+    if (subscription?.status === 'trialing' && subscription?.daysLeft <= 7) {
+        const banner = document.createElement('div');
+        banner.className = 'trial-banner';
+        banner.innerHTML = `
+            <span>🕐 Nog ${subscription.daysLeft} dagen in je proefperiode</span>
+            <a href="/billing.html" class="trial-banner-btn">Abonnement starten</a>
+        `;
+        banner.style.cssText = `
+            background: linear-gradient(135deg, #1565c0, #1976d2);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.9rem;
+        `;
+        const btn = banner.querySelector('.trial-banner-btn');
+        btn.style.cssText = `
+            background: white;
+            color: #1565c0;
+            padding: 6px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+        `;
+        document.body.insertBefore(banner, document.body.firstChild);
+    }
+}
 
 function updateNavbar(user) {
     document.getElementById('nav-user-name').textContent = user.name;
