@@ -351,6 +351,7 @@
             <h1>👥 Gebruikersbeheer</h1>
             <div class="admin-nav">
                 <a href="#" class="active">Gebruikers</a>
+                <button class="btn btn-primary" onclick="showCreateModal()">+ Nieuwe Gebruiker</button>
             </div>
         </div>
 
@@ -445,6 +446,81 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="closePlanModal()">Annuleren</button>
+                    <button type="submit" class="btn btn-primary">Opslaan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create User Modal -->
+    <div class="modal" id="create-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nieuwe Gebruiker</h2>
+                <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+            </div>
+            <form id="create-form">
+                <div class="form-group">
+                    <label>Naam *</label>
+                    <input type="text" id="create-name" required placeholder="Volledige naam">
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="create-email" required placeholder="email@voorbeeld.nl">
+                </div>
+                <div class="form-group">
+                    <label>Wachtwoord *</label>
+                    <input type="password" id="create-password" required minlength="6" placeholder="Minimaal 6 tekens">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="create-status">
+                        <option value="approved">Goedgekeurd</option>
+                        <option value="pending">Wachtend op goedkeuring</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Abonnement</label>
+                    <select id="create-plan">
+                        <option value="trial">Trial (14 dagen)</option>
+                        <option value="starter">Starter</option>
+                        <option value="professional">Professional</option>
+                        <option value="enterprise">Enterprise</option>
+                        <option value="none">Geen</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Annuleren</button>
+                    <button type="submit" class="btn btn-primary">Aanmaken</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Gebruiker Bewerken</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="edit-form">
+                <input type="hidden" id="edit-user-id">
+                <div class="form-group">
+                    <label>Naam</label>
+                    <input type="text" id="edit-name" placeholder="Volledige naam">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="edit-email" placeholder="email@voorbeeld.nl">
+                </div>
+                <div class="form-group">
+                    <label>Nieuw Wachtwoord</label>
+                    <input type="password" id="edit-password" placeholder="Laat leeg om niet te wijzigen" minlength="6">
+                    <small style="color: var(--text-muted); font-size: 0.75rem;">Laat leeg om het huidige wachtwoord te behouden</small>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Annuleren</button>
                     <button type="submit" class="btn btn-primary">Opslaan</button>
                 </div>
             </form>
@@ -550,6 +626,7 @@
                                 <button class="btn-approve btn-small" onclick="approveUser('${user.id}')">Goedkeuren</button>
                                 <button class="btn-reject btn-small" onclick="showRejectModal('${user.id}')">Afwijzen</button>
                             ` : `
+                                <button class="btn btn-small btn-secondary" onclick="showEditModal('${user.id}')">Bewerken</button>
                                 <button class="btn btn-small btn-secondary" onclick="showPlanModal('${user.id}')">Plan</button>
                                 <button class="btn btn-small btn-secondary" onclick="deleteUser('${user.id}')" style="color: #ef4444;">Verwijder</button>
                             `}
@@ -691,6 +768,113 @@
                 alert('Er ging iets mis');
             }
         }
+
+        // ==================== CREATE GEBRUIKER ====================
+        
+        function showCreateModal() {
+            document.getElementById('create-name').value = '';
+            document.getElementById('create-email').value = '';
+            document.getElementById('create-password').value = '';
+            document.getElementById('create-status').value = 'approved';
+            document.getElementById('create-plan').value = 'trial';
+            document.getElementById('create-modal').classList.add('active');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('create-modal').classList.remove('active');
+        }
+
+        document.getElementById('create-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('create-name').value;
+            const email = document.getElementById('create-email').value;
+            const password = document.getElementById('create-password').value;
+            const approvalStatus = document.getElementById('create-status').value;
+            const plan = document.getElementById('create-plan').value;
+            
+            try {
+                const response = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, approvalStatus, plan })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Gebruiker aangemaakt!');
+                    closeCreateModal();
+                    loadUsers();
+                } else {
+                    alert('Fout: ' + (data.error || 'Kon gebruiker niet aanmaken'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Er ging iets mis');
+            }
+        });
+
+        // ==================== EDIT GEBRUIKER ====================
+        
+        async function showEditModal(userId) {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`);
+                if (!response.ok) {
+                    throw new Error('Kon gebruiker niet ophalen');
+                }
+                
+                const user = await response.json();
+                
+                document.getElementById('edit-user-id').value = userId;
+                document.getElementById('edit-name').value = user.name || '';
+                document.getElementById('edit-email').value = user.email || '';
+                document.getElementById('edit-password').value = '';
+                document.getElementById('edit-modal').classList.add('active');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Kon gebruiker niet laden');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('active');
+        }
+
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const userId = document.getElementById('edit-user-id').value;
+            const name = document.getElementById('edit-name').value;
+            const email = document.getElementById('edit-email').value;
+            const password = document.getElementById('edit-password').value;
+            
+            const updateData = { name, email };
+            if (password) {
+                updateData.password = password;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Gebruiker bijgewerkt!');
+                    closeEditModal();
+                    loadUsers();
+                } else {
+                    alert('Fout: ' + (data.error || 'Kon gebruiker niet bijwerken'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Er ging iets mis');
+            }
+        });
 
         // Logout
         async function logout() {

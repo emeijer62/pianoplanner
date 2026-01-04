@@ -149,4 +149,99 @@ router.post('/users/:userId/set-plan', requireAdminAuth, (req, res) => {
     res.json({ success: true, message: `Plan ingesteld op ${plan}`, user: result.user });
 });
 
+// ==================== CREATE GEBRUIKER ====================
+
+// Maak nieuwe gebruiker aan (door admin)
+router.post('/users', requireAdminAuth, (req, res) => {
+    const { email, name, password, plan, approvalStatus } = req.body;
+    
+    // Validatie
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email en wachtwoord zijn verplicht' });
+    }
+    
+    // Check of email al bestaat
+    const existingUser = userStore.getUserByEmail(email);
+    if (existingUser) {
+        return res.status(400).json({ error: 'Een gebruiker met dit email adres bestaat al' });
+    }
+    
+    // Maak gebruiker aan
+    const result = userStore.createUserByAdmin({
+        email,
+        name: name || email.split('@')[0],
+        password,
+        approvalStatus: approvalStatus || 'approved',
+        plan: plan || 'trial',
+        createdBy: req.session.adminUsername
+    });
+    
+    if (result.error) {
+        return res.status(400).json({ error: result.error });
+    }
+    
+    console.log(`✅ Gebruiker aangemaakt door admin: ${email}`);
+    res.json({ success: true, message: 'Gebruiker aangemaakt', user: result.user });
+});
+
+// ==================== UPDATE GEBRUIKER ====================
+
+// Update gebruiker gegevens
+router.put('/users/:userId', requireAdminAuth, (req, res) => {
+    const { userId } = req.params;
+    const { email, name, password } = req.body;
+    
+    // Check of gebruiker bestaat
+    const user = userStore.getUser(userId);
+    if (!user) {
+        return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+    }
+    
+    // Check of nieuwe email al bestaat (als die gewijzigd is)
+    if (email && email !== user.email) {
+        const existingUser = userStore.getUserByEmail(email);
+        if (existingUser) {
+            return res.status(400).json({ error: 'Een andere gebruiker met dit email adres bestaat al' });
+        }
+    }
+    
+    // Update gebruiker
+    const result = userStore.updateUserByAdmin(userId, {
+        email: email || user.email,
+        name: name !== undefined ? name : user.name,
+        password: password || null // null = niet wijzigen
+    });
+    
+    if (result.error) {
+        return res.status(400).json({ error: result.error });
+    }
+    
+    console.log(`✏️ Gebruiker bijgewerkt door admin: ${userId}`);
+    res.json({ success: true, message: 'Gebruiker bijgewerkt', user: result.user });
+});
+
+// Haal specifieke gebruiker op
+router.get('/users/:userId', requireAdminAuth, (req, res) => {
+    const { userId } = req.params;
+    
+    const user = userStore.getUser(userId);
+    if (!user) {
+        return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+    }
+    
+    // Filter gevoelige data
+    const safeUser = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        authType: user.authType,
+        approvalStatus: user.approvalStatus || 'approved',
+        subscription: user.subscription,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+    };
+    
+    res.json(safeUser);
+});
+
 module.exports = router;

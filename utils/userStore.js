@@ -502,6 +502,99 @@ const setUserPlan = (userId, plan) => {
     return { success: true, user: users[userId] };
 };
 
+// ============================================
+// ADMIN CRUD FUNCTIES
+// ============================================
+
+// Maak nieuwe gebruiker aan (door admin)
+const createUserByAdmin = ({ email, name, password, approvalStatus, plan, createdBy }) => {
+    const users = loadUsers();
+    
+    // Check of email al bestaat
+    const existingUser = Object.values(users).find(u => u.email === email);
+    if (existingUser) {
+        return { error: 'Email bestaat al' };
+    }
+    
+    // Genereer unieke ID
+    const userId = crypto.randomBytes(16).toString('hex');
+    
+    // Hash wachtwoord
+    const hashedPassword = hashPassword(password);
+    
+    // Maak gebruiker
+    const now = new Date().toISOString();
+    users[userId] = {
+        id: userId,
+        email,
+        name,
+        password: hashedPassword,
+        authType: 'email',
+        approvalStatus: approvalStatus || 'approved',
+        createdAt: now,
+        updatedAt: now,
+        createdBy: createdBy || 'admin'
+    };
+    
+    // Als goedgekeurd, voeg approval info toe
+    if (approvalStatus === 'approved') {
+        users[userId].approvedAt = now;
+        users[userId].approvedBy = createdBy || 'admin';
+    }
+    
+    // Voeg subscription toe op basis van plan
+    if (plan === 'trial') {
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
+        users[userId].subscription = {
+            status: 'trialing',
+            trialStart: now,
+            trialEnd: trialEnd.toISOString()
+        };
+    } else if (plan && plan !== 'none') {
+        users[userId].subscription = {
+            plan: plan,
+            status: 'active',
+            startedAt: now,
+            expiresAt: null
+        };
+    }
+    
+    saveUsers(users);
+    
+    // Return zonder wachtwoord
+    const { password: _, ...safeUser } = users[userId];
+    return { success: true, user: safeUser };
+};
+
+// Update gebruiker gegevens (door admin)
+const updateUserByAdmin = (userId, { email, name, password }) => {
+    const users = loadUsers();
+    
+    if (!users[userId]) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    // Update velden
+    if (email) {
+        users[userId].email = email;
+    }
+    if (name !== undefined) {
+        users[userId].name = name;
+    }
+    if (password) {
+        users[userId].password = hashPassword(password);
+    }
+    
+    users[userId].updatedAt = new Date().toISOString();
+    
+    saveUsers(users);
+    
+    // Return zonder wachtwoord
+    const { password: _, ...safeUser } = users[userId];
+    return { success: true, user: safeUser };
+};
+
 module.exports = {
     saveUser,
     getUser,
@@ -532,5 +625,8 @@ module.exports = {
     approveUser,
     rejectUser,
     isUserApproved,
-    setUserPlan
+    setUserPlan,
+    // Admin CRUD functions
+    createUserByAdmin,
+    updateUserByAdmin
 };
