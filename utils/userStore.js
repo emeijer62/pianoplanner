@@ -424,18 +424,23 @@ const getCalendarSync = async (userId) => {
 };
 
 const updateCalendarSync = async (userId, settings) => {
+    console.log('📅 updateCalendarSync called with:', { userId, settings });
+    
     const calendarSync = JSON.stringify({
-        enabled: settings.enabled || false,
+        enabled: settings.enabled === true || settings.enabled === 'true',
         syncDirection: settings.syncDirection || 'both',
         googleCalendarId: settings.googleCalendarId || 'primary',
         updatedAt: new Date().toISOString()
     });
+    
+    console.log('📅 Saving calendar_sync:', calendarSync);
     
     await dbRun(`
         UPDATE users SET calendar_sync = ?, updated_at = ? WHERE id = ?
     `, [calendarSync, new Date().toISOString(), userId]);
     
     const user = await getUser(userId);
+    console.log('📅 Updated user calendar_sync:', user?.calendarSync);
     return { user };
 };
 
@@ -561,6 +566,15 @@ function formatUser(row) {
         }
     }
     
+    let calendarSync = null;
+    if (row.calendar_sync) {
+        try {
+            calendarSync = JSON.parse(row.calendar_sync);
+        } catch (e) {
+            calendarSync = null;
+        }
+    }
+    
     return {
         id: row.id,
         email: row.email,
@@ -575,6 +589,8 @@ function formatUser(row) {
         subscriptionId: row.subscription_id,
         subscriptionEndsAt: row.subscription_ends_at,
         stripeCustomerId: row.stripe_customer_id,
+        calendarSync: calendarSync,
+        bookingSlug: row.booking_slug,
         createdAt: row.created_at,
         updatedAt: row.updated_at
     };
