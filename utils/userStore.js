@@ -372,6 +372,44 @@ const updateUserByAdmin = async (userId, { email, name, password }) => {
     }
 };
 
+// ==================== CALENDAR SYNC ====================
+
+const getCalendarSync = async (userId) => {
+    const user = await dbGet('SELECT calendar_sync FROM users WHERE id = ?', [userId]);
+    if (!user || !user.calendar_sync) {
+        return {
+            enabled: false,
+            syncDirection: 'both',
+            googleCalendarId: 'primary'
+        };
+    }
+    try {
+        return JSON.parse(user.calendar_sync);
+    } catch (e) {
+        return {
+            enabled: false,
+            syncDirection: 'both',
+            googleCalendarId: 'primary'
+        };
+    }
+};
+
+const updateCalendarSync = async (userId, settings) => {
+    const calendarSync = JSON.stringify({
+        enabled: settings.enabled || false,
+        syncDirection: settings.syncDirection || 'both',
+        googleCalendarId: settings.googleCalendarId || 'primary',
+        updatedAt: new Date().toISOString()
+    });
+    
+    await dbRun(`
+        UPDATE users SET calendar_sync = ?, updated_at = ? WHERE id = ?
+    `, [calendarSync, new Date().toISOString(), userId]);
+    
+    const user = await getUser(userId);
+    return { user };
+};
+
 // Format database row naar camelCase
 function formatUser(row) {
     if (!row) return null;
@@ -433,5 +471,8 @@ module.exports = {
     // Admin
     setUserPlan,
     createUserByAdmin,
-    updateUserByAdmin
+    updateUserByAdmin,
+    // Calendar Sync
+    getCalendarSync,
+    updateCalendarSync
 };

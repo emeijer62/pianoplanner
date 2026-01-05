@@ -56,10 +56,19 @@ function initDatabase() {
                 subscription_status TEXT DEFAULT 'trial',
                 subscription_id TEXT,
                 subscription_ends_at DATETIME,
+                calendar_sync TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `, logTableCreation('users'));
+        
+        // Migratie: voeg calendar_sync kolom toe als die nog niet bestaat
+        db.run(`ALTER TABLE users ADD COLUMN calendar_sync TEXT`, (err) => {
+            // Negeer error als kolom al bestaat
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error:', err);
+            }
+        });
 
         // Customers tabel (per user)
         db.run(`

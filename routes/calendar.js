@@ -156,27 +156,37 @@ router.delete('/events/:eventId', requireGoogleAuth, async (req, res) => {
 // ==================== SYNC SETTINGS ====================
 
 // Get sync settings
-router.get('/sync-settings', requireAuth, (req, res) => {
-    const settings = userStore.getCalendarSync(req.session.user.id);
-    res.json({ settings: settings || {} });
+router.get('/sync-settings', requireAuth, async (req, res) => {
+    try {
+        const settings = await userStore.getCalendarSync(req.session.user.id);
+        res.json({ settings: settings || {} });
+    } catch (error) {
+        console.error('Error getting sync settings:', error);
+        res.status(500).json({ error: 'Kon sync instellingen niet ophalen' });
+    }
 });
 
 // Update sync settings
-router.post('/sync-settings', requireAuth, (req, res) => {
-    const { enabled, syncDirection, googleCalendarId } = req.body;
-    
-    const result = userStore.updateCalendarSync(req.session.user.id, {
-        enabled: enabled,
-        syncDirection: syncDirection || 'both',
-        googleCalendarId: googleCalendarId || 'primary'
-    });
-    
-    if (result.error) {
-        return res.status(400).json({ error: result.error });
+router.post('/sync-settings', requireAuth, async (req, res) => {
+    try {
+        const { enabled, syncDirection, googleCalendarId } = req.body;
+        
+        const result = await userStore.updateCalendarSync(req.session.user.id, {
+            enabled: enabled,
+            syncDirection: syncDirection || 'both',
+            googleCalendarId: googleCalendarId || 'primary'
+        });
+        
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        console.log(`🔄 Calendar sync settings updated for user ${req.session.user.email}`);
+        res.json({ success: true, settings: await userStore.getCalendarSync(req.session.user.id) });
+    } catch (error) {
+        console.error('Error updating sync settings:', error);
+        res.status(500).json({ error: 'Kon sync instellingen niet opslaan' });
     }
-    
-    console.log(`🔄 Calendar sync settings updated for user ${req.session.user.email}`);
-    res.json({ success: true, settings: result.user.calendarSync });
 });
 
 // List user's calendars
