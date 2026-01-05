@@ -5,14 +5,9 @@
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const DATA_DIR = require('./dataPath');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
 const CUSTOMERS_FILE = path.join(DATA_DIR, 'customers.json');
-
-// Zorg dat data directory bestaat
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-}
 
 // Laad klanten uit bestand
 const loadCustomers = () => {

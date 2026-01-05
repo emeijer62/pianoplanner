@@ -5,13 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
-
-const DATA_DIR = path.join(__dirname, '..', 'data');
-
-// Zorg dat data directory bestaat
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+const DATA_DIR = require('./dataPath');
 
 // Haal bestandspad voor gebruiker's piano's
 const getPianosFile = (userId) => {

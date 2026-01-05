@@ -6,13 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-
-const DATA_DIR = path.join(__dirname, '..', 'data');
-
-// Zorg dat data directory bestaat
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-}
+const DATA_DIR = require('./dataPath');
 
 // Helper: get file path voor gebruiker
 const getFilePath = (userId) => {

@@ -7,3 +7,7 @@ healthcheckPath = "/api/user"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
+
+[[mounts]]
+source = "data"
+destination = "/app/data"

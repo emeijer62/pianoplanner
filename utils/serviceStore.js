@@ -5,14 +5,9 @@
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const DATA_DIR = require('./dataPath');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
 const SERVICES_FILE = path.join(DATA_DIR, 'services.json');
-
-// Zorg dat data directory bestaat
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-}
 
 // Standaard diensten (worden aangemaakt als er nog geen zijn)
 const defaultServices = [

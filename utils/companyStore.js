@@ -4,14 +4,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const DATA_DIR = require('./dataPath');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
 const SETTINGS_FILE = path.join(DATA_DIR, 'company.json');
-
-// Zorg dat data directory bestaat
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-}
 
 // Standaard bedrijfsinstellingen
 const defaultSettings = {

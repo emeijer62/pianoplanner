@@ -6,14 +6,9 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const DATA_DIR = require('./dataPath');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
-
-// Zorg dat data directory bestaat
-if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-}
 
 // ============================================
 // PASSWORD HASHING
