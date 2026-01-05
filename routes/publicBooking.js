@@ -130,10 +130,15 @@ router.get('/:slug/slots', async (req, res) => {
         const company = await companyStore.getCompanySettings(user.id);
         const workingHours = company?.workingHours || getDefaultWorkingHours();
         
+        // Debug logging
+        console.log('📅 Slots request - date:', date, 'workingHours:', JSON.stringify(workingHours));
+        
         // Bepaal dag van de week
         const dayIndex = requestedDate.getDay();
         const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayName = dayNames[dayIndex];
+        
+        console.log('📅 Day:', dayName, 'dayIndex:', dayIndex, 'dayHours:', workingHours[dayName]);
         
         const dayHours = workingHours[dayName];
         if (!dayHours || !dayHours.enabled) {
