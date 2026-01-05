@@ -20,9 +20,10 @@ const createAppointment = async (userId, appointmentData) => {
             service_id, service_name,
             piano_id, piano_brand, piano_model,
             status, color, google_event_id,
+            travel_time_minutes, travel_distance_km, travel_start_time, origin_address,
             created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
         id,
         userId,
@@ -42,6 +43,10 @@ const createAppointment = async (userId, appointmentData) => {
         appointmentData.status || 'scheduled',
         appointmentData.color || '#4CAF50',
         appointmentData.googleEventId || null,
+        appointmentData.travelTimeMinutes || null,
+        appointmentData.travelDistanceKm || null,
+        appointmentData.travelStartTime || null,
+        appointmentData.originAddress || null,
         now,
         now
     ]);
@@ -210,6 +215,11 @@ function formatAppointment(row) {
         color: row.color,
         googleEventId: row.google_event_id,
         lastSynced: row.last_synced,
+        // Travel info
+        travelTimeMinutes: row.travel_time_minutes,
+        travelDistanceKm: row.travel_distance_km,
+        travelStartTime: row.travel_start_time,
+        originAddress: row.origin_address,
         createdAt: row.created_at,
         updatedAt: row.updated_at
     };

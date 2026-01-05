@@ -49,6 +49,11 @@ router.get('/', async (req, res) => {
             pianoModel: apt.pianoModel,
             status: apt.status,
             colorId: apt.color,
+            // Reistijd info
+            travelTimeMinutes: apt.travelTimeMinutes,
+            travelDistanceKm: apt.travelDistanceKm,
+            travelStartTime: apt.travelStartTime,
+            originAddress: apt.originAddress,
             source: 'local'
         }));
         

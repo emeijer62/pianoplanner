@@ -10,6 +10,7 @@ const serviceStore = require('../utils/serviceStore');
 const customerStore = require('../utils/customerStore');
 const appointmentStore = require('../utils/appointmentStore');
 const companyStore = require('../utils/companyStore');
+const { calculateTravelTime } = require('../utils/travelTime');
 
 // ==================== PUBLIC BOOKING PAGE DATA ====================
 
@@ -142,7 +143,14 @@ router.get('/:slug/slots', async (req, res) => {
         // Haal bestaande afspraken op voor die dag
         const appointments = await appointmentStore.getAppointmentsForDay(user.id, date);
         
-        // Genereer beschikbare slots
+        // Haal bedrijfsadres op voor reistijd schatting
+        const originAddress = company?.travelOrigin || 
+            [company?.address?.street, company?.address?.postalCode, company?.address?.city].filter(Boolean).join(', ');
+        
+        // Default reistijd (30 min) als we geen bedrijfsadres hebben
+        let defaultTravelTime = 30;
+        
+        // Genereer beschikbare slots (eerste slot houdt rekening met reistijd)
         const slots = generateTimeSlots(
             date,
             dayHours.start,
@@ -150,10 +158,14 @@ router.get('/:slug/slots', async (req, res) => {
             service.duration,
             service.bufferBefore || 0,
             service.bufferAfter || 0,
-            appointments
+            appointments,
+            defaultTravelTime
         );
         
-        res.json({ slots });
+        res.json({ 
+            slots,
+            note: originAddress ? 'Tijden zijn aankomsttijden bij u' : null
+        });
         
     } catch (error) {
         console.error('Slots error:', error);
@@ -213,10 +225,12 @@ router.post('/:slug', async (req, res) => {
         }
         
         let customerId;
+        let customerRecord;
         if (existingCustomer) {
             customerId = existingCustomer.id;
+            customerRecord = existingCustomer;
         } else {
-            const newCustomer = await customerStore.createCustomer(user.id, {
+            customerRecord = await customerStore.createCustomer(user.id, {
                 name: customer.name,
                 email: customer.email || null,
                 phone: customer.phone || null,
@@ -225,26 +239,61 @@ router.post('/:slug', async (req, res) => {
                 city: customer.city || null,
                 notes: 'Aangemaakt via online boeking'
             });
-            customerId = newCustomer.id;
+            customerId = customerRecord.id;
         }
         
-        // Bereken start en eind tijd
-        const startTime = `${date}T${time}:00`;
-        const endTime = calculateEndTime(startTime, service.duration);
+        // Haal bedrijfsadres op voor reistijd berekening
+        const company = await companyStore.getCompanySettings(user.id);
+        const originAddress = company?.travelOrigin || 
+            [company?.address?.street, company?.address?.postalCode, company?.address?.city].filter(Boolean).join(', ');
         
-        // Maak de afspraak aan
+        // Bepaal klant adres
+        const customerAddress = [
+            customer.street || customerRecord?.address?.street,
+            customer.postalCode || customerRecord?.address?.postalCode,
+            customer.city || customerRecord?.address?.city
+        ].filter(Boolean).join(', ');
+        
+        // Bereken reistijd als we beide adressen hebben
+        let travelInfo = null;
+        if (originAddress && customerAddress) {
+            try {
+                travelInfo = await calculateTravelTime(originAddress, customerAddress);
+            } catch (err) {
+                console.log('Kon reistijd niet berekenen:', err.message);
+            }
+        }
+        
+        // Bereken tijden
+        // De klant boekt een aankomsttijd, wij berekenen wanneer we moeten vertrekken
+        const arrivalTime = `${date}T${time}:00`;
+        const endTime = calculateEndTime(arrivalTime, service.duration);
+        
+        // Reistijd start = aankomsttijd - reistijd
+        let travelStartTime = null;
+        if (travelInfo?.duration) {
+            const arrival = new Date(arrivalTime);
+            travelStartTime = new Date(arrival.getTime() - (travelInfo.duration * 60 * 1000)).toISOString();
+        }
+        
+        // Maak de afspraak aan met reistijd info
         const appointment = await appointmentStore.createAppointment(user.id, {
             title: `${service.name} - ${customer.name}`,
-            description: `Online geboekt\n${customer.phone ? 'Tel: ' + customer.phone : ''}\n${customer.email ? 'Email: ' + customer.email : ''}`,
-            location: customer.city || null,
-            start: startTime,
+            description: `Online geboekt\n${customer.phone ? 'Tel: ' + customer.phone : ''}\n${customer.email ? 'Email: ' + customer.email : ''}${travelInfo ? `\n\n🚗 Reistijd: ${travelInfo.durationText} (${travelInfo.distanceText})` : ''}`,
+            location: customerAddress || customer.city || null,
+            start: arrivalTime,
             end: endTime,
             customerId: customerId,
             customerName: customer.name,
             serviceId: service.id,
             serviceName: service.name,
             status: 'scheduled',
-            color: service.color || '#4CAF50'
+            color: service.color || '#4CAF50',
+            // Reistijd info
+            travelTimeMinutes: travelInfo?.duration || null,
+            travelDistanceKm: travelInfo?.distance || null,
+            travelStartTime: travelStartTime,
+            originAddress: originAddress || null
         });
         
         // TODO: Stuur bevestigingsmail naar klant
@@ -257,7 +306,9 @@ router.post('/:slug', async (req, res) => {
                 date: date,
                 time: time,
                 service: service.name,
-                duration: service.duration
+                duration: service.duration,
+                travelTime: travelInfo?.duration || null,
+                travelDistance: travelInfo?.distance || null
             }
         });
         
@@ -281,27 +332,33 @@ function getDefaultWorkingHours() {
     };
 }
 
-function generateTimeSlots(date, startHour, endHour, duration, bufferBefore, bufferAfter, existingAppointments) {
+function generateTimeSlots(date, startHour, endHour, duration, bufferBefore, bufferAfter, existingAppointments, defaultTravelTime = 30) {
     const slots = [];
-    const totalDuration = duration + bufferBefore + bufferAfter;
     
     // Parse start en eind uren
     const [startH, startM] = startHour.split(':').map(Number);
     const [endH, endM] = endHour.split(':').map(Number);
     
-    // Start tijd in minuten
-    let currentMinutes = startH * 60 + startM;
+    // Start tijd in minuten - eerste slot moet ruimte hebben voor reistijd
+    // Als werkdag start om 09:00 en reistijd is 30 min, dan is eerste aankomst 09:30
+    let currentMinutes = startH * 60 + startM + defaultTravelTime;
     const endMinutes = endH * 60 + endM;
     
     while (currentMinutes + duration <= endMinutes) {
         const slotStart = formatMinutesToTime(currentMinutes);
         const slotEnd = formatMinutesToTime(currentMinutes + duration);
         
-        // Check overlap met bestaande afspraken
+        // Check overlap met bestaande afspraken (inclusief hun reistijd)
         const hasConflict = existingAppointments.some(apt => {
-            const aptStart = new Date(apt.start).toTimeString().slice(0, 5);
+            // Gebruik travelStartTime als die bestaat, anders start
+            const aptStartTime = apt.travelStartTime || apt.start;
+            const aptStart = new Date(aptStartTime).toTimeString().slice(0, 5);
             const aptEnd = new Date(apt.end).toTimeString().slice(0, 5);
-            return timesOverlap(slotStart, slotEnd, aptStart, aptEnd);
+            
+            // Onze reistijd begint defaultTravelTime minuten voor aankomst
+            const ourTravelStart = formatMinutesToTime(currentMinutes - defaultTravelTime);
+            
+            return timesOverlap(ourTravelStart, slotEnd, aptStart, aptEnd);
         });
         
         if (!hasConflict) {

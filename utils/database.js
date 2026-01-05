@@ -82,6 +82,28 @@ function initDatabase() {
             }
         });
         
+        // Migratie: voeg travel_time kolommen toe aan appointments
+        db.run(`ALTER TABLE appointments ADD COLUMN travel_time_minutes INTEGER`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error travel_time_minutes:', err);
+            }
+        });
+        db.run(`ALTER TABLE appointments ADD COLUMN travel_distance_km INTEGER`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error travel_distance_km:', err);
+            }
+        });
+        db.run(`ALTER TABLE appointments ADD COLUMN travel_start_time DATETIME`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error travel_start_time:', err);
+            }
+        });
+        db.run(`ALTER TABLE appointments ADD COLUMN origin_address TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error origin_address:', err);
+            }
+        });
+        
         // Index voor snelle booking slug lookup
         db.run('CREATE INDEX IF NOT EXISTS idx_users_booking_slug ON users(booking_slug)');
 

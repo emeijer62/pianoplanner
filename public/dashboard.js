@@ -459,15 +459,35 @@ function createEventElement(event, compact = false) {
     const timeStr = start ? start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : '';
     const color = getEventColor(event);
     
+    // Check voor reistijd info
+    const hasTravelTime = event.travelTimeMinutes && event.travelStartTime;
+    let travelStr = '';
+    if (hasTravelTime) {
+        const travelStart = new Date(event.travelStartTime);
+        travelStr = travelStart.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    }
+    
     if (compact) {
         return `
-            <div class="calendar-event" style="background: ${color}" title="${escapeHtml(event.summary || 'Geen titel')}">
+            <div class="calendar-event" style="background: ${color}" title="${escapeHtml(event.summary || 'Geen titel')}${hasTravelTime ? ` (🚗 ${event.travelTimeMinutes} min)` : ''}">
                 ${escapeHtml(event.summary || 'Geen titel')}
             </div>
         `;
     }
     
+    // Toon reistijd als apart blok vóór de afspraak
+    let travelBlock = '';
+    if (hasTravelTime) {
+        travelBlock = `
+            <div class="calendar-event calendar-event-travel" style="background: #90a4ae; opacity: 0.8; font-size: 0.75rem;">
+                <div class="calendar-event-time">${travelStr}</div>
+                <div>🚗 Reistijd (${event.travelTimeMinutes} min${event.travelDistanceKm ? ', ' + event.travelDistanceKm + ' km' : ''})</div>
+            </div>
+        `;
+    }
+    
     return `
+        ${travelBlock}
         <div class="calendar-event" style="background: ${color}">
             <div class="calendar-event-time">${timeStr}</div>
             <div>${escapeHtml(event.summary || 'Geen titel')}</div>
