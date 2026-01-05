@@ -223,28 +223,26 @@ router.get('/list', requireGoogleAuth, async (req, res) => {
 
 // Perform sync
 router.post('/sync', requireGoogleAuth, async (req, res) => {
-    const syncSettings = userStore.getCalendarSync(req.session.user.id);
-    
-    if (!syncSettings?.enabled) {
-        return res.status(400).json({ error: 'Synchronisatie is niet ingeschakeld' });
-    }
-    
-    const auth = getAuthClient(req);
-    const calendar = google.calendar({ version: 'v3', auth });
-    
-    const calendarId = syncSettings.googleCalendarId || 'primary';
-    const direction = syncSettings.syncDirection || 'both';
-    
-    let synced = 0;
-    
     try {
-        // Load local appointments
-        const appointmentsFile = path.join(__dirname, '..', 'data', `appointments_${req.session.user.id}.json`);
-        let localAppointments = [];
+        const syncSettings = await userStore.getCalendarSync(req.session.user.id);
         
-        if (fs.existsSync(appointmentsFile)) {
-            localAppointments = JSON.parse(fs.readFileSync(appointmentsFile, 'utf8'));
+        if (!syncSettings?.enabled) {
+            return res.status(400).json({ error: 'Synchronisatie is niet ingeschakeld' });
         }
+        
+        const auth = getAuthClient(req);
+        const calendar = google.calendar({ version: 'v3', auth });
+        
+        const calendarId = syncSettings.googleCalendarId || 'primary';
+        const direction = syncSettings.syncDirection || 'both';
+        
+        let synced = 0;
+        
+        // Import appointmentStore voor database operaties
+        const appointmentStore = require('../utils/appointmentStore');
+        
+        // Load local appointments from database
+        const localAppointments = await appointmentStore.getAllAppointments(req.session.user.id);
         
         // Sync TO Google (local → Google)
         if (direction === 'both' || direction === 'toGoogle') {
@@ -257,14 +255,14 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
                         summary: appointment.title || appointment.serviceName || 'PianoPlanner Afspraak',
                         description: `Klant: ${appointment.customerName || 'Onbekend'}\n${appointment.notes || ''}`,
                         start: {
-                            dateTime: appointment.startTime,
+                            dateTime: appointment.startTime || appointment.start,
                             timeZone: 'Europe/Amsterdam'
                         },
                         end: {
-                            dateTime: appointment.endTime,
+                            dateTime: appointment.endTime || appointment.end,
                             timeZone: 'Europe/Amsterdam'
                         },
-                        location: appointment.address || ''
+                        location: appointment.address || appointment.location || ''
                     };
                     
                     const response = await calendar.events.insert({
@@ -272,17 +270,16 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
                         resource: event
                     });
                     
-                    // Save Google Event ID back to local appointment
-                    appointment.googleEventId = response.data.id;
-                    appointment.lastSynced = new Date().toISOString();
+                    // Save Google Event ID back to appointment in database
+                    await appointmentStore.updateAppointment(req.session.user.id, appointment.id, {
+                        googleEventId: response.data.id,
+                        lastSynced: new Date().toISOString()
+                    });
                     synced++;
                 } catch (err) {
                     console.error('Error syncing event to Google:', err.message);
                 }
             }
-            
-            // Save updated appointments with Google IDs
-            fs.writeFileSync(appointmentsFile, JSON.stringify(localAppointments, null, 2));
         }
         
         // Sync FROM Google (Google → local)
@@ -310,30 +307,28 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
                 if (!event.start.dateTime) continue;
                 
                 // Create local appointment from Google event
-                // Gebruik dezelfde veldnamen als appointmentStore
-                const newAppointment = {
-                    id: 'google_' + event.id,
-                    googleEventId: event.id,
-                    title: event.summary || 'Google Agenda',
-                    description: event.description || '',
-                    location: event.location || '',
-                    start: event.start.dateTime,
-                    end: event.end.dateTime,
-                    allDay: false,
-                    source: 'google',
-                    lastSynced: new Date().toISOString()
-                };
-                
-                localAppointments.push(newAppointment);
-                synced++;
+                try {
+                    await appointmentStore.createAppointment(req.session.user.id, {
+                        googleEventId: event.id,
+                        title: event.summary || 'Google Agenda',
+                        description: event.description || '',
+                        location: event.location || '',
+                        startTime: event.start.dateTime,
+                        endTime: event.end.dateTime,
+                        allDay: false,
+                        source: 'google',
+                        lastSynced: new Date().toISOString()
+                    });
+                    synced++;
+                } catch (err) {
+                    console.error('Error creating appointment from Google:', err.message);
+                }
             }
-            
-            // Save updated appointments
-            fs.writeFileSync(appointmentsFile, JSON.stringify(localAppointments, null, 2));
         }
         
         // Update last sync time
-        userStore.updateCalendarSync(req.session.user.id, {
+        await userStore.updateCalendarSync(req.session.user.id, {
+            ...syncSettings,
             lastSync: new Date().toISOString()
         });
         
