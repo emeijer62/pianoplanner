@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const userStore = require('../utils/userStoreDB');
+const userStore = require('../utils/userStore');
 
 // Admin credentials (uit environment)
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';

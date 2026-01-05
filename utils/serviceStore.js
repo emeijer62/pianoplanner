@@ -1,199 +1,162 @@
 /**
- * Diensten opslag - Aanpasbare diensten met buffertijden
+ * Service Store - SQLite versie
+ * Diensten configuratie (stemmen, regulatie, etc.)
  */
 
-const fs = require('fs');
-const path = require('path');
+const { dbRun, dbGet, dbAll } = require('./database');
 const { v4: uuidv4 } = require('uuid');
-const DATA_DIR = require('./dataPath');
 
-const SERVICES_FILE = path.join(DATA_DIR, 'services.json');
+// ==================== SERVICE CRUD ====================
 
-// Standaard diensten (worden aangemaakt als er nog geen zijn)
-const defaultServices = [
-    {
-        id: 'stemmen',
-        name: 'Piano stemmen',
-        duration: 60,
-        bufferBefore: 0,
-        bufferAfter: 0,
-        description: 'Standaard stembeurt voor piano of vleugel',
-        price: 95,
-        color: '#4CAF50',
-        active: true
-    },
-    {
-        id: 'stemmen-concert',
-        name: 'Concertstemming',
-        duration: 90,
-        bufferBefore: 15,
-        bufferAfter: 0,
-        description: 'Uitgebreide stembeurt voor concerten of opnames',
-        price: 145,
-        color: '#2196F3',
-        active: true
-    },
-    {
-        id: 'reparatie-klein',
-        name: 'Kleine reparatie',
-        duration: 60,
-        bufferBefore: 0,
-        bufferAfter: 0,
-        description: 'Kleine reparaties en afstellingen',
-        price: 75,
-        color: '#FF9800',
-        active: true
-    },
-    {
-        id: 'reparatie-groot',
-        name: 'Grote reparatie',
-        duration: 180,
-        bufferBefore: 0,
-        bufferAfter: 30,
-        description: 'Uitgebreide reparatie werkzaamheden',
-        price: 0,
-        color: '#F44336',
-        active: true
-    },
-    {
-        id: 'taxatie',
-        name: 'Taxatie',
-        duration: 45,
-        bufferBefore: 0,
-        bufferAfter: 0,
-        description: 'Waardebepaling van piano of vleugel',
-        price: 65,
-        color: '#9C27B0',
-        active: true
-    },
-    {
-        id: 'consult',
-        name: 'Adviesgesprek',
-        duration: 30,
-        bufferBefore: 0,
-        bufferAfter: 0,
-        description: 'Advies over aankoop, onderhoud of verplaatsing',
-        price: 0,
-        color: '#607D8B',
-        active: true
-    }
-];
-
-// Laad diensten uit bestand
-const loadServices = () => {
-    try {
-        if (fs.existsSync(SERVICES_FILE)) {
-            const data = fs.readFileSync(SERVICES_FILE, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('Error loading services:', error);
-    }
-    
-    // Eerste keer: sla standaard diensten op
-    saveAllServices(defaultServices);
-    return defaultServices;
-};
-
-// Sla alle diensten op
-const saveAllServices = (services) => {
-    try {
-        fs.writeFileSync(SERVICES_FILE, JSON.stringify(services, null, 2));
-    } catch (error) {
-        console.error('Error saving services:', error);
-    }
-};
-
-// Haal alle actieve diensten op
-const getAllServices = () => {
-    const services = loadServices();
-    return services.filter(s => s.active !== false);
-};
-
-// Haal alle diensten op (inclusief inactieve, voor admin)
-const getAllServicesAdmin = () => {
-    return loadServices();
-};
-
-// Haal dienst op via ID
-const getService = (serviceId) => {
-    const services = loadServices();
-    return services.find(s => s.id === serviceId) || null;
-};
-
-// Maak nieuwe dienst aan of update bestaande
-const saveService = (serviceData) => {
-    const services = loadServices();
-    
+const createService = async (userId, serviceData) => {
     const id = serviceData.id || uuidv4();
-    const existingIndex = services.findIndex(s => s.id === id);
     
-    const service = {
+    await dbRun(`
+        INSERT INTO services (id, user_id, name, duration, buffer_before, buffer_after, description, price, active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
         id,
-        name: serviceData.name,
-        duration: parseInt(serviceData.duration) || 60,
-        bufferBefore: parseInt(serviceData.bufferBefore) || 0,
-        bufferAfter: parseInt(serviceData.bufferAfter) || 0,
-        description: serviceData.description || '',
-        price: parseFloat(serviceData.price) || 0,
-        color: serviceData.color || '#4CAF50',
-        active: serviceData.active !== false,
-        updatedAt: new Date().toISOString()
+        userId,
+        serviceData.name,
+        serviceData.duration,
+        serviceData.bufferBefore || 0,
+        serviceData.bufferAfter || 0,
+        serviceData.description || null,
+        serviceData.price || null,
+        serviceData.active !== false ? 1 : 0,
+        new Date().toISOString()
+    ]);
+    
+    return getService(userId, id);
+};
+
+const getService = async (userId, serviceId) => {
+    // Probeer eerst user-specifieke service, dan globale
+    let service = await dbGet(
+        'SELECT * FROM services WHERE id = ? AND user_id = ?',
+        [serviceId, userId]
+    );
+    
+    if (!service) {
+        service = await dbGet(
+            'SELECT * FROM services WHERE id = ? AND user_id IS NULL',
+            [serviceId]
+        );
+    }
+    
+    if (!service) return null;
+    return formatService(service);
+};
+
+const getAllServices = async (userId) => {
+    // Haal zowel globale als user-specifieke services op
+    const services = await dbAll(`
+        SELECT * FROM services 
+        WHERE user_id = ? OR user_id IS NULL
+        ORDER BY name ASC
+    `, [userId]);
+    
+    return services.map(formatService);
+};
+
+const getActiveServices = async (userId) => {
+    const services = await dbAll(`
+        SELECT * FROM services 
+        WHERE (user_id = ? OR user_id IS NULL) AND active = 1
+        ORDER BY name ASC
+    `, [userId]);
+    
+    return services.map(formatService);
+};
+
+const updateService = async (userId, serviceId, updates) => {
+    const fields = [];
+    const values = [];
+    
+    if (updates.name !== undefined) {
+        fields.push('name = ?');
+        values.push(updates.name);
+    }
+    if (updates.duration !== undefined) {
+        fields.push('duration = ?');
+        values.push(updates.duration);
+    }
+    if (updates.bufferBefore !== undefined) {
+        fields.push('buffer_before = ?');
+        values.push(updates.bufferBefore);
+    }
+    if (updates.bufferAfter !== undefined) {
+        fields.push('buffer_after = ?');
+        values.push(updates.bufferAfter);
+    }
+    if (updates.description !== undefined) {
+        fields.push('description = ?');
+        values.push(updates.description);
+    }
+    if (updates.price !== undefined) {
+        fields.push('price = ?');
+        values.push(updates.price);
+    }
+    if (updates.active !== undefined) {
+        fields.push('active = ?');
+        values.push(updates.active ? 1 : 0);
+    }
+    
+    if (fields.length === 0) return getService(userId, serviceId);
+    
+    values.push(serviceId);
+    values.push(userId);
+    
+    await dbRun(`UPDATE services SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`, values);
+    return getService(userId, serviceId);
+};
+
+const deleteService = async (userId, serviceId) => {
+    const result = await dbRun(
+        'DELETE FROM services WHERE id = ? AND user_id = ?',
+        [serviceId, userId]
+    );
+    return result.changes > 0;
+};
+
+const activateService = async (userId, serviceId) => {
+    const result = await dbRun(
+        'UPDATE services SET active = 1 WHERE id = ? AND user_id = ?',
+        [serviceId, userId]
+    );
+    return result.changes > 0;
+};
+
+const deactivateService = async (userId, serviceId) => {
+    const result = await dbRun(
+        'UPDATE services SET active = 0 WHERE id = ? AND user_id = ?',
+        [serviceId, userId]
+    );
+    return result.changes > 0;
+};
+
+// Format database row naar camelCase
+function formatService(row) {
+    return {
+        id: row.id,
+        name: row.name,
+        duration: row.duration,
+        bufferBefore: row.buffer_before,
+        bufferAfter: row.buffer_after,
+        description: row.description,
+        price: row.price,
+        active: row.active === 1,
+        createdAt: row.created_at
     };
-    
-    if (existingIndex >= 0) {
-        services[existingIndex] = { ...services[existingIndex], ...service };
-    } else {
-        service.createdAt = new Date().toISOString();
-        services.push(service);
-    }
-    
-    saveAllServices(services);
-    return service;
-};
-
-// Verwijder dienst (soft delete - zet active op false)
-const deleteService = (serviceId) => {
-    const services = loadServices();
-    const index = services.findIndex(s => s.id === serviceId);
-    
-    if (index >= 0) {
-        services[index].active = false;
-        services[index].updatedAt = new Date().toISOString();
-        saveAllServices(services);
-        return true;
-    }
-    return false;
-};
-
-// Activeer dienst opnieuw
-const activateService = (serviceId) => {
-    const services = loadServices();
-    const index = services.findIndex(s => s.id === serviceId);
-    
-    if (index >= 0) {
-        services[index].active = true;
-        services[index].updatedAt = new Date().toISOString();
-        saveAllServices(services);
-        return true;
-    }
-    return false;
-};
-
-// Bereken totale duur inclusief buffers
-const getTotalDuration = (serviceId) => {
-    const service = getService(serviceId);
-    if (!service) return 0;
-    return service.bufferBefore + service.duration + service.bufferAfter;
-};
+}
 
 module.exports = {
-    getAllServices,
-    getAllServicesAdmin,
+    createService,
     getService,
-    saveService,
+    getAllServices,
+    getActiveServices,
+    updateService,
     deleteService,
     activateService,
-    getTotalDuration,
-    defaultServices
+    deactivateService
 };

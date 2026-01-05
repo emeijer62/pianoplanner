@@ -1,122 +1,174 @@
 /**
- * Bedrijfsinstellingen opslag
+ * Company Store - SQLite versie
+ * Bedrijfsinstellingen per gebruiker
  */
 
-const fs = require('fs');
-const path = require('path');
-const DATA_DIR = require('./dataPath');
+const { dbRun, dbGet } = require('./database');
 
-const SETTINGS_FILE = path.join(DATA_DIR, 'company.json');
+// ==================== COMPANY SETTINGS CRUD ====================
 
-// Standaard bedrijfsinstellingen
-const defaultSettings = {
-    name: '',
-    ownerName: '',
-    email: '',
-    phone: '',
-    address: {
-        street: '',
-        postalCode: '',
-        city: '',
-        country: '',
-        // Geolocation voor wereldwijde ondersteuning
-        formattedAddress: '',
-        placeId: '',
-        lat: null,
-        lng: null
-    },
-    // Beschikbaarheid per dag (0 = zondag, 1 = maandag, etc.)
-    availability: {
-        0: { available: false, start: '09:00', end: '18:00' }, // Zondag
-        1: { available: true, start: '09:00', end: '18:00' },  // Maandag
-        2: { available: true, start: '09:00', end: '18:00' },  // Dinsdag
-        3: { available: true, start: '09:00', end: '18:00' },  // Woensdag
-        4: { available: true, start: '09:00', end: '18:00' },  // Donderdag
-        5: { available: true, start: '09:00', end: '18:00' },  // Vrijdag
-        6: { available: false, start: '09:00', end: '18:00' }  // Zaterdag
-    },
-    // Tijdzone voor internationale gebruikers
-    timezone: 'Europe/Amsterdam',
-    createdAt: null,
-    updatedAt: null
+const getSettings = async (userId) => {
+    const settings = await dbGet(
+        'SELECT * FROM company_settings WHERE user_id = ?',
+        [userId]
+    );
+    
+    if (!settings) {
+        return getDefaultSettings();
+    }
+    
+    return formatSettings(settings);
 };
 
-// Laad instellingen
-const getSettings = () => {
-    try {
-        if (fs.existsSync(SETTINGS_FILE)) {
-            const data = fs.readFileSync(SETTINGS_FILE, 'utf8');
-            return { ...defaultSettings, ...JSON.parse(data) };
+const saveSettings = async (userId, settingsData) => {
+    const existing = await dbGet('SELECT id FROM company_settings WHERE user_id = ?', [userId]);
+    
+    if (existing) {
+        // Update
+        await dbRun(`
+            UPDATE company_settings SET
+                name = ?, owner_name = ?, email = ?, phone = ?,
+                street = ?, postal_code = ?, city = ?, country = ?,
+                kvk_number = ?, btw_number = ?, iban = ?,
+                website = ?, logo_url = ?, travel_origin = ?,
+                working_hours = ?, updated_at = ?
+            WHERE user_id = ?
+        `, [
+            settingsData.name || null,
+            settingsData.ownerName || null,
+            settingsData.email || null,
+            settingsData.phone || null,
+            settingsData.address?.street || settingsData.street || null,
+            settingsData.address?.postalCode || settingsData.postalCode || null,
+            settingsData.address?.city || settingsData.city || null,
+            settingsData.address?.country || settingsData.country || 'NL',
+            settingsData.kvkNumber || null,
+            settingsData.btwNumber || null,
+            settingsData.iban || null,
+            settingsData.website || null,
+            settingsData.logoUrl || null,
+            settingsData.travelOrigin || null,
+            settingsData.workingHours ? JSON.stringify(settingsData.workingHours) : null,
+            new Date().toISOString(),
+            userId
+        ]);
+    } else {
+        // Insert
+        await dbRun(`
+            INSERT INTO company_settings (
+                id, user_id, name, owner_name, email, phone,
+                street, postal_code, city, country,
+                kvk_number, btw_number, iban,
+                website, logo_url, travel_origin, working_hours, updated_at
+            )
+            VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            userId,
+            settingsData.name || null,
+            settingsData.ownerName || null,
+            settingsData.email || null,
+            settingsData.phone || null,
+            settingsData.address?.street || settingsData.street || null,
+            settingsData.address?.postalCode || settingsData.postalCode || null,
+            settingsData.address?.city || settingsData.city || null,
+            settingsData.address?.country || settingsData.country || 'NL',
+            settingsData.kvkNumber || null,
+            settingsData.btwNumber || null,
+            settingsData.iban || null,
+            settingsData.website || null,
+            settingsData.logoUrl || null,
+            settingsData.travelOrigin || null,
+            settingsData.workingHours ? JSON.stringify(settingsData.workingHours) : null,
+            new Date().toISOString()
+        ]);
+    }
+    
+    return getSettings(userId);
+};
+
+const getOriginAddress = async (userId) => {
+    const settings = await getSettings(userId);
+    
+    if (settings.travelOrigin) {
+        return settings.travelOrigin;
+    }
+    
+    // Fallback naar bedrijfsadres
+    const parts = [settings.address?.street, settings.address?.postalCode, settings.address?.city]
+        .filter(Boolean);
+    
+    return parts.length > 0 ? parts.join(', ') : null;
+};
+
+// Default instellingen
+function getDefaultSettings() {
+    return {
+        name: '',
+        ownerName: '',
+        email: '',
+        phone: '',
+        address: {
+            street: '',
+            postalCode: '',
+            city: '',
+            country: 'NL'
+        },
+        kvkNumber: '',
+        btwNumber: '',
+        iban: '',
+        website: '',
+        logoUrl: '',
+        travelOrigin: '',
+        workingHours: {
+            monday: { start: '09:00', end: '17:00', enabled: true },
+            tuesday: { start: '09:00', end: '17:00', enabled: true },
+            wednesday: { start: '09:00', end: '17:00', enabled: true },
+            thursday: { start: '09:00', end: '17:00', enabled: true },
+            friday: { start: '09:00', end: '17:00', enabled: true },
+            saturday: { start: '09:00', end: '13:00', enabled: false },
+            sunday: { start: '09:00', end: '17:00', enabled: false }
         }
-    } catch (error) {
-        console.error('Error loading company settings:', error);
-    }
-    return { ...defaultSettings };
-};
+    };
+}
 
-// Sla instellingen op
-const saveSettings = (settings) => {
-    try {
-        const current = getSettings();
-        const updated = {
-            ...current,
-            ...settings,
-            updatedAt: new Date().toISOString()
-        };
-        
-        if (!updated.createdAt) {
-            updated.createdAt = new Date().toISOString();
+// Format database row naar camelCase
+function formatSettings(row) {
+    let workingHours = null;
+    if (row.working_hours) {
+        try {
+            workingHours = JSON.parse(row.working_hours);
+        } catch (e) {
+            workingHours = getDefaultSettings().workingHours;
         }
-        
-        fs.writeFileSync(SETTINGS_FILE, JSON.stringify(updated, null, 2));
-        return updated;
-    } catch (error) {
-        console.error('Error saving company settings:', error);
-        throw error;
-    }
-};
-
-// Haal volledig adres op (voor reistijd berekening)
-const getOriginAddress = () => {
-    const settings = getSettings();
-    const { street, postalCode, city, country, formattedAddress, lat, lng } = settings.address;
-    
-    // Als coördinaten beschikbaar, gebruik die (meest nauwkeurig)
-    if (lat && lng) {
-        return `${lat},${lng}`;
+    } else {
+        workingHours = getDefaultSettings().workingHours;
     }
     
-    // Als geformatteerd adres beschikbaar
-    if (formattedAddress) {
-        return formattedAddress;
-    }
-    
-    // Bouw adres op uit componenten
-    if (city) {
-        const parts = [street, postalCode, city, country].filter(Boolean);
-        return parts.join(', ');
-    }
-    
-    // Geen adres ingesteld
-    return null;
-};
-
-// Haal coördinaten op
-const getOriginCoordinates = () => {
-    const settings = getSettings();
-    if (settings.address.lat && settings.address.lng) {
-        return {
-            lat: settings.address.lat,
-            lng: settings.address.lng
-        };
-    }
-    return null;
-};
+    return {
+        name: row.name || '',
+        ownerName: row.owner_name || '',
+        email: row.email || '',
+        phone: row.phone || '',
+        address: {
+            street: row.street || '',
+            postalCode: row.postal_code || '',
+            city: row.city || '',
+            country: row.country || 'NL'
+        },
+        kvkNumber: row.kvk_number || '',
+        btwNumber: row.btw_number || '',
+        iban: row.iban || '',
+        website: row.website || '',
+        logoUrl: row.logo_url || '',
+        travelOrigin: row.travel_origin || '',
+        workingHours: workingHours,
+        updatedAt: row.updated_at
+    };
+}
 
 module.exports = {
     getSettings,
     saveSettings,
     getOriginAddress,
-    getOriginCoordinates,
-    defaultSettings
+    getDefaultSettings
 };

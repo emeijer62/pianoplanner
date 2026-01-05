@@ -1,7 +1,7 @@
 const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
-const userStore = require('../utils/userStoreDB');
+const userStore = require('../utils/userStore');
 
 // Google OAuth2 client
 const oauth2Client = new google.auth.OAuth2(

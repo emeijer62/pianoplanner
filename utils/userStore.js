@@ -1,281 +1,169 @@
 /**
- * Simpele lokale gebruikersopslag (JSON bestand)
- * Geen database nodig!
+ * User Store - SQLite versie
+ * Gebruikersbeheer met Google OAuth en Email/Password
  */
 
-const fs = require('fs');
-const path = require('path');
+const { dbRun, dbGet, dbAll } = require('./database');
+const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
-const DATA_DIR = require('./dataPath');
 
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
+// ==================== PASSWORD HASHING ====================
 
-// ============================================
-// PASSWORD HASHING
-// ============================================
-
-// Hash wachtwoord met salt
 const hashPassword = (password) => {
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
     return `${salt}:${hash}`;
 };
 
-// Verifieer wachtwoord
 const verifyPassword = (password, storedHash) => {
+    if (!storedHash) return false;
     const [salt, hash] = storedHash.split(':');
-    const verifyHash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-    return hash === verifyHash;
+    const testHash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+    return hash === testHash;
 };
 
-// Laad gebruikers uit bestand
-const loadUsers = () => {
-    try {
-        if (fs.existsSync(USERS_FILE)) {
-            const data = fs.readFileSync(USERS_FILE, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('Error loading users:', error);
-    }
-    return {};
-};
+// ==================== USER CRUD ====================
 
-// Sla gebruikers op naar bestand
-const saveUsers = (users) => {
-    try {
-        fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-    } catch (error) {
-        console.error('Error saving users:', error);
-    }
-};
-
-// Sla gebruiker op of update bestaande
-const saveUser = (userData) => {
-    const users = loadUsers();
+const createUser = async (userData) => {
+    const id = userData.id || uuidv4();
+    const now = new Date().toISOString();
     
-    users[userData.id] = {
-        ...userData,
-        updatedAt: new Date().toISOString()
+    await dbRun(`
+        INSERT INTO users (
+            id, email, name, picture, google_id, tokens,
+            password_hash, auth_type, approval_status,
+            subscription_status, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+        id,
+        userData.email,
+        userData.name || '',
+        userData.picture || '',
+        userData.googleId || null,
+        userData.tokens ? JSON.stringify(userData.tokens) : null,
+        userData.passwordHash || null,
+        userData.authType || 'google',
+        userData.approvalStatus || 'approved',
+        userData.subscriptionStatus || 'trial',
+        now,
+        now
+    ]);
+    
+    return getUser(id);
+};
+
+const getUser = async (id) => {
+    const user = await dbGet('SELECT * FROM users WHERE id = ?', [id]);
+    if (!user) return null;
+    return formatUser(user);
+};
+
+const getUserByEmail = async (email) => {
+    const user = await dbGet('SELECT * FROM users WHERE email = ?', [email]);
+    if (!user) return null;
+    return formatUser(user);
+};
+
+const getUserByGoogleId = async (googleId) => {
+    const user = await dbGet('SELECT * FROM users WHERE google_id = ?', [googleId]);
+    if (!user) return null;
+    return formatUser(user);
+};
+
+const updateUser = async (id, updates) => {
+    const fields = [];
+    const values = [];
+    
+    const fieldMap = {
+        name: 'name',
+        email: 'email',
+        picture: 'picture',
+        tokens: 'tokens',
+        passwordHash: 'password_hash',
+        approvalStatus: 'approval_status',
+        subscriptionStatus: 'subscription_status',
+        subscriptionId: 'subscription_id',
+        subscriptionEndsAt: 'subscription_ends_at',
+        stripeCustomerId: 'stripe_customer_id'
     };
     
-    // Als het een nieuwe gebruiker is, voeg createdAt toe
-    if (!users[userData.id].createdAt) {
-        users[userData.id].createdAt = new Date().toISOString();
-    }
-    
-    saveUsers(users);
-    return users[userData.id];
-};
-
-// Haal gebruiker op via ID
-const getUser = (userId) => {
-    const users = loadUsers();
-    return users[userId] || null;
-};
-
-// Haal gebruiker op via email
-const getUserByEmail = (email) => {
-    const users = loadUsers();
-    return Object.values(users).find(u => u.email === email) || null;
-};
-
-// Haal alle gebruikers op
-const getAllUsers = () => {
-    return loadUsers();
-};
-
-// Verwijder gebruiker
-const deleteUser = (userId) => {
-    const users = loadUsers();
-    if (users[userId]) {
-        delete users[userId];
-        saveUsers(users);
-        return true;
-    }
-    return false;
-};
-
-// ============================================
-// SUBSCRIPTION MANAGEMENT
-// ============================================
-
-const TRIAL_DAYS = 14;
-
-// Start trial voor een gebruiker
-const startTrial = (userId) => {
-    const users = loadUsers();
-    if (users[userId]) {
-        const trialEnd = new Date();
-        trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
-        
-        users[userId].subscription = {
-            status: 'trialing',
-            trialStart: new Date().toISOString(),
-            trialEnd: trialEnd.toISOString(),
-            stripeCustomerId: null,
-            stripeSubscriptionId: null,
-            currentPeriodEnd: null
-        };
-        
-        saveUsers(users);
-        return users[userId];
-    }
-    return null;
-};
-
-// Update subscription na Stripe betaling
-const updateSubscription = (userId, subscriptionData) => {
-    const users = loadUsers();
-    if (users[userId]) {
-        users[userId].subscription = {
-            ...users[userId].subscription,
-            ...subscriptionData,
-            updatedAt: new Date().toISOString()
-        };
-        saveUsers(users);
-        return users[userId];
-    }
-    return null;
-};
-
-// Check subscription status
-const getSubscriptionStatus = (userId) => {
-    const users = loadUsers();
-    const user = users[userId];
-    
-    if (!user || !user.subscription) {
-        return { status: 'none', hasAccess: false };
-    }
-    
-    const sub = user.subscription;
-    const now = new Date();
-    
-    // Check trial
-    if (sub.status === 'trialing') {
-        const trialEnd = new Date(sub.trialEnd);
-        if (now < trialEnd) {
-            const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
-            return { 
-                status: 'trialing', 
-                hasAccess: true, 
-                daysLeft,
-                trialEnd: sub.trialEnd
-            };
-        } else {
-            // Trial expired
-            return { status: 'trial_expired', hasAccess: false };
+    for (const [jsField, dbField] of Object.entries(fieldMap)) {
+        if (updates[jsField] !== undefined) {
+            fields.push(`${dbField} = ?`);
+            if (jsField === 'tokens') {
+                values.push(JSON.stringify(updates[jsField]));
+            } else {
+                values.push(updates[jsField]);
+            }
         }
     }
     
-    // Check active subscription
-    if (sub.status === 'active') {
-        const periodEnd = new Date(sub.currentPeriodEnd);
-        if (now < periodEnd) {
-            return { 
-                status: 'active', 
-                hasAccess: true,
-                currentPeriodEnd: sub.currentPeriodEnd
-            };
-        }
+    if (fields.length === 0) return getUser(id);
+    
+    fields.push('updated_at = ?');
+    values.push(new Date().toISOString());
+    values.push(id);
+    
+    await dbRun(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, values);
+    return getUser(id);
+};
+
+const saveUser = async (userData) => {
+    if (!userData.id) {
+        return createUser(userData);
     }
     
-    // Check canceled but still in period
-    if (sub.status === 'canceled' && sub.currentPeriodEnd) {
-        const periodEnd = new Date(sub.currentPeriodEnd);
-        if (now < periodEnd) {
-            return { 
-                status: 'canceled', 
-                hasAccess: true,
-                currentPeriodEnd: sub.currentPeriodEnd
-            };
-        }
+    const existing = await getUser(userData.id);
+    if (!existing) {
+        return createUser(userData);
     }
     
-    return { status: sub.status || 'inactive', hasAccess: false };
+    return updateUser(userData.id, userData);
 };
 
-// Update Stripe customer ID
-const setStripeCustomerId = (userId, stripeCustomerId) => {
-    const users = loadUsers();
-    if (users[userId]) {
-        if (!users[userId].subscription) {
-            users[userId].subscription = {};
-        }
-        users[userId].subscription.stripeCustomerId = stripeCustomerId;
-        saveUsers(users);
-        return users[userId];
-    }
-    return null;
+const getAllUsers = async () => {
+    const users = await dbAll('SELECT * FROM users ORDER BY created_at DESC');
+    return users.map(formatUser);
 };
 
-// Haal gebruiker op via Stripe Customer ID
-const getUserByStripeCustomerId = (stripeCustomerId) => {
-    const users = loadUsers();
-    return Object.values(users).find(
-        u => u.subscription?.stripeCustomerId === stripeCustomerId
-    ) || null;
+const deleteUser = async (id) => {
+    const result = await dbRun('DELETE FROM users WHERE id = ?', [id]);
+    return result.changes > 0;
 };
 
-// ============================================
-// EMAIL/PASSWORD REGISTRATION & LOGIN
-// ============================================
+// ==================== EMAIL/PASSWORD AUTH ====================
 
-// Genereer unieke gebruikers-ID
-const generateUserId = () => {
-    return 'user_' + crypto.randomBytes(12).toString('hex');
-};
-
-// Registreer nieuwe gebruiker met email/wachtwoord
-const registerUser = (email, password, name) => {
-    const users = loadUsers();
-    
+const registerUser = async (email, password, name) => {
     // Check of email al bestaat
-    const existingUser = Object.values(users).find(u => u.email === email);
+    const existingUser = await getUserByEmail(email);
     if (existingUser) {
         return { error: 'Email is al geregistreerd' };
     }
     
     // Valideer wachtwoord
-    if (password.length < 6) {
+    if (!password || password.length < 6) {
         return { error: 'Wachtwoord moet minimaal 6 tekens zijn' };
     }
     
-    const userId = generateUserId();
+    const id = 'user_' + crypto.randomBytes(12).toString('hex');
     const hashedPassword = hashPassword(password);
     
-    users[userId] = {
-        id: userId,
-        email: email,
+    const user = await createUser({
+        id,
+        email,
         name: name || email.split('@')[0],
         passwordHash: hashedPassword,
-        authType: 'email', // 'email' of 'google'
-        picture: null,
-        tokens: null,
-        // Goedkeuringsstatus - nieuwe gebruikers moeten goedgekeurd worden
-        approvalStatus: 'pending', // 'pending', 'approved', 'rejected'
-        approvedAt: null,
-        approvedBy: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        // Calendar sync settings
-        calendarSync: {
-            enabled: false,
-            googleCalendarId: null,
-            lastSync: null,
-            syncDirection: 'both' // 'both', 'toGoogle', 'fromGoogle'
-        }
-    };
+        authType: 'email',
+        approvalStatus: 'pending' // Nieuwe gebruikers wachten op goedkeuring
+    });
     
-    saveUsers(users);
     console.log(`📋 Nieuwe registratie wacht op goedkeuring: ${email}`);
-    return { user: users[userId], needsApproval: true };
+    return { user, needsApproval: true };
 };
 
-// Login met email/wachtwoord
-const loginWithEmail = (email, password) => {
-    const users = loadUsers();
-    const user = Object.values(users).find(u => u.email === email);
+const loginWithEmail = async (email, password) => {
+    const user = await getUserByEmail(email);
     
     if (!user) {
         return { error: 'Email niet gevonden' };
@@ -303,326 +191,247 @@ const loginWithEmail = (email, password) => {
     return { user };
 };
 
-// Voeg wachtwoord toe aan bestaande Google gebruiker (optioneel)
-const setPasswordForUser = (userId, password) => {
-    const users = loadUsers();
-    if (!users[userId]) {
-        return { error: 'Gebruiker niet gevonden' };
-    }
-    
-    if (password.length < 6) {
-        return { error: 'Wachtwoord moet minimaal 6 tekens zijn' };
-    }
-    
-    users[userId].passwordHash = hashPassword(password);
-    users[userId].updatedAt = new Date().toISOString();
-    saveUsers(users);
-    
-    return { success: true };
-};
+// ==================== SUBSCRIPTION ====================
 
-// Update gebruikersprofiel (naam en email)
-const updateUserProfile = (userId, updates) => {
-    const users = loadUsers();
-    if (!users[userId]) {
-        return { error: 'Gebruiker niet gevonden' };
-    }
+const getSubscriptionStatus = async (userId) => {
+    const user = await dbGet(`
+        SELECT subscription_status, subscription_id, subscription_ends_at, created_at 
+        FROM users WHERE id = ?
+    `, [userId]);
     
-    // Als email wordt gewijzigd, check of deze al bestaat
-    if (updates.email && updates.email !== users[userId].email) {
-        const existingUser = Object.values(users).find(u => u.email === updates.email && u.id !== userId);
-        if (existingUser) {
-            return { error: 'Dit e-mailadres is al in gebruik' };
-        }
-        users[userId].email = updates.email;
-    }
-    
-    // Update naam als opgegeven
-    if (updates.name) {
-        users[userId].name = updates.name;
-    }
-    
-    users[userId].updatedAt = new Date().toISOString();
-    saveUsers(users);
-    
-    return { user: users[userId] };
-};
-
-// Wijzig wachtwoord (met verificatie van huidige wachtwoord)
-const changePassword = (userId, currentPassword, newPassword) => {
-    const users = loadUsers();
-    if (!users[userId]) {
-        return { error: 'Gebruiker niet gevonden' };
-    }
-    
-    const user = users[userId];
-    
-    // Google-only gebruikers moeten eerst een wachtwoord instellen
-    if (user.authType === 'google' && !user.passwordHash) {
-        // Voor Google gebruikers zonder wachtwoord, stel nieuw wachtwoord in
-        if (newPassword.length < 6) {
-            return { error: 'Wachtwoord moet minimaal 6 tekens zijn' };
-        }
-        users[userId].passwordHash = hashPassword(newPassword);
-        users[userId].updatedAt = new Date().toISOString();
-        saveUsers(users);
-        return { success: true, message: 'Wachtwoord ingesteld' };
-    }
-    
-    // Verifieer huidig wachtwoord
-    if (!verifyPassword(currentPassword, user.passwordHash)) {
-        return { error: 'Huidig wachtwoord is onjuist' };
-    }
-    
-    // Valideer nieuw wachtwoord
-    if (newPassword.length < 6) {
-        return { error: 'Nieuw wachtwoord moet minimaal 6 tekens zijn' };
-    }
-    
-    if (currentPassword === newPassword) {
-        return { error: 'Nieuw wachtwoord moet anders zijn dan huidig wachtwoord' };
-    }
-    
-    users[userId].passwordHash = hashPassword(newPassword);
-    users[userId].updatedAt = new Date().toISOString();
-    saveUsers(users);
-    
-    return { success: true, message: 'Wachtwoord gewijzigd' };
-};
-
-// Update calendar sync settings
-const updateCalendarSync = (userId, syncSettings) => {
-    const users = loadUsers();
-    if (!users[userId]) {
-        return { error: 'Gebruiker niet gevonden' };
-    }
-    
-    users[userId].calendarSync = {
-        ...users[userId].calendarSync,
-        ...syncSettings,
-        updatedAt: new Date().toISOString()
-    };
-    
-    saveUsers(users);
-    return { user: users[userId] };
-};
-
-// Get calendar sync settings
-const getCalendarSync = (userId) => {
-    const users = loadUsers();
-    const user = users[userId];
     if (!user) return null;
     
-    return user.calendarSync || {
-        enabled: false,
-        googleCalendarId: null,
-        lastSync: null,
-        syncDirection: 'both'
+    return {
+        status: user.subscription_status || 'trial',
+        subscriptionId: user.subscription_id,
+        endsAt: user.subscription_ends_at,
+        createdAt: user.created_at
     };
 };
 
-// ============================================
-// ADMIN APPROVAL FUNCTIONS
-// ============================================
-
-// Haal alle gebruikers op die wachten op goedkeuring
-const getPendingUsers = () => {
-    const users = loadUsers();
-    return Object.values(users).filter(u => u.approvalStatus === 'pending');
+const updateSubscription = async (userId, subscriptionData) => {
+    await dbRun(`
+        UPDATE users 
+        SET subscription_status = ?, subscription_id = ?, subscription_ends_at = ?, updated_at = ?
+        WHERE id = ?
+    `, [
+        subscriptionData.status,
+        subscriptionData.subscriptionId,
+        subscriptionData.endsAt,
+        new Date().toISOString(),
+        userId
+    ]);
 };
 
-// Keur gebruiker goed
-const approveUser = (userId, adminEmail) => {
-    const users = loadUsers();
-    if (!users[userId]) {
+const startTrial = async (userId) => {
+    const trialEnds = new Date();
+    trialEnds.setDate(trialEnds.getDate() + 30); // 30 dagen trial
+    
+    await updateSubscription(userId, {
+        status: 'trial',
+        subscriptionId: null,
+        endsAt: trialEnds.toISOString()
+    });
+};
+
+// ==================== APPROVAL ====================
+
+const approveUser = async (userId) => {
+    await dbRun(`
+        UPDATE users SET approval_status = 'approved', updated_at = ? WHERE id = ?
+    `, [new Date().toISOString(), userId]);
+    return getUser(userId);
+};
+
+const rejectUser = async (userId) => {
+    await dbRun(`
+        UPDATE users SET approval_status = 'rejected', updated_at = ? WHERE id = ?
+    `, [new Date().toISOString(), userId]);
+    return getUser(userId);
+};
+
+const getPendingUsers = async () => {
+    const users = await dbAll(`
+        SELECT * FROM users WHERE approval_status = 'pending' ORDER BY created_at DESC
+    `);
+    return users.map(formatUser);
+};
+
+// ==================== STRIPE ====================
+
+const getUserByStripeCustomerId = async (stripeCustomerId) => {
+    const user = await dbGet('SELECT * FROM users WHERE stripe_customer_id = ?', [stripeCustomerId]);
+    if (!user) return null;
+    return formatUser(user);
+};
+
+const setStripeCustomerId = async (userId, stripeCustomerId) => {
+    await dbRun(`
+        UPDATE users SET stripe_customer_id = ?, updated_at = ? WHERE id = ?
+    `, [stripeCustomerId, new Date().toISOString(), userId]);
+};
+
+// ==================== ADMIN FUNCTIES ====================
+
+const setUserPlan = async (userId, plan) => {
+    const user = await getUser(userId);
+    if (!user) {
         return { error: 'Gebruiker niet gevonden' };
     }
     
-    users[userId].approvalStatus = 'approved';
-    users[userId].approvedAt = new Date().toISOString();
-    users[userId].approvedBy = adminEmail;
-    users[userId].updatedAt = new Date().toISOString();
+    const now = new Date();
+    let updates = {};
     
-    saveUsers(users);
-    console.log(`✅ Gebruiker goedgekeurd: ${users[userId].email} door ${adminEmail}`);
-    return { success: true, user: users[userId] };
-};
-
-// Wijs gebruiker af
-const rejectUser = (userId, adminEmail, reason) => {
-    const users = loadUsers();
-    if (!users[userId]) {
-        return { error: 'Gebruiker niet gevonden' };
-    }
-    
-    users[userId].approvalStatus = 'rejected';
-    users[userId].rejectedAt = new Date().toISOString();
-    users[userId].rejectedBy = adminEmail;
-    users[userId].rejectionReason = reason || null;
-    users[userId].updatedAt = new Date().toISOString();
-    
-    saveUsers(users);
-    console.log(`❌ Gebruiker afgewezen: ${users[userId].email} door ${adminEmail}`);
-    return { success: true, user: users[userId] };
-};
-
-// Check of gebruiker is goedgekeurd
-const isUserApproved = (userId) => {
-    const users = loadUsers();
-    const user = users[userId];
-    if (!user) return false;
-    
-    // Bestaande gebruikers zonder approvalStatus zijn automatisch goedgekeurd
-    if (!user.approvalStatus) return true;
-    
-    return user.approvalStatus === 'approved';
-};
-
-// Update gebruiker plan (voor admin)
-const setUserPlan = (userId, plan) => {
-    const users = loadUsers();
-    if (!users[userId]) {
-        return { error: 'Gebruiker niet gevonden' };
-    }
-    
-    users[userId].subscription = {
-        plan: plan,
-        status: 'active',
-        startedAt: new Date().toISOString(),
-        expiresAt: null
-    };
-    users[userId].updatedAt = new Date().toISOString();
-    
-    saveUsers(users);
-    return { success: true, user: users[userId] };
-};
-
-// ============================================
-// ADMIN CRUD FUNCTIES
-// ============================================
-
-// Maak nieuwe gebruiker aan (door admin)
-const createUserByAdmin = ({ email, name, password, approvalStatus, plan, createdBy }) => {
-    const users = loadUsers();
-    
-    // Check of email al bestaat
-    const existingUser = Object.values(users).find(u => u.email === email);
-    if (existingUser) {
-        return { error: 'Email bestaat al' };
-    }
-    
-    // Genereer unieke ID
-    const userId = crypto.randomBytes(16).toString('hex');
-    
-    // Hash wachtwoord
-    const hashedPassword = hashPassword(password);
-    
-    // Maak gebruiker
-    const now = new Date().toISOString();
-    users[userId] = {
-        id: userId,
-        email,
-        name,
-        password: hashedPassword,
-        authType: 'email',
-        approvalStatus: approvalStatus || 'approved',
-        createdAt: now,
-        updatedAt: now,
-        createdBy: createdBy || 'admin'
-    };
-    
-    // Als goedgekeurd, voeg approval info toe
-    if (approvalStatus === 'approved') {
-        users[userId].approvedAt = now;
-        users[userId].approvedBy = createdBy || 'admin';
-    }
-    
-    // Voeg subscription toe op basis van plan
-    if (plan === 'trial') {
-        const trialEnd = new Date();
-        trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
-        users[userId].subscription = {
-            status: 'trialing',
-            trialStart: now,
-            trialEnd: trialEnd.toISOString()
-        };
-    } else if (plan && plan !== 'none') {
-        users[userId].subscription = {
-            plan: plan,
+    if (plan === 'active' || plan === 'pro') {
+        // Actief abonnement voor 1 jaar
+        const endDate = new Date();
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        updates = {
             status: 'active',
-            startedAt: now,
-            expiresAt: null
+            currentPeriodEnd: endDate.toISOString()
         };
+    } else if (plan === 'trial' || plan === 'trialing') {
+        // Trial voor 14 dagen
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + 14);
+        updates = {
+            status: 'trialing',
+            trialEndsAt: trialEnd.toISOString()
+        };
+    } else if (plan === 'none' || plan === 'canceled') {
+        updates = {
+            status: 'canceled',
+            canceledAt: now.toISOString()
+        };
+    } else {
+        return { error: 'Ongeldig plan' };
     }
     
-    saveUsers(users);
-    
-    // Return zonder wachtwoord
-    const { password: _, ...safeUser } = users[userId];
-    return { success: true, user: safeUser };
+    await updateSubscription(userId, updates);
+    const updatedUser = await getUser(userId);
+    return { user: updatedUser };
 };
 
-// Update gebruiker gegevens (door admin)
-const updateUserByAdmin = (userId, { email, name, password }) => {
-    const users = loadUsers();
-    
-    if (!users[userId]) {
-        return { error: 'Gebruiker niet gevonden' };
+const createUserByAdmin = async ({ email, name, password, approvalStatus, plan, createdBy }) => {
+    try {
+        // Hash password
+        const passwordHash = await hashPassword(password);
+        
+        // Generate ID
+        const userId = 'admin_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // Create user
+        await dbRun(`
+            INSERT INTO users (id, email, name, password_hash, auth_type, approval_status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 'email', ?, ?, ?)
+        `, [userId, email, name, passwordHash, approvalStatus || 'approved', new Date().toISOString(), new Date().toISOString()]);
+        
+        // Set plan
+        if (plan === 'trial' || !plan) {
+            await startTrial(userId);
+        } else if (plan === 'active' || plan === 'pro') {
+            await setUserPlan(userId, 'active');
+        }
+        
+        const user = await getUser(userId);
+        return { user };
+    } catch (error) {
+        console.error('Error creating user by admin:', error);
+        return { error: error.message };
     }
-    
-    // Update velden
-    if (email) {
-        users[userId].email = email;
-    }
-    if (name !== undefined) {
-        users[userId].name = name;
-    }
-    if (password) {
-        users[userId].passwordHash = hashPassword(password);
-        users[userId].authType = 'email'; // Zet authType naar email als wachtwoord wordt ingesteld
-    }
-    
-    users[userId].updatedAt = new Date().toISOString();
-    
-    saveUsers(users);
-    
-    // Return zonder wachtwoord
-    const { passwordHash: _, ...safeUser } = users[userId];
-    return { success: true, user: safeUser };
 };
+
+const updateUserByAdmin = async (userId, { email, name, password }) => {
+    try {
+        const user = await getUser(userId);
+        if (!user) {
+            return { error: 'Gebruiker niet gevonden' };
+        }
+        
+        let updates = {
+            email: email || user.email,
+            name: name !== undefined ? name : user.name,
+            updated_at: new Date().toISOString()
+        };
+        
+        // Update password if provided
+        if (password) {
+            updates.password_hash = await hashPassword(password);
+        }
+        
+        const fields = Object.keys(updates).map(k => `${k} = ?`).join(', ');
+        const values = [...Object.values(updates), userId];
+        
+        await dbRun(`UPDATE users SET ${fields} WHERE id = ?`, values);
+        
+        const updatedUser = await getUser(userId);
+        return { user: updatedUser };
+    } catch (error) {
+        console.error('Error updating user by admin:', error);
+        return { error: error.message };
+    }
+};
+
+// Format database row naar camelCase
+function formatUser(row) {
+    if (!row) return null;
+    
+    let tokens = null;
+    if (row.tokens) {
+        try {
+            tokens = JSON.parse(row.tokens);
+        } catch (e) {
+            tokens = null;
+        }
+    }
+    
+    return {
+        id: row.id,
+        email: row.email,
+        name: row.name,
+        picture: row.picture,
+        googleId: row.google_id,
+        tokens: tokens,
+        passwordHash: row.password_hash,
+        authType: row.auth_type || 'google',
+        approvalStatus: row.approval_status || 'approved',
+        subscriptionStatus: row.subscription_status || 'trial',
+        subscriptionId: row.subscription_id,
+        subscriptionEndsAt: row.subscription_ends_at,
+        stripeCustomerId: row.stripe_customer_id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+    };
+}
 
 module.exports = {
-    saveUser,
+    // User CRUD
+    createUser,
     getUser,
     getUserByEmail,
+    getUserByGoogleId,
+    updateUser,
+    saveUser,
     getAllUsers,
     deleteUser,
-    // Subscription functions
-    startTrial,
-    updateSubscription,
-    getSubscriptionStatus,
-    setStripeCustomerId,
-    getUserByStripeCustomerId,
-    TRIAL_DAYS,
-    // Email/Password functions
+    // Auth
     registerUser,
     loginWithEmail,
-    setPasswordForUser,
     hashPassword,
     verifyPassword,
-    // Profile functions
-    updateUserProfile,
-    changePassword,
-    // Calendar sync functions
-    updateCalendarSync,
-    getCalendarSync,
-    // Admin approval functions
-    getPendingUsers,
+    // Subscription
+    getSubscriptionStatus,
+    updateSubscription,
+    startTrial,
+    // Approval
     approveUser,
     rejectUser,
-    isUserApproved,
+    getPendingUsers,
+    // Stripe
+    getUserByStripeCustomerId,
+    setStripeCustomerId,
+    // Admin
     setUserPlan,
-    // Admin CRUD functions
     createUserByAdmin,
     updateUserByAdmin
 };

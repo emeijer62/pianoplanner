@@ -1,5 +1,6 @@
 /**
- * Piano Routes - API voor piano beheer
+ * Piano Routes - Database versie
+ * Piano's en service historie per gebruiker
  */
 
 const express = require('express');
@@ -15,25 +16,35 @@ router.use(requireAuth);
 // ============================================
 
 // GET /api/pianos - Alle piano's van de gebruiker
-router.get('/', (req, res) => {
-    const userId = req.session.user.id;
-    const pianos = pianoStore.getAllPianos(userId);
-    
-    res.json({
-        total: Object.keys(pianos).length,
-        pianos: Object.values(pianos)
-    });
+router.get('/', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const pianos = await pianoStore.getAllPianos(userId);
+        
+        res.json({
+            total: pianos.length,
+            pianos: pianos
+        });
+    } catch (error) {
+        console.error('Error getting pianos:', error);
+        res.status(500).json({ error: 'Kon piano\'s niet ophalen' });
+    }
 });
 
 // GET /api/pianos/due - Piano's die service nodig hebben
-router.get('/due', (req, res) => {
-    const userId = req.session.user.id;
-    const due = pianoStore.getPianosDueForService(userId);
-    
-    res.json({
-        total: due.length,
-        pianos: due
-    });
+router.get('/due', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const due = await pianoStore.getPianosDueForService(userId);
+        
+        res.json({
+            total: due.length,
+            pianos: due
+        });
+    } catch (error) {
+        console.error('Error getting pianos due:', error);
+        res.status(500).json({ error: 'Kon piano\'s niet ophalen' });
+    }
 });
 
 // GET /api/pianos/brands - Lijst van piano merken
@@ -42,119 +53,132 @@ router.get('/brands', (req, res) => {
 });
 
 // GET /api/pianos/customer/:customerId - Piano's van een specifieke klant
-router.get('/customer/:customerId', (req, res) => {
-    const userId = req.session.user.id;
-    const { customerId } = req.params;
-    const pianos = pianoStore.getPianosByCustomer(userId, customerId);
-    
-    res.json({
-        total: pianos.length,
-        pianos: pianos
-    });
+router.get('/customer/:customerId', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { customerId } = req.params;
+        const pianos = await pianoStore.getPianosByCustomer(userId, customerId);
+        
+        res.json({
+            total: pianos.length,
+            pianos: pianos
+        });
+    } catch (error) {
+        console.error('Error getting customer pianos:', error);
+        res.status(500).json({ error: 'Kon piano\'s niet ophalen' });
+    }
 });
 
 // GET /api/pianos/customer/:customerId/services - Alle services van piano's van een klant
-router.get('/customer/:customerId/services', (req, res) => {
-    const userId = req.session.user.id;
-    const { customerId } = req.params;
-    
-    // Haal alle piano's van de klant op
-    const pianos = pianoStore.getPianosByCustomer(userId, customerId);
-    
-    // Verzamel alle services van alle piano's
-    const allServices = [];
-    for (const piano of pianos) {
-        const services = pianoStore.getServiceHistory(userId, piano.id);
-        for (const service of services) {
-            allServices.push({
-                ...service,
-                pianoId: piano.id,
-                pianoName: `${piano.brand} ${piano.model || ''}`.trim()
-            });
-        }
+router.get('/customer/:customerId/services', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { customerId } = req.params;
+        
+        const services = await pianoStore.getServiceHistoryByCustomer(userId, customerId);
+        
+        res.json({
+            total: services.length,
+            services: services
+        });
+    } catch (error) {
+        console.error('Error getting customer services:', error);
+        res.status(500).json({ error: 'Kon services niet ophalen' });
     }
-    
-    // Sorteer op datum (nieuwste eerst)
-    allServices.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    res.json({
-        total: allServices.length,
-        services: allServices
-    });
 });
 
 // GET /api/pianos/:pianoId - Specifieke piano ophalen
-router.get('/:pianoId', (req, res) => {
-    const userId = req.session.user.id;
-    const { pianoId } = req.params;
-    const piano = pianoStore.getPiano(userId, pianoId);
-    
-    if (!piano) {
-        return res.status(404).json({ error: 'Piano niet gevonden' });
+router.get('/:pianoId', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { pianoId } = req.params;
+        const piano = await pianoStore.getPiano(userId, pianoId);
+        
+        if (!piano) {
+            return res.status(404).json({ error: 'Piano niet gevonden' });
+        }
+        
+        // Voeg service historie toe
+        const serviceHistory = await pianoStore.getServiceHistory(userId, pianoId);
+        
+        res.json({
+            ...piano,
+            serviceHistory: serviceHistory
+        });
+    } catch (error) {
+        console.error('Error getting piano:', error);
+        res.status(500).json({ error: 'Kon piano niet ophalen' });
     }
-    
-    // Voeg service historie toe
-    const serviceHistory = pianoStore.getServiceHistory(userId, pianoId);
-    
-    res.json({
-        ...piano,
-        serviceHistory: serviceHistory
-    });
 });
 
 // POST /api/pianos - Nieuwe piano aanmaken
-router.post('/', (req, res) => {
-    const userId = req.session.user.id;
-    const pianoData = req.body;
-    
-    if (!pianoData.brand) {
-        return res.status(400).json({ error: 'Merk is verplicht' });
+router.post('/', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const pianoData = req.body;
+        
+        if (!pianoData.brand) {
+            return res.status(400).json({ error: 'Merk is verplicht' });
+        }
+        
+        const piano = await pianoStore.createPiano(userId, pianoData);
+        console.log(`🎹 Nieuwe piano toegevoegd: ${piano.brand} ${piano.model}`);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Piano toegevoegd',
+            piano: piano
+        });
+    } catch (error) {
+        console.error('Error creating piano:', error);
+        res.status(500).json({ error: 'Kon piano niet aanmaken' });
     }
-    
-    const piano = pianoStore.createPiano(userId, pianoData);
-    console.log(`🎹 Nieuwe piano toegevoegd: ${piano.brand} ${piano.model}`);
-    
-    res.status(201).json({
-        success: true,
-        message: 'Piano toegevoegd',
-        piano: piano
-    });
 });
 
 // PUT /api/pianos/:pianoId - Piano bijwerken
-router.put('/:pianoId', (req, res) => {
-    const userId = req.session.user.id;
-    const { pianoId } = req.params;
-    const updates = req.body;
-    
-    const piano = pianoStore.updatePiano(userId, pianoId, updates);
-    
-    if (!piano) {
-        return res.status(404).json({ error: 'Piano niet gevonden' });
+router.put('/:pianoId', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { pianoId } = req.params;
+        const updates = req.body;
+        
+        const piano = await pianoStore.updatePiano(userId, pianoId, updates);
+        
+        if (!piano) {
+            return res.status(404).json({ error: 'Piano niet gevonden' });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Piano bijgewerkt',
+            piano: piano
+        });
+    } catch (error) {
+        console.error('Error updating piano:', error);
+        res.status(500).json({ error: 'Kon piano niet bijwerken' });
     }
-    
-    res.json({
-        success: true,
-        message: 'Piano bijgewerkt',
-        piano: piano
-    });
 });
 
 // DELETE /api/pianos/:pianoId - Piano verwijderen
-router.delete('/:pianoId', (req, res) => {
-    const userId = req.session.user.id;
-    const { pianoId } = req.params;
-    
-    const deleted = pianoStore.deletePiano(userId, pianoId);
-    
-    if (!deleted) {
-        return res.status(404).json({ error: 'Piano niet gevonden' });
+router.delete('/:pianoId', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { pianoId } = req.params;
+        
+        const deleted = await pianoStore.deletePiano(userId, pianoId);
+        
+        if (!deleted) {
+            return res.status(404).json({ error: 'Piano niet gevonden' });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Piano verwijderd'
+        });
+    } catch (error) {
+        console.error('Error deleting piano:', error);
+        res.status(500).json({ error: 'Kon piano niet verwijderen' });
     }
-    
-    res.json({
-        success: true,
-        message: 'Piano verwijderd'
-    });
 });
 
 // ============================================
@@ -162,55 +186,96 @@ router.delete('/:pianoId', (req, res) => {
 // ============================================
 
 // GET /api/pianos/:pianoId/services - Service historie ophalen
-router.get('/:pianoId/services', (req, res) => {
-    const userId = req.session.user.id;
-    const { pianoId } = req.params;
-    
-    const services = pianoStore.getServiceHistory(userId, pianoId);
-    
-    res.json({
-        total: services.length,
-        services: services.sort((a, b) => new Date(b.date) - new Date(a.date))
-    });
+router.get('/:pianoId/services', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { pianoId } = req.params;
+        
+        const services = await pianoStore.getServiceHistory(userId, pianoId);
+        
+        res.json({
+            total: services.length,
+            services: services.sort((a, b) => new Date(b.date) - new Date(a.date))
+        });
+    } catch (error) {
+        console.error('Error getting services:', error);
+        res.status(500).json({ error: 'Kon services niet ophalen' });
+    }
 });
 
 // POST /api/pianos/:pianoId/services - Service record toevoegen
-router.post('/:pianoId/services', (req, res) => {
-    const userId = req.session.user.id;
-    const { pianoId } = req.params;
-    const serviceData = req.body;
-    
-    // Check of piano bestaat
-    const piano = pianoStore.getPiano(userId, pianoId);
-    if (!piano) {
-        return res.status(404).json({ error: 'Piano niet gevonden' });
+router.post('/:pianoId/services', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { pianoId } = req.params;
+        const serviceData = req.body;
+        
+        // Check of piano bestaat
+        const piano = await pianoStore.getPiano(userId, pianoId);
+        if (!piano) {
+            return res.status(404).json({ error: 'Piano niet gevonden' });
+        }
+        
+        const service = await pianoStore.addServiceRecord(userId, pianoId, serviceData);
+        console.log(`🔧 Service toegevoegd voor ${piano.brand} ${piano.model}: ${service.type}`);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Service record toegevoegd',
+            service: service
+        });
+    } catch (error) {
+        console.error('Error adding service:', error);
+        res.status(500).json({ error: 'Kon service niet toevoegen' });
     }
-    
-    const service = pianoStore.addServiceRecord(userId, pianoId, serviceData);
-    console.log(`🔧 Service toegevoegd voor ${piano.brand} ${piano.model}: ${service.type}`);
-    
-    res.status(201).json({
-        success: true,
-        message: 'Service record toegevoegd',
-        service: service
-    });
+});
+
+// Alias voor compatibiliteit
+router.post('/:pianoId/service', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { pianoId } = req.params;
+        const serviceData = req.body;
+        
+        const piano = await pianoStore.getPiano(userId, pianoId);
+        if (!piano) {
+            return res.status(404).json({ error: 'Piano niet gevonden' });
+        }
+        
+        const service = await pianoStore.addServiceRecord(userId, pianoId, serviceData);
+        console.log(`🔧 Service toegevoegd voor ${piano.brand} ${piano.model}: ${service.type}`);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Service record toegevoegd',
+            service: service
+        });
+    } catch (error) {
+        console.error('Error adding service:', error);
+        res.status(500).json({ error: 'Kon service niet toevoegen' });
+    }
 });
 
 // DELETE /api/pianos/:pianoId/services/:serviceId - Service record verwijderen
-router.delete('/:pianoId/services/:serviceId', (req, res) => {
-    const userId = req.session.user.id;
-    const { pianoId, serviceId } = req.params;
-    
-    const deleted = pianoStore.deleteServiceRecord(userId, pianoId, serviceId);
-    
-    if (!deleted) {
-        return res.status(404).json({ error: 'Service record niet gevonden' });
+router.delete('/:pianoId/services/:serviceId', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { pianoId, serviceId } = req.params;
+        
+        const deleted = await pianoStore.deleteServiceRecord(userId, pianoId, serviceId);
+        
+        if (!deleted) {
+            return res.status(404).json({ error: 'Service record niet gevonden' });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Service record verwijderd'
+        });
+    } catch (error) {
+        console.error('Error deleting service:', error);
+        res.status(500).json({ error: 'Kon service niet verwijderen' });
     }
-    
-    res.json({
-        success: true,
-        message: 'Service record verwijderd'
-    });
 });
 
 module.exports = router;

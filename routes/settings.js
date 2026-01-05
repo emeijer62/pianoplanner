@@ -7,13 +7,18 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 // ==================== BEDRIJFSINSTELLINGEN ====================
 
 // Haal bedrijfsinstellingen op
-router.get('/company', requireAuth, (req, res) => {
-    const settings = companyStore.getSettings();
-    res.json(settings);
+router.get('/company', requireAuth, async (req, res) => {
+    try {
+        const settings = await companyStore.getSettings(req.session.user.id);
+        res.json(settings);
+    } catch (error) {
+        console.error('Error getting company settings:', error);
+        res.status(500).json({ error: 'Kon instellingen niet ophalen' });
+    }
 });
 
 // Update bedrijfsinstellingen
-router.put('/company', requireAuth, (req, res) => {
+router.put('/company', requireAuth, async (req, res) => {
     try {
         const { 
             name, owner, email, phone, 
@@ -23,9 +28,9 @@ router.put('/company', requireAuth, (req, res) => {
             workHours, workDays 
         } = req.body;
         
-        const settings = companyStore.saveSettings({
+        const settings = await companyStore.saveSettings(req.session.user.id, {
             name,
-            owner,
+            ownerName: owner,
             email,
             phone,
             address: {
@@ -39,8 +44,10 @@ router.put('/company', requireAuth, (req, res) => {
                 lng
             },
             timezone: timezone || 'Europe/Amsterdam',
-            workHours: workHours || { start: '09:00', end: '18:00' },
-            workDays: workDays || [1, 2, 3, 4, 5]
+            workingHours: {
+                hours: workHours || { start: '09:00', end: '18:00' },
+                days: workDays || [1, 2, 3, 4, 5]
+            }
         });
         
         res.json(settings);
@@ -53,91 +60,120 @@ router.put('/company', requireAuth, (req, res) => {
 // ==================== DIENSTEN ====================
 
 // Haal alle diensten op (inclusief inactieve voor beheer)
-router.get('/services', requireAuth, (req, res) => {
-    const includeInactive = req.query.all === 'true';
-    const services = includeInactive 
-        ? serviceStore.getAllServicesAdmin() 
-        : serviceStore.getAllServices();
-    res.json({ services });
+router.get('/services', requireAuth, async (req, res) => {
+    try {
+        const includeInactive = req.query.all === 'true';
+        const services = includeInactive 
+            ? await serviceStore.getAllServices(req.session.user.id)
+            : await serviceStore.getActiveServices(req.session.user.id);
+        res.json({ services });
+    } catch (error) {
+        console.error('Error getting services:', error);
+        res.status(500).json({ error: 'Kon diensten niet ophalen' });
+    }
 });
 
 // Haal specifieke dienst op
-router.get('/services/:id', requireAuth, (req, res) => {
-    const service = serviceStore.getService(req.params.id);
-    
-    if (!service) {
-        return res.status(404).json({ error: 'Dienst niet gevonden' });
+router.get('/services/:id', requireAuth, async (req, res) => {
+    try {
+        const service = await serviceStore.getService(req.session.user.id, req.params.id);
+        
+        if (!service) {
+            return res.status(404).json({ error: 'Dienst niet gevonden' });
+        }
+        
+        res.json(service);
+    } catch (error) {
+        console.error('Error getting service:', error);
+        res.status(500).json({ error: 'Kon dienst niet ophalen' });
     }
-    
-    res.json(service);
 });
 
 // Maak nieuwe dienst aan
-router.post('/services', requireAuth, (req, res) => {
-    const { name, duration, bufferBefore, bufferAfter, description, price, color } = req.body;
-    
-    if (!name) {
-        return res.status(400).json({ error: 'Naam is verplicht' });
+router.post('/services', requireAuth, async (req, res) => {
+    try {
+        const { name, duration, bufferBefore, bufferAfter, description, price, color } = req.body;
+        
+        if (!name) {
+            return res.status(400).json({ error: 'Naam is verplicht' });
+        }
+        
+        const service = await serviceStore.createService(req.session.user.id, {
+            name,
+            duration,
+            bufferBefore,
+            bufferAfter,
+            description,
+            price,
+            color
+        });
+        
+        res.status(201).json(service);
+    } catch (error) {
+        console.error('Error creating service:', error);
+        res.status(500).json({ error: 'Kon dienst niet aanmaken' });
     }
-    
-    const service = serviceStore.saveService({
-        name,
-        duration,
-        bufferBefore,
-        bufferAfter,
-        description,
-        price,
-        color
-    });
-    
-    res.status(201).json(service);
 });
 
 // Update dienst
-router.put('/services/:id', requireAuth, (req, res) => {
-    const existing = serviceStore.getService(req.params.id);
-    
-    if (!existing) {
-        return res.status(404).json({ error: 'Dienst niet gevonden' });
+router.put('/services/:id', requireAuth, async (req, res) => {
+    try {
+        const existing = await serviceStore.getService(req.session.user.id, req.params.id);
+        
+        if (!existing) {
+            return res.status(404).json({ error: 'Dienst niet gevonden' });
+        }
+        
+        const { name, duration, bufferBefore, bufferAfter, description, price, color, active } = req.body;
+        
+        const service = await serviceStore.updateService(req.session.user.id, req.params.id, {
+            name: name || existing.name,
+            duration: duration !== undefined ? duration : existing.duration,
+            bufferBefore: bufferBefore !== undefined ? bufferBefore : existing.bufferBefore,
+            bufferAfter: bufferAfter !== undefined ? bufferAfter : existing.bufferAfter,
+            description: description !== undefined ? description : existing.description,
+            price: price !== undefined ? price : existing.price,
+            color: color || existing.color,
+            active: active !== undefined ? active : existing.active
+        });
+        
+        res.json(service);
+    } catch (error) {
+        console.error('Error updating service:', error);
+        res.status(500).json({ error: 'Kon dienst niet bijwerken' });
     }
-    
-    const { name, duration, bufferBefore, bufferAfter, description, price, color, active } = req.body;
-    
-    const service = serviceStore.saveService({
-        id: req.params.id,
-        name: name || existing.name,
-        duration: duration !== undefined ? duration : existing.duration,
-        bufferBefore: bufferBefore !== undefined ? bufferBefore : existing.bufferBefore,
-        bufferAfter: bufferAfter !== undefined ? bufferAfter : existing.bufferAfter,
-        description: description !== undefined ? description : existing.description,
-        price: price !== undefined ? price : existing.price,
-        color: color || existing.color,
-        active: active !== undefined ? active : existing.active
-    });
-    
-    res.json(service);
 });
 
 // Verwijder dienst (soft delete)
-router.delete('/services/:id', requireAuth, (req, res) => {
-    const deleted = serviceStore.deleteService(req.params.id);
-    
-    if (!deleted) {
-        return res.status(404).json({ error: 'Dienst niet gevonden' });
+router.delete('/services/:id', requireAuth, async (req, res) => {
+    try {
+        const deleted = await serviceStore.deleteService(req.session.user.id, req.params.id);
+        
+        if (!deleted) {
+            return res.status(404).json({ error: 'Dienst niet gevonden' });
+        }
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting service:', error);
+        res.status(500).json({ error: 'Kon dienst niet verwijderen' });
     }
-    
-    res.json({ success: true });
 });
 
 // Activeer dienst opnieuw
-router.post('/services/:id/activate', requireAuth, (req, res) => {
-    const activated = serviceStore.activateService(req.params.id);
-    
-    if (!activated) {
-        return res.status(404).json({ error: 'Dienst niet gevonden' });
+router.post('/services/:id/activate', requireAuth, async (req, res) => {
+    try {
+        const activated = await serviceStore.activateService(req.session.user.id, req.params.id);
+        
+        if (!activated) {
+            return res.status(404).json({ error: 'Dienst niet gevonden' });
+        }
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error activating service:', error);
+        res.status(500).json({ error: 'Kon dienst niet activeren' });
     }
-    
-    res.json({ success: true });
 });
 
 module.exports = router;

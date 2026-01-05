@@ -1,206 +1,229 @@
 /**
- * Lokale afspraken opslag per gebruiker
- * Onafhankelijk van Google Calendar
+ * Appointment Store - SQLite versie
+ * Afspraken beheer per gebruiker
  */
 
-const fs = require('fs');
-const path = require('path');
+const { dbRun, dbGet, dbAll } = require('./database');
 const { v4: uuidv4 } = require('uuid');
-const DATA_DIR = require('./dataPath');
 
-// Helper: get file path voor gebruiker
-const getFilePath = (userId) => {
-    return path.join(DATA_DIR, `appointments_${userId}.json`);
+// ==================== APPOINTMENT CRUD ====================
+
+const createAppointment = async (userId, appointmentData) => {
+    const id = uuidv4();
+    const now = new Date().toISOString();
+    
+    await dbRun(`
+        INSERT INTO appointments (
+            id, user_id, title, description, location,
+            start_time, end_time, all_day,
+            customer_id, customer_name,
+            service_id, service_name,
+            piano_id, piano_brand, piano_model,
+            status, color, google_event_id,
+            created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+        id,
+        userId,
+        appointmentData.title || 'Nieuwe afspraak',
+        appointmentData.description || null,
+        appointmentData.location || null,
+        appointmentData.start,
+        appointmentData.end,
+        appointmentData.allDay ? 1 : 0,
+        appointmentData.customerId || null,
+        appointmentData.customerName || null,
+        appointmentData.serviceId || null,
+        appointmentData.serviceName || null,
+        appointmentData.pianoId || null,
+        appointmentData.pianoBrand || null,
+        appointmentData.pianoModel || null,
+        appointmentData.status || 'scheduled',
+        appointmentData.color || '#4CAF50',
+        appointmentData.googleEventId || null,
+        now,
+        now
+    ]);
+    
+    return getAppointment(userId, id);
 };
 
-// Laad afspraken voor gebruiker
-const loadAppointments = (userId) => {
-    try {
-        const filePath = getFilePath(userId);
-        if (fs.existsSync(filePath)) {
-            const data = fs.readFileSync(filePath, 'utf8');
-            return JSON.parse(data);
+const getAppointment = async (userId, appointmentId) => {
+    const appointment = await dbGet(
+        'SELECT * FROM appointments WHERE id = ? AND user_id = ?',
+        [appointmentId, userId]
+    );
+    
+    if (!appointment) return null;
+    return formatAppointment(appointment);
+};
+
+const getAllAppointments = async (userId) => {
+    const appointments = await dbAll(
+        'SELECT * FROM appointments WHERE user_id = ? ORDER BY start_time ASC',
+        [userId]
+    );
+    
+    return appointments.map(formatAppointment);
+};
+
+const getAppointmentsByDateRange = async (userId, startDate, endDate) => {
+    const appointments = await dbAll(`
+        SELECT * FROM appointments 
+        WHERE user_id = ? 
+        AND start_time >= ? 
+        AND start_time <= ?
+        ORDER BY start_time ASC
+    `, [userId, startDate, endDate]);
+    
+    return appointments.map(formatAppointment);
+};
+
+const getAppointmentsForDay = async (userId, date) => {
+    const startOfDay = `${date}T00:00:00`;
+    const endOfDay = `${date}T23:59:59`;
+    
+    return getAppointmentsByDateRange(userId, startOfDay, endOfDay);
+};
+
+const getUpcomingAppointments = async (userId, limit = 10) => {
+    const now = new Date().toISOString();
+    
+    const appointments = await dbAll(`
+        SELECT * FROM appointments 
+        WHERE user_id = ? 
+        AND start_time >= ?
+        AND status != 'cancelled'
+        ORDER BY start_time ASC
+        LIMIT ?
+    `, [userId, now, limit]);
+    
+    return appointments.map(formatAppointment);
+};
+
+const updateAppointment = async (userId, appointmentId, updates) => {
+    const fields = [];
+    const values = [];
+    
+    const fieldMap = {
+        title: 'title',
+        description: 'description',
+        location: 'location',
+        start: 'start_time',
+        end: 'end_time',
+        allDay: 'all_day',
+        customerId: 'customer_id',
+        customerName: 'customer_name',
+        serviceId: 'service_id',
+        serviceName: 'service_name',
+        pianoId: 'piano_id',
+        pianoBrand: 'piano_brand',
+        pianoModel: 'piano_model',
+        status: 'status',
+        color: 'color',
+        googleEventId: 'google_event_id',
+        lastSynced: 'last_synced'
+    };
+    
+    for (const [jsField, dbField] of Object.entries(fieldMap)) {
+        if (updates[jsField] !== undefined) {
+            fields.push(`${dbField} = ?`);
+            if (jsField === 'allDay') {
+                values.push(updates[jsField] ? 1 : 0);
+            } else {
+                values.push(updates[jsField]);
+            }
         }
-    } catch (error) {
-        console.error('Error loading appointments:', error);
     }
-    return [];
-};
-
-// Sla afspraken op
-const saveAppointments = (userId, appointments) => {
-    try {
-        const filePath = getFilePath(userId);
-        fs.writeFileSync(filePath, JSON.stringify(appointments, null, 2));
-    } catch (error) {
-        console.error('Error saving appointments:', error);
-    }
-};
-
-// ==================== CRUD OPERATIONS ====================
-
-// Maak nieuwe afspraak
-const createAppointment = (userId, appointmentData) => {
-    const appointments = loadAppointments(userId);
     
-    const appointment = {
-        id: uuidv4(),
-        title: appointmentData.title || 'Nieuwe afspraak',
-        description: appointmentData.description || '',
-        location: appointmentData.location || '',
-        start: appointmentData.start, // ISO string
-        end: appointmentData.end, // ISO string
-        allDay: appointmentData.allDay || false,
-        // Klant koppeling
-        customerId: appointmentData.customerId || null,
-        customerName: appointmentData.customerName || '',
-        // Dienst koppeling
-        serviceId: appointmentData.serviceId || null,
-        serviceName: appointmentData.serviceName || '',
-        // Piano koppeling
-        pianoId: appointmentData.pianoId || null,
-        pianoBrand: appointmentData.pianoBrand || '',
-        pianoModel: appointmentData.pianoModel || '',
-        // Status
-        status: appointmentData.status || 'scheduled', // scheduled, completed, cancelled
-        color: appointmentData.color || '#4CAF50',
-        // Google sync
-        googleEventId: appointmentData.googleEventId || null,
-        lastSynced: null,
-        // Timestamps
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+    if (fields.length === 0) return getAppointment(userId, appointmentId);
+    
+    fields.push('updated_at = ?');
+    values.push(new Date().toISOString());
+    values.push(appointmentId);
+    values.push(userId);
+    
+    await dbRun(`UPDATE appointments SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`, values);
+    return getAppointment(userId, appointmentId);
+};
+
+const deleteAppointment = async (userId, appointmentId) => {
+    const result = await dbRun(
+        'DELETE FROM appointments WHERE id = ? AND user_id = ?',
+        [appointmentId, userId]
+    );
+    return result.changes > 0;
+};
+
+// ==================== AFSPRAKEN PER KLANT ====================
+
+const getAppointmentsByCustomer = async (userId, customerId) => {
+    const appointments = await dbAll(`
+        SELECT * FROM appointments 
+        WHERE user_id = ? AND customer_id = ?
+        ORDER BY start_time DESC
+    `, [userId, customerId]);
+    
+    return appointments.map(formatAppointment);
+};
+
+// ==================== STATISTICS ====================
+
+const getAppointmentStats = async (userId) => {
+    const now = new Date().toISOString();
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+    
+    const [total, upcoming, thisMonth, completed] = await Promise.all([
+        dbGet('SELECT COUNT(*) as count FROM appointments WHERE user_id = ?', [userId]),
+        dbGet('SELECT COUNT(*) as count FROM appointments WHERE user_id = ? AND start_time >= ?', [userId, now]),
+        dbGet('SELECT COUNT(*) as count FROM appointments WHERE user_id = ? AND start_time >= ?', [userId, startOfMonth]),
+        dbGet('SELECT COUNT(*) as count FROM appointments WHERE user_id = ? AND status = ?', [userId, 'completed'])
+    ]);
+    
+    return {
+        total: total.count,
+        upcoming: upcoming.count,
+        thisMonth: thisMonth.count,
+        completed: completed.count
     };
-    
-    appointments.push(appointment);
-    saveAppointments(userId, appointments);
-    
-    return appointment;
 };
 
-// Haal alle afspraken op
-const getAllAppointments = (userId) => {
-    return loadAppointments(userId);
-};
-
-// Haal afspraken op voor een periode
-const getAppointmentsByDateRange = (userId, startDate, endDate) => {
-    const appointments = loadAppointments(userId);
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    
-    return appointments.filter(apt => {
-        const aptStart = new Date(apt.start);
-        return aptStart >= start && aptStart <= end;
-    });
-};
-
-// Haal afspraken voor een specifieke dag
-const getAppointmentsForDay = (userId, date) => {
-    const appointments = loadAppointments(userId);
-    const dayStart = new Date(date);
-    dayStart.setHours(0, 0, 0, 0);
-    const dayEnd = new Date(date);
-    dayEnd.setHours(23, 59, 59, 999);
-    
-    return appointments.filter(apt => {
-        const aptStart = new Date(apt.start);
-        return aptStart >= dayStart && aptStart <= dayEnd;
-    });
-};
-
-// Haal één afspraak op
-const getAppointment = (userId, appointmentId) => {
-    const appointments = loadAppointments(userId);
-    return appointments.find(a => a.id === appointmentId) || null;
-};
-
-// Update afspraak
-const updateAppointment = (userId, appointmentId, updates) => {
-    const appointments = loadAppointments(userId);
-    const index = appointments.findIndex(a => a.id === appointmentId);
-    
-    if (index === -1) {
-        return null;
-    }
-    
-    appointments[index] = {
-        ...appointments[index],
-        ...updates,
-        id: appointmentId, // ID mag niet wijzigen
-        updatedAt: new Date().toISOString()
+// Format database row naar camelCase/legacy structuur
+function formatAppointment(row) {
+    return {
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        location: row.location,
+        start: row.start_time,
+        end: row.end_time,
+        allDay: row.all_day === 1,
+        customerId: row.customer_id,
+        customerName: row.customer_name,
+        serviceId: row.service_id,
+        serviceName: row.service_name,
+        pianoId: row.piano_id,
+        pianoBrand: row.piano_brand,
+        pianoModel: row.piano_model,
+        status: row.status,
+        color: row.color,
+        googleEventId: row.google_event_id,
+        lastSynced: row.last_synced,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
     };
-    
-    saveAppointments(userId, appointments);
-    return appointments[index];
-};
-
-// Verwijder afspraak
-const deleteAppointment = (userId, appointmentId) => {
-    const appointments = loadAppointments(userId);
-    const index = appointments.findIndex(a => a.id === appointmentId);
-    
-    if (index === -1) {
-        return false;
-    }
-    
-    appointments.splice(index, 1);
-    saveAppointments(userId, appointments);
-    return true;
-};
-
-// Haal afspraken op voor een klant
-const getAppointmentsByCustomer = (userId, customerId) => {
-    const appointments = loadAppointments(userId);
-    return appointments.filter(a => a.customerId === customerId);
-};
-
-// Haal afspraken op voor een piano
-const getAppointmentsByPiano = (userId, pianoId) => {
-    const appointments = loadAppointments(userId);
-    return appointments.filter(a => a.pianoId === pianoId);
-};
-
-// Haal komende afspraken op (vandaag en later)
-const getUpcomingAppointments = (userId, limit = 10) => {
-    const appointments = loadAppointments(userId);
-    const now = new Date();
-    
-    return appointments
-        .filter(a => new Date(a.start) >= now && a.status !== 'cancelled')
-        .sort((a, b) => new Date(a.start) - new Date(b.start))
-        .slice(0, limit);
-};
-
-// Markeer afspraak als voltooid
-const completeAppointment = (userId, appointmentId, notes = '') => {
-    return updateAppointment(userId, appointmentId, {
-        status: 'completed',
-        completedAt: new Date().toISOString(),
-        completionNotes: notes
-    });
-};
-
-// Annuleer afspraak
-const cancelAppointment = (userId, appointmentId, reason = '') => {
-    return updateAppointment(userId, appointmentId, {
-        status: 'cancelled',
-        cancelledAt: new Date().toISOString(),
-        cancellationReason: reason
-    });
-};
+}
 
 module.exports = {
     createAppointment,
+    getAppointment,
     getAllAppointments,
     getAppointmentsByDateRange,
     getAppointmentsForDay,
-    getAppointment,
+    getUpcomingAppointments,
     updateAppointment,
     deleteAppointment,
     getAppointmentsByCustomer,
-    getAppointmentsByPiano,
-    getUpcomingAppointments,
-    completeAppointment,
-    cancelAppointment
+    getAppointmentStats
 };

@@ -3,7 +3,7 @@
  * Controleert of gebruiker actief abonnement of trial heeft
  */
 
-const userStore = require('../utils/userStoreDB');
+const userStore = require('../utils/userStore');
 
 // Check of gebruiker toegang heeft (trial of betaald abonnement)
 async function requireSubscription(req, res, next) {

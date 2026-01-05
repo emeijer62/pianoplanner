@@ -1,295 +1,254 @@
 /**
- * Piano opslag - Piano's per gebruiker
- * Elke gebruiker heeft zijn eigen piano database
+ * Piano Store - SQLite versie
+ * Piano's en service historie per gebruiker
  */
 
-const fs = require('fs');
-const path = require('path');
-const DATA_DIR = require('./dataPath');
+const { dbRun, dbGet, dbAll } = require('./database');
+const { v4: uuidv4 } = require('uuid');
 
-// Haal bestandspad voor gebruiker's piano's
-const getPianosFile = (userId) => {
-    return path.join(DATA_DIR, `pianos_${userId}.json`);
-};
+// ==================== PIANO CRUD ====================
 
-// Laad piano's voor een gebruiker
-const loadPianos = (userId) => {
-    try {
-        const file = getPianosFile(userId);
-        if (fs.existsSync(file)) {
-            const data = fs.readFileSync(file, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('Error loading pianos:', error);
-    }
-    return {};
-};
-
-// Sla piano's op
-const savePianos = (userId, pianos) => {
-    try {
-        const file = getPianosFile(userId);
-        fs.writeFileSync(file, JSON.stringify(pianos, null, 2));
-    } catch (error) {
-        console.error('Error saving pianos:', error);
-    }
-};
-
-// Genereer unieke piano ID
-const generatePianoId = () => {
-    return 'piano_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-};
-
-// ============================================
-// PIANO CRUD
-// ============================================
-
-// Maak nieuwe piano aan
-const createPiano = (userId, pianoData) => {
-    const pianos = loadPianos(userId);
-    const pianoId = generatePianoId();
+const createPiano = async (userId, pianoData) => {
+    const id = uuidv4();
+    const now = new Date().toISOString();
     
-    pianos[pianoId] = {
-        id: pianoId,
-        customerId: pianoData.customerId || null,
-        // Piano info
-        brand: pianoData.brand || '',
-        model: pianoData.model || '',
-        serialNumber: pianoData.serialNumber || '',
-        year: pianoData.year || null,
-        type: pianoData.type || 'upright', // upright, grand, digital
-        finish: pianoData.finish || '', // zwart, wit, hout, etc.
-        // Locatie
-        location: pianoData.location || '', // Woonkamer, studio, etc.
-        floor: pianoData.floor || '', // Begane grond, 1e verdieping
-        hasElevator: pianoData.hasElevator || false,
-        // Technische info
-        lastTuningDate: pianoData.lastTuningDate || null,
-        lastTuningPitch: pianoData.lastTuningPitch || '440',
-        condition: pianoData.condition || 'good', // excellent, good, fair, poor
-        // Notities
-        notes: pianoData.notes || '',
-        // Service interval (in maanden)
-        serviceInterval: pianoData.serviceInterval || 6,
-        // Metadata
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+    await dbRun(`
+        INSERT INTO pianos (
+            id, user_id, customer_id, brand, model, serial_number, year, type, 
+            finish, location, floor, condition, notes, service_interval,
+            last_tuning_date, last_tuning_pitch, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+        id,
+        userId,
+        pianoData.customerId || null,
+        pianoData.brand,
+        pianoData.model || null,
+        pianoData.serialNumber || null,
+        pianoData.year || null,
+        pianoData.type || 'upright',
+        pianoData.finish || null,
+        pianoData.location || null,
+        pianoData.floor || null,
+        pianoData.condition || 'good',
+        pianoData.notes || null,
+        pianoData.serviceInterval || 6,
+        pianoData.lastTuningDate || null,
+        pianoData.lastTuningPitch || null,
+        now,
+        now
+    ]);
+    
+    return getPiano(userId, id);
+};
+
+const getPiano = async (userId, pianoId) => {
+    const piano = await dbGet(
+        'SELECT * FROM pianos WHERE id = ? AND user_id = ?',
+        [pianoId, userId]
+    );
+    
+    if (!piano) return null;
+    return formatPiano(piano);
+};
+
+const getAllPianos = async (userId) => {
+    const pianos = await dbAll(
+        'SELECT * FROM pianos WHERE user_id = ? ORDER BY brand, model ASC',
+        [userId]
+    );
+    
+    return pianos.map(formatPiano);
+};
+
+const getPianosByCustomer = async (userId, customerId) => {
+    const pianos = await dbAll(
+        'SELECT * FROM pianos WHERE user_id = ? AND customer_id = ? ORDER BY brand ASC',
+        [userId, customerId]
+    );
+    
+    return pianos.map(formatPiano);
+};
+
+const updatePiano = async (userId, pianoId, updates) => {
+    const fields = [];
+    const values = [];
+    
+    const fieldMap = {
+        customerId: 'customer_id',
+        brand: 'brand',
+        model: 'model',
+        serialNumber: 'serial_number',
+        year: 'year',
+        type: 'type',
+        finish: 'finish',
+        location: 'location',
+        floor: 'floor',
+        condition: 'condition',
+        notes: 'notes',
+        serviceInterval: 'service_interval',
+        lastTuningDate: 'last_tuning_date',
+        lastTuningPitch: 'last_tuning_pitch'
     };
     
-    savePianos(userId, pianos);
-    return pianos[pianoId];
-};
-
-// Haal piano op
-const getPiano = (userId, pianoId) => {
-    const pianos = loadPianos(userId);
-    return pianos[pianoId] || null;
-};
-
-// Haal alle piano's op voor een gebruiker
-const getAllPianos = (userId) => {
-    return loadPianos(userId);
-};
-
-// Haal piano's op voor een specifieke klant
-const getPianosByCustomer = (userId, customerId) => {
-    const pianos = loadPianos(userId);
-    return Object.values(pianos).filter(p => p.customerId === customerId);
-};
-
-// Update piano
-const updatePiano = (userId, pianoId, updates) => {
-    const pianos = loadPianos(userId);
-    
-    if (!pianos[pianoId]) {
-        return null;
-    }
-    
-    pianos[pianoId] = {
-        ...pianos[pianoId],
-        ...updates,
-        id: pianoId, // ID kan niet veranderen
-        updatedAt: new Date().toISOString()
-    };
-    
-    savePianos(userId, pianos);
-    return pianos[pianoId];
-};
-
-// Verwijder piano
-const deletePiano = (userId, pianoId) => {
-    const pianos = loadPianos(userId);
-    
-    if (pianos[pianoId]) {
-        delete pianos[pianoId];
-        savePianos(userId, pianos);
-        return true;
-    }
-    return false;
-};
-
-// ============================================
-// SERVICE HISTORIE
-// ============================================
-
-// Haal service historie bestand
-const getServiceFile = (userId) => {
-    return path.join(DATA_DIR, `services_${userId}.json`);
-};
-
-// Laad services
-const loadServices = (userId) => {
-    try {
-        const file = getServiceFile(userId);
-        if (fs.existsSync(file)) {
-            const data = fs.readFileSync(file, 'utf8');
-            return JSON.parse(data);
+    for (const [jsField, dbField] of Object.entries(fieldMap)) {
+        if (updates[jsField] !== undefined) {
+            fields.push(`${dbField} = ?`);
+            values.push(updates[jsField]);
         }
-    } catch (error) {
-        console.error('Error loading services:', error);
-    }
-    return {};
-};
-
-// Sla services op
-const saveServices = (userId, services) => {
-    try {
-        const file = getServiceFile(userId);
-        fs.writeFileSync(file, JSON.stringify(services, null, 2));
-    } catch (error) {
-        console.error('Error saving services:', error);
-    }
-};
-
-// Genereer service ID
-const generateServiceId = () => {
-    return 'service_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-};
-
-// Voeg service record toe
-const addServiceRecord = (userId, pianoId, serviceData) => {
-    const services = loadServices(userId);
-    const serviceId = generateServiceId();
-    
-    if (!services[pianoId]) {
-        services[pianoId] = [];
     }
     
-    const record = {
-        id: serviceId,
-        pianoId: pianoId,
-        date: serviceData.date || new Date().toISOString(),
-        type: serviceData.type || 'tuning', // tuning, repair, regulation, voicing, cleaning, other
-        // Stemming details
-        pitchBefore: serviceData.pitchBefore || '',
-        pitchAfter: serviceData.pitchAfter || '440',
-        // Werk uitgevoerd
-        workPerformed: serviceData.workPerformed || '',
-        // Observaties en aanbevelingen
-        observations: serviceData.observations || '',
-        recommendations: serviceData.recommendations || '',
-        // Volgende service
-        nextServiceDate: serviceData.nextServiceDate || null,
-        // Kosten
-        cost: serviceData.cost || 0,
-        invoiceId: serviceData.invoiceId || null,
-        // Metadata
-        createdAt: new Date().toISOString()
+    if (fields.length === 0) return getPiano(userId, pianoId);
+    
+    fields.push('updated_at = ?');
+    values.push(new Date().toISOString());
+    values.push(pianoId);
+    values.push(userId);
+    
+    await dbRun(`UPDATE pianos SET ${fields.join(', ')} WHERE id = ? AND user_id = ?`, values);
+    return getPiano(userId, pianoId);
+};
+
+const deletePiano = async (userId, pianoId) => {
+    // Verwijder ook service records
+    await dbRun('DELETE FROM service_records WHERE piano_id = ? AND user_id = ?', [pianoId, userId]);
+    
+    const result = await dbRun(
+        'DELETE FROM pianos WHERE id = ? AND user_id = ?',
+        [pianoId, userId]
+    );
+    return result.changes > 0;
+};
+
+// ==================== SERVICE RECORDS ====================
+
+const addServiceRecord = async (userId, pianoId, serviceData) => {
+    const id = uuidv4();
+    
+    await dbRun(`
+        INSERT INTO service_records (id, user_id, piano_id, type, date, pitch, notes, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+        id,
+        userId,
+        pianoId,
+        serviceData.type,
+        serviceData.date,
+        serviceData.pitch || null,
+        serviceData.notes || null,
+        new Date().toISOString()
+    ]);
+    
+    // Update piano's last tuning date als het een stembeurt is
+    if (serviceData.type === 'tuning' || serviceData.type === 'stemmen') {
+        await dbRun(`
+            UPDATE pianos SET last_tuning_date = ?, last_tuning_pitch = ?, updated_at = ?
+            WHERE id = ? AND user_id = ?
+        `, [serviceData.date, serviceData.pitch, new Date().toISOString(), pianoId, userId]);
+    }
+    
+    return getServiceRecord(userId, id);
+};
+
+const getServiceRecord = async (userId, recordId) => {
+    return dbGet(
+        'SELECT * FROM service_records WHERE id = ? AND user_id = ?',
+        [recordId, userId]
+    );
+};
+
+const getServiceHistory = async (userId, pianoId) => {
+    const records = await dbAll(`
+        SELECT * FROM service_records 
+        WHERE user_id = ? AND piano_id = ?
+        ORDER BY date DESC
+    `, [userId, pianoId]);
+    
+    return records;
+};
+
+const getServiceHistoryByCustomer = async (userId, customerId) => {
+    const records = await dbAll(`
+        SELECT sr.*, p.brand as piano_brand, p.model as piano_model
+        FROM service_records sr
+        JOIN pianos p ON sr.piano_id = p.id
+        WHERE sr.user_id = ? AND p.customer_id = ?
+        ORDER BY sr.date DESC
+    `, [userId, customerId]);
+    
+    return records.map(r => ({
+        ...r,
+        pianoName: `${r.piano_brand} ${r.piano_model || ''}`.trim()
+    }));
+};
+
+const deleteServiceRecord = async (userId, pianoId, recordId) => {
+    const result = await dbRun(
+        'DELETE FROM service_records WHERE id = ? AND piano_id = ? AND user_id = ?',
+        [recordId, pianoId, userId]
+    );
+    return result.changes > 0;
+};
+
+// ==================== PIANO's DIE SERVICE NODIG HEBBEN ====================
+
+const getPianosDueForService = async (userId) => {
+    const pianos = await dbAll(`
+        SELECT * FROM pianos 
+        WHERE user_id = ? 
+        AND last_tuning_date IS NOT NULL
+        AND date(last_tuning_date, '+' || service_interval || ' months') <= date('now')
+        ORDER BY last_tuning_date ASC
+    `, [userId]);
+    
+    return pianos.map(formatPiano);
+};
+
+// Format database row naar camelCase
+function formatPiano(row) {
+    return {
+        id: row.id,
+        customerId: row.customer_id,
+        brand: row.brand,
+        model: row.model,
+        serialNumber: row.serial_number,
+        year: row.year,
+        type: row.type,
+        finish: row.finish,
+        location: row.location,
+        floor: row.floor,
+        condition: row.condition,
+        notes: row.notes,
+        serviceInterval: row.service_interval,
+        lastTuningDate: row.last_tuning_date,
+        lastTuningPitch: row.last_tuning_pitch,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
     };
-    
-    services[pianoId].push(record);
-    saveServices(userId, services);
-    
-    // Update lastTuningDate op piano als het een stembeurt was
-    if (serviceData.type === 'tuning') {
-        updatePiano(userId, pianoId, {
-            lastTuningDate: record.date,
-            lastTuningPitch: record.pitchAfter || '440'
-        });
-    }
-    
-    return record;
-};
+}
 
-// Haal service historie voor een piano
-const getServiceHistory = (userId, pianoId) => {
-    const services = loadServices(userId);
-    return services[pianoId] || [];
-};
-
-// Haal alle services (voor overzichten)
-const getAllServices = (userId) => {
-    return loadServices(userId);
-};
-
-// Verwijder service record
-const deleteServiceRecord = (userId, pianoId, serviceId) => {
-    const services = loadServices(userId);
-    
-    if (services[pianoId]) {
-        services[pianoId] = services[pianoId].filter(s => s.id !== serviceId);
-        saveServices(userId, services);
-        return true;
-    }
-    return false;
-};
-
-// ============================================
-// HULP FUNCTIES
-// ============================================
-
-// Haal piano's die service nodig hebben
-const getPianosDueForService = (userId) => {
-    const pianos = loadPianos(userId);
-    const now = new Date();
-    const due = [];
-    
-    Object.values(pianos).forEach(piano => {
-        if (piano.lastTuningDate && piano.serviceInterval) {
-            const lastService = new Date(piano.lastTuningDate);
-            const nextDue = new Date(lastService);
-            nextDue.setMonth(nextDue.getMonth() + piano.serviceInterval);
-            
-            if (nextDue <= now) {
-                due.push({
-                    ...piano,
-                    dueDate: nextDue,
-                    monthsOverdue: Math.floor((now - nextDue) / (1000 * 60 * 60 * 24 * 30))
-                });
-            }
-        }
-    });
-    
-    return due.sort((a, b) => a.dueDate - b.dueDate);
-};
-
-// Piano merken lijst (voor autocomplete)
+// Piano merken lijst
 const PIANO_BRANDS = [
-    'Steinway & Sons', 'Yamaha', 'Kawai', 'Bösendorfer', 'Bechstein',
-    'Blüthner', 'Fazioli', 'Grotrian', 'Schimmel', 'Petrof',
-    'Boston', 'Essex', 'Roland', 'Casio', 'Nord',
-    'Samick', 'Young Chang', 'Pearl River', 'Hailun', 'Ritmuller',
-    'August Förster', 'Sauter', 'Seiler', 'Feurich', 'Hoffmann',
-    'Kemble', 'Broadwood', 'Ibach', 'Pleyel', 'Erard',
-    'Mason & Hamlin', 'Baldwin', 'Chickering', 'Knabe', 'Wurlitzer',
-    'Overig'
+    'Steinway & Sons', 'Bösendorfer', 'Fazioli', 'Bechstein', 'Blüthner',
+    'Yamaha', 'Kawai', 'Schimmel', 'Grotrian', 'August Förster',
+    'Petrof', 'Estonia', 'Sauter', 'Seiler', 'Feurich',
+    'Boston', 'Essex', 'Ritmuller', 'Pearl River', 'Hailun',
+    'Roland', 'Casio', 'Korg', 'Nord', 'Clavia'
 ];
 
 module.exports = {
-    // Piano CRUD
     createPiano,
     getPiano,
     getAllPianos,
     getPianosByCustomer,
     updatePiano,
     deletePiano,
-    // Service historie
     addServiceRecord,
+    getServiceRecord,
     getServiceHistory,
-    getAllServices,
+    getServiceHistoryByCustomer,
     deleteServiceRecord,
-    // Hulp functies
     getPianosDueForService,
     PIANO_BRANDS
 };

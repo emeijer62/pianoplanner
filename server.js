@@ -10,16 +10,16 @@ const { DATABASE_PATH, DATA_DIR } = require('./utils/database');
 // Routes (nu met database versies)
 const authRoutes = require('./routes/auth');
 const calendarRoutes = require('./routes/calendar');
-const customerRoutes = require('./routes/customersDB');
+const customerRoutes = require('./routes/customers');
 const serviceRoutes = require('./routes/services');
 const bookingRoutes = require('./routes/booking');
 const settingsRoutes = require('./routes/settings');
 const stripeRoutes = require('./routes/stripe');
 const stripeWebhookRoutes = require('./routes/stripeWebhook');
-const pianoRoutes = require('./routes/pianosDB');
-const appointmentRoutes = require('./routes/appointmentsDB');
+const pianoRoutes = require('./routes/pianos');
+const appointmentRoutes = require('./routes/appointments');
 const adminRoutes = require('./routes/admin');
-const userStore = require('./utils/userStoreDB');
+const userStore = require('./utils/userStore');
 const { requireAdmin, isAdmin } = require('./middleware/auth');
 
 const app = express();

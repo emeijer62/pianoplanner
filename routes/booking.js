@@ -87,7 +87,7 @@ router.post('/travel-time', async (req, res) => {
             return res.status(400).json({ error: 'Bestemming is verplicht' });
         }
         
-        const from = origin || companyStore.getOriginAddress();
+        const from = origin || await companyStore.getOriginAddress(req.session.user.id);
         const travelInfo = await calculateTravelTime(from, destination);
         
         res.json({
@@ -114,19 +114,19 @@ router.post('/find-slot', async (req, res) => {
             return res.status(400).json({ error: 'Dienst en datum zijn verplicht' });
         }
         
-        const service = serviceStore.getService(serviceId);
+        const service = await serviceStore.getService(req.session.user.id, serviceId);
         if (!service) {
             return res.status(404).json({ error: 'Dienst niet gevonden' });
         }
         
         // Haal bedrijfsadres op als vertrekpunt
-        const companyAddress = companyStore.getOriginAddress();
+        const companyAddress = await companyStore.getOriginAddress(req.session.user.id);
         
         // Bepaal bestemming
         let destination = companyAddress;
         if (customerId) {
-            const customer = customerStore.getCustomer(customerId);
-            if (customer && customer.address.city) {
+            const customer = await customerStore.getCustomer(req.session.user.id, customerId);
+            if (customer && customer.address?.city) {
                 destination = `${customer.address.street}, ${customer.address.city}`;
             }
         }
@@ -139,7 +139,7 @@ router.post('/find-slot', async (req, res) => {
         const totalServiceTime = (service.bufferBefore || 0) + service.duration + (service.bufferAfter || 0);
         
         // Haal beschikbaarheid op voor deze dag
-        const companySettings = companyStore.getSettings();
+        const companySettings = await companyStore.getSettings(req.session.user.id);
         const requestedDate = new Date(date);
         const dayOfWeek = requestedDate.getDay(); // 0 = zondag, 1 = maandag, etc.
         
@@ -242,7 +242,7 @@ router.post('/create', async (req, res) => {
             return res.status(400).json({ error: 'Dienst en starttijd zijn verplicht' });
         }
         
-        const service = serviceStore.getService(serviceId);
+        const service = await serviceStore.getService(req.session.user.id, serviceId);
         if (!service) {
             return res.status(404).json({ error: 'Dienst niet gevonden' });
         }
@@ -250,9 +250,9 @@ router.post('/create', async (req, res) => {
         // Klant ophalen of aanmaken
         let customer;
         if (customerId) {
-            customer = customerStore.getCustomer(customerId);
+            customer = await customerStore.getCustomer(req.session.user.id, customerId);
         } else if (customerData && customerData.name) {
-            customer = customerStore.saveCustomer(customerData);
+            customer = await customerStore.createCustomer(req.session.user.id, customerData);
         }
         
         if (!customer) {

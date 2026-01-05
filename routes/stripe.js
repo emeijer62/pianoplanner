@@ -5,7 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
-const userStore = require('../utils/userStoreDB');
+const userStore = require('../utils/userStore');
 
 // Stripe configuratie - alleen initialiseren als API key aanwezig is
 let stripe = null;
