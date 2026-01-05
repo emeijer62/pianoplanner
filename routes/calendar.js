@@ -191,8 +191,17 @@ router.get('/list', requireGoogleAuth, async (req, res) => {
         
         res.json({ calendars });
     } catch (error) {
-        console.error('Error listing calendars:', error);
-        res.status(500).json({ error: 'Kon agenda\'s niet ophalen' });
+        console.error('Error listing calendars:', error.message);
+        
+        // Check voor token errors
+        if (error.message?.includes('invalid_grant') || error.message?.includes('Token')) {
+            return res.status(401).json({ 
+                error: 'Google sessie verlopen', 
+                hint: 'Log opnieuw in met Google om de verbinding te herstellen'
+            });
+        }
+        
+        res.status(500).json({ error: 'Kon agenda\'s niet ophalen: ' + error.message });
     }
 });
 
@@ -315,8 +324,17 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
         res.json({ success: true, synced: synced });
         
     } catch (error) {
-        console.error('Sync error:', error);
-        res.status(500).json({ error: 'Synchronisatie mislukt' });
+        console.error('Sync error:', error.message);
+        
+        // Check voor token errors
+        if (error.message?.includes('invalid_grant') || error.message?.includes('Token')) {
+            return res.status(401).json({ 
+                error: 'Google sessie verlopen', 
+                hint: 'Log opnieuw in met Google om de verbinding te herstellen'
+            });
+        }
+        
+        res.status(500).json({ error: 'Synchronisatie mislukt: ' + error.message });
     }
 });
 
