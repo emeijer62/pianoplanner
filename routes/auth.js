@@ -1,7 +1,7 @@
 const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
-const userStore = require('../utils/userStore');
+const userStore = require('../utils/userStoreDB');
 
 // Google OAuth2 client
 const oauth2Client = new google.auth.OAuth2(
@@ -25,80 +25,90 @@ const SCOPES = [
 // ==================== EMAIL/PASSWORD AUTH ====================
 
 // Registreren met email/wachtwoord
-router.post('/register', (req, res) => {
-    const { email, password, name } = req.body;
+router.post('/register', async (req, res) => {
+    try {
+        const { email, password, name } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email en wachtwoord zijn verplicht' });
-    }
-
-    // Valideer email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ error: 'Ongeldig email formaat' });
-    }
-
-    const result = userStore.registerUser(email, password, name);
-
-    if (result.error) {
-        return res.status(400).json({ error: result.error });
-    }
-
-    // NIET direct inloggen - wacht op goedkeuring
-    console.log(`📋 Nieuwe registratie wacht op goedkeuring: ${email}`);
-
-    res.json({ 
-        success: true, 
-        needsApproval: true,
-        message: 'Je account is aangemaakt! Je ontvangt bericht zodra een beheerder je account heeft goedgekeurd.',
-        user: {
-            id: result.user.id,
-            email: result.user.email,
-            name: result.user.name
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email en wachtwoord zijn verplicht' });
         }
-    });
+
+        // Valideer email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Ongeldig email formaat' });
+        }
+
+        const result = await userStore.registerUser(email, password, name);
+
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        // NIET direct inloggen - wacht op goedkeuring
+        console.log(`📋 Nieuwe registratie wacht op goedkeuring: ${email}`);
+
+        res.json({ 
+            success: true, 
+            needsApproval: true,
+            message: 'Je account is aangemaakt! Je ontvangt bericht zodra een beheerder je account heeft goedgekeurd.',
+            user: {
+                id: result.user.id,
+                email: result.user.email,
+                name: result.user.name
+            }
+        });
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ error: 'Registratie mislukt' });
+    }
 });
 
 // Inloggen met email/wachtwoord
-router.post('/login', (req, res) => {
-    const { email, password, remember } = req.body;
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password, remember } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email en wachtwoord zijn verplicht' });
-    }
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email en wachtwoord zijn verplicht' });
+        }
 
-    const result = userStore.loginWithEmail(email, password);
+        const result = await userStore.loginWithEmail(email, password);
 
-    if (result.error) {
-        console.log(`⚠️ Mislukte login poging: ${email}`);
-        return res.status(401).json({ error: result.error });
-    }
+        if (result.error) {
+            console.log(`⚠️ Mislukte login poging: ${email}`);
+            return res.status(401).json({ error: result.error });
+        }
 
-    // Zet sessie met langere duur als "ingelogd blijven" is aangevinkt
-    if (remember) {
-        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 dagen
-    }
+        // Zet sessie met langere duur als "ingelogd blijven" is aangevinkt
+        if (remember) {
+            req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 dagen
+        }
 
-    // Zet sessie
-    req.session.user = {
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.name,
-        picture: result.user.picture,
-        authType: result.user.authType
-    };
-
-    console.log(`✅ Gebruiker ingelogd (email): ${email}${remember ? ' (ingelogd blijven)' : ''}`);
-
-    res.json({ 
-        success: true, 
-        message: 'Succesvol ingelogd',
-        user: {
+        // Zet sessie
+        req.session.user = {
             id: result.user.id,
             email: result.user.email,
-            name: result.user.name
-        }
-    });
+            name: result.user.name,
+            picture: result.user.picture,
+            authType: result.user.authType
+        };
+
+        console.log(`✅ Gebruiker ingelogd (email): ${email}${remember ? ' (ingelogd blijven)' : ''}`);
+
+        res.json({ 
+            success: true, 
+            message: 'Succesvol ingelogd',
+            user: {
+                id: result.user.id,
+                email: result.user.email,
+                name: result.user.name
+            }
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ error: 'Inloggen mislukt' });
+    }
 });
 
 // ==================== GOOGLE OAUTH ====================
@@ -134,28 +144,22 @@ router.get('/google/callback', async (req, res) => {
         const { data: userInfo } = await oauth2.userinfo.get();
 
         // Check of dit een nieuwe gebruiker is
-        const existingUser = userStore.getUser(userInfo.id);
+        const existingUser = await userStore.getUser(userInfo.id);
         const isNewUser = !existingUser;
 
         // Sla gebruiker op (of update)
-        const user = userStore.saveUser({
+        const user = await userStore.saveUser({
             id: userInfo.id,
             email: userInfo.email,
             name: userInfo.name,
             picture: userInfo.picture,
             tokens: tokens,
-            authType: 'google',
-            calendarSync: existingUser?.calendarSync || {
-                enabled: false,
-                googleCalendarId: null,
-                lastSync: null,
-                syncDirection: 'both'
-            }
+            authType: 'google'
         });
 
         // Start trial voor nieuwe gebruikers
         if (isNewUser) {
-            userStore.startTrial(user.id);
+            await userStore.startTrial(user.id);
             console.log(`🎁 Nieuwe gebruiker, trial gestart: ${user.email}`);
         }
 

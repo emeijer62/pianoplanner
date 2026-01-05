@@ -1,7 +1,7 @@
 {
   "name": "pianoplanner",
-  "version": "1.0.0",
-  "description": "Piano planner met Google Agenda integratie",
+  "version": "2.0.0",
+  "description": "Piano planner met Google Agenda integratie en SQLite database",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,15 +10,18 @@
   "keywords": [
     "planner",
     "google-calendar",
-    "piano"
+    "piano",
+    "sqlite"
   ],
   "author": "emeijer62",
   "license": "ISC",
   "dependencies": {
+    "connect-sqlite3": "^0.9.16",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "googleapis": "^128.0.0",
+    "sqlite3": "^5.1.7",
     "stripe": "^20.1.0",
     "uuid": "^9.0.0"
   },

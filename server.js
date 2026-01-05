@@ -1,19 +1,25 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
 const path = require('path');
+
+// Database initialisatie (moet eerst!)
+const { DATABASE_PATH, DATA_DIR } = require('./utils/database');
+
+// Routes (nu met database versies)
 const authRoutes = require('./routes/auth');
 const calendarRoutes = require('./routes/calendar');
-const customerRoutes = require('./routes/customers');
+const customerRoutes = require('./routes/customersDB');
 const serviceRoutes = require('./routes/services');
 const bookingRoutes = require('./routes/booking');
 const settingsRoutes = require('./routes/settings');
 const stripeRoutes = require('./routes/stripe');
 const stripeWebhookRoutes = require('./routes/stripeWebhook');
-const pianoRoutes = require('./routes/pianos');
-const appointmentRoutes = require('./routes/appointments');
+const pianoRoutes = require('./routes/pianosDB');
+const appointmentRoutes = require('./routes/appointmentsDB');
 const adminRoutes = require('./routes/admin');
-const userStore = require('./utils/userStore');
+const userStore = require('./utils/userStoreDB');
 const { requireAdmin, isAdmin } = require('./middleware/auth');
 
 const app = express();
@@ -27,11 +33,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session configuratie
+// Session configuratie met SQLite store (persistent)
 const isProduction = process.env.NODE_ENV === 'production';
 app.set('trust proxy', 1); // Trust Railway's proxy
 
 app.use(session({
+    store: new SQLiteStore({
+        db: 'sessions.db',
+        dir: DATA_DIR,
+        concurrentDB: true
+    }),
     secret: process.env.SESSION_SECRET || 'pianoplanner-secret-2026',
     resave: false,
     saveUninitialized: false,
@@ -56,55 +67,75 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);
 
 // API route om ingelogde gebruiker te checken
-app.get('/api/user', (req, res) => {
+app.get('/api/user', async (req, res) => {
     if (req.session.user) {
-        // Check admin status via sessie of email
-        const isAdminUser = req.session.isAdmin || req.session.user.isAdminUser || isAdmin(req.session.user.email);
-        
-        // Subscription alleen voor normale gebruikers
-        let subscriptionStatus = null;
-        if (!req.session.user.isAdminUser) {
-            subscriptionStatus = userStore.getSubscriptionStatus(req.session.user.id);
+        try {
+            // Check admin status via sessie of email
+            const isAdminUser = req.session.isAdmin || req.session.user.isAdminUser || isAdmin(req.session.user.email);
+            
+            // Subscription alleen voor normale gebruikers
+            let subscriptionStatus = null;
+            if (!req.session.user.isAdminUser) {
+                subscriptionStatus = await userStore.getSubscriptionStatus(req.session.user.id);
+            }
+            
+            res.json({ 
+                loggedIn: true, 
+                user: req.session.user,
+                isAdmin: isAdminUser,
+                subscription: subscriptionStatus
+            });
+        } catch (error) {
+            console.error('Error in /api/user:', error);
+            res.json({ 
+                loggedIn: true, 
+                user: req.session.user,
+                isAdmin: false,
+                subscription: null
+            });
         }
-        
-        res.json({ 
-            loggedIn: true, 
-            user: req.session.user,
-            isAdmin: isAdminUser,
-            subscription: subscriptionStatus
-        });
     } else {
         res.json({ loggedIn: false });
     }
 });
 
 // Admin: bekijk alle geregistreerde gebruikers (inclusief subscription status)
-app.get('/api/admin/users', requireAdmin, (req, res) => {
-    const users = userStore.getAllUsers();
-    const safeUsers = Object.values(users).map(user => ({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        picture: user.picture,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-        subscription: userStore.getSubscriptionStatus(user.id)
-    }));
-    res.json({
-        total: safeUsers.length,
-        users: safeUsers
-    });
+app.get('/api/admin/users', requireAdmin, async (req, res) => {
+    try {
+        const users = await userStore.getAllUsers();
+        const safeUsers = await Promise.all(users.map(async (user) => ({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            picture: user.picture,
+            createdAt: user.created_at,
+            updatedAt: user.updated_at,
+            subscription: await userStore.getSubscriptionStatus(user.id)
+        })));
+        res.json({
+            total: safeUsers.length,
+            users: safeUsers
+        });
+    } catch (error) {
+        console.error('Error getting admin users:', error);
+        res.status(500).json({ error: 'Kon gebruikers niet ophalen' });
+    }
 });
 
 // Admin: verwijder gebruiker
-app.delete('/api/admin/users/:userId', requireAdmin, (req, res) => {
-    const { userId } = req.params;
-    const deleted = userStore.deleteUser(userId);
-    
-    if (deleted) {
-        res.json({ success: true, message: 'Gebruiker verwijderd' });
-    } else {
-        res.status(404).json({ error: 'Gebruiker niet gevonden' });
+app.delete('/api/admin/users/:userId', requireAdmin, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const deleted = await userStore.deleteUser(userId);
+        
+        if (deleted) {
+            res.json({ success: true, message: 'Gebruiker verwijderd' });
+        } else {
+            res.status(404).json({ error: 'Gebruiker niet gevonden' });
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Kon gebruiker niet verwijderen' });
     }
 });
 
