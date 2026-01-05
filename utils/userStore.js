@@ -193,19 +193,48 @@ const loginWithEmail = async (email, password) => {
 
 // ==================== SUBSCRIPTION ====================
 
+// Owner emails hebben altijd toegang
+const OWNER_EMAILS = ['info@edwardmeijer.nl', 'edward@pianoplanner.com'];
+
 const getSubscriptionStatus = async (userId) => {
     const user = await dbGet(`
-        SELECT subscription_status, subscription_id, subscription_ends_at, created_at 
+        SELECT email, subscription_status, subscription_id, subscription_ends_at, created_at 
         FROM users WHERE id = ?
     `, [userId]);
     
-    if (!user) return null;
+    if (!user) return { status: 'none', hasAccess: false };
+    
+    // Owner heeft altijd toegang
+    if (OWNER_EMAILS.includes(user.email?.toLowerCase())) {
+        return {
+            status: 'active',
+            hasAccess: true,
+            isOwner: true,
+            subscriptionId: 'owner',
+            endsAt: null,
+            createdAt: user.created_at
+        };
+    }
+    
+    const status = user.subscription_status || 'trial';
+    const endsAt = user.subscription_ends_at ? new Date(user.subscription_ends_at) : null;
+    const now = new Date();
+    
+    // Check of subscription nog actief is
+    let hasAccess = false;
+    if (status === 'active') {
+        hasAccess = !endsAt || endsAt > now;
+    } else if (status === 'trial') {
+        hasAccess = !endsAt || endsAt > now;
+    }
     
     return {
-        status: user.subscription_status || 'trial',
+        status,
+        hasAccess,
         subscriptionId: user.subscription_id,
         endsAt: user.subscription_ends_at,
-        createdAt: user.created_at
+        createdAt: user.created_at,
+        daysLeft: endsAt ? Math.max(0, Math.ceil((endsAt - now) / (1000 * 60 * 60 * 24))) : null
     };
 };
 
