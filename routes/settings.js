@@ -201,7 +201,11 @@ router.get('/booking', requireAuth, async (req, res) => {
 // Update booking settings
 router.put('/booking', requireAuth, async (req, res) => {
     try {
-        const settings = await userStore.updateBookingSettings(req.session.user.id, req.body);
+        // Haal bedrijfsnaam op voor slug generatie
+        const company = await companyStore.getSettings(req.session.user.id);
+        const companyName = company?.name || null;
+        
+        const settings = await userStore.updateBookingSettings(req.session.user.id, req.body, companyName);
         
         // Genereer de volledige URL
         const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;

@@ -441,20 +441,22 @@ const updateCalendarSync = async (userId, settings) => {
 
 // ==================== PUBLIC BOOKING (SELF-SCHEDULER) ====================
 
-// Genereer unieke slug voor boekingslink
+// Genereer unieke slug voor boekingslink (fallback)
 const generateBookingSlug = () => {
     return crypto.randomBytes(8).toString('hex');
 };
 
-// Maak slug menselijk leesbaar (naam-gebaseerd)
-const generateReadableSlug = (name) => {
-    const base = name
+// Maak slug van bedrijfsnaam (zoals pianoinfo.com)
+// "Piano Service Amsterdam" -> "pianoserviceamsterdam"
+const generateSlugFromName = (name) => {
+    if (!name) return null;
+    
+    return name
         .toLowerCase()
-        .replace(/[^a-z0-9]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '');
-    const random = crypto.randomBytes(3).toString('hex');
-    return `${base}-${random}`;
+        .normalize('NFD')                    // Normaliseer accenten (é -> e + ´)
+        .replace(/[\u0300-\u036f]/g, '')     // Verwijder accent tekens
+        .replace(/[^a-z0-9]/g, '')           // Alleen letters en cijfers
+        .substring(0, 50);                    // Max 50 karakters
 };
 
 // Haal user op via booking slug
@@ -496,18 +498,33 @@ const getBookingSettings = async (userId) => {
 };
 
 // Update booking settings
-const updateBookingSettings = async (userId, settings) => {
+const updateBookingSettings = async (userId, settings, companyName = null) => {
     // Genereer slug als die nog niet bestaat en booking wordt ingeschakeld
     let slug = settings.slug;
     if (settings.enabled && !slug) {
-        // Probeer naam-gebaseerde slug
-        const user = await getUser(userId);
-        slug = user?.name ? generateReadableSlug(user.name) : generateBookingSlug();
+        // Gebruik bedrijfsnaam als die is meegegeven, anders user naam
+        if (companyName) {
+            slug = generateSlugFromName(companyName);
+        }
         
-        // Check of slug uniek is
-        const existing = await getUserByBookingSlug(slug);
-        if (existing && existing.id !== userId) {
-            slug = generateBookingSlug(); // Fallback naar random
+        if (!slug) {
+            const user = await getUser(userId);
+            slug = generateSlugFromName(user?.name);
+        }
+        
+        // Fallback naar random als geen naam beschikbaar
+        if (!slug) {
+            slug = generateBookingSlug();
+        }
+        
+        // Check of slug uniek is, voeg nummer toe als nodig
+        let baseSlug = slug;
+        let counter = 1;
+        let existing = await getUserByBookingSlug(slug);
+        while (existing && existing.id !== userId) {
+            slug = `${baseSlug}${counter}`;
+            counter++;
+            existing = await getUserByBookingSlug(slug);
         }
     }
     
