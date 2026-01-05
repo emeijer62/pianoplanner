@@ -407,8 +407,13 @@
             font-size: 0.6rem;
             margin-bottom: 1px;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            /* Woordafbreking zoals Apple Calendar */
+            word-break: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            -webkit-hyphens: auto;
+            white-space: normal;
+            line-height: 1.2;
         }
         
         .calendar-event-time {
