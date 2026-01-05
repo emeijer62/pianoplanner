@@ -321,6 +321,278 @@ const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, dat
     return null;
 };
 
+/**
+ * Bereken de afstandsmatrix tussen meerdere locaties
+ * @param {string[]} locations - Array van adressen
+ * @returns {Promise<number[][]>} Matrix van reistijden in minuten
+ */
+const calculateDistanceMatrix = async (locations) => {
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    const n = locations.length;
+    
+    // Initialiseer matrix met nullen
+    const matrix = Array(n).fill(null).map(() => Array(n).fill(0));
+    
+    if (!apiKey || n < 2) {
+        // Geen API key: gebruik geschatte afstanden (30 min tussen elke locatie)
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                if (i !== j) matrix[i][j] = 30;
+            }
+        }
+        return matrix;
+    }
+    
+    // Google Maps Distance Matrix ondersteunt max 25 origins/destinations
+    const originsParam = locations.map(l => encodeURIComponent(l)).join('|');
+    const destinationsParam = originsParam;
+    
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${originsParam}&destinations=${destinationsParam}&mode=driving&language=nl&key=${apiKey}`;
+    
+    return new Promise((resolve, reject) => {
+        https.get(url, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    const result = JSON.parse(data);
+                    
+                    if (result.status === 'OK') {
+                        for (let i = 0; i < n; i++) {
+                            for (let j = 0; j < n; j++) {
+                                const element = result.rows[i].elements[j];
+                                if (element.status === 'OK') {
+                                    matrix[i][j] = Math.ceil(element.duration.value / 60);
+                                } else {
+                                    matrix[i][j] = 30; // Fallback
+                                }
+                            }
+                        }
+                        resolve(matrix);
+                    } else {
+                        // Fallback
+                        for (let i = 0; i < n; i++) {
+                            for (let j = 0; j < n; j++) {
+                                if (i !== j) matrix[i][j] = 30;
+                            }
+                        }
+                        resolve(matrix);
+                    }
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }).on('error', reject);
+    });
+};
+
+/**
+ * Optimaliseer de volgorde van afspraken voor minimale reistijd (TSP)
+ * Gebruikt nearest neighbor heuristic + 2-opt verbetering
+ * @param {Object[]} appointments - Array van afspraken met location
+ * @param {string} startLocation - Vertrekpunt (bedrijfsadres)
+ * @param {boolean} returnToStart - Moet terug naar start?
+ * @returns {Promise<{optimizedOrder: Object[], totalDistance: number, totalTime: number, savings: {time: number, distance: number}}>}
+ */
+const optimizeRoute = async (appointments, startLocation, returnToStart = false) => {
+    if (!appointments || appointments.length === 0) {
+        return { optimizedOrder: [], totalDistance: 0, totalTime: 0, savings: { time: 0, distance: 0 } };
+    }
+    
+    if (appointments.length === 1) {
+        const travelInfo = await calculateTravelTime(startLocation, appointments[0].location);
+        return {
+            optimizedOrder: appointments,
+            totalDistance: travelInfo.distance,
+            totalTime: travelInfo.duration,
+            savings: { time: 0, distance: 0 }
+        };
+    }
+    
+    // Verzamel alle locaties: [start, apt1, apt2, ..., (start)]
+    const locations = [startLocation, ...appointments.map(a => a.location)];
+    if (returnToStart) {
+        locations.push(startLocation);
+    }
+    
+    // Bereken afstandsmatrix
+    const distanceMatrix = await calculateDistanceMatrix(locations);
+    
+    // Bereken huidige totale reistijd (originele volgorde)
+    let originalTotalTime = 0;
+    for (let i = 0; i < appointments.length; i++) {
+        const fromIdx = i === 0 ? 0 : i; // Start of vorige afspraak
+        const toIdx = i + 1;
+        originalTotalTime += distanceMatrix[fromIdx][toIdx];
+    }
+    if (returnToStart) {
+        originalTotalTime += distanceMatrix[appointments.length][0];
+    }
+    
+    // Nearest neighbor algoritme voor initiële route
+    const n = appointments.length;
+    const visited = new Array(n).fill(false);
+    const route = [];
+    let currentIdx = 0; // Start bij index 0 (startLocation)
+    
+    for (let i = 0; i < n; i++) {
+        let nearestIdx = -1;
+        let nearestDist = Infinity;
+        
+        for (let j = 0; j < n; j++) {
+            if (!visited[j]) {
+                // afspraak j is op index j+1 in de matrix (want index 0 is startLocation)
+                const dist = distanceMatrix[currentIdx][j + 1];
+                if (dist < nearestDist) {
+                    nearestDist = dist;
+                    nearestIdx = j;
+                }
+            }
+        }
+        
+        if (nearestIdx !== -1) {
+            visited[nearestIdx] = true;
+            route.push(nearestIdx);
+            currentIdx = nearestIdx + 1; // +1 omdat matrix index 0 = startLocation
+        }
+    }
+    
+    // 2-opt verbetering
+    let improved = true;
+    while (improved) {
+        improved = false;
+        for (let i = 0; i < route.length - 1; i++) {
+            for (let j = i + 1; j < route.length; j++) {
+                const newRoute = twoOptSwap(route, i, j);
+                if (calculateRouteCost(newRoute, distanceMatrix) < calculateRouteCost(route, distanceMatrix)) {
+                    route.splice(0, route.length, ...newRoute);
+                    improved = true;
+                }
+            }
+        }
+    }
+    
+    // Bereken geoptimaliseerde totale reistijd
+    let optimizedTotalTime = distanceMatrix[0][route[0] + 1]; // Start naar eerste
+    for (let i = 0; i < route.length - 1; i++) {
+        optimizedTotalTime += distanceMatrix[route[i] + 1][route[i + 1] + 1];
+    }
+    if (returnToStart) {
+        optimizedTotalTime += distanceMatrix[route[route.length - 1] + 1][0];
+    }
+    
+    // Bouw geoptimaliseerde afspraken array
+    const optimizedAppointments = route.map(idx => appointments[idx]);
+    
+    // Bereken afstanden
+    let totalDistance = 0;
+    let prevLocation = startLocation;
+    for (const apt of optimizedAppointments) {
+        const info = await calculateTravelTime(prevLocation, apt.location);
+        totalDistance += info.distance || 0;
+        prevLocation = apt.location;
+    }
+    
+    return {
+        optimizedOrder: optimizedAppointments,
+        totalTime: optimizedTotalTime,
+        totalDistance: totalDistance,
+        originalTime: originalTotalTime,
+        savings: {
+            time: originalTotalTime - optimizedTotalTime,
+            distance: 0 // Wordt later berekend als nodig
+        }
+    };
+};
+
+/**
+ * 2-opt swap voor route optimalisatie
+ */
+function twoOptSwap(route, i, j) {
+    const newRoute = route.slice(0, i);
+    for (let k = j; k >= i; k--) {
+        newRoute.push(route[k]);
+    }
+    for (let k = j + 1; k < route.length; k++) {
+        newRoute.push(route[k]);
+    }
+    return newRoute;
+}
+
+/**
+ * Bereken totale kosten van een route
+ */
+function calculateRouteCost(route, distanceMatrix) {
+    if (route.length === 0) return 0;
+    
+    let cost = distanceMatrix[0][route[0] + 1]; // Van start naar eerste
+    for (let i = 0; i < route.length - 1; i++) {
+        cost += distanceMatrix[route[i] + 1][route[i + 1] + 1];
+    }
+    return cost;
+}
+
+/**
+ * Plan een hele dag met optimale route
+ * @param {Object[]} appointments - Afspraken met location en duration
+ * @param {string} startLocation - Vertrekpunt
+ * @param {Object} workHours - {start: '09:00', end: '18:00'}
+ * @param {Date} date - De datum
+ * @returns {Promise<Object[]>} Afspraken met berekende start/eindtijden en reistijden
+ */
+const planDayRoute = async (appointments, startLocation, workHours, date) => {
+    if (!appointments || appointments.length === 0) {
+        return [];
+    }
+    
+    // Optimaliseer de volgorde
+    const { optimizedOrder, totalTime, savings } = await optimizeRoute(appointments, startLocation);
+    
+    // Plan de tijden
+    const [startH, startM] = workHours.start.split(':').map(Number);
+    let currentTime = new Date(date);
+    currentTime.setHours(startH, startM, 0, 0);
+    
+    const plannedAppointments = [];
+    let prevLocation = startLocation;
+    
+    for (const apt of optimizedOrder) {
+        // Bereken reistijd naar deze afspraak
+        const travelInfo = await calculateTravelTime(prevLocation, apt.location);
+        
+        // Reistijd start
+        const travelStartTime = new Date(currentTime);
+        
+        // Aankomsttijd = huidige tijd + reistijd
+        currentTime = new Date(currentTime.getTime() + (travelInfo.duration * 60 * 1000));
+        const arrivalTime = new Date(currentTime);
+        
+        // Eindtijd = aankomst + duur dienst
+        const duration = apt.duration || apt.serviceDuration || 60;
+        currentTime = new Date(currentTime.getTime() + (duration * 60 * 1000));
+        const endTime = new Date(currentTime);
+        
+        plannedAppointments.push({
+            ...apt,
+            travelStartTime: travelStartTime.toISOString(),
+            travelTimeMinutes: travelInfo.duration,
+            travelDistanceKm: travelInfo.distance,
+            plannedStart: arrivalTime.toISOString(),
+            plannedEnd: endTime.toISOString(),
+            originAddress: prevLocation
+        });
+        
+        prevLocation = apt.location;
+    }
+    
+    return {
+        appointments: plannedAppointments,
+        totalTravelTime: totalTime,
+        savings: savings,
+        startLocation: startLocation
+    };
+};
+
 module.exports = {
     calculateTravelTime,
     estimateTravelTime,
@@ -328,5 +600,9 @@ module.exports = {
     geocodeAddress,
     getPlaceAutocomplete,
     getPlaceDetails,
-    parseAddressComponents
+    parseAddressComponents,
+    // Route optimalisatie
+    calculateDistanceMatrix,
+    optimizeRoute,
+    planDayRoute
 };

@@ -270,4 +270,166 @@ router.get('/stats/overview', async (req, res) => {
     }
 });
 
+// ==================== ROUTE OPTIMALISATIE ====================
+
+const { optimizeRoute, planDayRoute, calculateDistanceMatrix } = require('../utils/travelTime');
+const userStore = require('../utils/userStore');
+
+// Optimaliseer route voor een specifieke dag
+router.post('/optimize-route', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { date } = req.body;
+        
+        if (!date) {
+            return res.status(400).json({ error: 'Datum is verplicht' });
+        }
+        
+        // Haal bedrijfsadres op als startpunt
+        const user = await userStore.getUser(userId);
+        const companyAddress = user?.company?.address || user?.settings?.companyAddress;
+        
+        if (!companyAddress) {
+            return res.status(400).json({ 
+                error: 'Geen bedrijfsadres ingesteld. Stel eerst een bedrijfsadres in bij instellingen.' 
+            });
+        }
+        
+        // Haal afspraken voor deze dag
+        const startOfDay = `${date}T00:00:00`;
+        const endOfDay = `${date}T23:59:59`;
+        const appointments = await appointmentStore.getAppointmentsByDateRange(userId, startOfDay, endOfDay);
+        
+        // Filter alleen afspraken met locatie
+        const appointmentsWithLocation = appointments.filter(apt => apt.location && apt.location.trim());
+        
+        if (appointmentsWithLocation.length < 2) {
+            return res.json({
+                success: true,
+                message: 'Minimaal 2 afspraken met locatie nodig voor route optimalisatie',
+                appointments: appointmentsWithLocation,
+                optimized: false
+            });
+        }
+        
+        // Converteer naar formaat voor optimizer
+        const appointmentsForOptimizer = appointmentsWithLocation.map(apt => ({
+            id: apt.id,
+            title: apt.title,
+            location: apt.location,
+            duration: apt.duration || 60, // Standaard 60 min
+            customerName: apt.customerName,
+            serviceName: apt.serviceName,
+            originalStart: apt.start,
+            originalEnd: apt.end
+        }));
+        
+        // Werkuren ophalen
+        const workHours = user?.settings?.workHours || {
+            start: '09:00',
+            end: '17:00'
+        };
+        
+        // Bereken geoptimaliseerde route
+        const result = await planDayRoute(
+            appointmentsForOptimizer,
+            companyAddress,
+            workHours,
+            date
+        );
+        
+        // Bereken besparing t.o.v. originele volgorde
+        let originalTotalTravel = 0;
+        const originalLocations = [companyAddress, ...appointmentsForOptimizer.map(a => a.location)];
+        
+        try {
+            const originalMatrix = await calculateDistanceMatrix(originalLocations);
+            for (let i = 0; i < originalLocations.length - 1; i++) {
+                originalTotalTravel += originalMatrix[i]?.[i + 1] || 30;
+            }
+        } catch (e) {
+            // Fallback: schat 30 min per rit
+            originalTotalTravel = appointmentsForOptimizer.length * 30;
+        }
+        
+        const savings = originalTotalTravel - result.totalTravelTime;
+        
+        res.json({
+            success: true,
+            optimized: true,
+            date,
+            startLocation: companyAddress,
+            originalOrder: appointmentsWithLocation.map(a => ({
+                id: a.id,
+                title: a.title,
+                location: a.location,
+                start: a.start,
+                end: a.end
+            })),
+            optimizedSchedule: result.schedule,
+            summary: {
+                totalAppointments: result.schedule.length,
+                totalTravelTime: result.totalTravelTime,
+                originalTravelTime: originalTotalTravel,
+                timeSavedMinutes: Math.max(0, savings),
+                workdayStart: result.workdayStart,
+                workdayEnd: result.workdayEnd
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error optimizing route:', error);
+        res.status(500).json({ error: 'Kon route niet optimaliseren: ' + error.message });
+    }
+});
+
+// Pas geoptimaliseerde route toe (update afspraak tijden)
+router.post('/apply-optimized-route', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { schedule } = req.body;
+        
+        if (!schedule || !Array.isArray(schedule)) {
+            return res.status(400).json({ error: 'Geen schema opgegeven' });
+        }
+        
+        const updates = [];
+        
+        for (const item of schedule) {
+            if (!item.appointmentId || !item.scheduledStart || !item.scheduledEnd) {
+                continue;
+            }
+            
+            try {
+                const updated = await appointmentStore.updateAppointment(userId, item.appointmentId, {
+                    start: item.scheduledStart,
+                    end: item.scheduledEnd,
+                    travel_time_minutes: item.travelTimeFromPrevious,
+                    travel_start_time: item.departureTime
+                });
+                
+                if (updated) {
+                    updates.push({
+                        id: item.appointmentId,
+                        newStart: item.scheduledStart,
+                        newEnd: item.scheduledEnd
+                    });
+                }
+            } catch (e) {
+                console.error(`Kon afspraak ${item.appointmentId} niet updaten:`, e);
+            }
+        }
+        
+        res.json({
+            success: true,
+            message: `${updates.length} afspraken bijgewerkt met geoptimaliseerde tijden`,
+            updates
+        });
+        
+    } catch (error) {
+        console.error('Error applying optimized route:', error);
+        res.status(500).json({ error: 'Kon geoptimaliseerde route niet toepassen' });
+    }
+});
+
 module.exports = router;

@@ -640,6 +640,7 @@
                     <a href="/customers.html" class="quick-btn">👥 Klanten</a>
                     <a href="/pianos.html" class="quick-btn">🎹 Piano's</a>
                     <a href="/billing.html" class="quick-btn">💳 Abonnement</a>
+                    <button onclick="openRouteOptimizer()" class="quick-btn" style="border: none; background: none; width: 100%; cursor: pointer;">🗺️ Route optimaliseren</button>
                 </div>
             </div>
 
@@ -917,6 +918,304 @@
         .autocomplete-item:hover {
             background: var(--light-gray);
         }
+        
+        /* Route Optimizer Modal */
+        .route-optimizer-modal .modal-content {
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .route-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .route-stat {
+            background: var(--light-gray);
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+        .route-stat .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .route-stat .label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .route-stat.savings {
+            background: #e6f4ea;
+        }
+        .route-stat.savings .value {
+            color: #137333;
+        }
+        .route-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .route-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 0.6rem;
+            border-bottom: 1px solid var(--border-color);
+            gap: 0.75rem;
+        }
+        .route-item:last-child {
+            border-bottom: none;
+        }
+        .route-order {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .route-item-content {
+            flex: 1;
+        }
+        .route-item-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .route-item-location {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .route-item-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .route-travel-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.6rem;
+            background: #fff3e0;
+            font-size: 0.7rem;
+            color: #e65100;
+        }
+        .route-travel-indicator::before {
+            content: '🚗';
+        }
+        .compare-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .compare-section h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.8rem;
+        }
     </style>
+    
+    <!-- Route Optimizer Modal -->
+    <div id="route-optimizer-modal" class="modal route-optimizer-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🗺️ Route Optimaliseren</h2>
+                <button class="modal-close" onclick="closeRouteModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="route-modal-content">
+                <div class="form-group">
+                    <label for="route-date">Datum selecteren</label>
+                    <input type="date" id="route-date" onchange="loadRouteOptimization()">
+                </div>
+                <div id="route-loading" style="display: none; text-align: center; padding: 2rem;">
+                    <p>Route berekenen...</p>
+                </div>
+                <div id="route-result" style="display: none;"></div>
+            </div>
+            <div class="modal-footer" id="route-modal-footer" style="display: none;">
+                <button class="btn btn-secondary" onclick="closeRouteModal()">Annuleren</button>
+                <button class="btn btn-primary" id="apply-route-btn" onclick="applyOptimizedRoute()">Route toepassen</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Route Optimizer State
+        let optimizedRouteData = null;
+        
+        function openRouteOptimizer() {
+            const modal = document.getElementById('route-optimizer-modal');
+            const dateInput = document.getElementById('route-date');
+            // Standaard vandaag
+            dateInput.value = new Date().toISOString().split('T')[0];
+            modal.style.display = 'flex';
+            document.getElementById('route-result').style.display = 'none';
+            document.getElementById('route-modal-footer').style.display = 'none';
+            loadRouteOptimization();
+        }
+        
+        function closeRouteModal() {
+            document.getElementById('route-optimizer-modal').style.display = 'none';
+            optimizedRouteData = null;
+        }
+        
+        async function loadRouteOptimization() {
+            const date = document.getElementById('route-date').value;
+            if (!date) return;
+            
+            const loading = document.getElementById('route-loading');
+            const result = document.getElementById('route-result');
+            const footer = document.getElementById('route-modal-footer');
+            
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            footer.style.display = 'none';
+            
+            try {
+                const res = await fetch('/api/appointments/optimize-route', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ date })
+                });
+                
+                const data = await res.json();
+                
+                loading.style.display = 'none';
+                
+                if (data.error) {
+                    result.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+                    result.style.display = 'block';
+                    return;
+                }
+                
+                if (!data.optimized) {
+                    result.innerHTML = `<div class="alert alert-info">${data.message || 'Niet genoeg afspraken om te optimaliseren'}</div>`;
+                    result.style.display = 'block';
+                    return;
+                }
+                
+                optimizedRouteData = data;
+                renderOptimizedRoute(data);
+                result.style.display = 'block';
+                footer.style.display = 'flex';
+                
+            } catch (err) {
+                loading.style.display = 'none';
+                result.innerHTML = `<div class="alert alert-error">Fout bij laden: ${err.message}</div>`;
+                result.style.display = 'block';
+            }
+        }
+        
+        function renderOptimizedRoute(data) {
+            const result = document.getElementById('route-result');
+            const { summary, optimizedSchedule, startLocation } = data;
+            
+            let html = `
+                <div class="route-summary">
+                    <div class="route-stat">
+                        <div class="value">${summary.totalAppointments}</div>
+                        <div class="label">Afspraken</div>
+                    </div>
+                    <div class="route-stat">
+                        <div class="value">${summary.totalTravelTime} min</div>
+                        <div class="label">Totale reistijd</div>
+                    </div>
+                    <div class="route-stat savings">
+                        <div class="value">${summary.timeSavedMinutes > 0 ? '-' + summary.timeSavedMinutes : 0} min</div>
+                        <div class="label">Bespaard</div>
+                    </div>
+                </div>
+                
+                <h4 style="margin: 0.5rem 0; font-size: 0.85rem;">📍 Start: ${startLocation}</h4>
+                
+                <ul class="route-list">
+            `;
+            
+            optimizedSchedule.forEach((item, index) => {
+                const startTime = new Date(item.scheduledStart).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                const endTime = new Date(item.scheduledEnd).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                
+                if (item.travelTimeFromPrevious > 0) {
+                    html += `
+                        <div class="route-travel-indicator">
+                            ${item.travelTimeFromPrevious} min rijden
+                        </div>
+                    `;
+                }
+                
+                html += `
+                    <li class="route-item">
+                        <div class="route-order">${index + 1}</div>
+                        <div class="route-item-content">
+                            <div class="route-item-title">${item.title}</div>
+                            <div class="route-item-location">${item.location || 'Geen locatie'}</div>
+                            <div class="route-item-time">${startTime} - ${endTime}</div>
+                        </div>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            
+            // Vergelijking met origineel
+            if (summary.timeSavedMinutes > 0) {
+                html += `
+                    <div class="compare-section">
+                        <h4>💡 Door route optimalisatie bespaar je ${summary.timeSavedMinutes} minuten reistijd vandaag!</h4>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">
+                            Originele reistijd: ${summary.originalTravelTime} min → 
+                            Geoptimaliseerd: ${summary.totalTravelTime} min
+                        </p>
+                    </div>
+                `;
+            }
+            
+            result.innerHTML = html;
+        }
+        
+        async function applyOptimizedRoute() {
+            if (!optimizedRouteData) return;
+            
+            const btn = document.getElementById('apply-route-btn');
+            btn.disabled = true;
+            btn.textContent = 'Toepassen...';
+            
+            try {
+                const res = await fetch('/api/appointments/apply-optimized-route', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ schedule: optimizedRouteData.optimizedSchedule })
+                });
+                
+                const data = await res.json();
+                
+                if (data.error) {
+                    alert('Fout: ' + data.error);
+                } else {
+                    alert(`${data.updates.length} afspraken bijgewerkt!`);
+                    closeRouteModal();
+                    // Ververs de kalender
+                    if (typeof loadEvents === 'function') {
+                        loadEvents();
+                    }
+                }
+            } catch (err) {
+                alert('Fout bij toepassen: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Route toepassen';
+            }
+        }
+        
+        // Modal sluiten met Escape of buiten klikken
+        document.getElementById('route-optimizer-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'route-optimizer-modal') {
+                closeRouteModal();
+            }
+        });
+    </script>
 </body>
 </html>

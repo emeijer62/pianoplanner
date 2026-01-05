@@ -71,14 +71,24 @@ function initDatabase() {
         });
         
         // Migratie: voeg booking_slug en booking_settings kolommen toe
-        db.run(`ALTER TABLE users ADD COLUMN booking_slug TEXT UNIQUE`, (err) => {
+        db.run(`ALTER TABLE users ADD COLUMN booking_slug TEXT`, (err) => {
             if (err && !err.message.includes('duplicate column')) {
-                console.error('Migration error booking_slug:', err);
+                // Alleen loggen als het niet "already exists" is
+                if (!err.message.includes('duplicate')) {
+                    console.error('Migration error booking_slug:', err.message);
+                }
+            } else if (!err) {
+                // Maak een unieke index als de kolom nieuw toegevoegd is
+                db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_booking_slug ON users(booking_slug)`, (idxErr) => {
+                    if (idxErr) console.error('Index error booking_slug:', idxErr.message);
+                });
             }
         });
         db.run(`ALTER TABLE users ADD COLUMN booking_settings TEXT`, (err) => {
             if (err && !err.message.includes('duplicate column')) {
-                console.error('Migration error booking_settings:', err);
+                if (!err.message.includes('duplicate')) {
+                    console.error('Migration error booking_settings:', err.message);
+                }
             }
         });
         
