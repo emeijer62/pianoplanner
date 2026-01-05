@@ -61,7 +61,7 @@ router.post('/register', (req, res) => {
 
 // Inloggen met email/wachtwoord
 router.post('/login', (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, remember } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({ error: 'Email en wachtwoord zijn verplicht' });
@@ -74,6 +74,11 @@ router.post('/login', (req, res) => {
         return res.status(401).json({ error: result.error });
     }
 
+    // Zet sessie met langere duur als "ingelogd blijven" is aangevinkt
+    if (remember) {
+        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 dagen
+    }
+
     // Zet sessie
     req.session.user = {
         id: result.user.id,
@@ -83,7 +88,7 @@ router.post('/login', (req, res) => {
         authType: result.user.authType
     };
 
-    console.log(`✅ Gebruiker ingelogd (email): ${email}`);
+    console.log(`✅ Gebruiker ingelogd (email): ${email}${remember ? ' (ingelogd blijven)' : ''}`);
 
     res.json({ 
         success: true, 
@@ -100,6 +105,9 @@ router.post('/login', (req, res) => {
 
 // Start Google OAuth flow
 router.get('/google', (req, res) => {
+    // Sla remember voorkeur op in sessie voor na de callback
+    req.session.rememberMe = req.query.remember === '1';
+    
     const authUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES,
@@ -151,6 +159,11 @@ router.get('/google/callback', async (req, res) => {
             console.log(`🎁 Nieuwe gebruiker, trial gestart: ${user.email}`);
         }
 
+        // Pas sessie duur aan als "ingelogd blijven" was aangevinkt
+        if (req.session.rememberMe) {
+            req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 dagen
+        }
+
         // Zet sessie
         req.session.user = {
             id: user.id,
@@ -167,7 +180,7 @@ router.get('/google/callback', async (req, res) => {
                 console.error('Session save error:', err);
                 return res.redirect('/?error=session_failed');
             }
-            console.log(`✅ Gebruiker ingelogd (Google): ${user.email}`);
+            console.log(`✅ Gebruiker ingelogd (Google): ${user.email}${req.session.rememberMe ? ' (ingelogd blijven)' : ''}`);
             // Redirect naar www om consistentie te garanderen
             const redirectUrl = process.env.NODE_ENV === 'production' 
                 ? 'https://www.pianoplanner.com/dashboard.html'
