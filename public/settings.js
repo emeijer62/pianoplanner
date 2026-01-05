@@ -463,6 +463,110 @@ async function deleteService(id) {
     }
 }
 
+// ========== PUBLIEKE BOEKINGSLINK ==========
+
+let bookingSettings = {};
+
+async function loadBookingSettings() {
+    try {
+        const response = await fetch('/api/settings/booking');
+        if (!response.ok) throw new Error('Kon boekingsinstellingen niet laden');
+        
+        const data = await response.json();
+        bookingSettings = data.settings || {};
+        
+        // Update UI
+        const enabledCheckbox = document.getElementById('booking-enabled');
+        const optionsDiv = document.getElementById('booking-options');
+        const linkDisplay = document.getElementById('booking-link-display');
+        const statusDiv = document.getElementById('booking-status');
+        const statusText = document.getElementById('booking-status-text');
+        
+        enabledCheckbox.checked = bookingSettings.enabled || false;
+        
+        if (bookingSettings.enabled && data.bookingUrl) {
+            optionsDiv.style.display = 'block';
+            linkDisplay.style.display = 'block';
+            document.getElementById('booking-link-url').value = data.bookingUrl;
+            document.getElementById('booking-link-preview').href = data.bookingUrl;
+            statusDiv.className = 'sync-status connected';
+            statusText.textContent = '✅ Boekingslink is actief';
+        } else {
+            optionsDiv.style.display = enabledCheckbox.checked ? 'block' : 'none';
+            linkDisplay.style.display = 'none';
+            statusDiv.className = 'sync-status disconnected';
+            statusText.textContent = '⏸️ Boekingslink is uitgeschakeld';
+        }
+        
+        // Vul formulier velden in
+        document.getElementById('booking-title').value = bookingSettings.title || 'Afspraak inplannen';
+        document.getElementById('booking-description').value = bookingSettings.description || '';
+        document.getElementById('booking-confirmation').value = bookingSettings.confirmationMessage || 'Bedankt voor uw boeking!';
+        document.getElementById('booking-min-advance').value = bookingSettings.minAdvanceHours || 24;
+        document.getElementById('booking-max-advance').value = bookingSettings.maxAdvanceDays || 60;
+        document.getElementById('booking-require-email').checked = bookingSettings.requireEmail !== false;
+        document.getElementById('booking-require-phone').checked = bookingSettings.requirePhone !== false;
+        
+    } catch (error) {
+        console.error('Kon boekingsinstellingen niet laden:', error);
+    }
+}
+
+async function saveBookingSettings(e) {
+    e.preventDefault();
+    
+    const settings = {
+        enabled: document.getElementById('booking-enabled').checked,
+        title: document.getElementById('booking-title').value.trim(),
+        description: document.getElementById('booking-description').value.trim(),
+        confirmationMessage: document.getElementById('booking-confirmation').value.trim(),
+        minAdvanceHours: parseInt(document.getElementById('booking-min-advance').value),
+        maxAdvanceDays: parseInt(document.getElementById('booking-max-advance').value),
+        requireEmail: document.getElementById('booking-require-email').checked,
+        requirePhone: document.getElementById('booking-require-phone').checked,
+        slug: bookingSettings.slug  // Behoud bestaande slug
+    };
+    
+    try {
+        const response = await fetch('/api/settings/booking', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Kon instellingen niet opslaan');
+        }
+        
+        showAlert('Boekingsinstellingen opgeslagen!', 'success');
+        
+        // Update UI met nieuwe settings
+        await loadBookingSettings();
+        
+    } catch (error) {
+        showAlert(error.message, 'error');
+    }
+}
+
+function copyBookingLink() {
+    const linkInput = document.getElementById('booking-link-url');
+    linkInput.select();
+    document.execCommand('copy');
+    showAlert('Link gekopieerd naar klembord!', 'success');
+}
+
+// Toggle booking options visibility
+function setupBookingToggle() {
+    const enabledCheckbox = document.getElementById('booking-enabled');
+    const optionsDiv = document.getElementById('booking-options');
+    
+    enabledCheckbox.addEventListener('change', () => {
+        optionsDiv.style.display = enabledCheckbox.checked ? 'block' : 'none';
+    });
+}
+
 // ========== INIT ==========
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -470,12 +574,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadCompanySettings();
         loadServices();
         loadProfileSettings();
+        loadBookingSettings();
         
         // Event listeners
         document.getElementById('companyForm').addEventListener('submit', saveCompanySettings);
         document.getElementById('serviceForm').addEventListener('submit', saveService);
         document.getElementById('profileForm').addEventListener('submit', saveProfile);
         document.getElementById('passwordForm').addEventListener('submit', changePassword);
+        document.getElementById('bookingSettingsForm').addEventListener('submit', saveBookingSettings);
+        
+        // Setup booking toggle
+        setupBookingToggle();
         
         // Close modal on click outside
         document.getElementById('serviceModal').addEventListener('click', (e) => {

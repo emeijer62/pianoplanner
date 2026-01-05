@@ -168,6 +168,7 @@ function formatSettings(row) {
 
 module.exports = {
     getSettings,
+    getCompanySettings: getSettings,  // Alias voor duidelijkheid
     saveSettings,
     getOriginAddress,
     getDefaultSettings

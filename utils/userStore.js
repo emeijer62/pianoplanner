@@ -439,6 +439,98 @@ const updateCalendarSync = async (userId, settings) => {
     return { user };
 };
 
+// ==================== PUBLIC BOOKING (SELF-SCHEDULER) ====================
+
+// Genereer unieke slug voor boekingslink
+const generateBookingSlug = () => {
+    return crypto.randomBytes(8).toString('hex');
+};
+
+// Maak slug menselijk leesbaar (naam-gebaseerd)
+const generateReadableSlug = (name) => {
+    const base = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    const random = crypto.randomBytes(3).toString('hex');
+    return `${base}-${random}`;
+};
+
+// Haal user op via booking slug
+const getUserByBookingSlug = async (slug) => {
+    const user = await dbGet('SELECT * FROM users WHERE booking_slug = ?', [slug]);
+    if (!user) return null;
+    return formatUser(user);
+};
+
+// Haal booking settings op
+const getBookingSettings = async (userId) => {
+    const user = await dbGet('SELECT booking_slug, booking_settings FROM users WHERE id = ?', [userId]);
+    
+    const defaultSettings = {
+        enabled: false,
+        slug: null,
+        title: 'Afspraak inplannen',
+        description: '',
+        minAdvanceHours: 24,  // Minimaal 24 uur van tevoren
+        maxAdvanceDays: 60,   // Maximaal 60 dagen vooruit
+        requirePhone: true,
+        requireEmail: true,
+        confirmationMessage: 'Bedankt voor uw boeking! U ontvangt een bevestiging per email.',
+        allowedServices: []   // Leeg = alle actieve diensten
+    };
+    
+    if (!user) return defaultSettings;
+    
+    let settings = defaultSettings;
+    if (user.booking_settings) {
+        try {
+            settings = { ...defaultSettings, ...JSON.parse(user.booking_settings) };
+        } catch (e) {
+            // Gebruik defaults bij parse error
+        }
+    }
+    settings.slug = user.booking_slug;
+    return settings;
+};
+
+// Update booking settings
+const updateBookingSettings = async (userId, settings) => {
+    // Genereer slug als die nog niet bestaat en booking wordt ingeschakeld
+    let slug = settings.slug;
+    if (settings.enabled && !slug) {
+        // Probeer naam-gebaseerde slug
+        const user = await getUser(userId);
+        slug = user?.name ? generateReadableSlug(user.name) : generateBookingSlug();
+        
+        // Check of slug uniek is
+        const existing = await getUserByBookingSlug(slug);
+        if (existing && existing.id !== userId) {
+            slug = generateBookingSlug(); // Fallback naar random
+        }
+    }
+    
+    const bookingSettings = JSON.stringify({
+        enabled: settings.enabled || false,
+        title: settings.title || 'Afspraak inplannen',
+        description: settings.description || '',
+        minAdvanceHours: settings.minAdvanceHours || 24,
+        maxAdvanceDays: settings.maxAdvanceDays || 60,
+        requirePhone: settings.requirePhone !== false,
+        requireEmail: settings.requireEmail !== false,
+        confirmationMessage: settings.confirmationMessage || 'Bedankt voor uw boeking!',
+        allowedServices: settings.allowedServices || [],
+        updatedAt: new Date().toISOString()
+    });
+    
+    await dbRun(`
+        UPDATE users SET booking_slug = ?, booking_settings = ?, updated_at = ? WHERE id = ?
+    `, [slug, bookingSettings, new Date().toISOString(), userId]);
+    
+    return getBookingSettings(userId);
+};
+
 // Format database row naar camelCase
 function formatUser(row) {
     if (!row) return null;
@@ -503,5 +595,9 @@ module.exports = {
     updateUserByAdmin,
     // Calendar Sync
     getCalendarSync,
-    updateCalendarSync
+    updateCalendarSync,
+    // Public Booking
+    getUserByBookingSlug,
+    getBookingSettings,
+    updateBookingSettings
 };

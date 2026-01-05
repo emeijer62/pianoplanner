@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const companyStore = require('../utils/companyStore');
 const serviceStore = require('../utils/serviceStore');
+const userStore = require('../utils/userStore');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 // ==================== BEDRIJFSINSTELLINGEN ====================
@@ -173,6 +174,47 @@ router.post('/services/:id/activate', requireAuth, async (req, res) => {
     } catch (error) {
         console.error('Error activating service:', error);
         res.status(500).json({ error: 'Kon dienst niet activeren' });
+    }
+});
+
+// ==================== PUBLIEKE BOEKINGSLINK ====================
+
+// Haal booking settings op
+router.get('/booking', requireAuth, async (req, res) => {
+    try {
+        const settings = await userStore.getBookingSettings(req.session.user.id);
+        
+        // Genereer de volledige URL
+        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+        const bookingUrl = settings.slug ? `${baseUrl}/book/${settings.slug}` : null;
+        
+        res.json({ 
+            settings,
+            bookingUrl
+        });
+    } catch (error) {
+        console.error('Error getting booking settings:', error);
+        res.status(500).json({ error: 'Kon boekingsinstellingen niet ophalen' });
+    }
+});
+
+// Update booking settings
+router.put('/booking', requireAuth, async (req, res) => {
+    try {
+        const settings = await userStore.updateBookingSettings(req.session.user.id, req.body);
+        
+        // Genereer de volledige URL
+        const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+        const bookingUrl = settings.slug ? `${baseUrl}/book/${settings.slug}` : null;
+        
+        res.json({ 
+            success: true,
+            settings,
+            bookingUrl
+        });
+    } catch (error) {
+        console.error('Error updating booking settings:', error);
+        res.status(500).json({ error: 'Kon boekingsinstellingen niet opslaan' });
     }
 });
 

@@ -117,6 +117,19 @@ const searchCustomers = async (userId, query) => {
     return customers.map(formatCustomer);
 };
 
+// Zoek klant op email
+const getCustomerByEmail = async (userId, email) => {
+    if (!email) return null;
+    
+    const customer = await dbGet(
+        'SELECT * FROM customers WHERE user_id = ? AND email = ?',
+        [userId, email.toLowerCase()]
+    );
+    
+    if (!customer) return null;
+    return formatCustomer(customer);
+};
+
 // Format database row naar legacy structuur
 function formatCustomer(row) {
     return {
@@ -141,5 +154,6 @@ module.exports = {
     getAllCustomers,
     updateCustomer,
     deleteCustomer,
-    searchCustomers
+    searchCustomers,
+    getCustomerByEmail
 };

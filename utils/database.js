@@ -69,6 +69,21 @@ function initDatabase() {
                 console.error('Migration error:', err);
             }
         });
+        
+        // Migratie: voeg booking_slug en booking_settings kolommen toe
+        db.run(`ALTER TABLE users ADD COLUMN booking_slug TEXT UNIQUE`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error booking_slug:', err);
+            }
+        });
+        db.run(`ALTER TABLE users ADD COLUMN booking_settings TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error booking_settings:', err);
+            }
+        });
+        
+        // Index voor snelle booking slug lookup
+        db.run('CREATE INDEX IF NOT EXISTS idx_users_booking_slug ON users(booking_slug)');
 
         // Customers tabel (per user)
         db.run(`

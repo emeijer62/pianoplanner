@@ -13,6 +13,7 @@ const calendarRoutes = require('./routes/calendar');
 const customerRoutes = require('./routes/customers');
 const serviceRoutes = require('./routes/services');
 const bookingRoutes = require('./routes/booking');
+const publicBookingRoutes = require('./routes/publicBooking');
 const settingsRoutes = require('./routes/settings');
 const stripeRoutes = require('./routes/stripe');
 const stripeWebhookRoutes = require('./routes/stripeWebhook');
@@ -60,11 +61,17 @@ app.use('/api/calendar', calendarRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/booking', bookingRoutes);
+app.use('/api/book', publicBookingRoutes);  // Publieke booking API (geen auth vereist)
 app.use('/api/settings', settingsRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/pianos', pianoRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Publieke boekingspagina route (serve book.html voor /book/:slug)
+app.get('/book/:slug', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'book.html'));
+});
 
 // API route om ingelogde gebruiker te checken
 app.get('/api/user', async (req, res) => {

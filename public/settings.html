@@ -519,7 +519,107 @@
         
         <!-- Account Instellingen -->
         <div class="settings-section">
-            <h2>👤 Account Instellingen</h2>
+            <h2>� Publieke Boekingslink</h2>
+            <p style="color: #666; margin-bottom: 16px;">
+                Deel een link waar klanten zelf afspraken kunnen inplannen. Ideaal voor je website of e-mailhandtekening.
+            </p>
+            
+            <div id="booking-link-section">
+                <!-- Status -->
+                <div id="booking-status" class="sync-status disconnected" style="margin-bottom: 16px;">
+                    <strong id="booking-status-text">⏸️ Boekingslink is uitgeschakeld</strong>
+                </div>
+                
+                <!-- Link weergave -->
+                <div id="booking-link-display" style="display: none; margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Je boekingslink:</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="booking-link-url" readonly style="flex: 1; background: var(--light-gray); font-family: monospace; font-size: 0.9rem;">
+                        <button type="button" class="btn btn-secondary" onclick="copyBookingLink()" title="Link kopiëren">
+                            📋 Kopiëren
+                        </button>
+                        <a id="booking-link-preview" href="#" target="_blank" class="btn btn-secondary" title="Bekijken">
+                            👁️ Bekijken
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Instellingen -->
+                <form id="bookingSettingsForm">
+                    <div class="form-group">
+                        <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="booking-enabled" name="enabled">
+                                <span class="toggle-slider"></span>
+                            </div>
+                            <span>Boekingslink activeren</span>
+                        </label>
+                    </div>
+                    
+                    <div id="booking-options" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="booking-title">Pagina titel</label>
+                                <input type="text" id="booking-title" name="title" placeholder="Afspraak inplannen">
+                            </div>
+                            <div class="form-group">
+                                <label for="booking-min-advance">Minimaal vooruit boeken</label>
+                                <select id="booking-min-advance" name="minAdvanceHours">
+                                    <option value="1">1 uur</option>
+                                    <option value="2">2 uur</option>
+                                    <option value="4">4 uur</option>
+                                    <option value="12">12 uur</option>
+                                    <option value="24" selected>24 uur (1 dag)</option>
+                                    <option value="48">48 uur (2 dagen)</option>
+                                    <option value="72">72 uur (3 dagen)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="booking-max-advance">Maximaal vooruit boeken</label>
+                                <select id="booking-max-advance" name="maxAdvanceDays">
+                                    <option value="14">2 weken</option>
+                                    <option value="30">1 maand</option>
+                                    <option value="60" selected>2 maanden</option>
+                                    <option value="90">3 maanden</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Verplichte velden</label>
+                                <div style="display: flex; gap: 16px; margin-top: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                        <input type="checkbox" id="booking-require-email" name="requireEmail" checked>
+                                        <span>Email</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                        <input type="checkbox" id="booking-require-phone" name="requirePhone" checked>
+                                        <span>Telefoon</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="booking-description">Beschrijving (optioneel)</label>
+                            <textarea id="booking-description" name="description" rows="2" placeholder="Welkomstbericht voor klanten op je boekingspagina"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="booking-confirmation">Bevestigingsbericht</label>
+                            <input type="text" id="booking-confirmation" name="confirmationMessage" placeholder="Bedankt voor uw boeking!">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">💾 Boekingsinstellingen Opslaan</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Account Instellingen -->
+        <div class="settings-section">
+            <h2>�👤 Account Instellingen</h2>
             <p style="color: #666; margin-bottom: 16px;">
                 Beheer je account gegevens en wachtwoord.
             </p>
