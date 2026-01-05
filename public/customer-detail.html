@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klant Details - PianoPlanner</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .customer-detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        .customer-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .customer-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .customer-name {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+
+        .customer-since {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .customer-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .customer-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .info-value a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .info-value a:hover {
+            text-decoration: underline;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            margin-bottom: 24px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Piano's sectie */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .pianos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .piano-card {
+            background: var(--light-gray);
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .piano-card:hover {
+            border-color: var(--accent);
+        }
+
+        .piano-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .piano-brand-model {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .piano-type-badge {
+            background: var(--accent);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .piano-type-badge.grand { background: #2e7d32; }
+        .piano-type-badge.digital { background: #7b1fa2; }
+
+        .piano-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .piano-service-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+
+        .service-ok { color: #2e7d32; }
+        .service-due { color: #c62828; }
+        .service-soon { color: #f57c00; }
+
+        /* Service Historie */
+        .service-history {
+            margin-top: 16px;
+        }
+
+        .service-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            background: var(--light-gray);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .service-date {
+            min-width: 100px;
+        }
+
+        .service-date-day {
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .service-date-month {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .service-details {
+            flex: 1;
+        }
+
+        .service-type {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .service-notes {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .service-pitch {
+            background: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .modal-actions {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        /* Afspraken */
+        .appointments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .appointment-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            background: var(--light-gray);
+            border-radius: 8px;
+            align-items: center;
+        }
+
+        .appointment-date {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .appointment-date-day {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .appointment-date-month {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .appointment-info {
+            flex: 1;
+        }
+
+        .appointment-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .appointment-time {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="piano-icon">🎹</span>
+            <span>PianoPlanner</span>
+        </div>
+        <div class="nav-links">
+            <a href="/dashboard.html">📅 Dashboard</a>
+            <a href="/customers.html" class="active">👥 Klanten</a>
+            <a href="/pianos.html">🎹 Piano's</a>
+            <a href="/settings.html">⚙️ Instellingen</a>
+        </div>
+        <div class="nav-user">
+            <a href="/booking.html" class="btn btn-small btn-primary">+ Afspraak</a>
+            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+        </div>
+    </nav>
+
+    <main class="customer-detail-container">
+        <a href="/customers.html" class="back-link">← Terug naar klanten</a>
+
+        <div id="loading" class="loading">Klantgegevens laden...</div>
+
+        <div id="customer-content" style="display: none;">
+            <!-- Klant header -->
+            <div class="customer-header">
+                <div class="customer-header-top">
+                    <div>
+                        <h1 class="customer-name" id="customer-name">-</h1>
+                        <div class="customer-since" id="customer-since">Klant sinds -</div>
+                    </div>
+                    <div class="customer-actions">
+                        <button class="btn btn-secondary" onclick="editCustomer()">✏️ Bewerken</button>
+                        <button class="btn btn-primary" onclick="openNewAppointment()">+ Afspraak</button>
+                    </div>
+                </div>
+                <div class="customer-info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Email</span>
+                        <span class="info-value" id="customer-email">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Telefoon</span>
+                        <span class="info-value" id="customer-phone">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Adres</span>
+                        <span class="info-value" id="customer-address">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Notities</span>
+                        <span class="info-value" id="customer-notes">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab active" data-tab="pianos">🎹 Piano's</button>
+                    <button class="tab" data-tab="history">📋 Service Historie</button>
+                    <button class="tab" data-tab="appointments">📅 Afspraken</button>
+                </div>
+
+                <!-- Piano's tab -->
+                <div id="tab-pianos" class="tab-content active">
+                    <div class="section-header">
+                        <h3 class="section-title">Piano's van deze klant</h3>
+                        <button class="btn btn-primary btn-small" onclick="openAddPianoModal()">+ Piano toevoegen</button>
+                    </div>
+                    <div id="pianos-list" class="pianos-grid">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎹</div>
+                            <p>Nog geen piano's gekoppeld</p>
+                            <button class="btn btn-primary" onclick="openAddPianoModal()">Eerste piano toevoegen</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Historie tab -->
+                <div id="tab-history" class="tab-content">
+                    <div class="section-header">
+                        <h3 class="section-title">Volledige service historie</h3>
+                    </div>
+                    <div id="service-history" class="service-history">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <p>Nog geen service uitgevoerd</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Afspraken tab -->
+                <div id="tab-appointments" class="tab-content">
+                    <div class="section-header">
+                        <h3 class="section-title">Afspraken</h3>
+                    </div>
+                    <div id="appointments-list" class="appointments-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📅</div>
+                            <p>Nog geen afspraken</p>
+                            <button class="btn btn-primary" onclick="openNewAppointment()">Afspraak inplannen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Piano Modal -->
+    <div id="piano-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="piano-modal-title">Piano toevoegen</h2>
+                <button class="modal-close" onclick="closePianoModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="piano-form">
+                    <input type="hidden" id="piano-id">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="piano-brand">Merk *</label>
+                            <input type="text" id="piano-brand" required placeholder="bijv. Steinway, Yamaha">
+                        </div>
+                        <div class="form-group">
+                            <label for="piano-model">Model</label>
+                            <input type="text" id="piano-model" placeholder="bijv. B-211, U3">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="piano-type">Type</label>
+                            <select id="piano-type">
+                                <option value="upright">Staande piano</option>
+                                <option value="grand">Vleugel</option>
+                                <option value="digital">Digitale piano</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="piano-year">Bouwjaar</label>
+                            <input type="number" id="piano-year" placeholder="bijv. 1985">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="piano-serial">Serienummer</label>
+                            <input type="text" id="piano-serial" placeholder="bijv. 123456">
+                        </div>
+                        <div class="form-group">
+                            <label for="piano-finish">Afwerking</label>
+                            <input type="text" id="piano-finish" placeholder="bijv. Zwart hoogglans">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="piano-location">Locatie in huis</label>
+                            <input type="text" id="piano-location" placeholder="bijv. Woonkamer">
+                        </div>
+                        <div class="form-group">
+                            <label for="piano-condition">Conditie</label>
+                            <select id="piano-condition">
+                                <option value="excellent">Uitstekend</option>
+                                <option value="good" selected>Goed</option>
+                                <option value="fair">Redelijk</option>
+                                <option value="poor">Matig</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="piano-last-tuning">Laatste stembeurt</label>
+                            <input type="date" id="piano-last-tuning">
+                        </div>
+                        <div class="form-group">
+                            <label for="piano-interval">Service interval</label>
+                            <select id="piano-interval">
+                                <option value="3">Elke 3 maanden</option>
+                                <option value="6" selected>Elke 6 maanden</option>
+                                <option value="12">Elk jaar</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="piano-notes">Notities</label>
+                        <textarea id="piano-notes" rows="3" placeholder="Bijzonderheden over de piano..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closePianoModal()">Annuleren</button>
+                <button class="btn btn-primary" onclick="savePiano()">Opslaan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Modal -->
+    <div id="service-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Service toevoegen</h2>
+                <button class="modal-close" onclick="closeServiceModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="service-form">
+                    <input type="hidden" id="service-piano-id">
+                    
+                    <div class="form-group">
+                        <label for="service-type">Type service</label>
+                        <select id="service-type">
+                            <option value="tuning">Stemmen</option>
+                            <option value="regulation">Regulatie</option>
+                            <option value="voicing">Intonatie</option>
+                            <option value="repair">Reparatie</option>
+                            <option value="inspection">Inspectie</option>
+                            <option value="other">Anders</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="service-date">Datum</label>
+                            <input type="date" id="service-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="service-pitch">Stemhoogte (Hz)</label>
+                            <input type="text" id="service-pitch" placeholder="bijv. 440">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="service-notes">Notities</label>
+                        <textarea id="service-notes" rows="4" placeholder="Wat is er gedaan, observaties, aanbevelingen..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeServiceModal()">Annuleren</button>
+                <button class="btn btn-primary" onclick="saveService()">Opslaan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let customerId = null;
+        let customerData = null;
+        let pianosData = [];
+
+        // Get customer ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        customerId = urlParams.get('id');
+
+        if (!customerId) {
+            window.location.href = '/customers.html';
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Load customer data
+        async function loadCustomer() {
+            try {
+                const response = await fetch(`/api/customers/${customerId}`);
+                if (!response.ok) {
+                    throw new Error('Klant niet gevonden');
+                }
+                customerData = await response.json();
+                displayCustomer();
+                loadPianos();
+                loadServiceHistory();
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('customer-content').style.display = 'block';
+            } catch (error) {
+                alert('Klant niet gevonden');
+                window.location.href = '/customers.html';
+            }
+        }
+
+        function displayCustomer() {
+            document.getElementById('customer-name').textContent = customerData.name;
+            document.getElementById('customer-email').innerHTML = customerData.email 
+                ? `<a href="mailto:${customerData.email}">${customerData.email}</a>` 
+                : '-';
+            document.getElementById('customer-phone').innerHTML = customerData.phone 
+                ? `<a href="tel:${customerData.phone}">${customerData.phone}</a>` 
+                : '-';
+            
+            const address = [customerData.street, customerData.postalCode, customerData.city]
+                .filter(Boolean).join(', ');
+            document.getElementById('customer-address').textContent = address || '-';
+            document.getElementById('customer-notes').textContent = customerData.notes || '-';
+            
+            if (customerData.createdAt) {
+                const date = new Date(customerData.createdAt);
+                document.getElementById('customer-since').textContent = 
+                    `Klant sinds ${date.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}`;
+            }
+            
+            document.title = `${customerData.name} - PianoPlanner`;
+        }
+
+        // Load pianos
+        async function loadPianos() {
+            try {
+                const response = await fetch(`/api/pianos/customer/${customerId}`);
+                const data = await response.json();
+                pianosData = data.pianos || [];
+                displayPianos();
+            } catch (error) {
+                console.error('Error loading pianos:', error);
+            }
+        }
+
+        function displayPianos() {
+            const container = document.getElementById('pianos-list');
+            
+            if (pianosData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎹</div>
+                        <p>Nog geen piano's gekoppeld aan deze klant</p>
+                        <button class="btn btn-primary" onclick="openAddPianoModal()">Eerste piano toevoegen</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = pianosData.map(piano => {
+                const typeLabel = {
+                    'upright': 'Staand',
+                    'grand': 'Vleugel',
+                    'digital': 'Digitaal'
+                }[piano.type] || piano.type;
+
+                const serviceStatus = getServiceStatus(piano);
+
+                return `
+                    <div class="piano-card" onclick="openPianoDetail('${piano.id}')">
+                        <div class="piano-card-header">
+                            <div>
+                                <div class="piano-brand-model">${piano.brand} ${piano.model || ''}</div>
+                                ${piano.year ? `<div style="font-size: 0.85rem; color: var(--text-secondary);">Bouwjaar ${piano.year}</div>` : ''}
+                            </div>
+                            <span class="piano-type-badge ${piano.type}">${typeLabel}</span>
+                        </div>
+                        <div class="piano-info">
+                            ${piano.serialNumber ? `Serienr: ${piano.serialNumber}` : ''}
+                            ${piano.location ? `• ${piano.location}` : ''}
+                        </div>
+                        <div class="piano-service-status">
+                            <span class="${serviceStatus.class}">${serviceStatus.text}</span>
+                            <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); openServiceModal('${piano.id}')">+ Service</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getServiceStatus(piano) {
+            if (!piano.lastTuningDate) {
+                return { class: 'service-due', text: '⚠️ Nog niet gestemd' };
+            }
+
+            const lastService = new Date(piano.lastTuningDate);
+            const nextService = new Date(lastService);
+            nextService.setMonth(nextService.getMonth() + (piano.serviceInterval || 6));
+            
+            const now = new Date();
+            const daysUntil = Math.ceil((nextService - now) / (1000 * 60 * 60 * 24));
+
+            if (daysUntil < 0) {
+                return { class: 'service-due', text: `⚠️ ${Math.abs(daysUntil)} dagen over service datum` };
+            } else if (daysUntil < 30) {
+                return { class: 'service-soon', text: `⏰ Over ${daysUntil} dagen service nodig` };
+            } else {
+                return { class: 'service-ok', text: `✅ Laatste: ${lastService.toLocaleDateString('nl-NL')}` };
+            }
+        }
+
+        // Load service history for all pianos of this customer
+        async function loadServiceHistory() {
+            try {
+                const response = await fetch(`/api/pianos/customer/${customerId}/services`);
+                if (response.ok) {
+                    const data = await response.json();
+                    displayServiceHistory(data.services || []);
+                }
+            } catch (error) {
+                console.error('Error loading service history:', error);
+            }
+        }
+
+        function displayServiceHistory(services) {
+            const container = document.getElementById('service-history');
+            
+            if (!services || services.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>Nog geen service historie</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by date descending
+            services.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const typeLabels = {
+                'tuning': 'Stemmen',
+                'regulation': 'Regulatie',
+                'voicing': 'Intonatie',
+                'repair': 'Reparatie',
+                'inspection': 'Inspectie',
+                'other': 'Anders'
+            };
+
+            container.innerHTML = services.map(service => {
+                const date = new Date(service.date);
+                return `
+                    <div class="service-item">
+                        <div class="service-date">
+                            <div class="service-date-day">${date.getDate()}</div>
+                            <div class="service-date-month">${date.toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' })}</div>
+                        </div>
+                        <div class="service-details">
+                            <div class="service-type">${typeLabels[service.type] || service.type}</div>
+                            <div class="service-piano" style="font-size: 0.85rem; color: var(--accent);">
+                                ${service.pianoName || 'Piano'}
+                            </div>
+                            ${service.notes ? `<div class="service-notes">${service.notes}</div>` : ''}
+                            ${service.pitch ? `<span class="service-pitch">🎵 ${service.pitch} Hz</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Piano Modal
+        function openAddPianoModal() {
+            document.getElementById('piano-modal-title').textContent = 'Piano toevoegen';
+            document.getElementById('piano-form').reset();
+            document.getElementById('piano-id').value = '';
+            document.getElementById('piano-modal').classList.add('active');
+        }
+
+        function openPianoDetail(pianoId) {
+            const piano = pianosData.find(p => p.id === pianoId);
+            if (!piano) return;
+
+            document.getElementById('piano-modal-title').textContent = 'Piano bewerken';
+            document.getElementById('piano-id').value = piano.id;
+            document.getElementById('piano-brand').value = piano.brand || '';
+            document.getElementById('piano-model').value = piano.model || '';
+            document.getElementById('piano-type').value = piano.type || 'upright';
+            document.getElementById('piano-year').value = piano.year || '';
+            document.getElementById('piano-serial').value = piano.serialNumber || '';
+            document.getElementById('piano-finish').value = piano.finish || '';
+            document.getElementById('piano-location').value = piano.location || '';
+            document.getElementById('piano-condition').value = piano.condition || 'good';
+            document.getElementById('piano-last-tuning').value = piano.lastTuningDate ? piano.lastTuningDate.split('T')[0] : '';
+            document.getElementById('piano-interval').value = piano.serviceInterval || 6;
+            document.getElementById('piano-notes').value = piano.notes || '';
+
+            document.getElementById('piano-modal').classList.add('active');
+        }
+
+        function closePianoModal() {
+            document.getElementById('piano-modal').classList.remove('active');
+        }
+
+        async function savePiano() {
+            const pianoId = document.getElementById('piano-id').value;
+            const pianoData = {
+                customerId: customerId,
+                brand: document.getElementById('piano-brand').value,
+                model: document.getElementById('piano-model').value,
+                type: document.getElementById('piano-type').value,
+                year: document.getElementById('piano-year').value ? parseInt(document.getElementById('piano-year').value) : null,
+                serialNumber: document.getElementById('piano-serial').value,
+                finish: document.getElementById('piano-finish').value,
+                location: document.getElementById('piano-location').value,
+                condition: document.getElementById('piano-condition').value,
+                lastTuningDate: document.getElementById('piano-last-tuning').value || null,
+                serviceInterval: parseInt(document.getElementById('piano-interval').value),
+                notes: document.getElementById('piano-notes').value
+            };
+
+            try {
+                const url = pianoId ? `/api/pianos/${pianoId}` : '/api/pianos';
+                const method = pianoId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(pianoData)
+                });
+
+                if (response.ok) {
+                    closePianoModal();
+                    loadPianos();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Fout bij opslaan');
+                }
+            } catch (error) {
+                alert('Fout bij opslaan');
+            }
+        }
+
+        // Service Modal
+        function openServiceModal(pianoId) {
+            document.getElementById('service-piano-id').value = pianoId;
+            document.getElementById('service-form').reset();
+            document.getElementById('service-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('service-pitch').value = '440';
+            document.getElementById('service-modal').classList.add('active');
+        }
+
+        function closeServiceModal() {
+            document.getElementById('service-modal').classList.remove('active');
+        }
+
+        async function saveService() {
+            const pianoId = document.getElementById('service-piano-id').value;
+            const serviceData = {
+                type: document.getElementById('service-type').value,
+                date: document.getElementById('service-date').value,
+                pitch: document.getElementById('service-pitch').value,
+                notes: document.getElementById('service-notes').value
+            };
+
+            try {
+                const response = await fetch(`/api/pianos/${pianoId}/service`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(serviceData)
+                });
+
+                if (response.ok) {
+                    closeServiceModal();
+                    loadPianos();
+                    loadServiceHistory();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Fout bij opslaan');
+                }
+            } catch (error) {
+                alert('Fout bij opslaan');
+            }
+        }
+
+        function editCustomer() {
+            window.location.href = `/customers.html?edit=${customerId}`;
+        }
+
+        function openNewAppointment() {
+            window.location.href = `/booking.html?customer=${customerId}`;
+        }
+
+        // Load on page load
+        loadCustomer();
+    </script>
+</body>
+</html>

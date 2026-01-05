@@ -49,7 +49,7 @@ function renderCustomers(customers) {
     }
     
     container.innerHTML = customers.map(customer => `
-        <div class="user-card">
+        <div class="user-card" onclick="viewCustomer('${customer.id}')" style="cursor: pointer;">
             <div class="user-card-header">
                 <div class="user-avatar" style="display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
                     ${customer.name.charAt(0).toUpperCase()}
@@ -77,11 +77,14 @@ function renderCustomers(customers) {
                     <span>${customer.pianos?.length || 0}</span>
                 </div>
             </div>
-            <div class="user-card-actions">
+            <div class="user-card-actions" onclick="event.stopPropagation();">
+                <a href="/customer-detail.html?id=${customer.id}" class="btn btn-small btn-secondary">
+                    👁️ Details
+                </a>
                 <button class="btn btn-small btn-secondary" onclick="openModal('${customer.id}')">
                     ✏️ Bewerken
                 </button>
-                <a href="/booking.html" class="btn btn-small btn-primary">
+                <a href="/booking.html?customer=${customer.id}" class="btn btn-small btn-primary">
                     📅 Afspraak
                 </a>
                 <button class="btn btn-small btn-danger" onclick="deleteCustomer('${customer.id}', '${escapeHtml(customer.name)}')">
@@ -174,6 +177,10 @@ async function handleSubmit(e) {
         console.error('Error saving customer:', err);
         alert('Kon klant niet opslaan. Probeer het opnieuw.');
     }
+}
+
+function viewCustomer(customerId) {
+    window.location.href = `/customer-detail.html?id=${customerId}`;
 }
 
 async function deleteCustomer(id, name) {

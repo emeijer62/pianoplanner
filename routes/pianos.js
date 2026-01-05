@@ -53,6 +53,36 @@ router.get('/customer/:customerId', (req, res) => {
     });
 });
 
+// GET /api/pianos/customer/:customerId/services - Alle services van piano's van een klant
+router.get('/customer/:customerId/services', (req, res) => {
+    const userId = req.session.user.id;
+    const { customerId } = req.params;
+    
+    // Haal alle piano's van de klant op
+    const pianos = pianoStore.getPianosByCustomer(userId, customerId);
+    
+    // Verzamel alle services van alle piano's
+    const allServices = [];
+    for (const piano of pianos) {
+        const services = pianoStore.getServiceHistory(userId, piano.id);
+        for (const service of services) {
+            allServices.push({
+                ...service,
+                pianoId: piano.id,
+                pianoName: `${piano.brand} ${piano.model || ''}`.trim()
+            });
+        }
+    }
+    
+    // Sorteer op datum (nieuwste eerst)
+    allServices.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    res.json({
+        total: allServices.length,
+        services: allServices
+    });
+});
+
 // GET /api/pianos/:pianoId - Specifieke piano ophalen
 router.get('/:pianoId', (req, res) => {
     const userId = req.session.user.id;
