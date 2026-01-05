@@ -296,14 +296,16 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
                 if (!event.start.dateTime) continue;
                 
                 // Create local appointment from Google event
+                // Gebruik dezelfde veldnamen als appointmentStore
                 const newAppointment = {
                     id: 'google_' + event.id,
                     googleEventId: event.id,
                     title: event.summary || 'Google Agenda',
-                    startTime: event.start.dateTime,
-                    endTime: event.end.dateTime,
-                    address: event.location || '',
-                    notes: event.description || '',
+                    description: event.description || '',
+                    location: event.location || '',
+                    start: event.start.dateTime,
+                    end: event.end.dateTime,
+                    allDay: false,
                     source: 'google',
                     lastSynced: new Date().toISOString()
                 };
