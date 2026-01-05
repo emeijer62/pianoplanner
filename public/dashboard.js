@@ -10,6 +10,9 @@ const DAYS_NL = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijd
 const DAYS_SHORT = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
 const MONTHS_NL = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'];
 
+// Auto-sync cooldown (5 minuten)
+const SYNC_COOLDOWN_MS = 5 * 60 * 1000;
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in
     try {
@@ -43,6 +46,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Render initial view
         renderCalendar();
         
+        // Auto-sync met Google Calendar (als ingeschakeld)
+        await autoSyncCalendar();
+        
     } catch (err) {
         console.error('Error:', err);
         // Don't redirect on error - just show error message
@@ -53,6 +59,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('add-event-btn').addEventListener('click', openModal);
     document.getElementById('event-form').addEventListener('submit', handleEventSubmit);
 });
+
+// Automatische sync met Google Calendar
+async function autoSyncCalendar() {
+    try {
+        // Check of sync is ingeschakeld
+        const settingsRes = await fetch('/api/calendar/sync-settings');
+        if (!settingsRes.ok) return;
+        
+        const { settings } = await settingsRes.json();
+        if (!settings?.enabled) return;
+        
+        // Check cooldown (niet vaker dan elke 5 minuten)
+        const lastSync = localStorage.getItem('lastCalendarSync');
+        if (lastSync) {
+            const timeSince = Date.now() - parseInt(lastSync);
+            if (timeSince < SYNC_COOLDOWN_MS) {
+                console.log(`⏳ Auto-sync skipped (cooldown: ${Math.round((SYNC_COOLDOWN_MS - timeSince) / 1000)}s remaining)`);
+                return;
+            }
+        }
+        
+        console.log('🔄 Auto-syncing calendar...');
+        
+        const syncRes = await fetch('/api/calendar/sync', { method: 'POST' });
+        if (syncRes.ok) {
+            const result = await syncRes.json();
+            localStorage.setItem('lastCalendarSync', Date.now().toString());
+            
+            if (result.synced > 0) {
+                console.log(`✅ Auto-sync: ${result.synced} items gesynchroniseerd`);
+                // Herlaad events als er iets is gesynchroniseerd
+                await loadAllEvents();
+                renderCalendar();
+            } else {
+                console.log('✅ Auto-sync: alles up-to-date');
+            }
+        }
+    } catch (err) {
+        console.log('Auto-sync skipped:', err.message);
+    }
+}
 
 // Show trial banner if user is in trial period
 function showTrialBanner() {
