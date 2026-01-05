@@ -273,8 +273,9 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
         
         // Sync FROM Google (Google → local)
         if (direction === 'both' || direction === 'fromGoogle') {
-            const timeMin = new Date().toISOString();
-            const timeMax = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString();
+            // 1 week terug en 6 maanden vooruit
+            const timeMin = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            const timeMax = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
             
             const response = await calendar.events.list({
                 calendarId: calendarId,
