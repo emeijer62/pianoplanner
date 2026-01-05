@@ -22,33 +22,50 @@ router.get('/company', requireAuth, async (req, res) => {
 router.put('/company', requireAuth, async (req, res) => {
     try {
         const { 
-            name, owner, email, phone, 
+            name, ownerName, owner, email, phone, 
             street, postalCode, city, country, 
+            address, // Frontend stuurt dit als object
             formattedAddress, placeId, lat, lng,
             timezone,
-            workHours, workDays 
+            workHours, workDays,
+            availability, workingHours // Nieuwe veldnamen van frontend
         } = req.body;
+        
+        // Ondersteun beide formaten (direct fields of address object)
+        const addressData = address || {
+            street,
+            postalCode,
+            city,
+            country,
+            formattedAddress,
+            placeId,
+            lat,
+            lng
+        };
+        
+        // Werkuren: ondersteun oude en nieuwe formaten
+        let finalWorkingHours;
+        if (availability) {
+            // Nieuw formaat van settings.js frontend
+            finalWorkingHours = availability;
+        } else if (workingHours) {
+            finalWorkingHours = workingHours;
+        } else {
+            // Oud formaat
+            finalWorkingHours = {
+                hours: workHours || { start: '09:00', end: '18:00' },
+                days: workDays || [1, 2, 3, 4, 5]
+            };
+        }
         
         const settings = await companyStore.saveSettings(req.session.user.id, {
             name,
-            ownerName: owner,
+            ownerName: ownerName || owner,
             email,
             phone,
-            address: {
-                street,
-                postalCode,
-                city,
-                country,
-                formattedAddress,
-                placeId,
-                lat,
-                lng
-            },
+            address: addressData,
             timezone: timezone || 'Europe/Amsterdam',
-            workingHours: {
-                hours: workHours || { start: '09:00', end: '18:00' },
-                days: workDays || [1, 2, 3, 4, 5]
-            }
+            workingHours: finalWorkingHours
         });
         
         res.json(settings);

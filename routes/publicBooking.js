@@ -128,10 +128,13 @@ router.get('/:slug/slots', async (req, res) => {
         
         // Haal werkuren op
         const company = await companyStore.getCompanySettings(user.id);
-        const workingHours = company?.workingHours || getDefaultWorkingHours();
+        const rawWorkingHours = company?.workingHours;
         
         // Debug logging
-        console.log('📅 Slots request - date:', date, 'workingHours:', JSON.stringify(workingHours));
+        console.log('📅 Slots request - date:', date, 'rawWorkingHours:', JSON.stringify(rawWorkingHours));
+        
+        // Normaliseer werkuren naar { monday: {enabled, start, end}, ... } formaat
+        const workingHours = normalizeWorkingHours(rawWorkingHours);
         
         // Bepaal dag van de week
         const dayIndex = requestedDate.getDay();
@@ -324,6 +327,64 @@ router.post('/:slug', async (req, res) => {
 });
 
 // ==================== HELPER FUNCTIES ====================
+
+/**
+ * Normaliseer werkuren naar uniform formaat
+ * Ondersteunt:
+ * - { monday: {enabled, start, end}, ... } (gewenst formaat)
+ * - { 0: {available, start, end}, 1: {...}, ... } (settings.js formaat)
+ * - { hours: {start, end}, days: [1,2,3,4,5] } (oud formaat)
+ */
+function normalizeWorkingHours(input) {
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const defaults = getDefaultWorkingHours();
+    
+    if (!input) {
+        return defaults;
+    }
+    
+    // Check of het al het juiste formaat heeft (monday, tuesday, ...)
+    if (input.monday !== undefined) {
+        return input;
+    }
+    
+    // Check voor { 0: {...}, 1: {...}, ... } formaat van settings.js
+    if (input['0'] !== undefined || input[0] !== undefined) {
+        const normalized = {};
+        for (let i = 0; i < 7; i++) {
+            const dayData = input[i] || input[String(i)];
+            if (dayData) {
+                normalized[dayNames[i]] = {
+                    enabled: dayData.available !== undefined ? dayData.available : dayData.enabled,
+                    start: dayData.start || '09:00',
+                    end: dayData.end || '17:00'
+                };
+            } else {
+                normalized[dayNames[i]] = defaults[dayNames[i]];
+            }
+        }
+        return normalized;
+    }
+    
+    // Check voor { hours: {...}, days: [...] } oud formaat
+    if (input.hours && input.days) {
+        const normalized = {};
+        const defaultStart = input.hours.start || '09:00';
+        const defaultEnd = input.hours.end || '17:00';
+        
+        for (let i = 0; i < 7; i++) {
+            normalized[dayNames[i]] = {
+                enabled: input.days.includes(i),
+                start: defaultStart,
+                end: defaultEnd
+            };
+        }
+        return normalized;
+    }
+    
+    // Fallback
+    return defaults;
+}
 
 function getDefaultWorkingHours() {
     return {
