@@ -38,6 +38,7 @@ app.use(session({
     cookie: { 
         secure: isProduction, // HTTPS in productie
         sameSite: isProduction ? 'none' : 'lax',
+        domain: isProduction ? '.pianoplanner.com' : undefined, // Cookie werkt op www en non-www
         maxAge: 24 * 60 * 60 * 1000 // 24 uur
     }
 }));
