@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const data = await response.json();
         
         if (!data.loggedIn) {
-            window.location.href = '/?error=unauthorized';
+            window.location.href = '/index.html';
             return;
         }
         
@@ -25,8 +25,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         isAdmin = data.isAdmin || false;
         subscription = data.subscription;
         
-        // Check subscription access
-        if (!subscription?.hasAccess) {
+        // Check subscription access - redirect to billing if no access
+        if (subscription && !subscription.hasAccess) {
             window.location.href = '/billing.html';
             return;
         }
@@ -45,7 +45,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         
     } catch (err) {
         console.error('Error:', err);
-        window.location.href = '/?error=unauthorized';
+        // Don't redirect on error - just show error message
+        alert('Er is een fout opgetreden. Probeer opnieuw.');
     }
     
     // Event listeners
@@ -127,6 +128,9 @@ async function loadAllEvents() {
 
 async function loadCalendars() {
     const container = document.getElementById('calendars-list');
+    
+    // Element bestaat niet in huidige layout - skip
+    if (!container) return;
     
     // Toon lokale agenda categorieën
     const categories = [

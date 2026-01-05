@@ -694,9 +694,10 @@
                     <label for="event-title">Titel *</label>
                     <input type="text" id="event-title" required placeholder="bijv. Stemmen Steinway">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="position: relative;">
                     <label for="event-location">Locatie</label>
-                    <input type="text" id="event-location" placeholder="Adres">
+                    <input type="text" id="event-location" placeholder="Adres" autocomplete="off">
+                    <div id="location-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -834,7 +835,83 @@
         
         document.addEventListener('DOMContentLoaded', () => {
             loadPianoCount();
+            initLocationAutocomplete();
         });
+        
+        // Adres autocomplete voor locatie veld
+        function initLocationAutocomplete() {
+            const locationInput = document.getElementById('event-location');
+            const suggestions = document.getElementById('location-suggestions');
+            let debounceTimer;
+            
+            locationInput.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                const query = e.target.value;
+                
+                if (query.length < 3) {
+                    suggestions.style.display = 'none';
+                    return;
+                }
+                
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const res = await fetch(`/api/booking/address-autocomplete?input=${encodeURIComponent(query)}`);
+                        const data = await res.json();
+                        
+                        if (data.predictions && data.predictions.length > 0) {
+                            suggestions.innerHTML = data.predictions.map(p => 
+                                `<div class="autocomplete-item">${p.description}</div>`
+                            ).join('');
+                            suggestions.style.display = 'block';
+                        } else {
+                            suggestions.style.display = 'none';
+                        }
+                    } catch (err) {
+                        suggestions.style.display = 'none';
+                    }
+                }, 300);
+            });
+            
+            suggestions.addEventListener('click', (e) => {
+                if (e.target.classList.contains('autocomplete-item')) {
+                    locationInput.value = e.target.textContent;
+                    suggestions.style.display = 'none';
+                }
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#event-location') && !e.target.closest('#location-suggestions')) {
+                    suggestions.style.display = 'none';
+                }
+            });
+        }
     </script>
+    <style>
+        .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .autocomplete-item {
+            padding: 0.5rem 0.6rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        .autocomplete-item:hover {
+            background: var(--light-gray);
+        }
+    </style>
 </body>
 </html>

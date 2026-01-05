@@ -67,9 +67,10 @@
                     </div>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group" style="position: relative;">
                     <label for="customer-street">Straat + huisnummer</label>
-                    <input type="text" id="customer-street">
+                    <input type="text" id="customer-street" autocomplete="off">
+                    <div id="address-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
                 </div>
                 
                 <div class="form-row">
@@ -97,5 +98,103 @@
     </div>
 
     <script src="customers.js"></script>
+    <script>
+        // Adres autocomplete
+        const streetInput = document.getElementById('customer-street');
+        const suggestions = document.getElementById('address-suggestions');
+        let debounceTimer;
+        
+        streetInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const query = e.target.value;
+            
+            if (query.length < 3) {
+                suggestions.style.display = 'none';
+                return;
+            }
+            
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/booking/address-autocomplete?input=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+                    
+                    if (data.predictions && data.predictions.length > 0) {
+                        suggestions.innerHTML = data.predictions.map(p => 
+                            `<div class="autocomplete-item" data-place-id="${p.place_id}">${p.description}</div>`
+                        ).join('');
+                        suggestions.style.display = 'block';
+                    } else {
+                        suggestions.style.display = 'none';
+                    }
+                } catch (err) {
+                    suggestions.style.display = 'none';
+                }
+            }, 300);
+        });
+        
+        suggestions.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('autocomplete-item')) {
+                const placeId = e.target.dataset.placeId;
+                const description = e.target.textContent;
+                
+                // Vul straat in met volledige adres
+                streetInput.value = description.split(',')[0];
+                suggestions.style.display = 'none';
+                
+                // Haal details op voor postcode en stad
+                try {
+                    const res = await fetch(`/api/booking/place-details/${placeId}`);
+                    const data = await res.json();
+                    
+                    if (data.result) {
+                        const components = data.result.address_components || [];
+                        
+                        const postalCode = components.find(c => c.types.includes('postal_code'))?.long_name || '';
+                        const city = components.find(c => c.types.includes('locality'))?.long_name || 
+                                    components.find(c => c.types.includes('administrative_area_level_2'))?.long_name || '';
+                        
+                        document.getElementById('customer-postalcode').value = postalCode;
+                        document.getElementById('customer-city').value = city;
+                    }
+                } catch (err) {
+                    console.log('Kon adresdetails niet ophalen');
+                }
+            }
+        });
+        
+        // Verberg suggesties bij klikken buiten
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#customer-street') && !e.target.closest('#address-suggestions')) {
+                suggestions.style.display = 'none';
+            }
+        });
+    </script>
+    <style>
+        .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .autocomplete-item {
+            padding: 0.6rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        .autocomplete-item:hover {
+            background: var(--light-gray);
+        }
+    </style>
 </body>
 </html>

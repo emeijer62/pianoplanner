@@ -168,7 +168,11 @@ router.get('/google/callback', async (req, res) => {
                 return res.redirect('/?error=session_failed');
             }
             console.log(`✅ Gebruiker ingelogd (Google): ${user.email}`);
-            res.redirect('/dashboard.html');
+            // Redirect naar www om consistentie te garanderen
+            const redirectUrl = process.env.NODE_ENV === 'production' 
+                ? 'https://www.pianoplanner.com/dashboard.html'
+                : '/dashboard.html';
+            res.redirect(redirectUrl);
         });
 
     } catch (error) {

@@ -372,22 +372,6 @@
             }
         }
         
-        // Check if already logged in
-        fetch('/api/user')
-            .then(res => res.json())
-            .then(data => {
-                if (data.loggedIn) {
-                    document.getElementById('login-section').style.display = 'none';
-                    document.getElementById('user-section').style.display = 'block';
-                    document.getElementById('user-name').textContent = data.user.name;
-                    document.getElementById('user-email').textContent = data.user.email;
-                    if (data.user.picture) {
-                        document.getElementById('user-picture').src = data.user.picture;
-                    } else {
-                        document.getElementById('user-picture').style.display = 'none';
-                    }
-                }
-            });
     </script>
 </body>
 </html>
