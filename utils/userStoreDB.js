@@ -271,6 +271,107 @@ const setStripeCustomerId = async (userId, stripeCustomerId) => {
     `, [stripeCustomerId, new Date().toISOString(), userId]);
 };
 
+// ==================== ADMIN FUNCTIES ====================
+
+const setUserPlan = async (userId, plan) => {
+    const user = await getUser(userId);
+    if (!user) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    const now = new Date();
+    let updates = {};
+    
+    if (plan === 'active' || plan === 'pro') {
+        // Actief abonnement voor 1 jaar
+        const endDate = new Date();
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        updates = {
+            status: 'active',
+            currentPeriodEnd: endDate.toISOString()
+        };
+    } else if (plan === 'trial' || plan === 'trialing') {
+        // Trial voor 14 dagen
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + 14);
+        updates = {
+            status: 'trialing',
+            trialEndsAt: trialEnd.toISOString()
+        };
+    } else if (plan === 'none' || plan === 'canceled') {
+        updates = {
+            status: 'canceled',
+            canceledAt: now.toISOString()
+        };
+    } else {
+        return { error: 'Ongeldig plan' };
+    }
+    
+    await updateSubscription(userId, updates);
+    const updatedUser = await getUser(userId);
+    return { user: updatedUser };
+};
+
+const createUserByAdmin = async ({ email, name, password, approvalStatus, plan, createdBy }) => {
+    try {
+        // Hash password
+        const passwordHash = await hashPassword(password);
+        
+        // Generate ID
+        const userId = 'admin_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // Create user
+        await dbRun(`
+            INSERT INTO users (id, email, name, password_hash, auth_type, approval_status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 'email', ?, ?, ?)
+        `, [userId, email, name, passwordHash, approvalStatus || 'approved', new Date().toISOString(), new Date().toISOString()]);
+        
+        // Set plan
+        if (plan === 'trial' || !plan) {
+            await startTrial(userId);
+        } else if (plan === 'active' || plan === 'pro') {
+            await setUserPlan(userId, 'active');
+        }
+        
+        const user = await getUser(userId);
+        return { user };
+    } catch (error) {
+        console.error('Error creating user by admin:', error);
+        return { error: error.message };
+    }
+};
+
+const updateUserByAdmin = async (userId, { email, name, password }) => {
+    try {
+        const user = await getUser(userId);
+        if (!user) {
+            return { error: 'Gebruiker niet gevonden' };
+        }
+        
+        let updates = {
+            email: email || user.email,
+            name: name !== undefined ? name : user.name,
+            updated_at: new Date().toISOString()
+        };
+        
+        // Update password if provided
+        if (password) {
+            updates.password_hash = await hashPassword(password);
+        }
+        
+        const fields = Object.keys(updates).map(k => `${k} = ?`).join(', ');
+        const values = [...Object.values(updates), userId];
+        
+        await dbRun(`UPDATE users SET ${fields} WHERE id = ?`, values);
+        
+        const updatedUser = await getUser(userId);
+        return { user: updatedUser };
+    } catch (error) {
+        console.error('Error updating user by admin:', error);
+        return { error: error.message };
+    }
+};
+
 // Format database row naar camelCase
 function formatUser(row) {
     if (!row) return null;
@@ -328,5 +429,9 @@ module.exports = {
     getPendingUsers,
     // Stripe
     getUserByStripeCustomerId,
-    setStripeCustomerId
+    setStripeCustomerId,
+    // Admin
+    setUserPlan,
+    createUserByAdmin,
+    updateUserByAdmin
 };

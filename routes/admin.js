@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const userStore = require('../utils/userStore');
+const userStore = require('../utils/userStoreDB');
 
 // Admin credentials (uit environment)
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -47,201 +47,246 @@ router.get('/status', (req, res) => {
 // ==================== GEBRUIKERSBEHEER ====================
 
 // Haal alle gebruikers op
-router.get('/users', requireAdminAuth, (req, res) => {
-    const users = userStore.getAllUsers();
-    
-    // Filter gevoelige data
-    const safeUsers = Object.values(users).map(user => ({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        authType: user.authType,
-        approvalStatus: user.approvalStatus || 'approved', // bestaande users zijn goedgekeurd
-        subscription: user.subscription,
-        createdAt: user.createdAt,
-        approvedAt: user.approvedAt,
-        approvedBy: user.approvedBy,
-        rejectedAt: user.rejectedAt,
-        rejectedBy: user.rejectedBy,
-        rejectionReason: user.rejectionReason
-    }));
-    
-    res.json(safeUsers);
+router.get('/users', requireAdminAuth, async (req, res) => {
+    try {
+        const users = await userStore.getAllUsers();
+        
+        // Filter gevoelige data en voeg subscription status toe
+        const safeUsers = await Promise.all(users.map(async (user) => ({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            authType: user.auth_type,
+            approvalStatus: user.approval_status || 'approved',
+            subscription: await userStore.getSubscriptionStatus(user.id),
+            createdAt: user.created_at,
+            approvedAt: user.approved_at,
+            approvedBy: user.approved_by,
+            rejectedAt: user.rejected_at,
+            rejectedBy: user.rejected_by,
+            rejectionReason: user.rejection_reason
+        })));
+        
+        res.json(safeUsers);
+    } catch (error) {
+        console.error('Error getting users:', error);
+        res.status(500).json({ error: 'Kon gebruikers niet ophalen' });
+    }
 });
 
 // Haal wachtende gebruikers op
-router.get('/users/pending', requireAdminAuth, (req, res) => {
-    const pendingUsers = userStore.getPendingUsers();
-    
-    const safeUsers = pendingUsers.map(user => ({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        authType: user.authType,
-        createdAt: user.createdAt
-    }));
-    
-    res.json(safeUsers);
+router.get('/users/pending', requireAdminAuth, async (req, res) => {
+    try {
+        const pendingUsers = await userStore.getPendingUsers();
+        
+        const safeUsers = pendingUsers.map(user => ({
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            authType: user.auth_type,
+            createdAt: user.created_at
+        }));
+        
+        res.json(safeUsers);
+    } catch (error) {
+        console.error('Error getting pending users:', error);
+        res.status(500).json({ error: 'Kon wachtende gebruikers niet ophalen' });
+    }
 });
 
 // Keur gebruiker goed
-router.post('/users/:userId/approve', requireAdminAuth, (req, res) => {
-    const { userId } = req.params;
-    const { startTrial } = req.body;
-    
-    const result = userStore.approveUser(userId, req.session.adminUsername);
-    
-    if (result.error) {
-        return res.status(400).json({ error: result.error });
+router.post('/users/:userId/approve', requireAdminAuth, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { startTrial } = req.body;
+        
+        const result = await userStore.approveUser(userId, req.session.adminUsername);
+        
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        // Start automatisch een trial als gewenst
+        if (startTrial !== false) {
+            await userStore.startTrial(userId);
+        }
+        
+        res.json({ success: true, message: 'Gebruiker goedgekeurd', user: result.user });
+    } catch (error) {
+        console.error('Error approving user:', error);
+        res.status(500).json({ error: 'Kon gebruiker niet goedkeuren' });
     }
-    
-    // Start automatisch een trial als gewenst
-    if (startTrial !== false) {
-        userStore.startTrial(userId);
-    }
-    
-    res.json({ success: true, message: 'Gebruiker goedgekeurd', user: result.user });
 });
 
 // Wijs gebruiker af
-router.post('/users/:userId/reject', requireAdminAuth, (req, res) => {
-    const { userId } = req.params;
-    const { reason } = req.body;
-    
-    const result = userStore.rejectUser(userId, req.session.adminUsername, reason);
-    
-    if (result.error) {
-        return res.status(400).json({ error: result.error });
+router.post('/users/:userId/reject', requireAdminAuth, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { reason } = req.body;
+        
+        const result = await userStore.rejectUser(userId, req.session.adminUsername, reason);
+        
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        res.json({ success: true, message: 'Gebruiker afgewezen', user: result.user });
+    } catch (error) {
+        console.error('Error rejecting user:', error);
+        res.status(500).json({ error: 'Kon gebruiker niet afwijzen' });
     }
-    
-    res.json({ success: true, message: 'Gebruiker afgewezen', user: result.user });
 });
 
 // Verwijder gebruiker
-router.delete('/users/:userId', requireAdminAuth, (req, res) => {
-    const { userId } = req.params;
-    
-    const success = userStore.deleteUser(userId);
-    
-    if (!success) {
-        return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+router.delete('/users/:userId', requireAdminAuth, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const success = await userStore.deleteUser(userId);
+        
+        if (!success) {
+            return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+        }
+        
+        console.log(`🗑️ Gebruiker verwijderd: ${userId}`);
+        res.json({ success: true, message: 'Gebruiker verwijderd' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Kon gebruiker niet verwijderen' });
     }
-    
-    console.log(`🗑️ Gebruiker verwijderd: ${userId}`);
-    res.json({ success: true, message: 'Gebruiker verwijderd' });
 });
 
 // Update gebruiker plan
-router.post('/users/:userId/set-plan', requireAdminAuth, (req, res) => {
-    const { userId } = req.params;
-    const { plan } = req.body;
-    
-    if (!plan) {
-        return res.status(400).json({ error: 'Plan is verplicht' });
+router.post('/users/:userId/set-plan', requireAdminAuth, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { plan } = req.body;
+        
+        if (!plan) {
+            return res.status(400).json({ error: 'Plan is verplicht' });
+        }
+        
+        const result = await userStore.setUserPlan(userId, plan);
+        
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        res.json({ success: true, message: `Plan ingesteld op ${plan}`, user: result.user });
+    } catch (error) {
+        console.error('Error setting plan:', error);
+        res.status(500).json({ error: 'Kon plan niet instellen' });
     }
-    
-    const result = userStore.setUserPlan(userId, plan);
-    
-    if (result.error) {
-        return res.status(400).json({ error: result.error });
-    }
-    
-    res.json({ success: true, message: `Plan ingesteld op ${plan}`, user: result.user });
 });
 
 // ==================== CREATE GEBRUIKER ====================
 
 // Maak nieuwe gebruiker aan (door admin)
-router.post('/users', requireAdminAuth, (req, res) => {
-    const { email, name, password, plan, approvalStatus } = req.body;
-    
-    // Validatie
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email en wachtwoord zijn verplicht' });
+router.post('/users', requireAdminAuth, async (req, res) => {
+    try {
+        const { email, name, password, plan, approvalStatus } = req.body;
+        
+        // Validatie
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email en wachtwoord zijn verplicht' });
+        }
+        
+        // Check of email al bestaat
+        const existingUser = await userStore.getUserByEmail(email);
+        if (existingUser) {
+            return res.status(400).json({ error: 'Een gebruiker met dit email adres bestaat al' });
+        }
+        
+        // Maak gebruiker aan
+        const result = await userStore.createUserByAdmin({
+            email,
+            name: name || email.split('@')[0],
+            password,
+            approvalStatus: approvalStatus || 'approved',
+            plan: plan || 'trial',
+            createdBy: req.session.adminUsername
+        });
+        
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        console.log(`✅ Gebruiker aangemaakt door admin: ${email}`);
+        res.json({ success: true, message: 'Gebruiker aangemaakt', user: result.user });
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).json({ error: 'Kon gebruiker niet aanmaken' });
     }
-    
-    // Check of email al bestaat
-    const existingUser = userStore.getUserByEmail(email);
-    if (existingUser) {
-        return res.status(400).json({ error: 'Een gebruiker met dit email adres bestaat al' });
-    }
-    
-    // Maak gebruiker aan
-    const result = userStore.createUserByAdmin({
-        email,
-        name: name || email.split('@')[0],
-        password,
-        approvalStatus: approvalStatus || 'approved',
-        plan: plan || 'trial',
-        createdBy: req.session.adminUsername
-    });
-    
-    if (result.error) {
-        return res.status(400).json({ error: result.error });
-    }
-    
-    console.log(`✅ Gebruiker aangemaakt door admin: ${email}`);
-    res.json({ success: true, message: 'Gebruiker aangemaakt', user: result.user });
 });
 
 // ==================== UPDATE GEBRUIKER ====================
 
 // Update gebruiker gegevens
-router.put('/users/:userId', requireAdminAuth, (req, res) => {
-    const { userId } = req.params;
-    const { email, name, password } = req.body;
-    
-    // Check of gebruiker bestaat
-    const user = userStore.getUser(userId);
-    if (!user) {
-        return res.status(404).json({ error: 'Gebruiker niet gevonden' });
-    }
-    
-    // Check of nieuwe email al bestaat (als die gewijzigd is)
-    if (email && email !== user.email) {
-        const existingUser = userStore.getUserByEmail(email);
-        if (existingUser) {
-            return res.status(400).json({ error: 'Een andere gebruiker met dit email adres bestaat al' });
+router.put('/users/:userId', requireAdminAuth, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { email, name, password } = req.body;
+        
+        // Check of gebruiker bestaat
+        const user = await userStore.getUser(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Gebruiker niet gevonden' });
         }
+        
+        // Check of nieuwe email al bestaat (als die gewijzigd is)
+        if (email && email !== user.email) {
+            const existingUser = await userStore.getUserByEmail(email);
+            if (existingUser) {
+                return res.status(400).json({ error: 'Een andere gebruiker met dit email adres bestaat al' });
+            }
+        }
+        
+        // Update gebruiker
+        const result = await userStore.updateUserByAdmin(userId, {
+            email: email || user.email,
+            name: name !== undefined ? name : user.name,
+            password: password || null // null = niet wijzigen
+        });
+        
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        console.log(`✏️ Gebruiker bijgewerkt door admin: ${userId}`);
+        res.json({ success: true, message: 'Gebruiker bijgewerkt', user: result.user });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ error: 'Kon gebruiker niet bijwerken' });
     }
-    
-    // Update gebruiker
-    const result = userStore.updateUserByAdmin(userId, {
-        email: email || user.email,
-        name: name !== undefined ? name : user.name,
-        password: password || null // null = niet wijzigen
-    });
-    
-    if (result.error) {
-        return res.status(400).json({ error: result.error });
-    }
-    
-    console.log(`✏️ Gebruiker bijgewerkt door admin: ${userId}`);
-    res.json({ success: true, message: 'Gebruiker bijgewerkt', user: result.user });
 });
 
 // Haal specifieke gebruiker op
-router.get('/users/:userId', requireAdminAuth, (req, res) => {
-    const { userId } = req.params;
-    
-    const user = userStore.getUser(userId);
-    if (!user) {
-        return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+router.get('/users/:userId', requireAdminAuth, async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const user = await userStore.getUser(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Gebruiker niet gevonden' });
+        }
+        
+        // Filter gevoelige data
+        const safeUser = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            authType: user.auth_type,
+            approvalStatus: user.approval_status || 'approved',
+            subscription: await userStore.getSubscriptionStatus(user.id),
+            createdAt: user.created_at,
+            updatedAt: user.updated_at
+        };
+        
+        res.json(safeUser);
+    } catch (error) {
+        console.error('Error getting user:', error);
+        res.status(500).json({ error: 'Kon gebruiker niet ophalen' });
     }
-    
-    // Filter gevoelige data
-    const safeUser = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        authType: user.authType,
-        approvalStatus: user.approvalStatus || 'approved',
-        subscription: user.subscription,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-    };
-    
-    res.json(safeUser);
 });
 
 module.exports = router;

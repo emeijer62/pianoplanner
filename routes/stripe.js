@@ -5,7 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
-const userStore = require('../utils/userStore');
+const userStore = require('../utils/userStoreDB');
 
 // Stripe configuratie - alleen initialiseren als API key aanwezig is
 let stripe = null;
@@ -42,22 +42,27 @@ const requireStripe = (req, res, next) => {
 
 // GET /api/stripe/subscription-status
 // Haal huidige subscription status op
-router.get('/subscription-status', requireAuth, (req, res) => {
-    const status = userStore.getSubscriptionStatus(req.session.user.id);
-    res.json(status);
+router.get('/subscription-status', requireAuth, async (req, res) => {
+    try {
+        const status = await userStore.getSubscriptionStatus(req.session.user.id);
+        res.json(status);
+    } catch (error) {
+        console.error('Error getting subscription status:', error);
+        res.status(500).json({ error: 'Kon status niet ophalen' });
+    }
 });
 
 // POST /api/stripe/create-checkout-session
 // Maak Stripe Checkout sessie aan
 router.post('/create-checkout-session', requireAuth, requireStripe, async (req, res) => {
     try {
-        const user = userStore.getUser(req.session.user.id);
+        const user = await userStore.getUser(req.session.user.id);
         if (!user) {
             return res.status(404).json({ error: 'Gebruiker niet gevonden' });
         }
 
         // Maak of haal Stripe customer
-        let customerId = user.subscription?.stripeCustomerId;
+        let customerId = user.stripe_customer_id;
         
         if (!customerId) {
             const customer = await stripe.customers.create({
@@ -68,7 +73,7 @@ router.post('/create-checkout-session', requireAuth, requireStripe, async (req, 
                 }
             });
             customerId = customer.id;
-            userStore.setStripeCustomerId(user.id, customerId);
+            await userStore.setStripeCustomerId(user.id, customerId);
         }
 
         // Bepaal success/cancel URLs
@@ -122,8 +127,8 @@ router.post('/create-checkout-session', requireAuth, requireStripe, async (req, 
 // Maak Stripe Customer Portal sessie (voor abonnement beheren)
 router.post('/create-portal-session', requireAuth, requireStripe, async (req, res) => {
     try {
-        const user = userStore.getUser(req.session.user.id);
-        const customerId = user?.subscription?.stripeCustomerId;
+        const user = await userStore.getUser(req.session.user.id);
+        const customerId = user?.stripe_customer_id;
         
         if (!customerId) {
             return res.status(400).json({ error: 'Geen actief abonnement' });

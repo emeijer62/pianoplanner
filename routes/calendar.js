@@ -1,7 +1,7 @@
 const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
-const userStore = require('../utils/userStore');
+const userStore = require('../utils/userStoreDB');
 const fs = require('fs');
 const path = require('path');
 
@@ -34,19 +34,23 @@ const getAuthClient = (req) => {
     oauth2Client.setCredentials(req.session.tokens);
     
     // Automatisch tokens refreshen als ze verlopen zijn
-    oauth2Client.on('tokens', (tokens) => {
+    oauth2Client.on('tokens', async (tokens) => {
         console.log(`🔄 Tokens refreshed voor gebruiker ${req.session.user.email}`);
         
         // Update sessie
         req.session.tokens = { ...req.session.tokens, ...tokens };
         
         // Update opgeslagen gebruiker
-        const user = userStore.getUser(req.session.user.id);
-        if (user) {
-            userStore.saveUser({
-                ...user,
-                tokens: { ...user.tokens, ...tokens }
-            });
+        try {
+            const user = await userStore.getUser(req.session.user.id);
+            if (user) {
+                await userStore.saveUser({
+                    ...user,
+                    tokens: JSON.stringify({ ...JSON.parse(user.tokens || '{}'), ...tokens })
+                });
+            }
+        } catch (error) {
+            console.error('Error updating tokens:', error);
         }
     });
     

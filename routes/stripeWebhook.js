@@ -5,7 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
-const userStore = require('../utils/userStore');
+const userStore = require('../utils/userStoreDB');
 
 // Stripe configuratie - alleen initialiseren als API key aanwezig is
 let stripe = null;
@@ -84,7 +84,7 @@ async function handleCheckoutComplete(session) {
 // Subscription aangemaakt of bijgewerkt
 async function handleSubscriptionUpdate(subscription) {
     const customerId = subscription.customer;
-    const user = userStore.getUserByStripeCustomerId(customerId);
+    const user = await userStore.getUserByStripeCustomerId(customerId);
     
     if (!user) {
         console.error('Geen gebruiker gevonden voor Stripe customer:', customerId);
@@ -112,7 +112,7 @@ async function handleSubscriptionUpdate(subscription) {
     }
 
     // Update subscription in database
-    userStore.updateSubscription(user.id, {
+    await userStore.updateSubscription(user.id, {
         status: status,
         stripeSubscriptionId: subscription.id,
         currentPeriodEnd: new Date(subscription.current_period_end * 1000),
@@ -125,7 +125,7 @@ async function handleSubscriptionUpdate(subscription) {
 // Subscription geannuleerd
 async function handleSubscriptionCanceled(subscription) {
     const customerId = subscription.customer;
-    const user = userStore.getUserByStripeCustomerId(customerId);
+    const user = await userStore.getUserByStripeCustomerId(customerId);
     
     if (!user) {
         console.error('Geen gebruiker gevonden voor Stripe customer:', customerId);
@@ -134,7 +134,7 @@ async function handleSubscriptionCanceled(subscription) {
 
     console.log('Subscription geannuleerd voor gebruiker:', user.id);
 
-    userStore.updateSubscription(user.id, {
+    await userStore.updateSubscription(user.id, {
         status: 'canceled',
         canceledAt: new Date()
     });
@@ -145,7 +145,7 @@ async function handleInvoicePaid(invoice) {
     if (!invoice.subscription) return;
 
     const customerId = invoice.customer;
-    const user = userStore.getUserByStripeCustomerId(customerId);
+    const user = await userStore.getUserByStripeCustomerId(customerId);
     
     if (!user) {
         console.error('Geen gebruiker gevonden voor Stripe customer:', customerId);
@@ -158,7 +158,7 @@ async function handleInvoicePaid(invoice) {
 // Betaling mislukt
 async function handlePaymentFailed(invoice) {
     const customerId = invoice.customer;
-    const user = userStore.getUserByStripeCustomerId(customerId);
+    const user = await userStore.getUserByStripeCustomerId(customerId);
     
     if (!user) {
         console.error('Geen gebruiker gevonden voor Stripe customer:', customerId);
