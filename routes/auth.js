@@ -111,7 +111,7 @@ router.get('/google', (req, res) => {
     const authUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES,
-        prompt: 'consent'
+        prompt: 'select_account' // Alleen account kiezen, niet elke keer toestemming vragen
     });
     res.redirect(authUrl);
 });
