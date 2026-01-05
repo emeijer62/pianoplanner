@@ -701,6 +701,14 @@
                 
                 <h3>📍 Adres (vertrekpunt reistijd)</h3>
                 <div class="form-row">
+                    <div class="form-group" style="flex: 2; position: relative;">
+                        <label for="address-search">Zoek adres</label>
+                        <input type="text" id="address-search" placeholder="Begin met typen om adres te zoeken..." autocomplete="off">
+                        <div id="address-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
                     <div class="form-group" style="flex: 2">
                         <label for="street">Straat en huisnummer</label>
                         <input type="text" id="street" name="street" required>
@@ -968,8 +976,108 @@
             }
         }
         
+        // ========== ADRES AUTOCOMPLETE ==========
+        function setupAddressAutocomplete() {
+            const searchInput = document.getElementById('address-search');
+            const suggestions = document.getElementById('address-suggestions');
+            let debounceTimer = null;
+            
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                
+                clearTimeout(debounceTimer);
+                
+                if (query.length < 3) {
+                    suggestions.style.display = 'none';
+                    return;
+                }
+                
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const res = await fetch(`/api/booking/address-autocomplete?input=${encodeURIComponent(query)}`);
+                        const data = await res.json();
+                        
+                        if (data.predictions && data.predictions.length > 0) {
+                            suggestions.innerHTML = data.predictions.map(p => 
+                                `<div class="autocomplete-item" data-place-id="${p.place_id}">${p.description}</div>`
+                            ).join('');
+                            suggestions.style.display = 'block';
+                        } else {
+                            suggestions.style.display = 'none';
+                        }
+                    } catch (err) {
+                        console.error('Autocomplete error:', err);
+                        suggestions.style.display = 'none';
+                    }
+                }, 300);
+            });
+            
+            suggestions.addEventListener('click', async (e) => {
+                if (e.target.classList.contains('autocomplete-item')) {
+                    const placeId = e.target.dataset.placeId;
+                    const description = e.target.textContent;
+                    
+                    searchInput.value = description;
+                    suggestions.style.display = 'none';
+                    
+                    // Haal details op en vul velden in
+                    try {
+                        const res = await fetch(`/api/booking/place-details?placeId=${placeId}`);
+                        const data = await res.json();
+                        
+                        if (data.address) {
+                            document.getElementById('street').value = data.address.street || '';
+                            document.getElementById('postalCode').value = data.address.postalCode || '';
+                            document.getElementById('city').value = data.address.city || '';
+                            document.getElementById('country').value = data.address.country || 'Nederland';
+                        }
+                    } catch (err) {
+                        console.error('Place details error:', err);
+                    }
+                }
+            });
+            
+            // Sluit suggestions bij klik buiten
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#address-search') && !e.target.closest('#address-suggestions')) {
+                    suggestions.style.display = 'none';
+                }
+            });
+        }
+        
         // Load on page load
-        document.addEventListener('DOMContentLoaded', loadCalendarSyncStatus);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCalendarSyncStatus();
+            setupAddressAutocomplete();
+        });
     </script>
+    
+    <style>
+        .autocomplete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .autocomplete-item {
+            padding: 0.6rem 0.8rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        .autocomplete-item:hover {
+            background: var(--light-gray);
+        }
+    </style>
 </body>
 </html>
