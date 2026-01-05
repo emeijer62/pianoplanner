@@ -43,12 +43,40 @@ router.get('/address-autocomplete', async (req, res) => {
 
 /**
  * Haal place details op via place_id
- * GET /api/booking/place-details/:placeId
+ * GET /api/booking/place-details/:placeId of ?placeId=...
  */
-router.get('/place-details/:placeId', async (req, res) => {
+router.get('/place-details/:placeId?', async (req, res) => {
     try {
-        const details = await getPlaceDetails(req.params.placeId);
-        res.json(details);
+        // Ondersteun beide URL param en query string
+        const placeId = req.params.placeId || req.query.placeId;
+        
+        if (!placeId) {
+            return res.status(400).json({ error: 'Place ID is verplicht' });
+        }
+        
+        const details = await getPlaceDetails(placeId);
+        
+        // Transformeer naar address formaat voor frontend compatibiliteit
+        const address = details.components || {};
+        
+        // Combineer straat en huisnummer
+        let street = address.street || '';
+        if (address.streetNumber) {
+            street = street ? `${street} ${address.streetNumber}` : address.streetNumber;
+        }
+        
+        res.json({
+            formattedAddress: details.formattedAddress,
+            lat: details.lat,
+            lng: details.lng,
+            address: {
+                street: street,
+                postalCode: address.postalCode || '',
+                city: address.city || '',
+                country: address.country || 'Nederland'
+            },
+            components: details.components // Ook originele componenten meesturen
+        });
     } catch (error) {
         console.error('Place details error:', error);
         res.status(404).json({ error: 'Place niet gevonden' });

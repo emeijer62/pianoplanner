@@ -146,15 +146,17 @@
                     const res = await fetch(`/api/booking/place-details/${placeId}`);
                     const data = await res.json();
                     
-                    if (data.result) {
-                        const components = data.result.address_components || [];
-                        
-                        const postalCode = components.find(c => c.types.includes('postal_code'))?.long_name || '';
-                        const city = components.find(c => c.types.includes('locality'))?.long_name || 
-                                    components.find(c => c.types.includes('administrative_area_level_2'))?.long_name || '';
-                        
-                        document.getElementById('customer-postalcode').value = postalCode;
-                        document.getElementById('customer-city').value = city;
+                    if (data.address) {
+                        // Nieuw formaat
+                        document.getElementById('customer-postalcode').value = data.address.postalCode || '';
+                        document.getElementById('customer-city').value = data.address.city || '';
+                        if (data.address.street) {
+                            streetInput.value = data.address.street;
+                        }
+                    } else if (data.components) {
+                        // Fallback naar components
+                        document.getElementById('customer-postalcode').value = data.components.postalCode || '';
+                        document.getElementById('customer-city').value = data.components.city || '';
                     }
                 } catch (err) {
                     console.log('Kon adresdetails niet ophalen');
