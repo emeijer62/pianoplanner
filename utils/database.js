@@ -279,111 +279,102 @@ function logTableCreation(tableName) {
 
 // Migratie functie voor company_settings - fix CHECK(id=1) constraint
 function migrateCompanySettingsTable() {
-    // Check of de oude constraint bestaat door te proberen een tweede row in te voegen
-    db.get(`PRAGMA table_info(company_settings)`, [], (err, info) => {
-        if (err) return;
-        
-        // Check of we kunnen inserten met een ander id dan 1
-        // Als niet, dan is de oude constraint aanwezig en moeten we migreren
+    try {
+        // Check of de oude constraint bestaat
         db.get(`SELECT sql FROM sqlite_master WHERE type='table' AND name='company_settings'`, [], (err, row) => {
-            if (err || !row) return;
+            if (err) {
+                console.log('⚠️ Migratie check error (negeren):', err.message);
+                return;
+            }
+            if (!row || !row.sql) {
+                console.log('ℹ️ company_settings tabel nog niet aangemaakt, skip migratie');
+                return;
+            }
             
             // Check of de oude CHECK (id = 1) constraint aanwezig is
-            if (row.sql && row.sql.includes('CHECK (id = 1)')) {
+            if (row.sql.includes('CHECK (id = 1)')) {
                 console.log('🔄 Migratie company_settings: oude CHECK constraint gevonden, fix wordt toegepast...');
                 
-                // SQLite kan constraints niet direct wijzigen, dus we moeten:
-                // 1. Data backuppen
-                // 2. Tabel hernoemen  
-                // 3. Nieuwe tabel maken
-                // 4. Data terugzetten
-                // 5. Oude tabel verwijderen
-                
-                db.serialize(() => {
-                    // Backup bestaande data
-                    db.all('SELECT * FROM company_settings', [], (err, rows) => {
+                // Stap 1: Haal bestaande data op
+                db.all('SELECT * FROM company_settings', [], (err, existingData) => {
+                    if (err) {
+                        console.error('❌ Migratie: kon data niet ophalen:', err.message);
+                        return;
+                    }
+                    
+                    existingData = existingData || [];
+                    console.log(`📋 ${existingData.length} bestaande company_settings gevonden`);
+                    
+                    // Stap 2: Drop oude tabel
+                    db.run('DROP TABLE IF EXISTS company_settings', (err) => {
                         if (err) {
-                            console.error('❌ Migratie backup fout:', err);
+                            console.error('❌ Migratie: kon oude tabel niet verwijderen:', err.message);
                             return;
                         }
                         
-                        const existingData = rows || [];
-                        console.log(`📋 ${existingData.length} bestaande company_settings gevonden`);
-                        
-                        // Hernoem oude tabel
-                        db.run('ALTER TABLE company_settings RENAME TO company_settings_old', (err) => {
+                        // Stap 3: Maak nieuwe tabel
+                        db.run(`
+                            CREATE TABLE company_settings (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                user_id TEXT NOT NULL UNIQUE,
+                                name TEXT,
+                                owner_name TEXT,
+                                email TEXT,
+                                phone TEXT,
+                                street TEXT,
+                                postal_code TEXT,
+                                city TEXT,
+                                country TEXT DEFAULT 'NL',
+                                kvk_number TEXT,
+                                btw_number TEXT,
+                                iban TEXT,
+                                website TEXT,
+                                logo_url TEXT,
+                                travel_origin TEXT,
+                                working_hours TEXT,
+                                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                            )
+                        `, (err) => {
                             if (err) {
-                                console.error('❌ Migratie rename fout:', err);
+                                console.error('❌ Migratie: kon nieuwe tabel niet maken:', err.message);
                                 return;
                             }
                             
-                            // Maak nieuwe tabel met correcte structuur
-                            db.run(`
-                                CREATE TABLE company_settings (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    user_id TEXT NOT NULL UNIQUE,
-                                    name TEXT,
-                                    owner_name TEXT,
-                                    email TEXT,
-                                    phone TEXT,
-                                    street TEXT,
-                                    postal_code TEXT,
-                                    city TEXT,
-                                    country TEXT DEFAULT 'NL',
-                                    kvk_number TEXT,
-                                    btw_number TEXT,
-                                    iban TEXT,
-                                    website TEXT,
-                                    logo_url TEXT,
-                                    travel_origin TEXT,
-                                    working_hours TEXT,
-                                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-                                )
-                            `, (err) => {
-                                if (err) {
-                                    console.error('❌ Migratie create fout:', err);
-                                    return;
-                                }
-                                
-                                // Kopieer data terug
-                                if (existingData.length > 0) {
-                                    const stmt = db.prepare(`
+                            // Stap 4: Zet data terug
+                            if (existingData.length > 0) {
+                                existingData.forEach(row => {
+                                    db.run(`
                                         INSERT INTO company_settings (
                                             user_id, name, owner_name, email, phone,
                                             street, postal_code, city, country,
                                             kvk_number, btw_number, iban,
                                             website, logo_url, travel_origin, working_hours, updated_at
                                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                    `);
-                                    
-                                    existingData.forEach(row => {
-                                        stmt.run(
-                                            row.user_id, row.name, row.owner_name, row.email, row.phone,
-                                            row.street, row.postal_code, row.city, row.country,
-                                            row.kvk_number, row.btw_number, row.iban,
-                                            row.website, row.logo_url, row.travel_origin, row.working_hours, row.updated_at
-                                        );
+                                    `, [
+                                        row.user_id, row.name, row.owner_name, row.email, row.phone,
+                                        row.street, row.postal_code, row.city, row.country,
+                                        row.kvk_number, row.btw_number, row.iban,
+                                        row.website, row.logo_url, row.travel_origin, row.working_hours, row.updated_at
+                                    ], (err) => {
+                                        if (err) {
+                                            console.error('⚠️ Migratie: kon row niet inserten:', err.message);
+                                        }
                                     });
-                                    
-                                    stmt.finalize();
-                                }
-                                
-                                // Verwijder oude tabel
-                                db.run('DROP TABLE company_settings_old', (err) => {
-                                    if (err) {
-                                        console.error('❌ Migratie cleanup fout:', err);
-                                    } else {
-                                        console.log('✅ Migratie company_settings voltooid! Elke gebruiker kan nu eigen settings hebben.');
-                                    }
                                 });
-                            });
+                            }
+                            
+                            console.log('✅ Migratie company_settings voltooid! Elke gebruiker kan nu eigen settings hebben.');
                         });
                     });
                 });
+            } else {
+                console.log('ℹ️ company_settings tabel heeft al correcte structuur');
             }
         });
-    });
+    } catch (error) {
+        console.error('❌ Migratie onverwachte fout:', error.message);
+    }
 }
 
 // Default diensten
