@@ -156,7 +156,11 @@ async function loadAllEvents() {
         const endDate = new Date(currentDate);
         endDate.setMonth(endDate.getMonth() + 2);
         
+        console.log(`📅 Loading appointments from ${startDate.toISOString()} to ${endDate.toISOString()}`);
+        
         const response = await fetch(`/api/appointments?start=${startDate.toISOString()}&end=${endDate.toISOString()}`);
+        
+        console.log(`📅 Appointments API response status: ${response.status}`);
         
         if (!response.ok) {
             throw new Error('Failed to load appointments');
@@ -165,7 +169,7 @@ async function loadAllEvents() {
         // The API already returns the correct format (with summary, start.dateTime, etc.)
         allEvents = await response.json();
         
-        console.log(`📅 ${allEvents.length} appointments loaded`);
+        console.log(`📅 ${allEvents.length} appointments loaded:`, allEvents);
         
     } catch (err) {
         console.error('Error loading appointments:', err);
