@@ -132,40 +132,48 @@
             }, 300);
         });
         
-        suggestions.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('autocomplete-item')) {
-                const placeId = e.target.dataset.placeId;
-                const description = e.target.textContent;
+        suggestions.addEventListener('mousedown', async (e) => {
+            e.preventDefault(); // Prevent blur on input
+            const item = e.target.closest('.autocomplete-item');
+            if (item) {
+                const placeId = item.dataset.placeId;
+                const description = item.textContent;
                 
-                // Vul straat in met volledige adres
+                console.log('Selected address:', description, 'PlaceId:', placeId);
+                
+                // Fill street with first part of address
                 streetInput.value = description.split(',')[0];
                 suggestions.style.display = 'none';
                 
                 // Get details for postal code and city
-                try {
-                    const res = await fetch(`/api/booking/place-details/${placeId}`);
-                    const data = await res.json();
-                    
-                    if (data.address) {
-                        // Nieuw formaat
-                        document.getElementById('customer-postalcode').value = data.address.postalCode || '';
-                        document.getElementById('customer-city').value = data.address.city || '';
-                        if (data.address.street) {
-                            streetInput.value = data.address.street;
+                if (placeId) {
+                    try {
+                        const res = await fetch(`/api/booking/place-details/${placeId}`);
+                        const data = await res.json();
+                        
+                        console.log('Place details response:', data);
+                        
+                        if (data.address) {
+                            // New format
+                            document.getElementById('customer-postalcode').value = data.address.postalCode || '';
+                            document.getElementById('customer-city').value = data.address.city || '';
+                            if (data.address.street) {
+                                streetInput.value = data.address.street;
+                            }
+                        } else if (data.components) {
+                            // Fallback to components
+                            document.getElementById('customer-postalcode').value = data.components.postalCode || '';
+                            document.getElementById('customer-city').value = data.components.city || '';
                         }
-                    } else if (data.components) {
-                        // Fallback to components
-                        document.getElementById('customer-postalcode').value = data.components.postalCode || '';
-                        document.getElementById('customer-city').value = data.components.city || '';
+                    } catch (err) {
+                        console.error('Could not fetch address details:', err);
                     }
-                } catch (err) {
-                    console.log('Could not fetch address details');
                 }
             }
         });
         
-        // Hide suggestions when clicking outside
-        document.addEventListener('click', (e) => {
+        // Hide suggestions when clicking outside (use mousedown for timing)
+        document.addEventListener('mousedown', (e) => {
             if (!e.target.closest('#customer-street') && !e.target.closest('#address-suggestions')) {
                 suggestions.style.display = 'none';
             }

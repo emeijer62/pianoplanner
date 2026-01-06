@@ -132,6 +132,29 @@ const deleteUser = async (id) => {
     return result.changes > 0;
 };
 
+// Update user profile (name and email)
+const updateUserProfile = async (id, { name, email }) => {
+    const user = await getUser(id);
+    if (!user) {
+        return { error: 'User not found' };
+    }
+    
+    // If email is being changed, check if it's already in use
+    if (email && email !== user.email) {
+        const existingUser = await getUserByEmail(email);
+        if (existingUser && existingUser.id !== id) {
+            return { error: 'Email is already in use' };
+        }
+    }
+    
+    const updates = {};
+    if (name) updates.name = name;
+    if (email) updates.email = email;
+    
+    const updatedUser = await updateUser(id, updates);
+    return { user: updatedUser };
+};
+
 // ==================== EMAIL/PASSWORD AUTH ====================
 
 const registerUser = async (email, password, name) => {
@@ -603,6 +626,7 @@ module.exports = {
     getUserByEmail,
     getUserByGoogleId,
     updateUser,
+    updateUserProfile,
     saveUser,
     getAllUsers,
     deleteUser,
