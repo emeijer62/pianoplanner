@@ -917,15 +917,28 @@
                 const response = await fetch('/api/calendar/list');
                 const data = await response.json();
                 
+                console.log('📅 Loaded calendars:', data.calendars);
+                console.log('📅 Current sync settings:', calendarSyncSettings);
+                console.log('📅 Looking for calendarId:', calendarSyncSettings?.googleCalendarId);
+                
                 if (data.calendars && data.calendars.length > 0) {
                     const select = document.getElementById('googleCalendarId');
                     select.innerHTML = '<option value="">Select a calendar...</option>';
+                    
+                    const savedCalendarId = calendarSyncSettings?.googleCalendarId;
                     
                     data.calendars.forEach(cal => {
                         const option = document.createElement('option');
                         option.value = cal.id;
                         option.textContent = cal.summary + (cal.primary ? ' (Primary)' : '');
-                        if (calendarSyncSettings?.googleCalendarId === cal.id) {
+                        
+                        // Match by ID or 'primary' keyword
+                        const shouldSelect = savedCalendarId === cal.id || 
+                                           (savedCalendarId === 'primary' && cal.primary);
+                        
+                        console.log(`📅 Calendar: ${cal.summary} (${cal.id}), primary: ${cal.primary}, shouldSelect: ${shouldSelect}`);
+                        
+                        if (shouldSelect) {
                             option.selected = true;
                         }
                         select.appendChild(option);
