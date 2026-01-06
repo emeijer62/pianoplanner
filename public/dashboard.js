@@ -511,8 +511,237 @@ function getEventColor(event) {
 
 // ========== MODAL FUNCTIONS ==========
 
+// Cache for customers, pianos, services
+let customersCache = [];
+let pianosCache = [];
+let servicesCache = [];
+
+async function loadModalData() {
+    try {
+        const [customersRes, pianosRes, servicesRes] = await Promise.all([
+            fetch('/api/customers'),
+            fetch('/api/pianos'),
+            fetch('/api/services')
+        ]);
+        
+        if (customersRes.ok) customersCache = await customersRes.json();
+        if (pianosRes.ok) pianosCache = await pianosRes.json();
+        if (servicesRes.ok) servicesCache = await servicesRes.json();
+        
+        populateCustomerDropdown();
+        populateServiceDropdown();
+    } catch (err) {
+        console.error('Error loading modal data:', err);
+    }
+}
+
+function populateCustomerDropdown() {
+    const select = document.getElementById('event-customer');
+    select.innerHTML = '<option value="">-- Select customer --</option>';
+    
+    customersCache.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.id;
+        option.textContent = c.name + (c.city ? ` (${c.city})` : '');
+        option.dataset.address = [c.street, c.postalCode, c.city].filter(Boolean).join(', ');
+        select.appendChild(option);
+    });
+}
+
+function populateServiceDropdown() {
+    const select = document.getElementById('event-service');
+    select.innerHTML = '<option value="">-- Select service --</option>';
+    
+    servicesCache.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.id;
+        option.textContent = s.name + (s.duration ? ` (${s.duration} min)` : '');
+        option.dataset.duration = s.duration || 60;
+        option.dataset.name = s.name;
+        select.appendChild(option);
+    });
+}
+
+function onCustomerChange() {
+    const customerId = document.getElementById('event-customer').value;
+    const pianoSelect = document.getElementById('event-piano');
+    const locationInput = document.getElementById('event-location');
+    
+    // Reset piano dropdown
+    pianoSelect.innerHTML = '<option value="">-- Select piano (optional) --</option>';
+    
+    if (customerId) {
+        // Filter pianos for this customer
+        const customerPianos = pianosCache.filter(p => p.customerId === customerId);
+        customerPianos.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            option.textContent = `${p.brand || ''} ${p.model || ''} ${p.serialNumber ? '(' + p.serialNumber + ')' : ''}`.trim() || 'Piano';
+            pianoSelect.appendChild(option);
+        });
+        
+        // Auto-select if only one piano
+        if (customerPianos.length === 1) {
+            pianoSelect.value = customerPianos[0].id;
+        }
+        
+        // Fill location from customer address
+        const selectedOption = document.getElementById('event-customer').selectedOptions[0];
+        if (selectedOption && selectedOption.dataset.address) {
+            locationInput.value = selectedOption.dataset.address;
+        }
+    }
+}
+
+function onServiceChange() {
+    const serviceSelect = document.getElementById('event-service');
+    const selectedOption = serviceSelect.selectedOptions[0];
+    const titleInput = document.getElementById('event-title');
+    const startInput = document.getElementById('event-start');
+    const endInput = document.getElementById('event-end');
+    
+    if (selectedOption && selectedOption.dataset.name) {
+        // Set title if empty
+        if (!titleInput.value) {
+            titleInput.value = selectedOption.dataset.name;
+        }
+        
+        // Adjust end time based on service duration
+        if (startInput.value && selectedOption.dataset.duration) {
+            const duration = parseInt(selectedOption.dataset.duration);
+            const startDate = new Date(startInput.value);
+            const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
+            endInput.value = formatDateTimeLocal(endDate);
+        }
+    }
+}
+
+function openNewCustomerForm() {
+    document.getElementById('new-customer-form').style.display = 'block';
+    document.getElementById('new-customer-name').focus();
+    
+    // Setup address autocomplete for new customer
+    setupNewCustomerAutocomplete();
+}
+
+function cancelNewCustomer() {
+    document.getElementById('new-customer-form').style.display = 'none';
+    document.getElementById('new-customer-name').value = '';
+    document.getElementById('new-customer-email').value = '';
+    document.getElementById('new-customer-phone').value = '';
+    document.getElementById('new-customer-address').value = '';
+}
+
+async function saveNewCustomer() {
+    const name = document.getElementById('new-customer-name').value.trim();
+    if (!name) {
+        alert('Please enter a customer name');
+        return;
+    }
+    
+    const address = document.getElementById('new-customer-address').value;
+    // Try to parse address into parts
+    const addressParts = address.split(',').map(p => p.trim());
+    
+    try {
+        const response = await fetch('/api/customers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name,
+                email: document.getElementById('new-customer-email').value,
+                phone: document.getElementById('new-customer-phone').value,
+                street: addressParts[0] || '',
+                city: addressParts[1] || '',
+                postalCode: addressParts[2] || ''
+            })
+        });
+        
+        if (!response.ok) throw new Error('Failed to create customer');
+        
+        const newCustomer = await response.json();
+        
+        // Add to cache and dropdown
+        customersCache.push(newCustomer);
+        populateCustomerDropdown();
+        
+        // Select the new customer
+        document.getElementById('event-customer').value = newCustomer.id;
+        onCustomerChange();
+        
+        // Hide form
+        cancelNewCustomer();
+        
+        // Set location from new customer address
+        if (address) {
+            document.getElementById('event-location').value = address;
+        }
+        
+    } catch (err) {
+        console.error('Error creating customer:', err);
+        alert('Could not create customer. Please try again.');
+    }
+}
+
+function setupNewCustomerAutocomplete() {
+    const input = document.getElementById('new-customer-address');
+    const suggestions = document.getElementById('new-customer-suggestions');
+    
+    let debounceTimer;
+    
+    input.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        const query = input.value.trim();
+        
+        if (query.length < 3) {
+            suggestions.style.display = 'none';
+            return;
+        }
+        
+        debounceTimer = setTimeout(async () => {
+            try {
+                const response = await fetch(`/api/booking/autocomplete?input=${encodeURIComponent(query)}`);
+                if (!response.ok) return;
+                
+                const predictions = await response.json();
+                
+                if (predictions.length === 0) {
+                    suggestions.style.display = 'none';
+                    return;
+                }
+                
+                suggestions.innerHTML = predictions.map(p => `
+                    <div class="suggestion-item" data-place-id="${p.placeId}">
+                        ${escapeHtml(p.description)}
+                    </div>
+                `).join('');
+                
+                suggestions.style.display = 'block';
+                
+                suggestions.querySelectorAll('.suggestion-item').forEach(item => {
+                    item.addEventListener('mousedown', async (e) => {
+                        e.preventDefault();
+                        input.value = item.textContent.trim();
+                        suggestions.style.display = 'none';
+                    });
+                });
+                
+            } catch (err) {
+                console.error('Autocomplete error:', err);
+            }
+        }, 300);
+    });
+    
+    input.addEventListener('blur', () => {
+        setTimeout(() => { suggestions.style.display = 'none'; }, 200);
+    });
+}
+
 function openModal() {
     document.getElementById('event-modal').style.display = 'flex';
+    
+    // Load customers, pianos, services
+    loadModalData();
     
     // Set default start time based on current view
     const startDate = new Date(currentDate);
@@ -535,6 +764,9 @@ function openModalWithTime(element) {
     
     document.getElementById('event-modal').style.display = 'flex';
     
+    // Load customers, pianos, services
+    loadModalData();
+    
     // Create start date from clicked slot
     const startDate = new Date(dateStr + 'T' + hour.toString().padStart(2, '0') + ':00:00');
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
@@ -542,9 +774,9 @@ function openModalWithTime(element) {
     document.getElementById('event-start').value = formatDateTimeLocal(startDate);
     document.getElementById('event-end').value = formatDateTimeLocal(endDate);
     
-    // Focus on title field
+    // Focus on customer field first
     setTimeout(() => {
-        document.getElementById('event-title').focus();
+        document.getElementById('event-customer').focus();
     }, 100);
 }
 
@@ -559,16 +791,26 @@ function formatDateForInput(date) {
 function closeModal() {
     document.getElementById('event-modal').style.display = 'none';
     document.getElementById('event-form').reset();
+    document.getElementById('new-customer-form').style.display = 'none';
+    document.getElementById('event-piano').innerHTML = '<option value="">-- Select piano (optional) --</option>';
 }
 
 async function handleEventSubmit(e) {
     e.preventDefault();
     
+    const customerId = document.getElementById('event-customer').value;
+    const pianoId = document.getElementById('event-piano').value;
+    const serviceId = document.getElementById('event-service').value;
     const title = document.getElementById('event-title').value;
     const description = document.getElementById('event-description').value;
     const location = document.getElementById('event-location').value;
     const start = document.getElementById('event-start').value;
     const end = document.getElementById('event-end').value;
+    
+    // Get customer name from cache
+    const customer = customersCache.find(c => c.id === customerId);
+    const piano = pianosCache.find(p => p.id === pianoId);
+    const service = servicesCache.find(s => s.id === serviceId);
     
     try {
         const response = await fetch('/api/appointments', {
@@ -579,7 +821,14 @@ async function handleEventSubmit(e) {
                 description,
                 location,
                 start: new Date(start).toISOString(),
-                end: new Date(end).toISOString()
+                end: new Date(end).toISOString(),
+                customerId: customerId || null,
+                customerName: customer?.name || null,
+                pianoId: pianoId || null,
+                pianoBrand: piano?.brand || null,
+                pianoModel: piano?.model || null,
+                serviceId: serviceId || null,
+                serviceName: service?.name || null
             })
         });
         
