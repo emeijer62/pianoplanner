@@ -957,7 +957,8 @@
                 }, 300);
             });
             
-            suggestions.addEventListener('click', (e) => {
+            suggestions.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // Prevent blur from hiding suggestions
                 if (e.target.classList.contains('autocomplete-item')) {
                     locationInput.value = e.target.textContent;
                     suggestions.style.display = 'none';
@@ -981,7 +982,7 @@
             border: 1px solid var(--border-color);
             border-radius: var(--radius-sm);
             box-shadow: var(--shadow);
-            z-index: 1000;
+            z-index: 10001;
             max-height: 180px;
             overflow-y: auto;
         }
