@@ -3,279 +3,311 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - PianoPlanner</title>
+    <title>PianoPlanner - Scheduling for Piano Technicians</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        .login-container {
-            max-width: 400px;
-            margin: 80px auto;
-            padding: 2rem;
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .login-header h1 {
-            font-size: 1.75rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .login-header p {
-            color: var(--text-secondary);
-        }
-        
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-        
-        .form-group label {
+        .pricing-link {
             display: block;
-            margin-bottom: 0.5rem;
+            text-align: center;
+            margin-top: 16px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .pricing-link a {
+            color: #1a1a1a;
             font-weight: 500;
         }
         
+        /* Login Tabs */
+        .login-tabs {
+            display: flex;
+            border-bottom: 2px solid #e8e8e8;
+            margin-bottom: 24px;
+        }
+        .login-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 0.95rem;
+            color: #666;
+            transition: all 0.2s;
+        }
+        .login-tab:hover {
+            color: #1a1a1a;
+        }
+        .login-tab.active {
+            color: #1a1a1a;
+            font-weight: 600;
+            border-bottom: 2px solid #1a1a1a;
+            margin-bottom: -2px;
+        }
+        
+        /* Login Forms */
+        .login-form {
+            display: none;
+        }
+        .login-form.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
         .form-group input {
             width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             font-size: 1rem;
+            box-sizing: border-box;
         }
-        
         .form-group input:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #1a1a1a;
         }
-        
-        .btn-login {
+        .submit-btn {
             width: 100%;
-            padding: 0.875rem;
-            background: var(--accent);
+            padding: 14px;
+            background: #1a1a1a;
             color: white;
             border: none;
-            border-radius: var(--radius-md);
+            border-radius: 8px;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: var(--transition);
+            margin-top: 8px;
         }
-        
-        .btn-login:hover {
-            background: var(--accent-hover);
+        .submit-btn:hover {
+            background: #333;
+        }
+        .submit-btn:disabled {
+            background: #999;
+            cursor: not-allowed;
         }
         
         .divider {
             display: flex;
             align-items: center;
-            margin: 1.5rem 0;
-            color: var(--text-muted);
+            margin: 20px 0;
+            color: #999;
+            font-size: 0.85rem;
         }
-        
-        .divider::before,
-        .divider::after {
+        .divider::before, .divider::after {
             content: '';
             flex: 1;
-            height: 1px;
-            background: var(--border-color);
+            border-bottom: 1px solid #ddd;
         }
-        
         .divider span {
-            padding: 0 1rem;
-            font-size: 0.875rem;
+            padding: 0 12px;
         }
         
-        .btn-google {
-            width: 100%;
-            padding: 0.875rem;
-            background: white;
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            font-size: 1rem;
+        .switch-link {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .switch-link a {
+            color: #1a1a1a;
             font-weight: 500;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            transition: var(--transition);
-        }
-        
-        .btn-google:hover {
-            background: var(--light-gray);
-        }
-        
-        .error-message {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-md);
-            margin-bottom: 1rem;
-            display: none;
         }
         
         .success-message {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #16a34a;
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-md);
-            margin-bottom: 1rem;
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
             display: none;
-        }
-        
-        .info-message {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            color: #1e40af;
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-md);
-            margin-bottom: 1rem;
-            display: none;
-        }
-        
-        .tab-buttons {
-            display: flex;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .tab-btn {
-            flex: 1;
-            padding: 0.75rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            border-bottom: 2px solid transparent;
-            margin-bottom: -1px;
-            transition: var(--transition);
-        }
-        
-        .tab-btn:hover {
-            color: var(--text-primary);
-        }
-        
-        .tab-btn.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <span class="piano-icon">🎹</span>
-            <span>PianoPlanner</span>
-        </div>
-    </nav>
-
-    <div class="login-container">
-        <div class="login-header">
-            <h1>🎹 PianoPlanner</h1>
-            <p>Manage your tuning appointments professionally</p>
+    <div class="container">
+        <div class="login-card">
+            <div class="logo">
+                <span class="piano-icon">🎹</span>
+                <h1>PianoPlanner</h1>
+            </div>
+            
+            <p class="subtitle">The scheduling solution for piano tuners and technicians</p>
+            
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="success-message" class="success-message" style="display: none;"></div>
+            
+            <div id="login-section">
+                <!-- Login Tabs -->
+                <div class="login-tabs">
+                    <button class="login-tab active" onclick="showTab('login')">Log in</button>
+                    <button class="login-tab" onclick="showTab('register')">Sign up</button>
+                </div>
+                
+                <!-- Login Form -->
+                <div id="login-form" class="login-form active">
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label for="login-email">Email address</label>
+                            <input type="email" id="login-email" placeholder="your@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" placeholder="••••••••" required>
+                        </div>
+                        <button type="submit" class="submit-btn" id="login-btn">Log in</button>
+                    </form>
+                    
+                    <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0;">
+                        <input type="checkbox" id="remember-google" style="width: auto; margin: 0;">
+                        <label for="remember-google" style="margin: 0; font-weight: normal; cursor: pointer; font-size: 0.9rem;">Remember me</label>
+                    </div>
+                    
+                    <div class="divider"><span>or</span></div>
+                    
+                    <a href="/auth/google" class="google-btn" onclick="handleGoogleLogin(event)">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Sign in with Google
+                    </a>
+                </div>
+                
+                <!-- Register Form -->
+                <div id="register-form" class="login-form">
+                    <form onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label for="register-name">Name</label>
+                            <input type="text" id="register-name" placeholder="Your name">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">Email address</label>
+                            <input type="email" id="register-email" placeholder="your@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input type="password" id="register-password" placeholder="Minimum 6 characters" minlength="6" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password2">Confirm password</label>
+                            <input type="password" id="register-password2" placeholder="Repeat password" required>
+                        </div>
+                        <button type="submit" class="submit-btn" id="register-btn">Create account</button>
+                    </form>
+                    
+                    <div class="divider"><span>or</span></div>
+                    
+                    <a href="/auth/google" class="google-btn">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Sign up with Google
+                    </a>
+                    
+                    <p class="pricing-link">14 days free • <a href="/pricing.html">View pricing</a></p>
+                </div>
+            </div>
+            
+            <div id="user-section" style="display: none;">
+                <div class="user-info">
+                    <img id="user-picture" src="" alt="Profile picture" class="user-picture">
+                    <div class="user-details">
+                        <span id="user-name" class="user-name"></span>
+                        <span id="user-email" class="user-email"></span>
+                    </div>
+                </div>
+                <a href="/dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+                <a href="/auth/logout" class="btn btn-secondary">Log out</a>
+            </div>
         </div>
         
-        <div class="tab-buttons">
-            <button class="tab-btn active" onclick="showTab('login')">Log in</button>
-            <button class="tab-btn" onclick="showTab('register')">Sign up</button>
-        </div>
-        
-        <div id="error-message" class="error-message"></div>
-        <div id="success-message" class="success-message"></div>
-        <div id="info-message" class="info-message"></div>
-        
-        <!-- Login Tab -->
-        <div id="login-tab" class="tab-content active">
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="login-email">Email address</label>
-                    <input type="email" id="login-email" name="email" required placeholder="your@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="login-password">Password</label>
-                    <input type="password" id="login-password" name="password" required placeholder="••••••••">
-                </div>
-                
-                <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
-                    <input type="checkbox" id="login-remember" name="remember" style="width: auto; margin: 0;">
-                    <label for="login-remember" style="margin: 0; font-weight: normal; cursor: pointer;">Remember me</label>
-                </div>
-                
-                <button type="submit" class="btn-login">Log in</button>
-            </form>
-        </div>
-        
-        <!-- Register Tab -->
-        <div id="register-tab" class="tab-content">
-            <form id="register-form">
-                <div class="form-group">
-                    <label for="register-name">Name</label>
-                    <input type="text" id="register-name" name="name" required placeholder="Your full name">
-                </div>
-                
-                <div class="form-group">
-                    <label for="register-email">Email address</label>
-                    <input type="email" id="register-email" name="email" required placeholder="your@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="register-password">Password</label>
-                    <input type="password" id="register-password" name="password" required placeholder="Minimum 6 characters" minlength="6">
-                </div>
-                
-                <button type="submit" class="btn-login">Request Account</button>
-            </form>
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">📅</span>
+                <h3>Local Calendar</h3>
+                <p>Work offline with your own calendar</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🔄</span>
+                <h3>Google Sync</h3>
+                <p>Optional: sync with Google Calendar</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🔒</span>
+                <h3>Secure</h3>
+                <p>Your data stays yours</p>
+            </div>
         </div>
     </div>
-
+    
     <script>
         // Tab switching
         function showTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.login-form').forEach(f => f.classList.remove('active'));
             
-            document.querySelector(`.tab-btn[onclick="showTab('${tab}')"]`).classList.add('active');
-            document.getElementById(`${tab}-tab`).classList.add('active');
+            if (tab === 'login') {
+                document.querySelector('.login-tab:first-child').classList.add('active');
+                document.getElementById('login-form').classList.add('active');
+            } else {
+                document.querySelector('.login-tab:last-child').classList.add('active');
+                document.getElementById('register-form').classList.add('active');
+            }
             
-            // Hide messages
-            document.getElementById('error-message').style.display = 'none';
-            document.getElementById('success-message').style.display = 'none';
-            document.getElementById('info-message').style.display = 'none';
+            hideMessages();
         }
         
-        // Login form
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
+        function showError(message) {
+            const el = document.getElementById('error-message');
+            el.textContent = message;
+            el.style.display = 'block';
+            document.getElementById('success-message').style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            const el = document.getElementById('success-message');
+            el.textContent = message;
+            el.style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+        }
+        
+        function hideMessages() {
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('success-message').style.display = 'none';
+        }
+        
+        // Google login handler met remember optie
+        function handleGoogleLogin(e) {
             e.preventDefault();
+            const remember = document.getElementById('remember-google')?.checked || false;
+            window.location.href = '/auth/google?remember=' + (remember ? '1' : '0');
+        }
+        
+        // Login handler
+        async function handleLogin(e) {
+            e.preventDefault();
+            hideMessages();
             
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-            const remember = document.getElementById('login-remember').checked;
-            const errorEl = document.getElementById('error-message');
-            const successEl = document.getElementById('success-message');
-            const infoEl = document.getElementById('info-message');
+            const remember = document.getElementById('remember-google')?.checked || false;
+            const btn = document.getElementById('login-btn');
             
-            errorEl.style.display = 'none';
-            successEl.style.display = 'none';
-            infoEl.style.display = 'none';
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
             
             try {
                 const response = await fetch('/auth/login', {
@@ -287,63 +319,72 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    successEl.textContent = 'Login successful! Redirecting...';
-                    successEl.style.display = 'block';
+                    showSuccess('Logged in! Please wait...');
                     setTimeout(() => {
                         window.location.href = '/dashboard.html';
                     }, 500);
                 } else {
-                    errorEl.textContent = data.error || 'Login failed';
-                    errorEl.style.display = 'block';
+                    showError(data.error || 'Login failed');
+                    btn.disabled = false;
+                    btn.textContent = 'Log in';
                 }
             } catch (error) {
-                errorEl.textContent = 'Something went wrong. Please try again.';
-                errorEl.style.display = 'block';
+                showError('Something went wrong. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Log in';
             }
-        });
+        }
         
-        // Register form
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
+        // Register handler
+        async function handleRegister(e) {
             e.preventDefault();
+            hideMessages();
             
             const name = document.getElementById('register-name').value;
             const email = document.getElementById('register-email').value;
             const password = document.getElementById('register-password').value;
-            const errorEl = document.getElementById('error-message');
-            const successEl = document.getElementById('success-message');
-            const infoEl = document.getElementById('info-message');
+            const password2 = document.getElementById('register-password2').value;
+            const btn = document.getElementById('register-btn');
             
-            errorEl.style.display = 'none';
-            successEl.style.display = 'none';
-            infoEl.style.display = 'none';
+            if (password !== password2) {
+                showError('Passwords do not match');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
             
             try {
                 const response = await fetch('/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
+                    body: JSON.stringify({ email, password, name })
                 });
                 
                 const data = await response.json();
                 
                 if (response.ok) {
-                    if (data.needsApproval) {
-                        infoEl.innerHTML = '✅ <strong>Account requested!</strong><br>Your request will be reviewed by an administrator as soon as possible. You will be notified once your account has been approved.';
-                        infoEl.style.display = 'block';
-                        document.getElementById('register-form').reset();
-                    } else {
-                        successEl.textContent = data.message || 'Account created!';
-                        successEl.style.display = 'block';
-                    }
+                    showSuccess('Account created! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html';
+                    }, 1000);
                 } else {
-                    errorEl.textContent = data.error || 'Registration failed';
-                    errorEl.style.display = 'block';
+                    showError(data.error || 'Registration failed');
+                    btn.disabled = false;
+                    btn.textContent = 'Create account';
                 }
             } catch (error) {
-                errorEl.textContent = 'Something went wrong. Please try again.';
-                errorEl.style.display = 'block';
+                showError('Something went wrong. Please try again.');
+                btn.disabled = false;
+                btn.textContent = 'Create account';
             }
-        });
+        }
+        
     </script>
 </body>
 </html>
