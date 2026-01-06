@@ -474,4 +474,338 @@ async function checkSlotAvailable(userId, date, time, duration) {
     return { available: !hasConflict };
 }
 
+// ==================== SMART SUGGESTIONS ====================
+// GET /api/book/:slug/smart-suggestions - Intelligente tijdslot suggesties
+// Gebaseerd op: reistijd optimalisatie, geografische nabijheid, beschikbaarheid
+router.get('/:slug/smart-suggestions', async (req, res) => {
+    try {
+        const { slug } = req.params;
+        const { serviceId, customerAddress, customerCity, customerPostalCode } = req.query;
+        
+        if (!serviceId) {
+            return res.status(400).json({ error: 'Dienst is verplicht' });
+        }
+        
+        // Vind de user
+        const user = await userStore.getUserByBookingSlug(slug);
+        if (!user) {
+            return res.status(404).json({ error: 'Niet gevonden' });
+        }
+        
+        const settings = await userStore.getBookingSettings(user.id);
+        if (!settings.enabled) {
+            return res.status(404).json({ error: 'Niet beschikbaar' });
+        }
+        
+        // Haal de dienst op
+        const service = await serviceStore.getService(user.id, serviceId);
+        if (!service) {
+            return res.status(404).json({ error: 'Dienst niet gevonden' });
+        }
+        
+        // Haal bedrijfsgegevens en werkuren op
+        const company = await companyStore.getCompanySettings(user.id);
+        const workingHours = normalizeWorkingHours(company?.workingHours);
+        
+        // Bouw klant locatie string
+        const customerLocation = [customerAddress, customerPostalCode, customerCity]
+            .filter(Boolean).join(', ');
+        
+        // Datum range: van morgen tot maxAdvanceDays
+        const now = new Date();
+        const startDate = new Date(now.getTime() + (settings.minAdvanceHours * 60 * 60 * 1000));
+        const endDate = new Date(now.getTime() + (settings.maxAdvanceDays * 24 * 60 * 60 * 1000));
+        
+        // Haal alle afspraken in deze periode op
+        const allAppointments = await appointmentStore.getAppointmentsByDateRange(
+            user.id, 
+            startDate.toISOString().split('T')[0],
+            endDate.toISOString().split('T')[0]
+        );
+        
+        console.log(`🧠 Smart suggestions for ${customerLocation || 'unknown location'}`);
+        console.log(`📅 Date range: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+        console.log(`📊 Found ${allAppointments.length} existing appointments`);
+        
+        // Genereer suggesties
+        const suggestions = await generateSmartSuggestions({
+            customerLocation,
+            service,
+            workingHours,
+            existingAppointments: allAppointments,
+            startDate,
+            endDate,
+            maxSuggestions: 5
+        });
+        
+        res.json({
+            success: true,
+            suggestions,
+            message: suggestions.length === 0 
+                ? 'Geen beschikbare tijden gevonden in de komende periode' 
+                : `${suggestions.length} optimale tijden gevonden`
+        });
+        
+    } catch (error) {
+        console.error('Smart suggestions error:', error);
+        res.status(500).json({ error: 'Fout bij genereren suggesties' });
+    }
+});
+
+/**
+ * Genereer slimme tijdslot suggesties
+ * Prioriteit: 1) Direct voor/na bestaande afspraak in zelfde regio
+ *             2) Op dag met andere afspraken in regio
+ *             3) Eerste beschikbare slot
+ */
+async function generateSmartSuggestions(options) {
+    const {
+        customerLocation,
+        service,
+        workingHours,
+        existingAppointments,
+        startDate,
+        endDate,
+        maxSuggestions = 5
+    } = options;
+    
+    const suggestions = [];
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    
+    // Groepeer afspraken per dag en bereken afstand tot klant
+    const appointmentsByDate = {};
+    for (const apt of existingAppointments) {
+        const date = new Date(apt.start).toISOString().split('T')[0];
+        if (!appointmentsByDate[date]) {
+            appointmentsByDate[date] = [];
+        }
+        
+        // Bereken geschatte afstand als we locaties hebben
+        let distanceScore = 100; // Default: ver weg
+        if (customerLocation && apt.location) {
+            distanceScore = estimateLocationProximity(customerLocation, apt.location);
+        }
+        
+        appointmentsByDate[date].push({
+            ...apt,
+            distanceScore
+        });
+    }
+    
+    // Sorteer afspraken per dag op tijd
+    for (const date of Object.keys(appointmentsByDate)) {
+        appointmentsByDate[date].sort((a, b) => new Date(a.start) - new Date(b.start));
+    }
+    
+    // Loop door dagen en vind optimale slots
+    let currentDate = new Date(startDate);
+    currentDate.setHours(0, 0, 0, 0);
+    
+    while (currentDate <= endDate && suggestions.length < maxSuggestions * 2) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const dayIndex = currentDate.getDay();
+        const dayName = dayNames[dayIndex];
+        const dayHours = workingHours[dayName];
+        
+        // Skip als dag niet beschikbaar is
+        if (!dayHours || !dayHours.enabled) {
+            currentDate.setDate(currentDate.getDate() + 1);
+            continue;
+        }
+        
+        const dayAppointments = appointmentsByDate[dateStr] || [];
+        
+        // Vind slots voor deze dag
+        const daySlots = findOptimalSlotsForDay({
+            date: dateStr,
+            dayHours,
+            service,
+            dayAppointments,
+            customerLocation
+        });
+        
+        suggestions.push(...daySlots);
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    // Sorteer op score (lager = beter) en pak top suggesties
+    suggestions.sort((a, b) => a.score - b.score);
+    
+    return suggestions.slice(0, maxSuggestions).map(s => ({
+        date: s.date,
+        time: s.time,
+        endTime: s.endTime,
+        displayDate: formatDisplayDate(s.date),
+        displayTime: `${s.time} - ${s.endTime}`,
+        reason: s.reason,
+        efficiency: s.efficiency
+    }));
+}
+
+/**
+ * Vind optimale slots voor een specifieke dag
+ */
+function findOptimalSlotsForDay(options) {
+    const { date, dayHours, service, dayAppointments, customerLocation } = options;
+    const slots = [];
+    
+    const [startH, startM] = dayHours.start.split(':').map(Number);
+    const [endH, endM] = dayHours.end.split(':').map(Number);
+    const dayStartMinutes = startH * 60 + startM;
+    const dayEndMinutes = endH * 60 + endM;
+    
+    // Default reistijd (kan later via API berekend worden)
+    const defaultTravelTime = 30;
+    
+    // Als er afspraken zijn op deze dag, zoek slots direct voor/na
+    if (dayAppointments.length > 0) {
+        for (let i = 0; i < dayAppointments.length; i++) {
+            const apt = dayAppointments[i];
+            const aptStart = new Date(apt.start);
+            const aptEnd = new Date(apt.end);
+            const aptStartMinutes = aptStart.getHours() * 60 + aptStart.getMinutes();
+            const aptEndMinutes = aptEnd.getHours() * 60 + aptEnd.getMinutes();
+            
+            // Slot VOOR deze afspraak
+            const beforeSlotEnd = aptStartMinutes - defaultTravelTime;
+            const beforeSlotStart = beforeSlotEnd - service.duration;
+            
+            if (beforeSlotStart >= dayStartMinutes + defaultTravelTime) {
+                const hasConflict = dayAppointments.some((other, idx) => {
+                    if (idx === i) return false;
+                    const otherEnd = new Date(other.end);
+                    const otherEndMinutes = otherEnd.getHours() * 60 + otherEnd.getMinutes();
+                    return beforeSlotStart < otherEndMinutes + defaultTravelTime;
+                });
+                
+                if (!hasConflict) {
+                    const proximityScore = apt.distanceScore || 50;
+                    slots.push({
+                        date,
+                        time: formatMinutesToTime(beforeSlotStart),
+                        endTime: formatMinutesToTime(beforeSlotEnd),
+                        score: proximityScore + 10, // Bonus voor aansluiting
+                        reason: apt.distanceScore < 30 
+                            ? `Direct before appointment in same area`
+                            : `Efficient: before another appointment`,
+                        efficiency: 'high'
+                    });
+                }
+            }
+            
+            // Slot NA deze afspraak
+            const afterSlotStart = aptEndMinutes + defaultTravelTime;
+            const afterSlotEnd = afterSlotStart + service.duration;
+            
+            if (afterSlotEnd <= dayEndMinutes) {
+                const nextApt = dayAppointments[i + 1];
+                let hasConflict = false;
+                
+                if (nextApt) {
+                    const nextStart = new Date(nextApt.start);
+                    const nextStartMinutes = nextStart.getHours() * 60 + nextStart.getMinutes();
+                    hasConflict = afterSlotEnd + defaultTravelTime > nextStartMinutes;
+                }
+                
+                if (!hasConflict) {
+                    const proximityScore = apt.distanceScore || 50;
+                    slots.push({
+                        date,
+                        time: formatMinutesToTime(afterSlotStart),
+                        endTime: formatMinutesToTime(afterSlotEnd),
+                        score: proximityScore + 10,
+                        reason: apt.distanceScore < 30 
+                            ? `Direct after appointment in same area`
+                            : `Efficient: after another appointment`,
+                        efficiency: 'high'
+                    });
+                }
+            }
+        }
+    }
+    
+    // Als geen optimale slots gevonden, voeg eerste beschikbare toe
+    if (slots.length === 0) {
+        const firstSlotStart = dayStartMinutes + defaultTravelTime;
+        const firstSlotEnd = firstSlotStart + service.duration;
+        
+        if (firstSlotEnd <= dayEndMinutes) {
+            const hasConflict = dayAppointments.some(apt => {
+                const aptStart = new Date(apt.start);
+                const aptStartMinutes = aptStart.getHours() * 60 + aptStart.getMinutes();
+                return firstSlotEnd + defaultTravelTime > aptStartMinutes;
+            });
+            
+            if (!hasConflict) {
+                slots.push({
+                    date,
+                    time: formatMinutesToTime(firstSlotStart),
+                    endTime: formatMinutesToTime(firstSlotEnd),
+                    score: 100, // Lagere prioriteit
+                    reason: 'First available slot',
+                    efficiency: 'normal'
+                });
+            }
+        }
+    }
+    
+    return slots;
+}
+
+/**
+ * Schat nabijheid tussen twee locaties op basis van postcode/stad
+ * Retourneert score: 0 = zelfde locatie, 100 = ver weg
+ */
+function estimateLocationProximity(location1, location2) {
+    if (!location1 || !location2) return 50;
+    
+    const loc1 = location1.toLowerCase();
+    const loc2 = location2.toLowerCase();
+    
+    // Extract postcode (NL format: 1234 AB)
+    const pcRegex = /(\d{4})\s*[a-z]{2}/gi;
+    const pc1Match = loc1.match(pcRegex);
+    const pc2Match = loc2.match(pcRegex);
+    
+    if (pc1Match && pc2Match) {
+        const pc1 = parseInt(pc1Match[0].replace(/\D/g, ''));
+        const pc2 = parseInt(pc2Match[0].replace(/\D/g, ''));
+        
+        // Zelfde postcode cijfers = zeer dichtbij
+        const diff = Math.abs(pc1 - pc2);
+        if (diff === 0) return 5;
+        if (diff <= 10) return 15;
+        if (diff <= 50) return 30;
+        if (diff <= 100) return 50;
+        return 70;
+    }
+    
+    // Fallback: check of steden overeenkomen
+    const cities = ['amsterdam', 'rotterdam', 'utrecht', 'den haag', 'eindhoven', 
+                    'tilburg', 'groningen', 'almere', 'breda', 'nijmegen'];
+    
+    for (const city of cities) {
+        if (loc1.includes(city) && loc2.includes(city)) {
+            return 20; // Zelfde stad
+        }
+    }
+    
+    return 60; // Onbekend
+}
+
+/**
+ * Format datum voor weergave
+ */
+function formatDisplayDate(dateStr) {
+    const date = new Date(dateStr + 'T12:00:00');
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    const dayName = days[date.getDay()];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    
+    return `${dayName} ${day} ${month}`;
+}
+
 module.exports = router;
