@@ -118,10 +118,13 @@ router.get('/google', (req, res) => {
     // Sla remember voorkeur op in sessie voor na de callback
     req.session.rememberMe = req.query.remember === '1';
     
+    // Force prompt=consent om altijd refresh_token te krijgen
+    // Dit is nodig omdat Google alleen een refresh_token geeft bij eerste consent
     const authUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES,
-        prompt: 'select_account' // Alleen account kiezen, niet elke keer toestemming vragen
+        prompt: 'consent', // Forceer toestemming voor refresh_token
+        include_granted_scopes: true
     });
     res.redirect(authUrl);
 });

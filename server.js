@@ -343,4 +343,8 @@ app.get('/', (req, res) => {
 // Start server
 app.listen(PORT, () => {
     console.log(`🎹 PianoPlanner draait op http://localhost:${PORT}`);
+    
+    // Start background sync service
+    const { startBackgroundSync } = require('./utils/backgroundSync');
+    startBackgroundSync();
 });
