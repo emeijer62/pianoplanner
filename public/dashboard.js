@@ -477,7 +477,9 @@ function createEventElement(event, compact = false) {
     
     if (compact) {
         return `
-            <div class="calendar-event" style="background: ${color}" title="${escapeHtml(event.summary || 'No title')}${hasTravelTime ? ` (🚗 ${event.travelTimeMinutes} min)` : ''}">
+            <div class="calendar-event" style="background: ${color}; cursor: pointer;" 
+                 title="${escapeHtml(event.summary || 'No title')}${hasTravelTime ? ` (🚗 ${event.travelTimeMinutes} min)` : ''}"
+                 onclick="openEditModal('${event.id}')">
                 ${escapeHtml(event.summary || 'No title')}
             </div>
         `;
@@ -496,7 +498,7 @@ function createEventElement(event, compact = false) {
     
     return `
         ${travelBlock}
-        <div class="calendar-event" style="background: ${color}">
+        <div class="calendar-event" style="background: ${color}; cursor: pointer;" onclick="openEditModal('${event.id}')">
             <div class="calendar-event-time">${timeStr}</div>
             <div>${escapeHtml(event.summary || 'No title')}</div>
         </div>
@@ -861,11 +863,99 @@ function formatDateForInput(date) {
     return `${year}-${month}-${day}`;
 }
 
+// Track which appointment is being edited (null = new appointment)
+let editingAppointmentId = null;
+
+// Open modal to edit existing appointment
+async function openEditModal(appointmentId) {
+    event.stopPropagation(); // Prevent triggering slot click
+    
+    const appointment = allEvents.find(e => e.id === appointmentId);
+    if (!appointment) {
+        console.error('Appointment not found:', appointmentId);
+        return;
+    }
+    
+    editingAppointmentId = appointmentId;
+    
+    document.getElementById('event-modal').style.display = 'flex';
+    
+    // Update modal title
+    document.querySelector('#event-modal .modal-header h2').textContent = 'Edit Appointment';
+    
+    // Show delete button
+    document.getElementById('delete-appointment-btn').style.display = 'block';
+    
+    // Load customers, pianos, services first
+    await loadModalData();
+    
+    // Fill in the form with existing data
+    document.getElementById('event-title').value = appointment.summary || '';
+    document.getElementById('event-description').value = appointment.description || '';
+    document.getElementById('event-location').value = appointment.location || '';
+    
+    // Parse dates
+    const startDate = new Date(appointment.start?.dateTime || appointment.start);
+    const endDate = new Date(appointment.end?.dateTime || appointment.end);
+    document.getElementById('event-start').value = formatDateTimeLocal(startDate);
+    document.getElementById('event-end').value = formatDateTimeLocal(endDate);
+    
+    // Set customer if exists
+    if (appointment.customerId) {
+        document.getElementById('event-customer').value = appointment.customerId;
+        onCustomerChange(); // Load pianos for this customer
+        
+        // Set piano after pianos are loaded
+        setTimeout(() => {
+            if (appointment.pianoId) {
+                document.getElementById('event-piano').value = appointment.pianoId;
+            }
+        }, 100);
+    }
+    
+    // Set service if exists
+    if (appointment.serviceId) {
+        document.getElementById('event-service').value = appointment.serviceId;
+    }
+}
+
+// Delete the currently editing appointment
+async function deleteCurrentAppointment() {
+    if (!editingAppointmentId) return;
+    
+    if (!confirm('Are you sure you want to delete this appointment?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/appointments/${editingAppointmentId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to delete appointment');
+        }
+        
+        closeModal();
+        await loadAllEvents();
+        renderCalendar();
+        
+    } catch (err) {
+        console.error('Error deleting appointment:', err);
+        alert('Could not delete appointment. Please try again.');
+    }
+}
+
 function closeModal() {
     document.getElementById('event-modal').style.display = 'none';
     document.getElementById('event-form').reset();
     document.getElementById('new-customer-form').style.display = 'none';
     document.getElementById('event-piano').innerHTML = '<option value="">-- Select piano (optional) --</option>';
+    
+    // Reset edit mode
+    editingAppointmentId = null;
+    document.querySelector('#event-modal .modal-header h2').textContent = 'New Appointment';
+    document.getElementById('delete-appointment-btn').style.display = 'none';
 }
 
 async function handleEventSubmit(e) {
@@ -885,28 +975,46 @@ async function handleEventSubmit(e) {
     const piano = pianosCache.find(p => p.id === pianoId);
     const service = servicesCache.find(s => s.id === serviceId);
     
+    const appointmentData = {
+        title,
+        description,
+        location,
+        start: new Date(start).toISOString(),
+        end: new Date(end).toISOString(),
+        customerId: customerId || null,
+        customerName: customer?.name || null,
+        pianoId: pianoId || null,
+        pianoBrand: piano?.brand || null,
+        pianoModel: piano?.model || null,
+        serviceId: serviceId || null,
+        serviceName: service?.name || null
+    };
+    
     try {
-        const response = await fetch('/api/appointments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title,
-                description,
-                location,
-                start: new Date(start).toISOString(),
-                end: new Date(end).toISOString(),
-                customerId: customerId || null,
-                customerName: customer?.name || null,
-                pianoId: pianoId || null,
-                pianoBrand: piano?.brand || null,
-                pianoModel: piano?.model || null,
-                serviceId: serviceId || null,
-                serviceName: service?.name || null
-            })
-        });
+        let response;
         
-        if (!response.ok) {
-            throw new Error('Failed to create appointment');
+        if (editingAppointmentId) {
+            // Update existing appointment
+            response = await fetch(`/api/appointments/${editingAppointmentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(appointmentData)
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to update appointment');
+            }
+        } else {
+            // Create new appointment
+            response = await fetch('/api/appointments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(appointmentData)
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to create appointment');
+            }
         }
         
         closeModal();
@@ -914,8 +1022,8 @@ async function handleEventSubmit(e) {
         renderCalendar();
         
     } catch (err) {
-        console.error('Error creating appointment:', err);
-        alert('Could not create appointment. Please try again.');
+        console.error('Error saving appointment:', err);
+        alert('Could not save appointment. Please try again.');
     }
 }
 
