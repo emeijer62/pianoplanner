@@ -629,7 +629,10 @@ function cancelNewCustomer() {
     document.getElementById('new-customer-name').value = '';
     document.getElementById('new-customer-email').value = '';
     document.getElementById('new-customer-phone').value = '';
-    document.getElementById('new-customer-address').value = '';
+    document.getElementById('new-customer-street').value = '';
+    document.getElementById('new-customer-postalcode').value = '';
+    document.getElementById('new-customer-city').value = '';
+    document.getElementById('new-customer-piano').value = '';
 }
 
 async function saveNewCustomer() {
@@ -639,27 +642,54 @@ async function saveNewCustomer() {
         return;
     }
     
-    const address = document.getElementById('new-customer-address').value;
-    // Try to parse address into parts
-    const addressParts = address.split(',').map(p => p.trim());
+    const street = document.getElementById('new-customer-street').value.trim();
+    const postalCode = document.getElementById('new-customer-postalcode').value.trim();
+    const city = document.getElementById('new-customer-city').value.trim();
+    const pianoBrand = document.getElementById('new-customer-piano').value.trim();
     
     try {
-        const response = await fetch('/api/customers', {
+        // Create customer
+        const customerResponse = await fetch('/api/customers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 name,
-                email: document.getElementById('new-customer-email').value,
-                phone: document.getElementById('new-customer-phone').value,
-                street: addressParts[0] || '',
-                city: addressParts[1] || '',
-                postalCode: addressParts[2] || ''
+                email: document.getElementById('new-customer-email').value.trim(),
+                phone: document.getElementById('new-customer-phone').value.trim(),
+                street,
+                postalCode,
+                city
             })
         });
         
-        if (!response.ok) throw new Error('Failed to create customer');
+        if (!customerResponse.ok) throw new Error('Failed to create customer');
         
-        const newCustomer = await response.json();
+        const newCustomer = await customerResponse.json();
+        
+        // If piano brand is entered, create piano for this customer
+        let newPiano = null;
+        if (pianoBrand) {
+            try {
+                const pianoResponse = await fetch('/api/pianos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customerId: newCustomer.id,
+                        brand: pianoBrand,
+                        type: pianoBrand.toLowerCase().includes('vleugel') || pianoBrand.toLowerCase().includes('grand') ? 'grand' : 'upright',
+                        notes: 'Added during appointment creation'
+                    })
+                });
+                
+                if (pianoResponse.ok) {
+                    newPiano = await pianoResponse.json();
+                    pianosCache.push(newPiano);
+                }
+            } catch (pianoErr) {
+                console.error('Error creating piano:', pianoErr);
+                // Continue anyway, customer was created
+            }
+        }
         
         // Add to cache and dropdown
         customersCache.push(newCustomer);
@@ -669,12 +699,18 @@ async function saveNewCustomer() {
         document.getElementById('event-customer').value = newCustomer.id;
         onCustomerChange();
         
+        // If a piano was created, select it
+        if (newPiano) {
+            document.getElementById('event-piano').value = newPiano.id;
+        }
+        
         // Hide form
         cancelNewCustomer();
         
         // Set location from new customer address
-        if (address) {
-            document.getElementById('event-location').value = address;
+        const fullAddress = [street, postalCode, city].filter(Boolean).join(', ');
+        if (fullAddress) {
+            document.getElementById('event-location').value = fullAddress;
         }
         
     } catch (err) {
@@ -684,14 +720,18 @@ async function saveNewCustomer() {
 }
 
 function setupNewCustomerAutocomplete() {
-    const input = document.getElementById('new-customer-address');
+    const input = document.getElementById('new-customer-street');
     const suggestions = document.getElementById('new-customer-suggestions');
+    
+    // Remove existing listeners by cloning the element
+    const newInput = input.cloneNode(true);
+    input.parentNode.replaceChild(newInput, input);
     
     let debounceTimer;
     
-    input.addEventListener('input', () => {
+    newInput.addEventListener('input', () => {
         clearTimeout(debounceTimer);
-        const query = input.value.trim();
+        const query = newInput.value.trim();
         
         if (query.length < 3) {
             suggestions.style.display = 'none';
@@ -711,7 +751,7 @@ function setupNewCustomerAutocomplete() {
                 }
                 
                 suggestions.innerHTML = predictions.map(p => `
-                    <div class="suggestion-item" data-place-id="${p.placeId}">
+                    <div class="suggestion-item" data-place-id="${p.placeId}" data-description="${escapeHtml(p.description)}">
                         ${escapeHtml(p.description)}
                     </div>
                 `).join('');
@@ -721,7 +761,27 @@ function setupNewCustomerAutocomplete() {
                 suggestions.querySelectorAll('.suggestion-item').forEach(item => {
                     item.addEventListener('mousedown', async (e) => {
                         e.preventDefault();
-                        input.value = item.textContent.trim();
+                        const placeId = item.dataset.placeId;
+                        
+                        // Get place details to fill in all fields
+                        try {
+                            const detailsResponse = await fetch(`/api/booking/place-details?placeId=${placeId}`);
+                            if (detailsResponse.ok) {
+                                const details = await detailsResponse.json();
+                                document.getElementById('new-customer-street').value = details.street || item.textContent.trim().split(',')[0];
+                                document.getElementById('new-customer-postalcode').value = details.postalCode || '';
+                                document.getElementById('new-customer-city').value = details.city || '';
+                            } else {
+                                // Fallback: just use the description
+                                const parts = item.textContent.trim().split(',').map(p => p.trim());
+                                document.getElementById('new-customer-street').value = parts[0] || '';
+                                document.getElementById('new-customer-city').value = parts[1] || '';
+                            }
+                        } catch (err) {
+                            // Fallback
+                            document.getElementById('new-customer-street').value = item.textContent.trim().split(',')[0];
+                        }
+                        
                         suggestions.style.display = 'none';
                     });
                 });
@@ -732,7 +792,7 @@ function setupNewCustomerAutocomplete() {
         }, 300);
     });
     
-    input.addEventListener('blur', () => {
+    newInput.addEventListener('blur', () => {
         setTimeout(() => { suggestions.style.display = 'none'; }, 200);
     });
 }
