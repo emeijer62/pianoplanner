@@ -288,6 +288,8 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
             const timeMin = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
             const timeMax = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
             
+            console.log(`🔄 Fetching Google events from ${timeMin} to ${timeMax} for calendar ${calendarId}`);
+            
             const response = await calendar.events.list({
                 calendarId: calendarId,
                 timeMin: timeMin,
@@ -297,11 +299,15 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
             });
             
             const googleEvents = response.data.items || [];
+            console.log(`🔄 Found ${googleEvents.length} events in Google Calendar`);
             
             for (const event of googleEvents) {
                 // Skip if already have this event locally
                 const existingLocal = localAppointments.find(a => a.googleEventId === event.id);
-                if (existingLocal) continue;
+                if (existingLocal) {
+                    console.log(`⏭️ Skipping already synced event: ${event.summary}`);
+                    continue;
+                }
                 
                 // Skip all-day events or events without proper dateTime
                 if (!event.start?.dateTime || !event.end?.dateTime) {
