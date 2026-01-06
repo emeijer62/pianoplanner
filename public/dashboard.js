@@ -758,7 +758,8 @@ function setupNewCustomerAutocomplete() {
                 const response = await fetch(`/api/booking/address-autocomplete?input=${encodeURIComponent(query)}`);
                 if (!response.ok) return;
                 
-                const predictions = await response.json();
+                const data = await response.json();
+                const predictions = Array.isArray(data) ? data : (data.predictions || []);
                 
                 if (predictions.length === 0) {
                     suggestions.style.display = 'none';
