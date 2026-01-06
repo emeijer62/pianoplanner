@@ -303,8 +303,11 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
                 const existingLocal = localAppointments.find(a => a.googleEventId === event.id);
                 if (existingLocal) continue;
                 
-                // Skip all-day events
-                if (!event.start.dateTime) continue;
+                // Skip all-day events or events without proper dateTime
+                if (!event.start?.dateTime || !event.end?.dateTime) {
+                    console.log(`⏭️ Skipping event without dateTime: ${event.summary}`);
+                    continue;
+                }
                 
                 // Create local appointment from Google event
                 try {
@@ -321,7 +324,7 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
                     });
                     synced++;
                 } catch (err) {
-                    console.error('Error creating appointment from Google:', err.message);
+                    console.error('Error creating appointment from Google:', err.message, 'Event:', event.summary);
                 }
             }
         }
