@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -128,26 +128,26 @@
             <div class="admin-logo">
                 <div class="icon">🔐</div>
                 <h1>Admin Login</h1>
-                <p>PianoPlanner Beheer</p>
+                <p>PianoPlanner Management</p>
             </div>
 
             <div id="error-alert" class="error-alert"></div>
 
             <form id="login-form">
                 <div class="form-group">
-                    <label for="username">Gebruikersnaam</label>
+                    <label for="username">Username</label>
                     <input type="text" id="username" name="username" required autocomplete="username">
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Wachtwoord</label>
+                    <label for="password">Password</label>
                     <input type="password" id="password" name="password" required autocomplete="current-password">
                 </div>
 
-                <button type="submit" class="login-btn" id="login-btn">Inloggen</button>
+                <button type="submit" class="login-btn" id="login-btn">Log in</button>
             </form>
 
-            <a href="/" class="back-link">← Terug naar homepage</a>
+            <a href="/" class="back-link">← Back to homepage</a>
         </div>
     </div>
 
@@ -159,7 +159,7 @@
             const errorAlert = document.getElementById('error-alert');
             
             btn.disabled = true;
-            btn.textContent = 'Bezig...';
+            btn.textContent = 'Loading...';
             errorAlert.style.display = 'none';
 
             const username = document.getElementById('username').value;
@@ -177,19 +177,19 @@
                 if (response.ok) {
                     window.location.href = '/admin-dashboard.html';
                 } else {
-                    errorAlert.textContent = data.error || 'Ongeldige inloggegevens';
+                    errorAlert.textContent = data.error || 'Invalid credentials';
                     errorAlert.style.display = 'block';
                 }
             } catch (error) {
-                errorAlert.textContent = 'Er ging iets mis. Probeer het opnieuw.';
+                errorAlert.textContent = 'Something went wrong. Please try again.';
                 errorAlert.style.display = 'block';
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Inloggen';
+                btn.textContent = 'Log in';
             }
         });
 
-        // Check of al ingelogd
+        // Check if already logged in
         fetch('/api/admin/status').then(r => r.json()).then(data => {
             if (data.isAdmin) {
                 window.location.href = '/admin-dashboard.html';

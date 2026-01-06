@@ -1,5 +1,5 @@
 /**
- * Instellingen pagina JavaScript
+ * Settings page JavaScript
  */
 
 // Check login
@@ -20,7 +20,7 @@ async function checkAuth() {
     }
 }
 
-// Alert tonen
+// Show alert
 function showAlert(message, type = 'success') {
     const container = document.getElementById('alertContainer');
     const alert = document.createElement('div');
@@ -31,56 +31,56 @@ function showAlert(message, type = 'success') {
     setTimeout(() => alert.remove(), 5000);
 }
 
-// ========== ACCOUNT/PROFIEL INSTELLINGEN ==========
+// ========== ACCOUNT/PROFILE SETTINGS ==========
 
 async function loadProfileSettings() {
     try {
         const response = await fetch('/auth/profile');
-        if (!response.ok) throw new Error('Kon profiel niet laden');
+        if (!response.ok) throw new Error('Could not load profile');
         
         const profile = await response.json();
         
-        // Vul profiel formulier
+        // Fill profile form
         document.getElementById('profileName').value = profile.name || '';
         document.getElementById('profileEmail').value = profile.email || '';
         
-        // Toon login methode info
+        // Show login method info
         const authTypeInfo = document.getElementById('authTypeInfo');
         if (profile.authType === 'google') {
             authTypeInfo.innerHTML = `
                 <span style="color: #4285F4;">🔵 Google Account</span>
-                ${profile.hasPassword ? ' + Wachtwoord ingesteld' : ' - <em>Geen wachtwoord ingesteld</em>'}
+                ${profile.hasPassword ? ' + Password set' : ' - <em>No password set</em>'}
             `;
         } else {
-            authTypeInfo.innerHTML = '<span style="color: #333;">📧 E-mail/Wachtwoord</span>';
+            authTypeInfo.innerHTML = '<span style="color: #333;">📧 Email/Password</span>';
         }
         
-        // Pas wachtwoord sectie aan op basis van situatie
+        // Adjust password section based on situation
         const currentPasswordGroup = document.getElementById('currentPasswordGroup');
         const passwordSectionTitle = document.getElementById('passwordSectionTitle');
         const passwordSectionDesc = document.getElementById('passwordSectionDesc');
         const passwordSubmitBtn = document.getElementById('passwordSubmitBtn');
         
         if (profile.authType === 'google' && !profile.hasPassword) {
-            // Google gebruiker zonder wachtwoord - kan wachtwoord instellen
+            // Google user without password - can set password
             currentPasswordGroup.style.display = 'none';
-            passwordSectionTitle.textContent = '🔐 Wachtwoord instellen';
-            passwordSectionDesc.textContent = 'Je bent ingelogd via Google. Stel een wachtwoord in om ook met e-mail/wachtwoord in te kunnen loggen.';
-            passwordSubmitBtn.textContent = '🔐 Wachtwoord Instellen';
+            passwordSectionTitle.textContent = '🔐 Set Password';
+            passwordSectionDesc.textContent = 'You are logged in via Google. Set a password to also log in with email/password.';
+            passwordSubmitBtn.textContent = '🔐 Set Password';
         } else {
-            // Normale situatie - wachtwoord wijzigen
+            // Normal situation - change password
             currentPasswordGroup.style.display = 'block';
-            passwordSectionTitle.textContent = '🔐 Wachtwoord wijzigen';
-            passwordSectionDesc.textContent = 'Voer je huidige wachtwoord in om een nieuw wachtwoord in te stellen.';
-            passwordSubmitBtn.textContent = '🔐 Wachtwoord Wijzigen';
+            passwordSectionTitle.textContent = '🔐 Change Password';
+            passwordSectionDesc.textContent = 'Enter your current password to set a new password.';
+            passwordSubmitBtn.textContent = '🔐 Change Password';
         }
         
     } catch (error) {
-        console.error('Kon profiel niet laden:', error);
+        console.error('Could not load profile:', error);
     }
 }
 
-// Profiel opslaan
+// Save profile
 async function saveProfile(e) {
     e.preventDefault();
     
@@ -88,7 +88,7 @@ async function saveProfile(e) {
     const email = document.getElementById('profileEmail').value.trim();
     
     if (!name || !email) {
-        showAlert('Naam en e-mail zijn verplicht', 'error');
+        showAlert('Name and email are required', 'error');
         return;
     }
     
@@ -102,17 +102,17 @@ async function saveProfile(e) {
         const data = await response.json();
         
         if (!response.ok) {
-            throw new Error(data.error || 'Kon profiel niet opslaan');
+            throw new Error(data.error || 'Could not save profile');
         }
         
-        showAlert('Profiel opgeslagen!', 'success');
+        showAlert('Profile saved!', 'success');
         
     } catch (error) {
         showAlert(error.message, 'error');
     }
 }
 
-// Wachtwoord wijzigen
+// Change password
 async function changePassword(e) {
     e.preventDefault();
     
@@ -121,17 +121,17 @@ async function changePassword(e) {
     const confirmPassword = document.getElementById('confirmPassword').value;
     
     if (!newPassword || !confirmPassword) {
-        showAlert('Vul alle wachtwoord velden in', 'error');
+        showAlert('Please fill in all password fields', 'error');
         return;
     }
     
     if (newPassword !== confirmPassword) {
-        showAlert('Nieuwe wachtwoorden komen niet overeen', 'error');
+        showAlert('New passwords do not match', 'error');
         return;
     }
     
     if (newPassword.length < 6) {
-        showAlert('Wachtwoord moet minimaal 6 tekens zijn', 'error');
+        showAlert('Password must be at least 6 characters', 'error');
         return;
     }
     
@@ -145,15 +145,15 @@ async function changePassword(e) {
         const data = await response.json();
         
         if (!response.ok) {
-            throw new Error(data.error || 'Kon wachtwoord niet wijzigen');
+            throw new Error(data.error || 'Could not change password');
         }
         
-        showAlert(data.message || 'Wachtwoord gewijzigd!', 'success');
+        showAlert(data.message || 'Password changed!', 'success');
         
-        // Reset formulier
+        // Reset form
         document.getElementById('passwordForm').reset();
         
-        // Herlaad profiel om UI bij te werken (voor Google gebruikers die wachtwoord instellen)
+        // Reload profile to update UI (for Google users setting password)
         await loadProfileSettings();
         
     } catch (error) {
@@ -161,9 +161,9 @@ async function changePassword(e) {
     }
 }
 
-// ========== BEDRIJFSPROFIEL ==========
+// ========== COMPANY PROFILE ==========
 
-const DAY_NAMES = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 async function loadCompanySettings() {
     try {
@@ -171,7 +171,7 @@ async function loadCompanySettings() {
         if (response.ok) {
             const settings = await response.json();
             
-            // Vul formulier in
+            // Fill form
             document.getElementById('companyName').value = settings.name || '';
             document.getElementById('ownerName').value = settings.ownerName || '';
             document.getElementById('email').value = settings.email || '';
@@ -179,20 +179,20 @@ async function loadCompanySettings() {
             document.getElementById('street').value = settings.address?.street || '';
             document.getElementById('postalCode').value = settings.address?.postalCode || '';
             document.getElementById('city').value = settings.address?.city || '';
-            document.getElementById('country').value = settings.address?.country || 'Nederland';
+            document.getElementById('country').value = settings.address?.country || 'Netherlands';
             
-            // Laad beschikbaarheid
+            // Load availability
             renderAvailabilityGrid(settings.availability);
         }
     } catch (error) {
-        console.error('Kon bedrijfsinstellingen niet laden:', error);
+        console.error('Could not load company settings:', error);
     }
 }
 
 function renderAvailabilityGrid(availability) {
     const container = document.getElementById('availabilityGrid');
     
-    // Default availability als er geen is
+    // Default availability if none exists
     const defaultAvailability = {
         0: { available: false, start: '09:00', end: '18:00' },
         1: { available: true, start: '09:00', end: '18:00' },
@@ -220,7 +220,7 @@ function renderAvailabilityGrid(availability) {
                                onchange="toggleDayAvailability(${index}, this.checked)">
                         <span class="toggle-slider"></span>
                     </label>
-                    <span class="toggle-label">${isAvailable ? 'Beschikbaar' : 'Niet beschikbaar'}</span>
+                    <span class="toggle-label">${isAvailable ? 'Available' : 'Not available'}</span>
                 </div>
                 <input type="time" 
                        id="avail-start-${index}" 
@@ -244,12 +244,12 @@ function toggleDayAvailability(day, isAvailable) {
     
     if (isAvailable) {
         row.classList.remove('disabled');
-        label.textContent = 'Beschikbaar';
+        label.textContent = 'Available';
         startInput.disabled = false;
         endInput.disabled = false;
     } else {
         row.classList.add('disabled');
-        label.textContent = 'Niet beschikbaar';
+        label.textContent = 'Not available';
         startInput.disabled = true;
         endInput.disabled = true;
     }
@@ -294,17 +294,17 @@ async function saveCompanySettings(e) {
         });
         
         if (response.ok) {
-            showAlert('Bedrijfsprofiel opgeslagen!', 'success');
+            showAlert('Company profile saved!', 'success');
         } else {
-            throw new Error('Opslaan mislukt');
+            throw new Error('Save failed');
         }
     } catch (error) {
-        showAlert('Kon bedrijfsprofiel niet opslaan', 'error');
+        showAlert('Could not save company profile', 'error');
         console.error(error);
     }
 }
 
-// ========== DIENSTEN ==========
+// ========== SERVICES ==========
 
 let services = [];
 
@@ -317,7 +317,7 @@ async function loadServices() {
             renderServices();
         }
     } catch (error) {
-        console.error('Kon diensten niet laden:', error);
+        console.error('Could not load services:', error);
     }
 }
 
@@ -325,7 +325,7 @@ function renderServices() {
     const container = document.getElementById('servicesList');
     
     if (services.length === 0) {
-        container.innerHTML = '<p style="color: #666; padding: 20px; text-align: center;">Nog geen diensten toegevoegd</p>';
+        container.innerHTML = '<p style="color: #666; padding: 20px; text-align: center;">No services added yet</p>';
         return;
     }
     
@@ -339,14 +339,14 @@ function renderServices() {
                 <div class="service-meta">
                     <span>⏱️ ${service.duration} min</span>
                     <span>💶 €${service.price}</span>
-                    ${service.bufferBefore ? `<span>⏪ +${service.bufferBefore} min voor</span>` : ''}
-                    ${service.bufferAfter ? `<span>⏩ +${service.bufferAfter} min na</span>` : ''}
-                    <span>📊 Totaal: ${getTotalDuration(service)} min</span>
+                    ${service.bufferBefore ? `<span>⏪ +${service.bufferBefore} min before</span>` : ''}
+                    ${service.bufferAfter ? `<span>⏩ +${service.bufferAfter} min after</span>` : ''}
+                    <span>📊 Total: ${getTotalDuration(service)} min</span>
                 </div>
                 ${service.description ? `<p style="margin: 8px 0 0; color: #666; font-size: 13px;">${service.description}</p>` : ''}
             </div>
             <div class="service-actions">
-                <button class="btn btn-secondary btn-small" onclick="editService('${service.id}')">✏️ Bewerk</button>
+                <button class="btn btn-secondary btn-small" onclick="editService('${service.id}')">✏️ Edit</button>
                 <button class="btn btn-danger btn-small" onclick="deleteService('${service.id}')">🗑️</button>
             </div>
         </div>
@@ -365,7 +365,7 @@ function openServiceModal(service = null) {
     form.reset();
     
     if (service) {
-        title.textContent = 'Dienst Bewerken';
+        title.textContent = 'Edit Service';
         document.getElementById('serviceId').value = service.id;
         document.getElementById('serviceName').value = service.name;
         document.getElementById('serviceDuration').value = service.duration;
@@ -375,7 +375,7 @@ function openServiceModal(service = null) {
         document.getElementById('serviceDescription').value = service.description || '';
         document.getElementById('serviceColor').value = service.color || '#4CAF50';
     } else {
-        title.textContent = 'Nieuwe Dienst';
+        title.textContent = 'New Service';
         document.getElementById('serviceId').value = '';
     }
     
@@ -410,14 +410,14 @@ async function saveService(e) {
     try {
         let response;
         if (id) {
-            // Update bestaande dienst
+            // Update existing service
             response = await fetch(`/api/settings/services/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(serviceData)
             });
         } else {
-            // Nieuwe dienst
+            // New service
             response = await fetch('/api/settings/services', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -426,14 +426,14 @@ async function saveService(e) {
         }
         
         if (response.ok) {
-            showAlert(id ? 'Dienst bijgewerkt!' : 'Dienst toegevoegd!', 'success');
+            showAlert(id ? 'Service updated!' : 'Service added!', 'success');
             closeServiceModal();
             loadServices();
         } else {
-            throw new Error('Opslaan mislukt');
+            throw new Error('Save failed');
         }
     } catch (error) {
-        showAlert('Kon dienst niet opslaan', 'error');
+        showAlert('Could not save service', 'error');
         console.error(error);
     }
 }
@@ -442,7 +442,7 @@ async function deleteService(id) {
     const service = services.find(s => s.id === id);
     if (!service) return;
     
-    if (!confirm(`Weet je zeker dat je "${service.name}" wilt verwijderen?`)) {
+    if (!confirm(`Are you sure you want to delete "${service.name}"?`)) {
         return;
     }
     
@@ -452,25 +452,25 @@ async function deleteService(id) {
         });
         
         if (response.ok) {
-            showAlert('Dienst verwijderd', 'success');
+            showAlert('Service deleted', 'success');
             loadServices();
         } else {
-            throw new Error('Verwijderen mislukt');
+            throw new Error('Delete failed');
         }
     } catch (error) {
-        showAlert('Kon dienst niet verwijderen', 'error');
+        showAlert('Could not delete service', 'error');
         console.error(error);
     }
 }
 
-// ========== PUBLIEKE BOEKINGSLINK ==========
+// ========== PUBLIC BOOKING LINK ==========
 
 let bookingSettings = {};
 
 async function loadBookingSettings() {
     try {
         const response = await fetch('/api/settings/booking');
-        if (!response.ok) throw new Error('Kon boekingsinstellingen niet laden');
+        if (!response.ok) throw new Error('Could not load booking settings');
         
         const data = await response.json();
         bookingSettings = data.settings || {};
@@ -490,25 +490,25 @@ async function loadBookingSettings() {
             document.getElementById('booking-link-url').value = data.bookingUrl;
             document.getElementById('booking-link-preview').href = data.bookingUrl;
             statusDiv.className = 'sync-status connected';
-            statusText.textContent = '✅ Boekingslink is actief';
+            statusText.textContent = '✅ Booking link is active';
         } else {
             optionsDiv.style.display = enabledCheckbox.checked ? 'block' : 'none';
             linkDisplay.style.display = 'none';
             statusDiv.className = 'sync-status disconnected';
-            statusText.textContent = '⏸️ Boekingslink is uitgeschakeld';
+            statusText.textContent = '⏸️ Booking link is disabled';
         }
         
-        // Vul formulier velden in
-        document.getElementById('booking-title').value = bookingSettings.title || 'Afspraak inplannen';
+        // Fill form fields
+        document.getElementById('booking-title').value = bookingSettings.title || 'Schedule Appointment';
         document.getElementById('booking-description').value = bookingSettings.description || '';
-        document.getElementById('booking-confirmation').value = bookingSettings.confirmationMessage || 'Bedankt voor uw boeking!';
+        document.getElementById('booking-confirmation').value = bookingSettings.confirmationMessage || 'Thank you for your booking!';
         document.getElementById('booking-min-advance').value = bookingSettings.minAdvanceHours || 24;
         document.getElementById('booking-max-advance').value = bookingSettings.maxAdvanceDays || 60;
         document.getElementById('booking-require-email').checked = bookingSettings.requireEmail !== false;
         document.getElementById('booking-require-phone').checked = bookingSettings.requirePhone !== false;
         
     } catch (error) {
-        console.error('Kon boekingsinstellingen niet laden:', error);
+        console.error('Could not load booking settings:', error);
     }
 }
 
@@ -524,7 +524,7 @@ async function saveBookingSettings(e) {
         maxAdvanceDays: parseInt(document.getElementById('booking-max-advance').value),
         requireEmail: document.getElementById('booking-require-email').checked,
         requirePhone: document.getElementById('booking-require-phone').checked,
-        slug: bookingSettings.slug  // Behoud bestaande slug
+        slug: bookingSettings.slug  // Keep existing slug
     };
     
     try {
@@ -537,12 +537,12 @@ async function saveBookingSettings(e) {
         const data = await response.json();
         
         if (!response.ok) {
-            throw new Error(data.error || 'Kon instellingen niet opslaan');
+            throw new Error(data.error || 'Could not save settings');
         }
         
-        showAlert('Boekingsinstellingen opgeslagen!', 'success');
+        showAlert('Booking settings saved!', 'success');
         
-        // Update UI met nieuwe settings
+        // Update UI with new settings
         await loadBookingSettings();
         
     } catch (error) {
@@ -554,7 +554,7 @@ function copyBookingLink() {
     const linkInput = document.getElementById('booking-link-url');
     linkInput.select();
     document.execCommand('copy');
-    showAlert('Link gekopieerd naar klembord!', 'success');
+    showAlert('Link copied to clipboard!', 'success');
 }
 
 // Toggle booking options visibility
@@ -567,7 +567,7 @@ function setupBookingToggle() {
     });
 }
 
-// ========== INIT ==========
+// ========== INITIALIZATION ==========
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (await checkAuth()) {

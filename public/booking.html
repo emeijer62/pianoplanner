@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nieuwe Afspraak - PianoPlanner</title>
+    <title>New Appointment - PianoPlanner</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="booking.css">
 </head>
@@ -15,42 +15,42 @@
         </div>
         <div class="nav-user">
             <a href="/dashboard.html" class="btn btn-small btn-secondary">← Dashboard</a>
-            <a href="/customers.html" class="btn btn-small btn-secondary">👥 Klanten</a>
-            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+            <a href="/customers.html" class="btn btn-small btn-secondary">👥 Customers</a>
+            <a href="/auth/logout" class="btn btn-small">Logout</a>
         </div>
     </nav>
 
     <main class="booking-page">
-        <h1>📅 Nieuwe Afspraak Plannen</h1>
+        <h1>📅 Schedule New Appointment</h1>
         
         <div class="booking-wizard">
-            <!-- Stap 1: Dienst kiezen -->
+            <!-- Step 1: Choose service -->
             <section class="wizard-step" id="step-service">
-                <h2>1. Kies een dienst</h2>
+                <h2>1. Choose a service</h2>
                 <div id="services-grid" class="services-grid">
-                    <div class="loading">Diensten laden...</div>
+                    <div class="loading">Loading services...</div>
                 </div>
             </section>
 
-            <!-- Stap 2: Klant selecteren/aanmaken -->
+            <!-- Step 2: Select/create customer -->
             <section class="wizard-step" id="step-customer" style="display: none;">
-                <h2>2. Klant gegevens</h2>
+                <h2>2. Customer details</h2>
                 
                 <div class="customer-search-box">
-                    <input type="text" id="customer-search" placeholder="🔍 Zoek bestaande klant (naam, email, stad)...">
+                    <input type="text" id="customer-search" placeholder="🔍 Search existing customer (name, email, city)...">
                     <div id="search-results" class="search-results"></div>
                 </div>
                 
-                <div class="divider">of voeg nieuwe klant toe</div>
+                <div class="divider">or add new customer</div>
                 
                 <form id="customer-form" class="customer-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="customer-name">Naam *</label>
+                            <label for="customer-name">Name *</label>
                             <input type="text" id="customer-name" required>
                         </div>
                         <div class="form-group">
-                            <label for="customer-phone">Telefoon</label>
+                            <label for="customer-phone">Phone</label>
                             <input type="tel" id="customer-phone">
                         </div>
                     </div>
@@ -62,98 +62,98 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group flex-2">
-                            <label for="customer-street">Straat + huisnummer</label>
-                            <input type="text" id="customer-street" placeholder="bijv. Kerkstraat 12">
+                            <label for="customer-street">Street + number</label>
+                            <input type="text" id="customer-street" placeholder="e.g. Main Street 12">
                         </div>
                         <div class="form-group">
-                            <label for="customer-postalcode">Postcode</label>
-                            <input type="text" id="customer-postalcode" placeholder="1234 AB">
+                            <label for="customer-postalcode">Postal code</label>
+                            <input type="text" id="customer-postalcode" placeholder="12345">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="customer-city">Stad *</label>
-                            <input type="text" id="customer-city" required placeholder="bijv. Eindhoven">
+                            <label for="customer-city">City *</label>
+                            <input type="text" id="customer-city" required placeholder="e.g. New York">
                         </div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary">Klant opslaan & doorgaan</button>
+                    <button type="submit" class="btn btn-primary">Save customer & continue</button>
                 </form>
             </section>
 
-            <!-- Stap 3: Datum en tijd kiezen -->
+            <!-- Step 3: Choose date and time -->
             <section class="wizard-step" id="step-datetime" style="display: none;">
-                <h2>3. Kies datum</h2>
+                <h2>3. Choose date</h2>
                 
                 <div class="selected-info">
                     <div class="info-card">
-                        <strong>Dienst:</strong> <span id="selected-service-name">-</span>
+                        <strong>Service:</strong> <span id="selected-service-name">-</span>
                         <span class="badge" id="selected-service-duration">-</span>
                     </div>
                     <div class="info-card">
-                        <strong>Klant:</strong> <span id="selected-customer-name">-</span>
+                        <strong>Customer:</strong> <span id="selected-customer-name">-</span>
                         <span class="text-muted" id="selected-customer-city">-</span>
                     </div>
                 </div>
                 
                 <div class="date-picker-section">
-                    <label for="appointment-date">Gewenste datum:</label>
+                    <label for="appointment-date">Preferred date:</label>
                     <input type="date" id="appointment-date">
-                    <button id="find-slot-btn" class="btn btn-primary">🔍 Zoek eerste beschikbare tijd</button>
+                    <button id="find-slot-btn" class="btn btn-primary">🔍 Find first available time</button>
                 </div>
                 
                 <div id="slot-result" class="slot-result" style="display: none;">
-                    <!-- Resultaat komt hier -->
+                    <!-- Result comes here -->
                 </div>
             </section>
 
-            <!-- Stap 4: Bevestigen -->
+            <!-- Step 4: Confirm -->
             <section class="wizard-step" id="step-confirm" style="display: none;">
-                <h2>4. Bevestig afspraak</h2>
+                <h2>4. Confirm appointment</h2>
                 
                 <div class="confirmation-card">
                     <div class="confirm-row">
-                        <span class="confirm-label">📋 Dienst:</span>
+                        <span class="confirm-label">📋 Service:</span>
                         <span id="confirm-service">-</span>
                     </div>
                     <div class="confirm-row">
-                        <span class="confirm-label">👤 Klant:</span>
+                        <span class="confirm-label">👤 Customer:</span>
                         <span id="confirm-customer">-</span>
                     </div>
                     <div class="confirm-row">
-                        <span class="confirm-label">📍 Locatie:</span>
+                        <span class="confirm-label">📍 Location:</span>
                         <span id="confirm-location">-</span>
                     </div>
                     <div class="confirm-row">
-                        <span class="confirm-label">🚗 Reistijd:</span>
+                        <span class="confirm-label">🚗 Travel time:</span>
                         <span id="confirm-travel">-</span>
                     </div>
                     <div class="confirm-row highlight">
-                        <span class="confirm-label">📅 Datum & tijd:</span>
+                        <span class="confirm-label">📅 Date & time:</span>
                         <span id="confirm-datetime">-</span>
                     </div>
                     
                     <div class="form-group">
-                        <label for="booking-notes">Notities (optioneel)</label>
-                        <textarea id="booking-notes" placeholder="Extra informatie voor deze afspraak..."></textarea>
+                        <label for="booking-notes">Notes (optional)</label>
+                        <textarea id="booking-notes" placeholder="Extra information for this appointment..."></textarea>
                     </div>
                     
                     <div class="confirm-actions">
-                        <button id="back-to-date-btn" class="btn btn-secondary">← Andere datum</button>
-                        <button id="confirm-booking-btn" class="btn btn-primary btn-large">✅ Afspraak Bevestigen</button>
+                        <button id="back-to-date-btn" class="btn btn-secondary">← Different date</button>
+                        <button id="confirm-booking-btn" class="btn btn-primary btn-large">✅ Confirm Appointment</button>
                     </div>
                 </div>
             </section>
             
-            <!-- Succes -->
+            <!-- Success -->
             <section class="wizard-step" id="step-success" style="display: none;">
                 <div class="success-message">
                     <div class="success-icon">✅</div>
-                    <h2>Afspraak Geboekt!</h2>
-                    <p>De afspraak is toegevoegd aan je Google Agenda.</p>
+                    <h2>Appointment Booked!</h2>
+                    <p>The appointment has been added to your Google Calendar.</p>
                     <div class="success-actions">
-                        <a href="/booking.html" class="btn btn-primary">+ Nieuwe Afspraak</a>
-                        <a href="/dashboard.html" class="btn btn-secondary">Naar Dashboard</a>
+                        <a href="/booking.html" class="btn btn-primary">+ New Appointment</a>
+                        <a href="/dashboard.html" class="btn btn-secondary">Go to Dashboard</a>
                     </div>
                 </div>
             </section>

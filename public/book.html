@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Afspraak Inplannen</title>
+    <title>Book Appointment</title>
     <link rel="stylesheet" href="/styles.css">
     <style>
         /* Public Booking Page Styles */
@@ -341,7 +341,7 @@
     
     <div class="booking-container">
         <div class="booking-header">
-            <div class="business-name" id="business-name">Laden...</div>
+            <div class="business-name" id="business-name">Loading...</div>
             <div class="booking-title" id="booking-title"></div>
         </div>
         
@@ -349,61 +349,61 @@
             <div class="booking-steps">
                 <div class="booking-step active" id="step1-indicator">
                     <span class="booking-step-number">1</span>
-                    Dienst
+                    Service
                 </div>
                 <div class="booking-step" id="step2-indicator">
                     <span class="booking-step-number">2</span>
-                    Datum
+                    Date
                 </div>
                 <div class="booking-step" id="step3-indicator">
                     <span class="booking-step-number">3</span>
-                    Gegevens
+                    Details
                 </div>
             </div>
             
             <div class="booking-content">
                 <!-- Step 1: Service Selection -->
                 <div id="step1" class="step-content">
-                    <h3>Kies een dienst</h3>
+                    <h3>Choose a service</h3>
                     <div id="services-list" class="services-list">
                         <!-- Services loaded here -->
                     </div>
                     <div class="booking-actions">
                         <button class="btn btn-primary btn-next" onclick="nextStep()" disabled id="btn-step1">
-                            Volgende →
+                            Next →
                         </button>
                     </div>
                 </div>
                 
                 <!-- Step 2: Date & Time Selection -->
                 <div id="step2" class="step-content" style="display: none;">
-                    <h3>Kies datum en tijd</h3>
+                    <h3>Choose date and time</h3>
                     
                     <div class="date-picker-section">
-                        <label for="booking-date">Datum</label>
+                        <label for="booking-date">Date</label>
                         <input type="date" id="booking-date">
                     </div>
                     
                     <div class="time-slots-section">
-                        <h4>Beschikbare tijden</h4>
+                        <h4>Available times</h4>
                         <div id="time-slots" class="time-slots-grid">
-                            <p class="no-slots">Selecteer eerst een datum</p>
+                            <p class="no-slots">Select a date first</p>
                         </div>
                     </div>
                     
                     <div class="booking-actions">
                         <button class="btn btn-secondary btn-back" onclick="prevStep()">
-                            ← Terug
+                            ← Back
                         </button>
                         <button class="btn btn-primary btn-next" onclick="nextStep()" disabled id="btn-step2">
-                            Volgende →
+                            Next →
                         </button>
                     </div>
                 </div>
                 
                 <!-- Step 3: Customer Details -->
                 <div id="step3" class="step-content" style="display: none;">
-                    <h3>Uw gegevens</h3>
+                    <h3>Your details</h3>
                     
                     <div class="booking-summary" id="booking-summary">
                         <!-- Summary loaded here -->
@@ -411,7 +411,7 @@
                     
                     <form id="customer-form" class="customer-form">
                         <div class="form-group">
-                            <label for="customer-name">Naam *</label>
+                            <label for="customer-name">Name *</label>
                             <input type="text" id="customer-name" required>
                         </div>
                         
@@ -421,33 +421,33 @@
                                 <input type="email" id="customer-email">
                             </div>
                             <div class="form-group">
-                                <label for="customer-phone">Telefoon <span id="phone-required">*</span></label>
+                                <label for="customer-phone">Phone <span id="phone-required">*</span></label>
                                 <input type="tel" id="customer-phone">
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="customer-street">Adres (straat + huisnummer)</label>
-                            <input type="text" id="customer-street" placeholder="Optioneel">
+                            <label for="customer-street">Address (street + number)</label>
+                            <input type="text" id="customer-street" placeholder="Optional">
                         </div>
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="customer-postalcode">Postcode</label>
-                                <input type="text" id="customer-postalcode" placeholder="Optioneel">
+                                <label for="customer-postalcode">Postal code</label>
+                                <input type="text" id="customer-postalcode" placeholder="Optional">
                             </div>
                             <div class="form-group">
-                                <label for="customer-city">Plaats</label>
-                                <input type="text" id="customer-city" placeholder="Optioneel">
+                                <label for="customer-city">City</label>
+                                <input type="text" id="customer-city" placeholder="Optional">
                             </div>
                         </div>
                         
                         <div class="booking-actions">
                             <button type="button" class="btn btn-secondary btn-back" onclick="prevStep()">
-                                ← Terug
+                                ← Back
                             </button>
                             <button type="submit" class="btn btn-primary btn-next">
-                                Afspraak Bevestigen ✓
+                                Confirm Appointment ✓
                             </button>
                         </div>
                     </form>
@@ -456,10 +456,10 @@
                 <!-- Success -->
                 <div id="step-success" class="step-content success-message" style="display: none;">
                     <div class="success-icon">✅</div>
-                    <h2>Afspraak Ingepland!</h2>
+                    <h2>Appointment Scheduled!</h2>
                     <p id="confirmation-message"></p>
                     <div class="booking-summary" id="final-summary"></div>
-                    <a href="/" class="btn btn-primary" style="margin-top: 1rem;">Nieuwe Afspraak</a>
+                    <a href="/" class="btn btn-primary" style="margin-top: 1rem;">New Appointment</a>
                 </div>
             </div>
         </div>
@@ -472,8 +472,8 @@
     <!-- Error Page (hidden) -->
     <div id="error-page" class="error-page" style="display: none;">
         <h1>404</h1>
-        <h2>Boekingspagina niet gevonden</h2>
-        <p>Deze boekingslink is niet actief of bestaat niet.</p>
+        <h2>Booking page not found</h2>
+        <p>This booking link is not active or does not exist.</p>
     </div>
 
     <script>
@@ -539,7 +539,7 @@
             const container = document.getElementById('services-list');
             
             if (services.length === 0) {
-                container.innerHTML = '<p class="no-slots">Geen diensten beschikbaar</p>';
+                container.innerHTML = '<p class="no-slots">No services available</p>';
                 return;
             }
             
@@ -548,7 +548,7 @@
                     <h4>${escapeHtml(service.name)}</h4>
                     <div class="service-meta">
                         <span>⏱️ ${service.duration} min</span>
-                        <span>💰 ${service.price > 0 ? '€' + service.price : 'Op aanvraag'}</span>
+                        <span>💰 ${service.price > 0 ? '€' + service.price : 'On request'}</span>
                     </div>
                     ${service.description ? `<div class="service-description">${escapeHtml(service.description)}</div>` : ''}
                 </div>
@@ -596,7 +596,7 @@
             document.getElementById('btn-step2').disabled = true;
             
             const slotsContainer = document.getElementById('time-slots');
-            slotsContainer.innerHTML = '<p class="no-slots">Laden...</p>';
+            slotsContainer.innerHTML = '<p class="no-slots">Loading...</p>';
             
             try {
                 const response = await fetch(`/api/book/${bookingSlug}/slots?date=${date}&serviceId=${selectedService.id}`);
@@ -609,12 +609,12 @@
                         </div>
                     `).join('');
                 } else {
-                    slotsContainer.innerHTML = `<p class="no-slots">${data.message || 'Geen tijden beschikbaar op deze dag'}</p>`;
+                    slotsContainer.innerHTML = `<p class="no-slots">${data.message || 'No times available on this day'}</p>`;
                 }
                 
             } catch (error) {
                 console.error('Error loading slots:', error);
-                slotsContainer.innerHTML = '<p class="no-slots">Fout bij laden van tijdslots</p>';
+                slotsContainer.innerHTML = '<p class="no-slots">Error loading time slots</p>';
             }
         }
         
@@ -679,7 +679,7 @@
         }
         
         function updateSummary() {
-            const dateFormatted = new Date(selectedDate).toLocaleDateString('nl-NL', {
+            const dateFormatted = new Date(selectedDate).toLocaleDateString('en-US', {
                 weekday: 'long',
                 day: 'numeric',
                 month: 'long',
@@ -688,24 +688,24 @@
             
             document.getElementById('booking-summary').innerHTML = `
                 <div class="summary-row">
-                    <span class="summary-label">Dienst</span>
+                    <span class="summary-label">Service</span>
                     <span class="summary-value">${escapeHtml(selectedService.name)}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">Datum</span>
+                    <span class="summary-label">Date</span>
                     <span class="summary-value">${dateFormatted}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">Tijd</span>
+                    <span class="summary-label">Time</span>
                     <span class="summary-value">${selectedTime}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">Duur</span>
-                    <span class="summary-value">${selectedService.duration} minuten</span>
+                    <span class="summary-label">Duration</span>
+                    <span class="summary-value">${selectedService.duration} minutes</span>
                 </div>
                 ${selectedService.price > 0 ? `
                 <div class="summary-row">
-                    <span class="summary-label">Prijs</span>
+                    <span class="summary-label">Price</span>
                     <span class="summary-value">€${selectedService.price}</span>
                 </div>
                 ` : ''}
@@ -717,7 +717,7 @@
             
             const submitBtn = e.target.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Bezig met boeken...';
+            submitBtn.textContent = 'Booking...';
             
             const customerData = {
                 name: document.getElementById('customer-name').value.trim(),
@@ -743,7 +743,7 @@
                 const result = await response.json();
                 
                 if (!response.ok) {
-                    throw new Error(result.error || 'Boeking mislukt');
+                    throw new Error(result.error || 'Booking failed');
                 }
                 
                 // Show success
@@ -752,7 +752,7 @@
             } catch (error) {
                 alert(error.message);
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Afspraak Bevestigen ✓';
+                submitBtn.textContent = 'Confirm Appointment ✓';
             }
         }
         
@@ -766,7 +766,7 @@
             document.getElementById('step-success').style.display = 'block';
             document.getElementById('confirmation-message').textContent = result.message;
             
-            const dateFormatted = new Date(selectedDate).toLocaleDateString('nl-NL', {
+            const dateFormatted = new Date(selectedDate).toLocaleDateString('en-US', {
                 weekday: 'long',
                 day: 'numeric',
                 month: 'long',
@@ -775,15 +775,15 @@
             
             document.getElementById('final-summary').innerHTML = `
                 <div class="summary-row">
-                    <span class="summary-label">Dienst</span>
+                    <span class="summary-label">Service</span>
                     <span class="summary-value">${escapeHtml(selectedService.name)}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">Datum</span>
+                    <span class="summary-label">Date</span>
                     <span class="summary-value">${dateFormatted}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">Tijd</span>
+                    <span class="summary-label">Time</span>
                     <span class="summary-value">${selectedTime}</span>
                 </div>
             `;

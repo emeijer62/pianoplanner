@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -342,42 +342,42 @@
         </div>
         <div class="nav-user">
             <span id="admin-username">Admin</span>
-            <button onclick="logout()" class="btn btn-small">Uitloggen</button>
+            <button onclick="logout()" class="btn btn-small">Log out</button>
         </div>
     </nav>
 
     <div class="admin-container">
         <div class="admin-header">
-            <h1>👥 Gebruikersbeheer</h1>
+            <h1>👥 User Management</h1>
             <div class="admin-nav">
-                <a href="#" class="active">Gebruikers</a>
-                <button class="btn btn-primary" onclick="showCreateModal()">+ Nieuwe Gebruiker</button>
+                <a href="#" class="active">Users</a>
+                <button class="btn btn-primary" onclick="showCreateModal()">+ New User</button>
             </div>
         </div>
 
         <!-- Statistieken -->
         <div class="stats-grid">
             <div class="stat-card">
-                <h3>Totaal Gebruikers</h3>
+                <h3>Total Users</h3>
                 <div class="value" id="total-users">-</div>
             </div>
             <div class="stat-card pending">
-                <h3>Wachtend op Goedkeuring</h3>
+                <h3>Awaiting Approval</h3>
                 <div class="value" id="pending-users">-</div>
             </div>
             <div class="stat-card">
-                <h3>Actieve Trials</h3>
+                <h3>Active Trials</h3>
                 <div class="value" id="trial-users">-</div>
             </div>
             <div class="stat-card">
-                <h3>Betaalde Abonnementen</h3>
+                <h3>Paid Subscriptions</h3>
                 <div class="value" id="paid-users">-</div>
             </div>
         </div>
 
         <!-- Wachtende Goedkeuringen -->
         <div class="pending-section" id="pending-section" style="display: none;">
-            <h2>⏳ Wachtend op Goedkeuring</h2>
+            <h2>⏳ Awaiting Approval</h2>
             <div class="pending-list" id="pending-list">
                 <!-- Pending users komen hier -->
             </div>
@@ -388,17 +388,17 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Naam</th>
+                        <th>Name</th>
                         <th>Email</th>
                         <th>Status</th>
-                        <th>Abonnement</th>
-                        <th>Geregistreerd</th>
-                        <th>Acties</th>
+                        <th>Subscription</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="users-table-body">
                     <tr>
-                        <td colspan="6" class="loading">Laden...</td>
+                        <td colspan="6" class="loading">Loading...</td>
                     </tr>
                 </tbody>
             </table>
@@ -409,18 +409,18 @@
     <div class="modal" id="reject-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Gebruiker Afwijzen</h2>
+                <h2>Reject User</h2>
                 <button class="modal-close" onclick="closeRejectModal()">&times;</button>
             </div>
             <form id="reject-form">
                 <input type="hidden" id="reject-user-id">
                 <div class="form-group">
-                    <label>Reden (optioneel)</label>
-                    <textarea id="reject-reason" rows="3" placeholder="Geef een reden voor de afwijzing..."></textarea>
+                    <label>Reason (optional)</label>
+                    <textarea id="reject-reason" rows="3" placeholder="Provide a reason for the rejection..."></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Annuleren</button>
-                    <button type="submit" class="btn-reject">Afwijzen</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
+                    <button type="submit" class="btn-reject">Reject</button>
                 </div>
             </form>
         </div>
@@ -430,7 +430,7 @@
     <div class="modal" id="plan-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Abonnement Instellen</h2>
+                <h2>Set Subscription</h2>
                 <button class="modal-close" onclick="closePlanModal()">&times;</button>
             </div>
             <form id="plan-form">
@@ -438,15 +438,15 @@
                 <div class="form-group">
                     <label>Plan</label>
                     <select id="plan-select">
-                        <option value="trial">Trial (14 dagen)</option>
+                        <option value="trial">Trial (14 days)</option>
                         <option value="starter">Starter</option>
                         <option value="professional">Professional</option>
                         <option value="enterprise">Enterprise</option>
                     </select>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closePlanModal()">Annuleren</button>
-                    <button type="submit" class="btn btn-primary">Opslaan</button>
+                    <button type="button" class="btn btn-secondary" onclick="closePlanModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -456,42 +456,42 @@
     <div class="modal" id="create-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Nieuwe Gebruiker</h2>
+                <h2>New User</h2>
                 <button class="modal-close" onclick="closeCreateModal()">&times;</button>
             </div>
             <form id="create-form">
                 <div class="form-group">
-                    <label>Naam *</label>
-                    <input type="text" id="create-name" required placeholder="Volledige naam">
+                    <label>Name *</label>
+                    <input type="text" id="create-name" required placeholder="Full name">
                 </div>
                 <div class="form-group">
                     <label>Email *</label>
-                    <input type="email" id="create-email" required placeholder="email@voorbeeld.nl">
+                    <input type="email" id="create-email" required placeholder="email@example.com">
                 </div>
                 <div class="form-group">
-                    <label>Wachtwoord *</label>
-                    <input type="password" id="create-password" required minlength="6" placeholder="Minimaal 6 tekens">
+                    <label>Password *</label>
+                    <input type="password" id="create-password" required minlength="6" placeholder="Minimum 6 characters">
                 </div>
                 <div class="form-group">
                     <label>Status</label>
                     <select id="create-status">
-                        <option value="approved">Goedgekeurd</option>
-                        <option value="pending">Wachtend op goedkeuring</option>
+                        <option value="approved">Approved</option>
+                        <option value="pending">Awaiting approval</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Abonnement</label>
+                    <label>Subscription</label>
                     <select id="create-plan">
-                        <option value="trial">Trial (14 dagen)</option>
+                        <option value="trial">Trial (14 days)</option>
                         <option value="starter">Starter</option>
                         <option value="professional">Professional</option>
                         <option value="enterprise">Enterprise</option>
-                        <option value="none">Geen</option>
+                        <option value="none">None</option>
                     </select>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Annuleren</button>
-                    <button type="submit" class="btn btn-primary">Aanmaken</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
                 </div>
             </form>
         </div>
@@ -501,34 +501,34 @@
     <div class="modal" id="edit-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Gebruiker Bewerken</h2>
+                <h2>Edit User</h2>
                 <button class="modal-close" onclick="closeEditModal()">&times;</button>
             </div>
             <form id="edit-form">
                 <input type="hidden" id="edit-user-id">
                 <div class="form-group">
-                    <label>Naam</label>
-                    <input type="text" id="edit-name" placeholder="Volledige naam">
+                    <label>Name</label>
+                    <input type="text" id="edit-name" placeholder="Full name">
                 </div>
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" id="edit-email" placeholder="email@voorbeeld.nl">
+                    <input type="email" id="edit-email" placeholder="email@example.com">
                 </div>
                 <div class="form-group">
-                    <label>Nieuw Wachtwoord</label>
-                    <input type="password" id="edit-password" placeholder="Laat leeg om niet te wijzigen" minlength="6">
-                    <small style="color: var(--text-muted); font-size: 0.75rem;">Laat leeg om het huidige wachtwoord te behouden</small>
+                    <label>New Password</label>
+                    <input type="password" id="edit-password" placeholder="Leave empty to keep current" minlength="6">
+                    <small style="color: var(--text-muted); font-size: 0.75rem;">Leave empty to keep current password</small>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Annuleren</button>
-                    <button type="submit" class="btn btn-primary">Opslaan</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Check admin status bij laden
+        // Check admin status on load
         async function checkAdminStatus() {
             try {
                 const response = await fetch('/api/admin/status');
@@ -548,12 +548,12 @@
             }
         }
 
-        // Laad alle gebruikers
+        // Load all users
         async function loadUsers() {
             try {
                 const response = await fetch('/api/admin/users');
                 if (!response.ok) {
-                    throw new Error('Niet geautoriseerd');
+                    throw new Error('Not authorized');
                 }
                 
                 const users = await response.json();
@@ -568,7 +568,7 @@
                 document.getElementById('trial-users').textContent = trialCount;
                 document.getElementById('paid-users').textContent = paidCount;
                 
-                // Toon pending section als er wachtende zijn
+                // Show pending section if there are pending users
                 const pendingUsers = users.filter(u => u.approvalStatus === 'pending');
                 const pendingSection = document.getElementById('pending-section');
                 const pendingList = document.getElementById('pending-list');
@@ -578,13 +578,13 @@
                     pendingList.innerHTML = pendingUsers.map(user => `
                         <div class="pending-user">
                             <div class="pending-user-info">
-                                <div class="name">${user.name || 'Geen naam'}</div>
+                                <div class="name">${user.name || 'No name'}</div>
                                 <div class="email">${user.email}</div>
-                                <div class="date">Geregistreerd: ${formatDate(user.createdAt)}</div>
+                                <div class="date">Registered: ${formatDate(user.createdAt)}</div>
                             </div>
                             <div class="pending-actions">
-                                <button class="btn-approve" onclick="approveUser('${user.id}')">✓ Goedkeuren</button>
-                                <button class="btn-reject" onclick="showRejectModal('${user.id}')">✗ Afwijzen</button>
+                                <button class="btn-approve" onclick="approveUser('${user.id}')">✓ Approve</button>
+                                <button class="btn-reject" onclick="showRejectModal('${user.id}')">✗ Reject</button>
                             </div>
                         </div>
                     `).join('');
@@ -592,7 +592,7 @@
                     pendingSection.style.display = 'none';
                 }
                 
-                // Vul de tabel
+                // Fill the table
                 const tbody = document.getElementById('users-table-body');
                 
                 if (users.length === 0) {
@@ -600,14 +600,14 @@
                         <tr>
                             <td colspan="6" class="empty-state">
                                 <div class="icon">👥</div>
-                                <p>Nog geen gebruikers geregistreerd</p>
+                                <p>No users registered yet</p>
                             </td>
                         </tr>
                     `;
                     return;
                 }
                 
-                // Sorteer: pending eerst, dan op datum
+                // Sort: pending first, then by date
                 users.sort((a, b) => {
                     if (a.approvalStatus === 'pending' && b.approvalStatus !== 'pending') return -1;
                     if (b.approvalStatus === 'pending' && a.approvalStatus !== 'pending') return 1;
@@ -616,19 +616,19 @@
                 
                 tbody.innerHTML = users.map(user => `
                     <tr>
-                        <td><strong>${user.name || 'Geen naam'}</strong></td>
+                        <td><strong>${user.name || 'No name'}</strong></td>
                         <td>${user.email}</td>
                         <td>${getApprovalBadge(user.approvalStatus)}</td>
                         <td>${getSubscriptionBadge(user.subscription)}</td>
                         <td>${formatDate(user.createdAt)}</td>
                         <td class="user-actions">
                             ${user.approvalStatus === 'pending' ? `
-                                <button class="btn-approve btn-small" onclick="approveUser('${user.id}')">Goedkeuren</button>
-                                <button class="btn-reject btn-small" onclick="showRejectModal('${user.id}')">Afwijzen</button>
+                                <button class="btn-approve btn-small" onclick="approveUser('${user.id}')">Approve</button>
+                                <button class="btn-reject btn-small" onclick="showRejectModal('${user.id}')">Reject</button>
                             ` : `
-                                <button class="btn btn-small btn-secondary" onclick="showEditModal('${user.id}')">Bewerken</button>
+                                <button class="btn btn-small btn-secondary" onclick="showEditModal('${user.id}')">Edit</button>
                                 <button class="btn btn-small btn-secondary" onclick="showPlanModal('${user.id}')">Plan</button>
-                                <button class="btn btn-small btn-secondary" onclick="deleteUser('${user.id}')" style="color: #ef4444;">Verwijder</button>
+                                <button class="btn btn-small btn-secondary" onclick="deleteUser('${user.id}')" style="color: #ef4444;">Delete</button>
                             `}
                         </td>
                     </tr>
@@ -639,16 +639,16 @@
                 document.getElementById('users-table-body').innerHTML = `
                     <tr>
                         <td colspan="6" class="empty-state" style="color: #ef4444;">
-                            Fout bij laden van gebruikers
+                            Error loading users
                         </td>
                     </tr>
                 `;
             }
         }
 
-        // Keur gebruiker goed
+        // Approve user
         async function approveUser(userId) {
-            if (!confirm('Weet je zeker dat je deze gebruiker wilt goedkeuren?')) return;
+            if (!confirm('Are you sure you want to approve this user?')) return;
             
             try {
                 const response = await fetch(`/api/admin/users/${userId}/approve`, {
@@ -658,19 +658,19 @@
                 });
                 
                 if (response.ok) {
-                    alert('Gebruiker goedgekeurd! Een trial periode van 14 dagen is gestart.');
+                    alert('User approved! A 14-day trial period has started.');
                     loadUsers();
                 } else {
                     const data = await response.json();
-                    alert('Fout: ' + (data.error || 'Kon niet goedkeuren'));
+                    alert('Error: ' + (data.error || 'Could not approve'));
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Er ging iets mis');
+                alert('Something went wrong');
             }
         }
 
-        // Toon reject modal
+        // Show reject modal
         function showRejectModal(userId) {
             document.getElementById('reject-user-id').value = userId;
             document.getElementById('reject-reason').value = '';
@@ -681,7 +681,7 @@
             document.getElementById('reject-modal').classList.remove('active');
         }
 
-        // Wijs gebruiker af
+        // Reject user
         document.getElementById('reject-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -696,20 +696,20 @@
                 });
                 
                 if (response.ok) {
-                    alert('Gebruiker afgewezen');
+                    alert('User rejected');
                     closeRejectModal();
                     loadUsers();
                 } else {
                     const data = await response.json();
-                    alert('Fout: ' + (data.error || 'Kon niet afwijzen'));
+                    alert('Error: ' + (data.error || 'Could not reject'));
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Er ging iets mis');
+                alert('Something went wrong');
             }
         });
 
-        // Toon plan modal
+        // Show plan modal
         function showPlanModal(userId) {
             document.getElementById('plan-user-id').value = userId;
             document.getElementById('plan-modal').classList.add('active');
@@ -719,7 +719,7 @@
             document.getElementById('plan-modal').classList.remove('active');
         }
 
-        // Stel plan in
+        // Set plan
         document.getElementById('plan-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -734,22 +734,22 @@
                 });
                 
                 if (response.ok) {
-                    alert('Plan bijgewerkt');
+                    alert('Plan updated');
                     closePlanModal();
                     loadUsers();
                 } else {
                     const data = await response.json();
-                    alert('Fout: ' + (data.error || 'Kon plan niet instellen'));
+                    alert('Error: ' + (data.error || 'Could not set plan'));
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Er ging iets mis');
+                alert('Something went wrong');
             }
         });
 
-        // Verwijder gebruiker
+        // Delete user
         async function deleteUser(userId) {
-            if (!confirm('Weet je zeker dat je deze gebruiker wilt verwijderen? Dit kan niet ongedaan worden gemaakt!')) return;
+            if (!confirm('Are you sure you want to delete this user? This cannot be undone!')) return;
             
             try {
                 const response = await fetch(`/api/admin/users/${userId}`, {
@@ -757,19 +757,19 @@
                 });
                 
                 if (response.ok) {
-                    alert('Gebruiker verwijderd');
+                    alert('User deleted');
                     loadUsers();
                 } else {
                     const data = await response.json();
-                    alert('Fout: ' + (data.error || 'Kon niet verwijderen'));
+                    alert('Error: ' + (data.error || 'Could not delete'));
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Er ging iets mis');
+                alert('Something went wrong');
             }
         }
 
-        // ==================== CREATE GEBRUIKER ====================
+        // ==================== CREATE USER ====================
         
         function showCreateModal() {
             document.getElementById('create-name').value = '';
@@ -803,25 +803,25 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    alert('Gebruiker aangemaakt!');
+                    alert('User created!');
                     closeCreateModal();
                     loadUsers();
                 } else {
-                    alert('Fout: ' + (data.error || 'Kon gebruiker niet aanmaken'));
+                    alert('Error: ' + (data.error || 'Could not create user'));
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Er ging iets mis');
+                alert('Something went wrong');
             }
         });
 
-        // ==================== EDIT GEBRUIKER ====================
+        // ==================== EDIT USER ====================
         
         async function showEditModal(userId) {
             try {
                 const response = await fetch(`/api/admin/users/${userId}`);
                 if (!response.ok) {
-                    throw new Error('Kon gebruiker niet ophalen');
+                    throw new Error('Could not fetch user');
                 }
                 
                 const user = await response.json();
@@ -833,7 +833,7 @@
                 document.getElementById('edit-modal').classList.add('active');
             } catch (error) {
                 console.error('Error:', error);
-                alert('Kon gebruiker niet laden');
+                alert('Could not load user');
             }
         }
 
@@ -864,15 +864,15 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    alert('Gebruiker bijgewerkt!');
+                    alert('User updated!');
                     closeEditModal();
                     loadUsers();
                 } else {
-                    alert('Fout: ' + (data.error || 'Kon gebruiker niet bijwerken'));
+                    alert('Error: ' + (data.error || 'Could not update user'));
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Er ging iets mis');
+                alert('Something went wrong');
             }
         });
 
@@ -886,11 +886,11 @@
             }
         }
 
-        // Helper functies
+        // Helper functions
         function formatDate(dateStr) {
             if (!dateStr) return '-';
             const date = new Date(dateStr);
-            return date.toLocaleDateString('nl-NL', {
+            return date.toLocaleDateString('en-US', {
                 day: 'numeric',
                 month: 'short',
                 year: 'numeric'
@@ -900,28 +900,28 @@
         function getApprovalBadge(status) {
             switch (status) {
                 case 'pending':
-                    return '<span class="status-badge status-pending">Wachtend</span>';
+                    return '<span class="status-badge status-pending">Pending</span>';
                 case 'approved':
-                    return '<span class="status-badge status-approved">Goedgekeurd</span>';
+                    return '<span class="status-badge status-approved">Approved</span>';
                 case 'rejected':
-                    return '<span class="status-badge status-rejected">Afgewezen</span>';
+                    return '<span class="status-badge status-rejected">Rejected</span>';
                 default:
-                    return '<span class="status-badge status-approved">Goedgekeurd</span>';
+                    return '<span class="status-badge status-approved">Approved</span>';
             }
         }
 
         function getSubscriptionBadge(sub) {
-            if (!sub) return '<span class="status-badge status-expired">Geen</span>';
+            if (!sub) return '<span class="status-badge status-expired">None</span>';
             
             switch (sub.status) {
                 case 'trialing':
                     return '<span class="status-badge status-trial">Trial</span>';
                 case 'active':
-                    return `<span class="status-badge status-active">${sub.plan || 'Actief'}</span>`;
+                    return `<span class="status-badge status-active">${sub.plan || 'Active'}</span>`;
                 case 'trial_expired':
-                    return '<span class="status-badge status-expired">Trial verlopen</span>';
+                    return '<span class="status-badge status-expired">Trial expired</span>';
                 default:
-                    return `<span class="status-badge status-expired">${sub.status || 'Onbekend'}</span>`;
+                    return `<span class="status-badge status-expired">${sub.status || 'Unknown'}</span>`;
             }
         }
 

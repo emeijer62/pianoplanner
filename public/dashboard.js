@@ -6,11 +6,11 @@ let allEvents = [];
 let currentView = 'week';
 let currentDate = new Date();
 
-const DAYS_NL = ['Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'];
-const DAYS_SHORT = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
-const MONTHS_NL = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'];
+const DAYS_NL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS_NL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-// Auto-sync cooldown (5 minuten)
+// Auto-sync cooldown (5 minutes)
 const SYNC_COOLDOWN_MS = 5 * 60 * 1000;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
         console.error('Error:', err);
         // Don't redirect on error - just show error message
-        alert('Er is een fout opgetreden. Probeer opnieuw.');
+        alert('An error occurred. Please try again.');
     }
     
     // Event listeners
@@ -63,14 +63,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Automatische sync met Google Calendar
 async function autoSyncCalendar() {
     try {
-        // Check of sync is ingeschakeld
+        // Check if sync is enabled
         const settingsRes = await fetch('/api/calendar/sync-settings');
         if (!settingsRes.ok) return;
         
         const { settings } = await settingsRes.json();
         if (!settings?.enabled) return;
         
-        // Check cooldown (niet vaker dan elke 5 minuten)
+        // Check cooldown (no more than every 5 minutes)
         const lastSync = localStorage.getItem('lastCalendarSync');
         if (lastSync) {
             const timeSince = Date.now() - parseInt(lastSync);
@@ -88,12 +88,12 @@ async function autoSyncCalendar() {
             localStorage.setItem('lastCalendarSync', Date.now().toString());
             
             if (result.synced > 0) {
-                console.log(`✅ Auto-sync: ${result.synced} items gesynchroniseerd`);
-                // Herlaad events als er iets is gesynchroniseerd
+                console.log(`✅ Auto-sync: ${result.synced} items synchronized`);
+                // Reload events if something was synchronized
                 await loadAllEvents();
                 renderCalendar();
             } else {
-                console.log('✅ Auto-sync: alles up-to-date');
+                console.log('✅ Auto-sync: everything up-to-date');
             }
         }
     } catch (err) {
@@ -107,8 +107,8 @@ function showTrialBanner() {
         const banner = document.createElement('div');
         banner.className = 'trial-banner';
         banner.innerHTML = `
-            <span>🕐 Nog ${subscription.daysLeft} dagen in je proefperiode</span>
-            <a href="/billing.html" class="trial-banner-btn">Abonnement starten</a>
+            <span>🕐 ${subscription.daysLeft} days left in your trial</span>
+            <a href="/billing.html" class="trial-banner-btn">Start subscription</a>
         `;
         banner.style.cssText = `
             background: linear-gradient(135deg, #1565c0, #1976d2);
@@ -140,7 +140,7 @@ function updateNavbar(user) {
         document.getElementById('nav-user-picture').src = user.picture;
     }
     
-    // Toon admin link alleen voor admins
+    // Show admin link only for admins
     if (isAdmin) {
         document.getElementById('admin-link').style.display = 'inline-block';
     }
@@ -150,7 +150,7 @@ function updateNavbar(user) {
 
 async function loadAllEvents() {
     try {
-        // Laad lokale afspraken voor een ruime periode (3 maanden voor en na)
+        // Load local appointments for a wide period (3 months before and after)
         const startDate = new Date(currentDate);
         startDate.setMonth(startDate.getMonth() - 1);
         const endDate = new Date(currentDate);
@@ -162,10 +162,10 @@ async function loadAllEvents() {
             throw new Error('Failed to load appointments');
         }
         
-        // De API retourneert al het juiste formaat (met summary, start.dateTime, etc.)
+        // The API already returns the correct format (with summary, start.dateTime, etc.)
         allEvents = await response.json();
         
-        console.log(`📅 ${allEvents.length} afspraken geladen`);
+        console.log(`📅 ${allEvents.length} appointments loaded`);
         
     } catch (err) {
         console.error('Error loading appointments:', err);
@@ -176,14 +176,14 @@ async function loadAllEvents() {
 async function loadCalendars() {
     const container = document.getElementById('calendars-list');
     
-    // Element bestaat niet in huidige layout - skip
+    // Element doesn't exist in current layout - skip
     if (!container) return;
     
-    // Toon lokale agenda categorieën
+    // Show local calendar categories
     const categories = [
-        { name: 'Stemmen', color: '#4CAF50' },
-        { name: 'Reparatie', color: '#2196F3' },
-        { name: 'Onderhoud', color: '#FF9800' },
+        { name: 'Tuning', color: '#4CAF50' },
+        { name: 'Repair', color: '#2196F3' },
+        { name: 'Maintenance', color: '#FF9800' },
         { name: 'Transport', color: '#9C27B0' }
     ];
     
@@ -398,11 +398,11 @@ function renderMonthView(container) {
                 <div class="month-day-number">${currentCalDay.getDate()}</div>
                 <div class="month-events">
                     ${dayEvents.slice(0, 3).map(e => `
-                        <div class="month-event" style="background: ${getEventColor(e)}" title="${escapeHtml(e.summary || 'Geen titel')}">
-                            ${escapeHtml(e.summary || 'Geen titel')}
+                        <div class="month-event" style="background: ${getEventColor(e)}" title="${escapeHtml(e.summary || 'No title')}">
+                            ${escapeHtml(e.summary || 'No title')}
                         </div>
                     `).join('')}
-                    ${dayEvents.length > 3 ? `<div class="month-more">+${dayEvents.length - 3} meer</div>` : ''}
+                    ${dayEvents.length > 3 ? `<div class="month-more">+${dayEvents.length - 3} more</div>` : ''}
                 </div>
             </div>
         `;
@@ -456,32 +456,32 @@ function getEventsForDay(date) {
 
 function createEventElement(event, compact = false) {
     const start = event.start.dateTime ? new Date(event.start.dateTime) : null;
-    const timeStr = start ? start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }) : '';
+    const timeStr = start ? start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
     const color = getEventColor(event);
     
-    // Check voor reistijd info
+    // Check for travel time info
     const hasTravelTime = event.travelTimeMinutes && event.travelStartTime;
     let travelStr = '';
     if (hasTravelTime) {
         const travelStart = new Date(event.travelStartTime);
-        travelStr = travelStart.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+        travelStr = travelStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     }
     
     if (compact) {
         return `
-            <div class="calendar-event" style="background: ${color}" title="${escapeHtml(event.summary || 'Geen titel')}${hasTravelTime ? ` (🚗 ${event.travelTimeMinutes} min)` : ''}">
-                ${escapeHtml(event.summary || 'Geen titel')}
+            <div class="calendar-event" style="background: ${color}" title="${escapeHtml(event.summary || 'No title')}${hasTravelTime ? ` (🚗 ${event.travelTimeMinutes} min)` : ''}">
+                ${escapeHtml(event.summary || 'No title')}
             </div>
         `;
     }
     
-    // Toon reistijd als apart blok vóór de afspraak
+    // Show travel time as separate block before appointment
     let travelBlock = '';
     if (hasTravelTime) {
         travelBlock = `
             <div class="calendar-event calendar-event-travel" style="background: #90a4ae; opacity: 0.8; font-size: 0.75rem;">
                 <div class="calendar-event-time">${travelStr}</div>
-                <div>🚗 Reistijd (${event.travelTimeMinutes} min${event.travelDistanceKm ? ', ' + event.travelDistanceKm + ' km' : ''})</div>
+                <div>🚗 Travel time (${event.travelTimeMinutes} min${event.travelDistanceKm ? ', ' + event.travelDistanceKm + ' km' : ''})</div>
             </div>
         `;
     }
@@ -490,7 +490,7 @@ function createEventElement(event, compact = false) {
         ${travelBlock}
         <div class="calendar-event" style="background: ${color}">
             <div class="calendar-event-time">${timeStr}</div>
-            <div>${escapeHtml(event.summary || 'Geen titel')}</div>
+            <div>${escapeHtml(event.summary || 'No title')}</div>
         </div>
     `;
 }
@@ -556,12 +556,12 @@ async function handleEventSubmit(e) {
         
     } catch (err) {
         console.error('Error creating appointment:', err);
-        alert('Kon afspraak niet aanmaken. Probeer het opnieuw.');
+        alert('Could not create appointment. Please try again.');
     }
 }
 
 async function deleteEvent(eventId) {
-    if (!confirm('Weet je zeker dat je deze afspraak wilt verwijderen?')) {
+    if (!confirm('Are you sure you want to delete this appointment?')) {
         return;
     }
     
@@ -579,7 +579,7 @@ async function deleteEvent(eventId) {
         
     } catch (err) {
         console.error('Error deleting appointment:', err);
-        alert('Kon afspraak niet verwijderen. Probeer het opnieuw.');
+        alert('Could not delete appointment. Please try again.');
     }
 }
 

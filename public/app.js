@@ -49,9 +49,9 @@ function showError(message) {
 
 function getErrorMessage(error) {
     const messages = {
-        'no_code': 'Er ging iets mis bij het inloggen. Probeer het opnieuw.',
-        'oauth_failed': 'Google authenticatie mislukt. Probeer het opnieuw.',
-        'unauthorized': 'Je bent niet ingelogd. Log eerst in.'
+        'no_code': 'Something went wrong while logging in. Please try again.',
+        'oauth_failed': 'Google authentication failed. Please try again.',
+        'unauthorized': 'You are not logged in. Please log in first.'
     };
-    return messages[error] || 'Er is een fout opgetreden.';
+    return messages[error] || 'An error occurred.';
 }

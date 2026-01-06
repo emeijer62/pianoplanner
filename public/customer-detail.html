@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klant Details - PianoPlanner</title>
+    <title>Customer Details - PianoPlanner</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         .customer-detail-container {
@@ -419,32 +419,32 @@
         </div>
         <div class="nav-links">
             <a href="/dashboard.html">📅 Dashboard</a>
-            <a href="/customers.html" class="active">👥 Klanten</a>
-            <a href="/pianos.html">🎹 Piano's</a>
-            <a href="/settings.html">⚙️ Instellingen</a>
+            <a href="/customers.html" class="active">👥 Customers</a>
+            <a href="/pianos.html">🎹 Pianos</a>
+            <a href="/settings.html">⚙️ Settings</a>
         </div>
         <div class="nav-user">
-            <a href="/booking.html" class="btn btn-small btn-primary">+ Afspraak</a>
-            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+            <a href="/booking.html" class="btn btn-small btn-primary">+ Appointment</a>
+            <a href="/auth/logout" class="btn btn-small">Logout</a>
         </div>
     </nav>
 
     <main class="customer-detail-container">
-        <a href="/customers.html" class="back-link">← Terug naar klanten</a>
+        <a href="/customers.html" class="back-link">← Back to customers</a>
 
-        <div id="loading" class="loading">Klantgegevens laden...</div>
+        <div id="loading" class="loading">Loading customer data...</div>
 
         <div id="customer-content" style="display: none;">
-            <!-- Klant header -->
+            <!-- Customer header -->
             <div class="customer-header">
                 <div class="customer-header-top">
                     <div>
                         <h1 class="customer-name" id="customer-name">-</h1>
-                        <div class="customer-since" id="customer-since">Klant sinds -</div>
+                        <div class="customer-since" id="customer-since">Customer since -</div>
                     </div>
                     <div class="customer-actions">
-                        <button class="btn btn-secondary" onclick="editCustomer()">✏️ Bewerken</button>
-                        <button class="btn btn-primary" onclick="openNewAppointment()">+ Afspraak</button>
+                        <button class="btn btn-secondary" onclick="editCustomer()">✏️ Edit</button>
+                        <button class="btn btn-primary" onclick="openNewAppointment()">+ Appointment</button>
                     </div>
                 </div>
                 <div class="customer-info-grid">
@@ -453,15 +453,15 @@
                         <span class="info-value" id="customer-email">-</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Telefoon</span>
+                        <span class="info-label">Phone</span>
                         <span class="info-value" id="customer-phone">-</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Adres</span>
+                        <span class="info-label">Address</span>
                         <span class="info-value" id="customer-address">-</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">Notities</span>
+                        <span class="info-label">Notes</span>
                         <span class="info-value" id="customer-notes">-</span>
                     </div>
                 </div>
@@ -470,49 +470,49 @@
             <!-- Tabs -->
             <div class="tabs-container">
                 <div class="tabs">
-                    <button class="tab active" data-tab="pianos">🎹 Piano's</button>
-                    <button class="tab" data-tab="history">📋 Service Historie</button>
-                    <button class="tab" data-tab="appointments">📅 Afspraken</button>
+                    <button class="tab active" data-tab="pianos">🎹 Pianos</button>
+                    <button class="tab" data-tab="history">📋 Service History</button>
+                    <button class="tab" data-tab="appointments">📅 Appointments</button>
                 </div>
 
-                <!-- Piano's tab -->
+                <!-- Pianos tab -->
                 <div id="tab-pianos" class="tab-content active">
                     <div class="section-header">
-                        <h3 class="section-title">Piano's van deze klant</h3>
-                        <button class="btn btn-primary btn-small" onclick="openAddPianoModal()">+ Piano toevoegen</button>
+                        <h3 class="section-title">Pianos of this customer</h3>
+                        <button class="btn btn-primary btn-small" onclick="openAddPianoModal()">+ Add piano</button>
                     </div>
                     <div id="pianos-list" class="pianos-grid">
                         <div class="empty-state">
                             <div class="empty-state-icon">🎹</div>
-                            <p>Nog geen piano's gekoppeld</p>
-                            <button class="btn btn-primary" onclick="openAddPianoModal()">Eerste piano toevoegen</button>
+                            <p>No pianos linked yet</p>
+                            <button class="btn btn-primary" onclick="openAddPianoModal()">Add first piano</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Service Historie tab -->
+                <!-- Service History tab -->
                 <div id="tab-history" class="tab-content">
                     <div class="section-header">
-                        <h3 class="section-title">Volledige service historie</h3>
+                        <h3 class="section-title">Complete service history</h3>
                     </div>
                     <div id="service-history" class="service-history">
                         <div class="empty-state">
                             <div class="empty-state-icon">📋</div>
-                            <p>Nog geen service uitgevoerd</p>
+                            <p>No service performed yet</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Afspraken tab -->
+                <!-- Appointments tab -->
                 <div id="tab-appointments" class="tab-content">
                     <div class="section-header">
-                        <h3 class="section-title">Afspraken</h3>
+                        <h3 class="section-title">Appointments</h3>
                     </div>
                     <div id="appointments-list" class="appointments-list">
                         <div class="empty-state">
                             <div class="empty-state-icon">📅</div>
-                            <p>Nog geen afspraken</p>
-                            <button class="btn btn-primary" onclick="openNewAppointment()">Afspraak inplannen</button>
+                            <p>No appointments yet</p>
+                            <button class="btn btn-primary" onclick="openNewAppointment()">Schedule appointment</button>
                         </div>
                     </div>
                 </div>
@@ -524,7 +524,7 @@
     <div id="piano-modal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h2 id="piano-modal-title">Piano toevoegen</h2>
+                <h2 id="piano-modal-title">Add piano</h2>
                 <button class="modal-close" onclick="closePianoModal()">&times;</button>
             </div>
             <div class="modal-body">
@@ -533,12 +533,12 @@
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="piano-brand">Merk *</label>
-                            <input type="text" id="piano-brand" required placeholder="bijv. Steinway, Yamaha">
+                            <label for="piano-brand">Brand *</label>
+                            <input type="text" id="piano-brand" required placeholder="e.g. Steinway, Yamaha">
                         </div>
                         <div class="form-group">
                             <label for="piano-model">Model</label>
-                            <input type="text" id="piano-model" placeholder="bijv. B-211, U3">
+                            <input type="text" id="piano-model" placeholder="e.g. B-211, U3">
                         </div>
                     </div>
 
@@ -546,68 +546,68 @@
                         <div class="form-group">
                             <label for="piano-type">Type</label>
                             <select id="piano-type">
-                                <option value="upright">Staande piano</option>
-                                <option value="grand">Vleugel</option>
-                                <option value="digital">Digitale piano</option>
+                                <option value="upright">Upright piano</option>
+                                <option value="grand">Grand piano</option>
+                                <option value="digital">Digital piano</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="piano-year">Bouwjaar</label>
-                            <input type="number" id="piano-year" placeholder="bijv. 1985">
+                            <label for="piano-year">Year built</label>
+                            <input type="number" id="piano-year" placeholder="e.g. 1985">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="piano-serial">Serienummer</label>
-                            <input type="text" id="piano-serial" placeholder="bijv. 123456">
+                            <label for="piano-serial">Serial number</label>
+                            <input type="text" id="piano-serial" placeholder="e.g. 123456">
                         </div>
                         <div class="form-group">
-                            <label for="piano-finish">Afwerking</label>
-                            <input type="text" id="piano-finish" placeholder="bijv. Zwart hoogglans">
+                            <label for="piano-finish">Finish</label>
+                            <input type="text" id="piano-finish" placeholder="e.g. Black gloss">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="piano-location">Locatie in huis</label>
-                            <input type="text" id="piano-location" placeholder="bijv. Woonkamer">
+                            <label for="piano-location">Location in house</label>
+                            <input type="text" id="piano-location" placeholder="e.g. Living room">
                         </div>
                         <div class="form-group">
-                            <label for="piano-condition">Conditie</label>
+                            <label for="piano-condition">Condition</label>
                             <select id="piano-condition">
-                                <option value="excellent">Uitstekend</option>
-                                <option value="good" selected>Goed</option>
-                                <option value="fair">Redelijk</option>
-                                <option value="poor">Matig</option>
+                                <option value="excellent">Excellent</option>
+                                <option value="good" selected>Good</option>
+                                <option value="fair">Fair</option>
+                                <option value="poor">Poor</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="piano-last-tuning">Laatste stembeurt</label>
+                            <label for="piano-last-tuning">Last tuning</label>
                             <input type="date" id="piano-last-tuning">
                         </div>
                         <div class="form-group">
                             <label for="piano-interval">Service interval</label>
                             <select id="piano-interval">
-                                <option value="3">Elke 3 maanden</option>
-                                <option value="6" selected>Elke 6 maanden</option>
-                                <option value="12">Elk jaar</option>
+                                <option value="3">Every 3 months</option>
+                                <option value="6" selected>Every 6 months</option>
+                                <option value="12">Every year</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="piano-notes">Notities</label>
-                        <textarea id="piano-notes" rows="3" placeholder="Bijzonderheden over de piano..."></textarea>
+                        <label for="piano-notes">Notes</label>
+                        <textarea id="piano-notes" rows="3" placeholder="Special notes about the piano..."></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closePianoModal()">Annuleren</button>
-                <button class="btn btn-primary" onclick="savePiano()">Opslaan</button>
+                <button class="btn btn-secondary" onclick="closePianoModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="savePiano()">Save</button>
             </div>
         </div>
     </div>
@@ -616,7 +616,7 @@
     <div id="service-modal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h2>Service toevoegen</h2>
+                <h2>Add service</h2>
                 <button class="modal-close" onclick="closeServiceModal()">&times;</button>
             </div>
             <div class="modal-body">
@@ -624,37 +624,37 @@
                     <input type="hidden" id="service-piano-id">
                     
                     <div class="form-group">
-                        <label for="service-type">Type service</label>
+                        <label for="service-type">Service type</label>
                         <select id="service-type">
-                            <option value="tuning">Stemmen</option>
-                            <option value="regulation">Regulatie</option>
-                            <option value="voicing">Intonatie</option>
-                            <option value="repair">Reparatie</option>
-                            <option value="inspection">Inspectie</option>
-                            <option value="other">Anders</option>
+                            <option value="tuning">Tuning</option>
+                            <option value="regulation">Regulation</option>
+                            <option value="voicing">Voicing</option>
+                            <option value="repair">Repair</option>
+                            <option value="inspection">Inspection</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="service-date">Datum</label>
+                            <label for="service-date">Date</label>
                             <input type="date" id="service-date" required>
                         </div>
                         <div class="form-group">
-                            <label for="service-pitch">Stemhoogte (Hz)</label>
-                            <input type="text" id="service-pitch" placeholder="bijv. 440">
+                            <label for="service-pitch">Pitch (Hz)</label>
+                            <input type="text" id="service-pitch" placeholder="e.g. 440">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="service-notes">Notities</label>
-                        <textarea id="service-notes" rows="4" placeholder="Wat is er gedaan, observaties, aanbevelingen..."></textarea>
+                        <label for="service-notes">Notes</label>
+                        <textarea id="service-notes" rows="4" placeholder="What was done, observations, recommendations..."></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closeServiceModal()">Annuleren</button>
-                <button class="btn btn-primary" onclick="saveService()">Opslaan</button>
+                <button class="btn btn-secondary" onclick="closeServiceModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveService()">Save</button>
             </div>
         </div>
     </div>
@@ -688,7 +688,7 @@
             try {
                 const response = await fetch(`/api/customers/${customerId}`);
                 if (!response.ok) {
-                    throw new Error('Klant niet gevonden');
+                    throw new Error('Customer not found');
                 }
                 customerData = await response.json();
                 displayCustomer();
@@ -698,7 +698,7 @@
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('customer-content').style.display = 'block';
             } catch (error) {
-                alert('Klant niet gevonden');
+                alert('Customer not found');
                 window.location.href = '/customers.html';
             }
         }
@@ -720,7 +720,7 @@
             if (customerData.createdAt) {
                 const date = new Date(customerData.createdAt);
                 document.getElementById('customer-since').textContent = 
-                    `Klant sinds ${date.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' })}`;
+                    `Customer since ${date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
             }
             
             document.title = `${customerData.name} - PianoPlanner`;
@@ -745,8 +745,8 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">🎹</div>
-                        <p>Nog geen piano's gekoppeld aan deze klant</p>
-                        <button class="btn btn-primary" onclick="openAddPianoModal()">Eerste piano toevoegen</button>
+                        <p>No pianos linked to this customer yet</p>
+                        <button class="btn btn-primary" onclick="openAddPianoModal()">Add first piano</button>
                     </div>
                 `;
                 return;
@@ -754,9 +754,9 @@
 
             container.innerHTML = pianosData.map(piano => {
                 const typeLabel = {
-                    'upright': 'Staand',
-                    'grand': 'Vleugel',
-                    'digital': 'Digitaal'
+                    'upright': 'Upright',
+                    'grand': 'Grand',
+                    'digital': 'Digital'
                 }[piano.type] || piano.type;
 
                 const serviceStatus = getServiceStatus(piano);
@@ -766,12 +766,12 @@
                         <div class="piano-card-header">
                             <div>
                                 <div class="piano-brand-model">${piano.brand} ${piano.model || ''}</div>
-                                ${piano.year ? `<div style="font-size: 0.85rem; color: var(--text-secondary);">Bouwjaar ${piano.year}</div>` : ''}
+                                ${piano.year ? `<div style="font-size: 0.85rem; color: var(--text-secondary);">Built ${piano.year}</div>` : ''}
                             </div>
                             <span class="piano-type-badge ${piano.type}">${typeLabel}</span>
                         </div>
                         <div class="piano-info">
-                            ${piano.serialNumber ? `Serienr: ${piano.serialNumber}` : ''}
+                            ${piano.serialNumber ? `Serial: ${piano.serialNumber}` : ''}
                             ${piano.location ? `• ${piano.location}` : ''}
                         </div>
                         <div class="piano-service-status">
@@ -785,7 +785,7 @@
 
         function getServiceStatus(piano) {
             if (!piano.lastTuningDate) {
-                return { class: 'service-due', text: '⚠️ Nog niet gestemd' };
+                return { class: 'service-due', text: '⚠️ Not yet tuned' };
             }
 
             const lastService = new Date(piano.lastTuningDate);
@@ -796,11 +796,11 @@
             const daysUntil = Math.ceil((nextService - now) / (1000 * 60 * 60 * 24));
 
             if (daysUntil < 0) {
-                return { class: 'service-due', text: `⚠️ ${Math.abs(daysUntil)} dagen over service datum` };
+                return { class: 'service-due', text: `⚠️ ${Math.abs(daysUntil)} days past service date` };
             } else if (daysUntil < 30) {
-                return { class: 'service-soon', text: `⏰ Over ${daysUntil} dagen service nodig` };
+                return { class: 'service-soon', text: `⏰ Service needed in ${daysUntil} days` };
             } else {
-                return { class: 'service-ok', text: `✅ Laatste: ${lastService.toLocaleDateString('nl-NL')}` };
+                return { class: 'service-ok', text: `✅ Last: ${lastService.toLocaleDateString('en-US')}` };
             }
         }
 
@@ -824,7 +824,7 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">📋</div>
-                        <p>Nog geen service historie</p>
+                        <p>No service history yet</p>
                     </div>
                 `;
                 return;
@@ -834,12 +834,12 @@
             services.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             const typeLabels = {
-                'tuning': 'Stemmen',
-                'regulation': 'Regulatie',
-                'voicing': 'Intonatie',
-                'repair': 'Reparatie',
-                'inspection': 'Inspectie',
-                'other': 'Anders'
+                'tuning': 'Tuning',
+                'regulation': 'Regulation',
+                'voicing': 'Voicing',
+                'repair': 'Repair',
+                'inspection': 'Inspection',
+                'other': 'Other'
             };
 
             container.innerHTML = services.map(service => {
@@ -848,7 +848,7 @@
                     <div class="service-item">
                         <div class="service-date">
                             <div class="service-date-day">${date.getDate()}</div>
-                            <div class="service-date-month">${date.toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' })}</div>
+                            <div class="service-date-month">${date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</div>
                         </div>
                         <div class="service-details">
                             <div class="service-type">${typeLabels[service.type] || service.type}</div>
@@ -865,7 +865,7 @@
 
         // Piano Modal
         function openAddPianoModal() {
-            document.getElementById('piano-modal-title').textContent = 'Piano toevoegen';
+            document.getElementById('piano-modal-title').textContent = 'Add piano';
             document.getElementById('piano-form').reset();
             document.getElementById('piano-id').value = '';
             document.getElementById('piano-modal').classList.add('active');
@@ -875,7 +875,7 @@
             const piano = pianosData.find(p => p.id === pianoId);
             if (!piano) return;
 
-            document.getElementById('piano-modal-title').textContent = 'Piano bewerken';
+            document.getElementById('piano-modal-title').textContent = 'Edit piano';
             document.getElementById('piano-id').value = piano.id;
             document.getElementById('piano-brand').value = piano.brand || '';
             document.getElementById('piano-model').value = piano.model || '';
@@ -928,10 +928,10 @@
                     loadPianos();
                 } else {
                     const data = await response.json();
-                    alert(data.error || 'Fout bij opslaan');
+                    alert(data.error || 'Error saving');
                 }
             } catch (error) {
-                alert('Fout bij opslaan');
+                alert('Error saving');
             }
         }
 
@@ -970,10 +970,10 @@
                     loadServiceHistory();
                 } else {
                     const data = await response.json();
-                    alert(data.error || 'Fout bij opslaan');
+                    alert(data.error || 'Error saving');
                 }
             } catch (error) {
-                alert('Fout bij opslaan');
+                alert('Error saving');
             }
         }
 

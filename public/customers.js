@@ -31,7 +31,7 @@ async function loadCustomers() {
         
     } catch (err) {
         console.error('Error loading customers:', err);
-        container.innerHTML = '<div class="error-message">Kon klanten niet laden</div>';
+        container.innerHTML = '<div class="error-message">Could not load customers</div>';
     }
 }
 
@@ -42,7 +42,7 @@ function renderCustomers(customers) {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">👥</div>
-                <p>Nog geen klanten</p>
+                <p>No customers yet</p>
             </div>
         `;
         return;
@@ -56,7 +56,7 @@ function renderCustomers(customers) {
                 </div>
                 <div class="user-info-main">
                     <h3>${escapeHtml(customer.name)}</h3>
-                    <span class="user-email">${escapeHtml(customer.address.city || 'Geen stad')}</span>
+                    <span class="user-email">${escapeHtml(customer.address.city || 'No city')}</span>
                 </div>
             </div>
             <div class="user-card-details">
@@ -65,15 +65,15 @@ function renderCustomers(customers) {
                     <span>${customer.email || '-'}</span>
                 </div>
                 <div class="user-detail">
-                    <span class="detail-label">📞 Telefoon:</span>
+                    <span class="detail-label">📞 Phone:</span>
                     <span>${customer.phone || '-'}</span>
                 </div>
                 <div class="user-detail">
-                    <span class="detail-label">📍 Adres:</span>
+                    <span class="detail-label">📍 Address:</span>
                     <span>${customer.address.street || '-'} ${customer.address.postalCode || ''}</span>
                 </div>
                 <div class="user-detail">
-                    <span class="detail-label">🎹 Piano's:</span>
+                    <span class="detail-label">🎹 Pianos:</span>
                     <span>${customer.pianos?.length || 0}</span>
                 </div>
             </div>
@@ -82,10 +82,10 @@ function renderCustomers(customers) {
                     👁️ Details
                 </a>
                 <button class="btn btn-small btn-secondary" onclick="openModal('${customer.id}')">
-                    ✏️ Bewerken
+                    ✏️ Edit
                 </button>
                 <a href="/booking.html?customer=${customer.id}" class="btn btn-small btn-primary">
-                    📅 Afspraak
+                    📅 Appointment
                 </a>
                 <button class="btn btn-small btn-danger" onclick="deleteCustomer('${customer.id}', '${escapeHtml(customer.name)}')">
                     🗑️
@@ -123,7 +123,7 @@ function openModal(customerId = null) {
     if (customerId) {
         const customer = allCustomers.find(c => c.id === customerId);
         if (customer) {
-            document.getElementById('modal-title').textContent = 'Klant Bewerken';
+            document.getElementById('modal-title').textContent = 'Edit Customer';
             document.getElementById('customer-id').value = customer.id;
             document.getElementById('customer-name').value = customer.name;
             document.getElementById('customer-email').value = customer.email || '';
@@ -134,7 +134,7 @@ function openModal(customerId = null) {
             document.getElementById('customer-notes').value = customer.notes || '';
         }
     } else {
-        document.getElementById('modal-title').textContent = 'Nieuwe Klant';
+        document.getElementById('modal-title').textContent = 'New Customer';
     }
     
     modal.style.display = 'flex';
@@ -175,7 +175,7 @@ async function handleSubmit(e) {
         
     } catch (err) {
         console.error('Error saving customer:', err);
-        alert('Kon klant niet opslaan. Probeer het opnieuw.');
+        alert('Could not save customer. Please try again.');
     }
 }
 
@@ -184,7 +184,7 @@ function viewCustomer(customerId) {
 }
 
 async function deleteCustomer(id, name) {
-    if (!confirm(`Weet je zeker dat je "${name}" wilt verwijderen?`)) {
+    if (!confirm(`Are you sure you want to delete "${name}"?`)) {
         return;
     }
     
@@ -199,7 +199,7 @@ async function deleteCustomer(id, name) {
         
     } catch (err) {
         console.error('Error deleting customer:', err);
-        alert('Kon klant niet verwijderen.');
+        alert('Could not delete customer.');
     }
 }
 
@@ -210,7 +210,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Modal sluiten bij klikken buiten modal
+// Close modal when clicking outside
 document.getElementById('customer-modal').addEventListener('click', (e) => {
     if (e.target.id === 'customer-modal') closeModal();
 });

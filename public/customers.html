@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Klanten - PianoPlanner</title>
+    <title>Customers - PianoPlanner</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,45 +14,45 @@
         </div>
         <div class="nav-links">
             <a href="/dashboard.html">📅 Dashboard</a>
-            <a href="/customers.html" class="active">👥 Klanten</a>
-            <a href="/pianos.html">🎹 Piano's</a>
-            <a href="/settings.html">⚙️ Instellingen</a>
+            <a href="/customers.html" class="active">👥 Customers</a>
+            <a href="/pianos.html">🎹 Pianos</a>
+            <a href="/settings.html">⚙️ Settings</a>
         </div>
         <div class="nav-user">
-            <a href="/booking.html" class="btn btn-small btn-primary">+ Afspraak</a>
-            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+            <a href="/booking.html" class="btn btn-small btn-primary">+ Appointment</a>
+            <a href="/auth/logout" class="btn btn-small">Log out</a>
         </div>
     </nav>
 
     <main class="dashboard">
         <div class="dashboard-header">
-            <h1>👥 Klantenbeheer</h1>
-            <button id="add-customer-btn" class="btn btn-primary">+ Nieuwe Klant</button>
+            <h1>👥 Customer Management</h1>
+            <button id="add-customer-btn" class="btn btn-primary">+ New Customer</button>
         </div>
 
         <div class="search-bar">
-            <input type="text" id="search-input" placeholder="🔍 Zoek op naam, email, stad of telefoon...">
+            <input type="text" id="search-input" placeholder="🔍 Search by name, email, city or phone...">
         </div>
 
         <section class="events-section">
             <div id="customers-list" class="users-list">
-                <div class="loading">Klanten laden...</div>
+                <div class="loading">Loading customers...</div>
             </div>
         </section>
     </main>
 
-    <!-- Modal voor klant toevoegen/bewerken -->
+    <!-- Modal for adding/editing customer -->
     <div id="customer-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modal-title">Nieuwe Klant</h2>
+                <h2 id="modal-title">New Customer</h2>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <form id="customer-form">
                 <input type="hidden" id="customer-id">
                 
                 <div class="form-group">
-                    <label for="customer-name">Naam *</label>
+                    <label for="customer-name">Name *</label>
                     <input type="text" id="customer-name" required>
                 </div>
                 
@@ -62,36 +62,36 @@
                         <input type="email" id="customer-email">
                     </div>
                     <div class="form-group">
-                        <label for="customer-phone">Telefoon</label>
+                        <label for="customer-phone">Phone</label>
                         <input type="tel" id="customer-phone">
                     </div>
                 </div>
                 
                 <div class="form-group" style="position: relative;">
-                    <label for="customer-street">Straat + huisnummer</label>
+                    <label for="customer-street">Street + house number</label>
                     <input type="text" id="customer-street" autocomplete="off">
                     <div id="address-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="customer-postalcode">Postcode</label>
+                        <label for="customer-postalcode">Postal code</label>
                         <input type="text" id="customer-postalcode">
                     </div>
                     <div class="form-group">
-                        <label for="customer-city">Stad</label>
+                        <label for="customer-city">City</label>
                         <input type="text" id="customer-city">
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="customer-notes">Notities</label>
+                    <label for="customer-notes">Notes</label>
                     <textarea id="customer-notes" rows="3"></textarea>
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-                    <button type="submit" class="btn btn-primary">Opslaan</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -99,7 +99,7 @@
 
     <script src="customers.js"></script>
     <script>
-        // Adres autocomplete
+        // Address autocomplete
         const streetInput = document.getElementById('customer-street');
         const suggestions = document.getElementById('address-suggestions');
         let debounceTimer;
@@ -141,7 +141,7 @@
                 streetInput.value = description.split(',')[0];
                 suggestions.style.display = 'none';
                 
-                // Haal details op voor postcode en stad
+                // Get details for postal code and city
                 try {
                     const res = await fetch(`/api/booking/place-details/${placeId}`);
                     const data = await res.json();
@@ -154,17 +154,17 @@
                             streetInput.value = data.address.street;
                         }
                     } else if (data.components) {
-                        // Fallback naar components
+                        // Fallback to components
                         document.getElementById('customer-postalcode').value = data.components.postalCode || '';
                         document.getElementById('customer-city').value = data.components.city || '';
                     }
                 } catch (err) {
-                    console.log('Kon adresdetails niet ophalen');
+                    console.log('Could not fetch address details');
                 }
             }
         });
         
-        // Verberg suggesties bij klikken buiten
+        // Hide suggestions when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('#customer-street') && !e.target.closest('#address-suggestions')) {
                 suggestions.style.display = 'none';

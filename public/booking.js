@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // Laad diensten
+    // Load services
     await loadServices();
     
     // Event listeners
@@ -89,7 +89,7 @@ async function handleCustomerSearch(e) {
             const data = await response.json();
             
             if (data.customers.length === 0) {
-                resultsDiv.innerHTML = '<div class="search-result-item">Geen klanten gevonden</div>';
+                resultsDiv.innerHTML = '<div class="search-result-item">No customers found</div>';
             } else {
                 resultsDiv.innerHTML = data.customers.map(customer => `
                     <div class="search-result-item" onclick="selectExistingCustomer('${customer.id}')">
@@ -157,7 +157,7 @@ async function handleCustomerSubmit(e) {
         
     } catch (err) {
         console.error('Error saving customer:', err);
-        alert('Kon klant niet opslaan. Probeer het opnieuw.');
+        alert('Could not save customer. Please try again.');
     }
 }
 
@@ -173,11 +173,11 @@ async function findAvailableSlot() {
     const resultDiv = document.getElementById('slot-result');
     
     if (!date) {
-        alert('Kies eerst een datum');
+        alert('Please select a date first');
         return;
     }
     
-    resultDiv.innerHTML = '<div class="loading">Beschikbaarheid controleren...</div>';
+    resultDiv.innerHTML = '<div class="loading">Checking availability...</div>';
     resultDiv.style.display = 'block';
     
     try {
@@ -203,23 +203,23 @@ async function findAvailableSlot() {
                 <div class="slot-time">
                     ${formatTime(startTime)} - ${formatTime(endTime)}
                 </div>
-                <div>Eerste beschikbare tijd op ${formatDate(startTime)}</div>
+                <div>First available time on ${formatDate(startTime)}</div>
                 <div class="slot-details">
                     <div class="slot-detail">
                         <span>🚗</span>
-                        <span>Reistijd: ${data.travelInfo.durationText} (${data.travelInfo.distanceText})</span>
+                        <span>Travel time: ${data.travelInfo.durationText} (${data.travelInfo.distanceText})</span>
                     </div>
                     <div class="slot-detail">
                         <span>⏱️</span>
-                        <span>Dienst: ${data.service.duration} min</span>
+                        <span>Service: ${data.service.duration} min</span>
                     </div>
                     <div class="slot-detail">
                         <span>📊</span>
-                        <span>Totaal: ${data.totalDuration} min</span>
+                        <span>Total: ${data.totalDuration} min</span>
                     </div>
                 </div>
                 <button class="btn btn-primary" style="margin-top: 1rem;" onclick="proceedToConfirm()">
-                    Doorgaan met deze tijd →
+                    Continue with this time →
                 </button>
             `;
         } else {
@@ -227,7 +227,7 @@ async function findAvailableSlot() {
             resultDiv.innerHTML = `
                 <div>❌ ${data.message}</div>
                 <p style="margin-top: 0.5rem; color: rgba(255,255,255,0.6);">
-                    Probeer een andere datum.
+                    Try a different date.
                 </p>
             `;
         }
@@ -235,7 +235,7 @@ async function findAvailableSlot() {
     } catch (err) {
         console.error('Error finding slot:', err);
         resultDiv.className = 'slot-result slot-not-found';
-        resultDiv.innerHTML = '<div>Er ging iets mis. Probeer het opnieuw.</div>';
+        resultDiv.innerHTML = '<div>Something went wrong. Please try again.</div>';
     }
 }
 
@@ -246,14 +246,14 @@ function proceedToConfirm() {
     document.getElementById('confirm-customer').textContent = 
         `${selectedCustomer.name}`;
     document.getElementById('confirm-location').textContent = 
-        `${selectedCustomer.address.street || ''} ${selectedCustomer.address.postalCode || ''} ${selectedCustomer.address.city || ''}`.trim() || 'Geen adres';
+        `${selectedCustomer.address.street || ''} ${selectedCustomer.address.postalCode || ''} ${selectedCustomer.address.city || ''}`.trim() || 'No address';
     document.getElementById('confirm-travel').textContent = 
         `${foundSlot.travelInfo.durationText} (${foundSlot.travelInfo.distanceText})`;
     
     const startTime = new Date(foundSlot.slot.appointmentStart);
     const endTime = new Date(foundSlot.slot.appointmentEnd);
     document.getElementById('confirm-datetime').textContent = 
-        `${formatDate(startTime)} van ${formatTime(startTime)} tot ${formatTime(endTime)}`;
+        `${formatDate(startTime)} from ${formatTime(startTime)} to ${formatTime(endTime)}`;
     
     showStep('step-confirm');
 }
@@ -261,7 +261,7 @@ function proceedToConfirm() {
 async function confirmBooking() {
     const btn = document.getElementById('confirm-booking-btn');
     btn.disabled = true;
-    btn.textContent = 'Bezig met boeken...';
+    btn.textContent = 'Booking...';
     
     try {
         const response = await fetch('/api/booking/create', {
@@ -281,9 +281,9 @@ async function confirmBooking() {
         
     } catch (err) {
         console.error('Error creating booking:', err);
-        alert('Kon afspraak niet boeken. Probeer het opnieuw.');
+        alert('Could not book appointment. Please try again.');
         btn.disabled = false;
-        btn.textContent = '✅ Afspraak Bevestigen';
+        btn.textContent = '✅ Confirm Appointment';
     }
 }
 
@@ -295,11 +295,11 @@ function showStep(stepId) {
 }
 
 function formatTime(date) {
-    return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
 function formatDate(date) {
-    return date.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+    return date.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 function escapeHtml(text) {

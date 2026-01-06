@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inloggen - PianoPlanner</title>
+    <title>Login - PianoPlanner</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         .login-container {
@@ -190,12 +190,12 @@
     <div class="login-container">
         <div class="login-header">
             <h1>🎹 PianoPlanner</h1>
-            <p>Beheer je stemafspraken professioneel</p>
+            <p>Manage your tuning appointments professionally</p>
         </div>
         
         <div class="tab-buttons">
-            <button class="tab-btn active" onclick="showTab('login')">Inloggen</button>
-            <button class="tab-btn" onclick="showTab('register')">Registreren</button>
+            <button class="tab-btn active" onclick="showTab('login')">Log in</button>
+            <button class="tab-btn" onclick="showTab('register')">Sign up</button>
         </div>
         
         <div id="error-message" class="error-message"></div>
@@ -206,21 +206,21 @@
         <div id="login-tab" class="tab-content active">
             <form id="login-form">
                 <div class="form-group">
-                    <label for="login-email">E-mailadres</label>
-                    <input type="email" id="login-email" name="email" required placeholder="jouw@email.nl">
+                    <label for="login-email">Email address</label>
+                    <input type="email" id="login-email" name="email" required placeholder="your@email.com">
                 </div>
                 
                 <div class="form-group">
-                    <label for="login-password">Wachtwoord</label>
+                    <label for="login-password">Password</label>
                     <input type="password" id="login-password" name="password" required placeholder="••••••••">
                 </div>
                 
                 <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
                     <input type="checkbox" id="login-remember" name="remember" style="width: auto; margin: 0;">
-                    <label for="login-remember" style="margin: 0; font-weight: normal; cursor: pointer;">Ingelogd blijven</label>
+                    <label for="login-remember" style="margin: 0; font-weight: normal; cursor: pointer;">Remember me</label>
                 </div>
                 
-                <button type="submit" class="btn-login">Inloggen</button>
+                <button type="submit" class="btn-login">Log in</button>
             </form>
         </div>
         
@@ -228,21 +228,21 @@
         <div id="register-tab" class="tab-content">
             <form id="register-form">
                 <div class="form-group">
-                    <label for="register-name">Naam</label>
-                    <input type="text" id="register-name" name="name" required placeholder="Je volledige naam">
+                    <label for="register-name">Name</label>
+                    <input type="text" id="register-name" name="name" required placeholder="Your full name">
                 </div>
                 
                 <div class="form-group">
-                    <label for="register-email">E-mailadres</label>
-                    <input type="email" id="register-email" name="email" required placeholder="jouw@email.nl">
+                    <label for="register-email">Email address</label>
+                    <input type="email" id="register-email" name="email" required placeholder="your@email.com">
                 </div>
                 
                 <div class="form-group">
-                    <label for="register-password">Wachtwoord</label>
-                    <input type="password" id="register-password" name="password" required placeholder="Minimaal 6 tekens" minlength="6">
+                    <label for="register-password">Password</label>
+                    <input type="password" id="register-password" name="password" required placeholder="Minimum 6 characters" minlength="6">
                 </div>
                 
-                <button type="submit" class="btn-login">Account Aanvragen</button>
+                <button type="submit" class="btn-login">Request Account</button>
             </form>
         </div>
     </div>
@@ -287,17 +287,17 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    successEl.textContent = 'Inloggen gelukt! Je wordt doorgestuurd...';
+                    successEl.textContent = 'Login successful! Redirecting...';
                     successEl.style.display = 'block';
                     setTimeout(() => {
                         window.location.href = '/dashboard.html';
                     }, 500);
                 } else {
-                    errorEl.textContent = data.error || 'Inloggen mislukt';
+                    errorEl.textContent = data.error || 'Login failed';
                     errorEl.style.display = 'block';
                 }
             } catch (error) {
-                errorEl.textContent = 'Er ging iets mis. Probeer het opnieuw.';
+                errorEl.textContent = 'Something went wrong. Please try again.';
                 errorEl.style.display = 'block';
             }
         });
@@ -328,19 +328,19 @@
                 
                 if (response.ok) {
                     if (data.needsApproval) {
-                        infoEl.innerHTML = '✅ <strong>Account aangevraagd!</strong><br>Je aanvraag wordt zo snel mogelijk door een beheerder beoordeeld. Je ontvangt bericht zodra je account is goedgekeurd.';
+                        infoEl.innerHTML = '✅ <strong>Account requested!</strong><br>Your request will be reviewed by an administrator as soon as possible. You will be notified once your account has been approved.';
                         infoEl.style.display = 'block';
                         document.getElementById('register-form').reset();
                     } else {
-                        successEl.textContent = data.message || 'Account aangemaakt!';
+                        successEl.textContent = data.message || 'Account created!';
                         successEl.style.display = 'block';
                     }
                 } else {
-                    errorEl.textContent = data.error || 'Registratie mislukt';
+                    errorEl.textContent = data.error || 'Registration failed';
                     errorEl.style.display = 'block';
                 }
             } catch (error) {
-                errorEl.textContent = 'Er ging iets mis. Probeer het opnieuw.';
+                errorEl.textContent = 'Something went wrong. Please try again.';
                 errorEl.style.display = 'block';
             }
         });

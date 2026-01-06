@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Dashboard - PianoPlanner</title>
-    <!-- VERSIE: 2026-01-04 v4 - Compacte Cockpit Layout -->
+    <!-- VERSION: 2026-01-04 v4 - Compact Cockpit Layout -->
     <link rel="stylesheet" href="styles.css?v=2026010404">
     <style>
         /* Cockpit Layout - Alles op 1 scherm */
@@ -593,116 +593,116 @@
             <span>PianoPlanner</span>
         </div>
         <div class="nav-links">
-            <a href="/dashboard.html" class="active">📅 Agenda</a>
-            <a href="/customers.html">👥 Klanten</a>
-            <a href="/pianos.html">🎹 Piano's</a>
+            <a href="/dashboard.html" class="active">📅 Calendar</a>
+            <a href="/customers.html">👥 Customers</a>
+            <a href="/pianos.html">🎹 Pianos</a>
             <a href="/settings.html">⚙️</a>
         </div>
         <div class="nav-user">
             <a href="/admin-dashboard.html" id="admin-link" class="btn btn-small btn-secondary" style="display: none;">Admin</a>
             <img id="nav-user-picture" src="" alt="" class="nav-user-picture">
             <span id="nav-user-name"></span>
-            <a href="/auth/logout" class="btn btn-small">Uit</a>
+            <a href="/auth/logout" class="btn btn-small">Out</a>
         </div>
     </nav>
 
     <main class="dashboard">
         <div class="dashboard-header">
-            <h1>📅 Agenda</h1>
+            <h1>📅 Calendar</h1>
             <div class="header-actions">
-                <button id="add-event-btn" class="btn btn-primary">+ Afspraak</button>
+                <button id="add-event-btn" class="btn btn-primary">+ Appointment</button>
             </div>
         </div>
 
         <div class="cockpit-grid">
-            <!-- Links: Stats & Quick Actions -->
+            <!-- Left: Stats & Quick Actions -->
             <div class="left-panel">
                 <div class="stat-card">
-                    <h3>Vandaag</h3>
+                    <h3>Today</h3>
                     <div class="value" id="stat-today">0</div>
-                    <div class="label">afspraken</div>
+                    <div class="label">appointments</div>
                 </div>
                 
                 <div class="stat-card">
-                    <h3>Deze Week</h3>
+                    <h3>This Week</h3>
                     <div class="value" id="stat-week">0</div>
-                    <div class="label">afspraken</div>
+                    <div class="label">appointments</div>
                 </div>
                 
                 <div class="stat-card">
-                    <h3>Piano's</h3>
+                    <h3>Pianos</h3>
                     <div class="value" id="stat-pianos">-</div>
-                    <div class="label">in beheer</div>
+                    <div class="label">in management</div>
                 </div>
                 
                 <div class="quick-actions">
-                    <h3>Snelkoppelingen</h3>
-                    <a href="/customers.html" class="quick-btn">👥 Klanten</a>
-                    <a href="/pianos.html" class="quick-btn">🎹 Piano's</a>
-                    <a href="/billing.html" class="quick-btn">💳 Abonnement</a>
-                    <button onclick="openRouteOptimizer()" class="quick-btn" style="border: none; background: none; width: 100%; cursor: pointer;">🗺️ Route optimaliseren</button>
+                    <h3>Quick Links</h3>
+                    <a href="/customers.html" class="quick-btn">👥 Customers</a>
+                    <a href="/pianos.html" class="quick-btn">🎹 Pianos</a>
+                    <a href="/billing.html" class="quick-btn">💳 Subscription</a>
+                    <button onclick="openRouteOptimizer()" class="quick-btn" style="border: none; background: none; width: 100%; cursor: pointer;">🗺️ Optimize route</button>
                 </div>
             </div>
 
-            <!-- Midden: Kalender -->
+            <!-- Middle: Calendar -->
             <div class="calendar-container">
                 <div class="calendar-toolbar">
                     <div class="calendar-nav">
                         <button onclick="navigateCalendar(-1)">◀</button>
-                        <button onclick="goToToday()">Vandaag</button>
+                        <button onclick="goToToday()">Today</button>
                         <button onclick="navigateCalendar(1)">▶</button>
                     </div>
                     
-                    <div class="calendar-title" id="calendarTitle">Januari 2026</div>
+                    <div class="calendar-title" id="calendarTitle">January 2026</div>
                     
                     <div class="view-selector">
                         <select id="viewSelect" onchange="changeView(this.value)">
-                            <option value="day">Dag</option>
+                            <option value="day">Day</option>
                             <option value="week" selected>Week</option>
-                            <option value="month">Maand</option>
+                            <option value="month">Month</option>
                         </select>
                     </div>
                 </div>
                 
                 <div id="calendarContent">
-                    <div class="calendar-loading">Laden...</div>
+                    <div class="calendar-loading">Loading...</div>
                 </div>
             </div>
 
-            <!-- Rechts: Vandaag & Upcoming -->
+            <!-- Right: Today & Upcoming -->
             <div class="right-panel">
                 <div class="today-card">
-                    <div class="panel-header">📍 Vandaag</div>
+                    <div class="panel-header">📍 Today</div>
                     <div class="panel-content" id="today-events">
-                        <div class="no-events-small">Geen afspraken</div>
+                        <div class="no-events-small">No appointments</div>
                     </div>
                 </div>
                 
                 <div class="upcoming-card">
-                    <div class="panel-header">📆 Binnenkort</div>
+                    <div class="panel-header">📆 Upcoming</div>
                     <div class="panel-content" id="upcoming-events">
-                        <div class="no-events-small">Geen komende afspraken</div>
+                        <div class="no-events-small">No upcoming appointments</div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Modal voor nieuw event -->
+    <!-- Modal for new event -->
     <div id="event-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Nieuwe Afspraak</h2>
+                <h2>New Appointment</h2>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <form id="event-form">
                 <div class="form-group">
-                    <label for="event-title">Titel *</label>
-                    <input type="text" id="event-title" required placeholder="bijv. Stemmen Steinway">
+                    <label for="event-title">Title *</label>
+                    <input type="text" id="event-title" required placeholder="e.g. Tune Steinway">
                 </div>
                 <div class="form-group" style="position: relative;">
-                    <label for="event-location">Locatie</label>
-                    <input type="text" id="event-location" placeholder="Adres" autocomplete="off">
+                    <label for="event-location">Location</label>
+                    <input type="text" id="event-location" placeholder="Address" autocomplete="off">
                     <div id="location-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
                 </div>
                 <div class="form-row">
@@ -711,17 +711,17 @@
                         <input type="datetime-local" id="event-start" required>
                     </div>
                     <div class="form-group">
-                        <label for="event-end">Eind *</label>
+                        <label for="event-end">End *</label>
                         <input type="datetime-local" id="event-end" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="event-description">Notities</label>
-                    <textarea id="event-description" rows="2" placeholder="Extra info..."></textarea>
+                    <label for="event-description">Notes</label>
+                    <textarea id="event-description" rows="2" placeholder="Additional info..."></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-                    <button type="submit" class="btn btn-primary">Opslaan</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -747,7 +747,7 @@
             }).length;
             document.getElementById('stat-today').textContent = todayCount;
             
-            // Tel afspraken deze week
+            // Count appointments this week
             const weekCount = allEvents.filter(e => {
                 const start = new Date(e.start?.dateTime || e.start?.date);
                 return start >= weekStart && start < weekEnd;
@@ -771,17 +771,17 @@
             
             const container = document.getElementById('today-events');
             if (todayEvents.length === 0) {
-                container.innerHTML = '<div class="no-events-small">Geen afspraken</div>';
+                container.innerHTML = '<div class="no-events-small">No appointments</div>';
                 return;
             }
             
             container.innerHTML = todayEvents.map(e => {
                 const start = new Date(e.start?.dateTime);
-                const time = start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                const time = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                 return `
                     <div class="event-item">
                         <div class="event-item-time">${time}</div>
-                        <div class="event-item-title">${escapeHtml(e.summary || 'Geen titel')}</div>
+                        <div class="event-item-title">${escapeHtml(e.summary || 'No title')}</div>
                         ${e.location ? `<div class="event-item-location">📍 ${escapeHtml(e.location)}</div>` : ''}
                     </div>
                 `;
@@ -805,18 +805,18 @@
             
             const container = document.getElementById('upcoming-events');
             if (upcomingEvents.length === 0) {
-                container.innerHTML = '<div class="no-events-small">Geen komende afspraken</div>';
+                container.innerHTML = '<div class="no-events-small">No upcoming appointments</div>';
                 return;
             }
             
             container.innerHTML = upcomingEvents.map(e => {
                 const start = new Date(e.start?.dateTime);
-                const dateStr = start.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric' });
-                const time = start.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
+                const time = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                 return `
                     <div class="event-item">
                         <div class="event-item-time">${dateStr} ${time}</div>
-                        <div class="event-item-title">${escapeHtml(e.summary || 'Geen titel')}</div>
+                        <div class="event-item-title">${escapeHtml(e.summary || 'No title')}</div>
                     </div>
                 `;
             }).join('');
@@ -844,7 +844,7 @@
             initLocationAutocomplete();
         });
         
-        // Adres autocomplete voor locatie veld
+        // Address autocomplete for location field
         function initLocationAutocomplete() {
             const locationInput = document.getElementById('event-location');
             const suggestions = document.getElementById('location-suggestions');
@@ -1022,22 +1022,22 @@
     <div id="route-optimizer-modal" class="modal route-optimizer-modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>🗺️ Route Optimaliseren</h2>
+                <h2>🗺️ Optimize Route</h2>
                 <button class="modal-close" onclick="closeRouteModal()">&times;</button>
             </div>
             <div class="modal-body" id="route-modal-content">
                 <div class="form-group">
-                    <label for="route-date">Datum selecteren</label>
+                    <label for="route-date">Select date</label>
                     <input type="date" id="route-date" onchange="loadRouteOptimization()">
                 </div>
                 <div id="route-loading" style="display: none; text-align: center; padding: 2rem;">
-                    <p>Route berekenen...</p>
+                    <p>Calculating route...</p>
                 </div>
                 <div id="route-result" style="display: none;"></div>
             </div>
             <div class="modal-footer" id="route-modal-footer" style="display: none;">
-                <button class="btn btn-secondary" onclick="closeRouteModal()">Annuleren</button>
-                <button class="btn btn-primary" id="apply-route-btn" onclick="applyOptimizedRoute()">Route toepassen</button>
+                <button class="btn btn-secondary" onclick="closeRouteModal()">Cancel</button>
+                <button class="btn btn-primary" id="apply-route-btn" onclick="applyOptimizedRoute()">Apply route</button>
             </div>
         </div>
     </div>
@@ -1092,7 +1092,7 @@
                 }
                 
                 if (!data.optimized) {
-                    result.innerHTML = `<div class="alert alert-info">${data.message || 'Niet genoeg afspraken om te optimaliseren'}</div>`;
+                    result.innerHTML = `<div class="alert alert-info">${data.message || 'Not enough appointments to optimize'}</div>`;
                     result.style.display = 'block';
                     return;
                 }
@@ -1104,7 +1104,7 @@
                 
             } catch (err) {
                 loading.style.display = 'none';
-                result.innerHTML = `<div class="alert alert-error">Fout bij laden: ${err.message}</div>`;
+                result.innerHTML = `<div class="alert alert-error">Error loading: ${err.message}</div>`;
                 result.style.display = 'block';
             }
         }
@@ -1117,15 +1117,15 @@
                 <div class="route-summary">
                     <div class="route-stat">
                         <div class="value">${summary.totalAppointments}</div>
-                        <div class="label">Afspraken</div>
+                        <div class="label">Appointments</div>
                     </div>
                     <div class="route-stat">
                         <div class="value">${summary.totalTravelTime} min</div>
-                        <div class="label">Totale reistijd</div>
+                        <div class="label">Total travel time</div>
                     </div>
                     <div class="route-stat savings">
                         <div class="value">${summary.timeSavedMinutes > 0 ? '-' + summary.timeSavedMinutes : 0} min</div>
-                        <div class="label">Bespaard</div>
+                        <div class="label">Saved</div>
                     </div>
                 </div>
                 
@@ -1135,13 +1135,13 @@
             `;
             
             optimizedSchedule.forEach((item, index) => {
-                const startTime = new Date(item.scheduledStart).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-                const endTime = new Date(item.scheduledEnd).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                const startTime = new Date(item.scheduledStart).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const endTime = new Date(item.scheduledEnd).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                 
                 if (item.travelTimeFromPrevious > 0) {
                     html += `
                         <div class="route-travel-indicator">
-                            ${item.travelTimeFromPrevious} min rijden
+                            ${item.travelTimeFromPrevious} min driving
                         </div>
                     `;
                 }
@@ -1151,7 +1151,7 @@
                         <div class="route-order">${index + 1}</div>
                         <div class="route-item-content">
                             <div class="route-item-title">${item.title}</div>
-                            <div class="route-item-location">${item.location || 'Geen locatie'}</div>
+                            <div class="route-item-location">${item.location || 'No location'}</div>
                             <div class="route-item-time">${startTime} - ${endTime}</div>
                         </div>
                     </li>
@@ -1160,14 +1160,14 @@
             
             html += '</ul>';
             
-            // Vergelijking met origineel
+            // Comparison with original
             if (summary.timeSavedMinutes > 0) {
                 html += `
                     <div class="compare-section">
-                        <h4>💡 Door route optimalisatie bespaar je ${summary.timeSavedMinutes} minuten reistijd vandaag!</h4>
+                        <h4>💡 By optimizing the route you save ${summary.timeSavedMinutes} minutes travel time today!</h4>
                         <p style="font-size: 0.75rem; color: var(--text-muted);">
-                            Originele reistijd: ${summary.originalTravelTime} min → 
-                            Geoptimaliseerd: ${summary.totalTravelTime} min
+                            Original travel time: ${summary.originalTravelTime} min → 
+                            Optimized: ${summary.totalTravelTime} min
                         </p>
                     </div>
                 `;
@@ -1181,7 +1181,7 @@
             
             const btn = document.getElementById('apply-route-btn');
             btn.disabled = true;
-            btn.textContent = 'Toepassen...';
+            btn.textContent = 'Applying...';
             
             try {
                 const res = await fetch('/api/appointments/apply-optimized-route', {
@@ -1193,20 +1193,20 @@
                 const data = await res.json();
                 
                 if (data.error) {
-                    alert('Fout: ' + data.error);
+                    alert('Error: ' + data.error);
                 } else {
-                    alert(`${data.updates.length} afspraken bijgewerkt!`);
+                    alert(`${data.updates.length} appointments updated!`);
                     closeRouteModal();
-                    // Ververs de kalender
+                    // Refresh the calendar
                     if (typeof loadEvents === 'function') {
                         loadEvents();
                     }
                 }
             } catch (err) {
-                alert('Fout bij toepassen: ' + err.message);
+                alert('Error applying route: ' + err.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Route toepassen';
+                btn.textContent = 'Apply route';
             }
         }
         

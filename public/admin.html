@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -353,7 +353,7 @@
         </div>
         <div class="nav-links">
             <span id="admin-name" style="color: #666; margin-right: 12px;"></span>
-            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+            <a href="/auth/logout" class="btn btn-small">Log out</a>
         </div>
     </nav>
 
@@ -361,79 +361,79 @@
         <!-- User Modal -->
         <div id="user-modal" class="modal-overlay">
             <div class="modal">
-                <h2 id="modal-title">Nieuwe gebruiker</h2>
+                <h2 id="modal-title">New user</h2>
                 <form id="user-form">
                     <input type="hidden" id="user-id">
                     <div class="form-group">
                         <label for="user-email">Email *</label>
-                        <input type="email" id="user-email" required placeholder="email@voorbeeld.nl">
+                        <input type="email" id="user-email" required placeholder="email@example.com">
                     </div>
                     <div class="form-group">
-                        <label for="user-name">Naam</label>
-                        <input type="text" id="user-name" placeholder="Volledige naam">
+                        <label for="user-name">Name</label>
+                        <input type="text" id="user-name" placeholder="Full name">
                     </div>
                     <div class="modal-buttons">
-                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-                        <button type="submit" class="btn btn-primary" id="modal-submit">Aanmaken</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="modal-submit">Create</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <div id="not-admin" class="not-admin" style="display: none;">
-            <h2>⛔ Geen toegang</h2>
-            <p>Je hebt geen admin rechten om deze pagina te bekijken.</p>
+            <h2>⛔ Access Denied</h2>
+            <p>You don't have admin rights to view this page.</p>
             <a href="/admin-login.html" class="btn btn-primary" style="margin-top: 20px;">Admin Login</a>
         </div>
 
         <div id="admin-content" class="admin-container" style="display: none;">
             <div class="admin-header">
-                <h1>👥 Gebruikersbeheer</h1>
+                <h1>👥 User Management</h1>
                 <div style="display: flex; gap: 8px;">
-                    <button id="add-user-btn" class="btn btn-primary">+ Nieuwe gebruiker</button>
-                    <button id="refresh-btn" class="btn btn-secondary">🔄 Vernieuwen</button>
+                    <button id="add-user-btn" class="btn btn-primary">+ New user</button>
+                    <button id="refresh-btn" class="btn btn-secondary">🔄 Refresh</button>
                 </div>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="number" id="total-users">0</div>
-                    <div class="label">Totaal gebruikers</div>
+                    <div class="label">Total users</div>
                 </div>
                 <div class="stat-card active">
                     <div class="number" id="active-users">0</div>
-                    <div class="label">Actieve abonnementen</div>
+                    <div class="label">Active subscriptions</div>
                 </div>
                 <div class="stat-card trial">
                     <div class="number" id="trial-users">0</div>
-                    <div class="label">In proefperiode</div>
+                    <div class="label">In trial period</div>
                 </div>
                 <div class="stat-card expired">
                     <div class="number" id="expired-users">0</div>
-                    <div class="label">Verlopen</div>
+                    <div class="label">Expired</div>
                 </div>
             </div>
 
             <div class="users-section">
                 <div class="section-header">
-                    <h2>Alle gebruikers</h2>
+                    <h2>All users</h2>
                     <div class="search-box">
-                        <input type="text" id="search-input" placeholder="Zoek op naam of email...">
+                        <input type="text" id="search-input" placeholder="Search by name or email...">
                     </div>
                 </div>
                 
                 <table class="users-table">
                     <thead>
                         <tr>
-                            <th>Gebruiker</th>
+                            <th>User</th>
                             <th>Status</th>
-                            <th>Aangemeld</th>
-                            <th>Acties</th>
+                            <th>Registered</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="users-tbody">
                         <tr>
-                            <td colspan="4" class="empty-state">Laden...</td>
+                            <td colspan="4" class="empty-state">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -485,7 +485,7 @@
             } catch (error) {
                 console.error('Error loading users:', error);
                 document.getElementById('users-tbody').innerHTML = 
-                    '<tr><td colspan="4" class="empty-state">Kon gebruikers niet laden</td></tr>';
+                    '<tr><td colspan="4" class="empty-state">Could not load users</td></tr>';
             }
         }
 
@@ -512,13 +512,13 @@
             const tbody = document.getElementById('users-tbody');
 
             if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Geen gebruikers gevonden</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No users found</td></tr>';
                 return;
             }
 
             tbody.innerHTML = users.map(user => {
                 const status = getStatusBadge(user.subscription?.status);
-                const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString('nl-NL') : '-';
+                const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US') : '-';
                 const avatar = user.picture 
                     ? `<img src="${user.picture}" alt="${user.name}">` 
                     : '👤';
@@ -529,7 +529,7 @@
                             <div class="user-info">
                                 <div class="user-avatar">${avatar}</div>
                                 <div>
-                                    <div class="user-name">${user.name || 'Onbekend'}</div>
+                                    <div class="user-name">${user.name || 'Unknown'}</div>
                                     <div class="user-email">${user.email}</div>
                                 </div>
                             </div>
@@ -539,12 +539,12 @@
                         <td>
                             <button class="action-btn edit" onclick="editUser('${user.id}')">✏️</button>
                             <select class="plan-select" onchange="setPlan('${user.id}', this.value)">
-                                <option value="">Zet plan...</option>
-                                <option value="active">✓ Actief (1 jaar)</option>
-                                <option value="trialing">🕐 Trial (14 dagen)</option>
-                                <option value="none">✕ Annuleren</option>
+                                <option value="">Set plan...</option>
+                                <option value="active">✓ Active (1 year)</option>
+                                <option value="trialing">🕐 Trial (14 days)</option>
+                                <option value="none">✕ Cancel</option>
                             </select>
-                            <button class="action-btn extend" onclick="extendTrial('${user.id}')">+14 dagen</button>
+                            <button class="action-btn extend" onclick="extendTrial('${user.id}')">+14 days</button>
                             <button class="action-btn delete" onclick="deleteUser('${user.id}', '${user.email}')">🗑️</button>
                         </td>
                     </tr>
@@ -556,21 +556,21 @@
         function getStatusBadge(status) {
             switch (status) {
                 case 'active':
-                    return '<span class="status-badge active">✓ Actief</span>';
+                    return '<span class="status-badge active">✓ Active</span>';
                 case 'trialing':
-                    return '<span class="status-badge trial">🕐 Proefperiode</span>';
+                    return '<span class="status-badge trial">🕐 Trial</span>';
                 case 'trial_expired':
-                    return '<span class="status-badge expired">⚠ Verlopen</span>';
+                    return '<span class="status-badge expired">⚠ Expired</span>';
                 case 'canceled':
-                    return '<span class="status-badge expired">✕ Geannuleerd</span>';
+                    return '<span class="status-badge expired">✕ Canceled</span>';
                 default:
-                    return '<span class="status-badge none">- Geen</span>';
+                    return '<span class="status-badge none">- None</span>';
             }
         }
 
         // Extend trial
         async function extendTrial(userId) {
-            if (!confirm('Weet je zeker dat je de proefperiode met 14 dagen wilt verlengen?')) {
+            if (!confirm('Are you sure you want to extend the trial period by 14 days?')) {
                 return;
             }
 
@@ -580,14 +580,14 @@
                 });
 
                 if (response.ok) {
-                    alert('Proefperiode verlengd!');
+                    alert('Trial period extended!');
                     loadUsers();
                 } else {
                     const data = await response.json();
-                    alert(data.error || 'Kon proefperiode niet verlengen');
+                    alert(data.error || 'Could not extend trial period');
                 }
             } catch (error) {
-                alert('Er ging iets mis');
+                alert('Something went wrong');
             }
         }
 
@@ -596,12 +596,12 @@
             if (!plan) return;
             
             const planNames = {
-                'active': 'Actief abonnement (1 jaar)',
-                'trialing': 'Proefperiode (14 dagen)',
-                'none': 'Abonnement annuleren'
+                'active': 'Active subscription (1 year)',
+                'trialing': 'Trial period (14 days)',
+                'none': 'Cancel subscription'
             };
             
-            if (!confirm(`Weet je zeker dat je wilt instellen: ${planNames[plan]}?`)) {
+            if (!confirm(`Are you sure you want to set: ${planNames[plan]}?`)) {
                 loadUsers(); // Reset dropdown
                 return;
             }
@@ -619,18 +619,18 @@
                     alert(data.message);
                     loadUsers();
                 } else {
-                    alert(data.error || 'Kon plan niet instellen');
+                    alert(data.error || 'Could not set plan');
                     loadUsers();
                 }
             } catch (error) {
-                alert('Er ging iets mis');
+                alert('Something went wrong');
                 loadUsers();
             }
         }
 
         // Delete user
         async function deleteUser(userId, email) {
-            if (!confirm(`Weet je zeker dat je ${email} wilt verwijderen? Dit kan niet ongedaan worden gemaakt.`)) {
+            if (!confirm(`Are you sure you want to delete ${email}? This cannot be undone.`)) {
                 return;
             }
 
@@ -640,14 +640,14 @@
                 });
 
                 if (response.ok) {
-                    alert('Gebruiker verwijderd');
+                    alert('User deleted');
                     loadUsers();
                 } else {
                     const data = await response.json();
-                    alert(data.error || 'Kon gebruiker niet verwijderen');
+                    alert(data.error || 'Could not delete user');
                 }
             } catch (error) {
-                alert('Er ging iets mis');
+                alert('Something went wrong');
             }
         }
 
@@ -677,14 +677,14 @@
             document.getElementById('user-id').value = '';
             
             if (mode === 'edit' && user) {
-                title.textContent = '✏️ Gebruiker bewerken';
-                submitBtn.textContent = 'Opslaan';
+                title.textContent = '✏️ Edit user';
+                submitBtn.textContent = 'Save';
                 document.getElementById('user-id').value = user.id;
                 document.getElementById('user-email').value = user.email || '';
                 document.getElementById('user-name').value = user.name || '';
             } else {
-                title.textContent = '➕ Nieuwe gebruiker';
-                submitBtn.textContent = 'Aanmaken';
+                title.textContent = '➕ New user';
+                submitBtn.textContent = 'Create';
             }
             
             modal.classList.add('active');
@@ -704,10 +704,10 @@
                 if (response.ok) {
                     openModal('edit', user);
                 } else {
-                    alert(user.error || 'Kon gebruiker niet laden');
+                    alert(user.error || 'Could not load user');
                 }
             } catch (error) {
-                alert('Er ging iets mis bij het laden van de gebruiker');
+                alert('Something went wrong while loading the user');
             }
         }
 
@@ -737,10 +737,10 @@
                     closeModal();
                     loadUsers();
                 } else {
-                    alert(data.error || 'Er ging iets mis');
+                    alert(data.error || 'Something went wrong');
                 }
             } catch (error) {
-                alert('Er ging iets mis');
+                alert('Something went wrong');
             }
         });
 

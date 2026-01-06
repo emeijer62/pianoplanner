@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abonnement - PianoPlanner</title>
+    <title>Subscription - PianoPlanner</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -258,8 +258,8 @@
             </a>
             <nav class="nav-links">
                 <a href="/dashboard.html" class="nav-link">Dashboard</a>
-                <a href="/settings.html" class="nav-link">Instellingen</a>
-                <a href="/billing.html" class="nav-link active">Abonnement</a>
+                <a href="/settings.html" class="nav-link">Settings</a>
+                <a href="/billing.html" class="nav-link active">Subscription</a>
             </nav>
         </div>
     </header>
@@ -267,12 +267,12 @@
     <main>
         <div class="billing-container">
             <a href="/dashboard.html" class="back-link">
-                ← Terug naar dashboard
+                ← Back to dashboard
             </a>
 
             <div class="page-header">
-                <h1>Mijn abonnement</h1>
-                <p>Beheer je abonnement en facturen</p>
+                <h1>My subscription</h1>
+                <p>Manage your subscription and invoices</p>
             </div>
 
             <!-- Alerts -->
@@ -281,8 +281,8 @@
             <!-- Current Plan -->
             <div class="billing-card" id="currentPlan">
                 <h2>
-                    Huidig abonnement
-                    <span class="status-badge trial" id="statusBadge">Laden...</span>
+                    Current plan
+                    <span class="status-badge trial" id="statusBadge">Loading...</span>
                 </h2>
 
                 <div id="planDetails">
@@ -296,44 +296,44 @@
 
             <!-- Features -->
             <div class="billing-card">
-                <h2>✨ Inbegrepen in PianoPlanner Pro</h2>
+                <h2>✨ Included in PianoPlanner Pro</h2>
                 
                 <div class="features-grid">
                     <div class="feature-item">
                         <span class="icon">✓</span>
-                        Onbeperkt afspraken
+                        Unlimited appointments
                     </div>
                     <div class="feature-item">
                         <span class="icon">✓</span>
-                        Google Agenda sync
+                        Google Calendar sync
                     </div>
                     <div class="feature-item">
                         <span class="icon">✓</span>
-                        Online boekingspagina
+                        Online booking page
                     </div>
                     <div class="feature-item">
                         <span class="icon">✓</span>
-                        Klantenbeheer
+                        Customer management
                     </div>
                     <div class="feature-item">
                         <span class="icon">✓</span>
-                        Aanpasbare diensten
+                        Customizable services
                     </div>
                     <div class="feature-item">
                         <span class="icon">✓</span>
-                        E-mail herinneringen
+                        Email reminders
                     </div>
                 </div>
             </div>
 
             <!-- Help -->
             <div class="billing-card">
-                <h2>💬 Hulp nodig?</h2>
+                <h2>💬 Need help?</h2>
                 <p style="color: #666; margin-bottom: 16px;">
-                    Heb je vragen over je abonnement of facturen? Neem contact met ons op.
+                    Do you have questions about your subscription or invoices? Contact us.
                 </p>
                 <a href="mailto:support@pianoplanner.com" class="btn btn-secondary">
-                    Contact opnemen
+                    Contact us
                 </a>
             </div>
         </div>
@@ -344,13 +344,13 @@
         const urlParams = new URLSearchParams(window.location.search);
         
         if (urlParams.get('success') === 'true') {
-            showAlert('success', '🎉 Je abonnement is geactiveerd! Veel plezier met PianoPlanner.');
+            showAlert('success', '🎉 Your subscription has been activated! Enjoy PianoPlanner.');
             // Clean URL
             window.history.replaceState({}, '', '/billing.html');
         }
         
         if (urlParams.get('canceled') === 'true') {
-            showAlert('warning', 'Je hebt de betaling geannuleerd. Je kunt het later opnieuw proberen.');
+            showAlert('warning', 'You cancelled the payment. You can try again later.');
             window.history.replaceState({}, '', '/billing.html');
         }
 
@@ -369,7 +369,7 @@
                 updateUI(sub);
             } catch (error) {
                 console.error('Failed to load subscription:', error);
-                showAlert('error', 'Kon abonnementgegevens niet laden.');
+                showAlert('error', 'Could not load subscription data.');
             }
         }
 
@@ -385,28 +385,28 @@
 
             // Status badge
             let badgeClass = 'trial';
-            let badgeText = 'Laden...';
+            let badgeText = 'Loading...';
 
             switch (sub.status) {
                 case 'trialing':
                     badgeClass = 'trial';
-                    badgeText = `🕐 Proefperiode (${sub.daysLeft} dagen)`;
+                    badgeText = `🕐 Trial (${sub.daysLeft} days)`;
                     break;
                 case 'active':
                     badgeClass = 'active';
-                    badgeText = '✓ Actief';
+                    badgeText = '✓ Active';
                     break;
                 case 'trial_expired':
                     badgeClass = 'expired';
-                    badgeText = '⚠ Proefperiode verlopen';
+                    badgeText = '⚠ Trial expired';
                     break;
                 case 'canceled':
                     badgeClass = 'canceled';
-                    badgeText = '✕ Geannuleerd';
+                    badgeText = '✕ Canceled';
                     break;
                 default:
                     badgeClass = 'expired';
-                    badgeText = 'Geen abonnement';
+                    badgeText = 'No subscription';
             }
 
             statusBadge.className = `status-badge ${badgeClass}`;
@@ -420,34 +420,34 @@
                 detailsHTML = `
                     <div class="plan-info">
                         <span class="plan-label">Plan</span>
-                        <span class="plan-value">PianoPlanner Pro (proefperiode)</span>
+                        <span class="plan-value">PianoPlanner Pro (trial)</span>
                     </div>
                     <div class="plan-info">
-                        <span class="plan-label">Prijs na proefperiode</span>
-                        <span class="plan-value">€30/maand excl. BTW</span>
+                        <span class="plan-label">Price after trial</span>
+                        <span class="plan-value">€30/month excl. VAT</span>
                     </div>
                     <div class="trial-progress">
                         <div class="trial-progress-bar">
                             <div class="trial-progress-fill" style="width: ${progress}%"></div>
                         </div>
                         <div class="trial-progress-text">
-                            Nog ${sub.daysLeft} dagen in je proefperiode
+                            ${sub.daysLeft} days left in your trial
                         </div>
                     </div>
                 `;
             } else if (sub.status === 'active') {
-                const endDate = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('nl-NL') : '-';
+                const endDate = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('en-US') : '-';
                 detailsHTML = `
                     <div class="plan-info">
                         <span class="plan-label">Plan</span>
                         <span class="plan-value">PianoPlanner Pro</span>
                     </div>
                     <div class="plan-info">
-                        <span class="plan-label">Prijs</span>
-                        <span class="plan-value">€30/maand excl. BTW</span>
+                        <span class="plan-label">Price</span>
+                        <span class="plan-value">€30/month excl. VAT</span>
                     </div>
                     <div class="plan-info">
-                        <span class="plan-label">Volgende factuurdatum</span>
+                        <span class="plan-label">Next billing date</span>
                         <span class="plan-value">${endDate}</span>
                     </div>
                 `;
@@ -455,18 +455,18 @@
                 detailsHTML = `
                     <div class="plan-info">
                         <span class="plan-label">Status</span>
-                        <span class="plan-value">Je proefperiode is verlopen</span>
+                        <span class="plan-value">Your trial has expired</span>
                     </div>
                     <div class="plan-info">
-                        <span class="plan-label">Prijs</span>
-                        <span class="plan-value">€30/maand excl. BTW</span>
+                        <span class="plan-label">Price</span>
+                        <span class="plan-value">€30/month excl. VAT</span>
                     </div>
                 `;
             } else {
                 detailsHTML = `
                     <div class="plan-info">
                         <span class="plan-label">Status</span>
-                        <span class="plan-value">Geen actief abonnement</span>
+                        <span class="plan-value">No active subscription</span>
                     </div>
                 `;
             }
@@ -479,13 +479,13 @@
             if (sub.status === 'trialing' || sub.status === 'trial_expired' || sub.status === 'canceled' || !sub.status) {
                 buttonsHTML = `
                     <button class="btn btn-primary" onclick="startSubscription()">
-                        💳 Abonnement starten
+                        💳 Start subscription
                     </button>
                 `;
             } else if (sub.status === 'active') {
                 buttonsHTML = `
                     <button class="btn btn-secondary" onclick="manageSubscription()">
-                        Abonnement beheren
+                        Manage subscription
                     </button>
                 `;
             }
@@ -505,11 +505,11 @@
                 if (data.url) {
                     window.location.href = data.url;
                 } else {
-                    showAlert('error', data.error || 'Kon checkout niet starten.');
+                    showAlert('error', data.error || 'Could not start checkout.');
                 }
             } catch (error) {
                 console.error('Checkout error:', error);
-                showAlert('error', 'Er ging iets mis. Probeer het opnieuw.');
+                showAlert('error', 'Something went wrong. Please try again.');
             }
         }
 
@@ -525,11 +525,11 @@
                 if (data.url) {
                     window.location.href = data.url;
                 } else {
-                    showAlert('error', data.error || 'Kon portal niet openen.');
+                    showAlert('error', data.error || 'Could not open portal.');
                 }
             } catch (error) {
                 console.error('Portal error:', error);
-                showAlert('error', 'Er ging iets mis. Probeer het opnieuw.');
+                showAlert('error', 'Something went wrong. Please try again.');
             }
         }
 

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instellingen - PianoPlanner</title>
+    <title>Settings - PianoPlanner</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Settings Page - Minimal White Design */
@@ -429,81 +429,81 @@
         </div>
         <div class="nav-links">
             <a href="/dashboard.html">📅 Dashboard</a>
-            <a href="/customers.html">👥 Klanten</a>
-            <a href="/pianos.html">🎹 Piano's</a>
-            <a href="/settings.html" class="active">⚙️ Instellingen</a>
+            <a href="/customers.html">👥 Customers</a>
+            <a href="/pianos.html">🎹 Pianos</a>
+            <a href="/settings.html" class="active">⚙️ Settings</a>
         </div>
         <div class="nav-user">
-            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+            <a href="/auth/logout" class="btn btn-small">Log out</a>
         </div>
     </nav>
 
     <div class="settings-container">
         <div class="page-header">
-            <h1>⚙️ Instellingen</h1>
+            <h1>⚙️ Settings</h1>
         </div>
         
         <div id="alertContainer"></div>
         
         <!-- Google Calendar Sync -->
         <div class="settings-section">
-            <h2>🔄 Google Agenda Synchronisatie</h2>
+            <h2>🔄 Google Calendar Sync</h2>
             <p style="color: #666; margin-bottom: 16px;">
-                Synchroniseer je lokale PianoPlanner agenda met Google Agenda. 
-                Zo heb je al je afspraken op één plek.
+                Sync your local PianoPlanner calendar with Google Calendar. 
+                This way you have all your appointments in one place.
             </p>
             
             <div id="calendar-sync-status" class="sync-status">
-                <!-- Status wordt dynamisch geladen -->
+                <!-- Status is loaded dynamically -->
             </div>
             
             <div id="calendar-sync-options" style="display: none;">
                 <div class="form-group">
-                    <label>Synchronisatie richting</label>
+                    <label>Sync direction</label>
                     <div class="sync-direction-options">
                         <label class="radio-option">
                             <input type="radio" name="syncDirection" value="both" checked>
-                            <span>🔄 Beide richtingen</span>
-                            <small>PianoPlanner ↔ Google (aanbevolen)</small>
+                            <span>🔄 Both directions</span>
+                            <small>PianoPlanner ↔ Google (recommended)</small>
                         </label>
                         <label class="radio-option">
                             <input type="radio" name="syncDirection" value="toGoogle">
-                            <span>➡️ Alleen naar Google</span>
+                            <span>➡️ To Google only</span>
                             <small>PianoPlanner → Google</small>
                         </label>
                         <label class="radio-option">
                             <input type="radio" name="syncDirection" value="fromGoogle">
-                            <span>⬅️ Alleen van Google</span>
+                            <span>⬅️ From Google only</span>
                             <small>Google → PianoPlanner</small>
                         </label>
                     </div>
                 </div>
                 
                 <div class="form-group" id="calendar-select-group" style="display: none;">
-                    <label for="googleCalendarId">Google Agenda selecteren</label>
+                    <label for="googleCalendarId">Select Google Calendar</label>
                     <select id="googleCalendarId">
-                        <option value="">Laden...</option>
+                        <option value="">Loading...</option>
                     </select>
                 </div>
                 
                 <div class="sync-buttons">
                     <button type="button" class="btn btn-primary" onclick="enableCalendarSync()">
-                        ✓ Synchronisatie inschakelen
+                        ✓ Enable sync
                     </button>
                     <button type="button" class="btn btn-secondary" onclick="syncNow()" id="sync-now-btn" style="display: none;">
-                        🔄 Nu synchroniseren
+                        🔄 Sync now
                     </button>
                 </div>
                 
                 <div id="last-sync-info" style="display: none; margin-top: 12px; color: #666; font-size: 0.9rem;">
-                    Laatste sync: <span id="last-sync-time">Nooit</span>
+                    Last sync: <span id="last-sync-time">Never</span>
                 </div>
             </div>
             
             <div id="calendar-not-connected">
                 <p style="margin-bottom: 16px;">
-                    <strong>Niet verbonden met Google</strong><br>
-                    Log in met je Google account om agenda synchronisatie in te schakelen.
+                    <strong>Not connected to Google</strong><br>
+                    Log in with your Google account to enable calendar sync.
                 </p>
                 <a href="/auth/google" class="btn btn-secondary">
                     <svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align: middle; margin-right: 8px;">
@@ -512,27 +512,27 @@
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                     </svg>
-                    Verbinden met Google
+                    Connect with Google
                 </a>
             </div>
         </div>
         
-        <!-- Account Instellingen -->
+        <!-- Account Settings -->
         <div class="settings-section">
-            <h2>� Publieke Boekingslink</h2>
+            <h2>� Public Booking Link</h2>
             <p style="color: #666; margin-bottom: 16px;">
-                Deel een link waar klanten zelf afspraken kunnen inplannen. Ideaal voor je website of e-mailhandtekening.
+                Share a link where customers can schedule appointments themselves. Great for your website or email signature.
             </p>
             
             <div id="booking-link-section">
                 <!-- Status -->
                 <div id="booking-status" class="sync-status disconnected" style="margin-bottom: 16px;">
-                    <strong id="booking-status-text">⏸️ Boekingslink is uitgeschakeld</strong>
+                    <strong id="booking-status-text">⏸️ Booking link is disabled</strong>
                 </div>
                 
-                <!-- Link weergave -->
+                <!-- Link display -->
                 <div id="booking-link-display" style="display: none; margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Je boekingslink:</label>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Your booking link:</label>
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <input type="text" id="booking-link-url" readonly style="flex: 1; background: var(--light-gray); font-family: monospace; font-size: 0.9rem;">
                         <button type="button" class="btn btn-secondary" onclick="copyBookingLink()" title="Link kopiëren">
@@ -544,7 +544,7 @@
                     </div>
                 </div>
                 
-                <!-- Instellingen -->
+                <!-- Settings -->
                 <form id="bookingSettingsForm">
                     <div class="form-group">
                         <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
@@ -552,42 +552,42 @@
                                 <input type="checkbox" id="booking-enabled" name="enabled">
                                 <span class="toggle-slider"></span>
                             </div>
-                            <span>Boekingslink activeren</span>
+                            <span>Enable booking link</span>
                         </label>
                     </div>
                     
                     <div id="booking-options" style="display: none;">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="booking-title">Pagina titel</label>
-                                <input type="text" id="booking-title" name="title" placeholder="Afspraak inplannen">
+                                <label for="booking-title">Page title</label>
+                                <input type="text" id="booking-title" name="title" placeholder="Schedule an appointment">
                             </div>
                             <div class="form-group">
-                                <label for="booking-min-advance">Minimaal vooruit boeken</label>
+                                <label for="booking-min-advance">Minimum advance booking</label>
                                 <select id="booking-min-advance" name="minAdvanceHours">
-                                    <option value="1">1 uur</option>
-                                    <option value="2">2 uur</option>
-                                    <option value="4">4 uur</option>
-                                    <option value="12">12 uur</option>
-                                    <option value="24" selected>24 uur (1 dag)</option>
-                                    <option value="48">48 uur (2 dagen)</option>
-                                    <option value="72">72 uur (3 dagen)</option>
+                                    <option value="1">1 hour</option>
+                                    <option value="2">2 hours</option>
+                                    <option value="4">4 hours</option>
+                                    <option value="12">12 hours</option>
+                                    <option value="24" selected>24 hours (1 day)</option>
+                                    <option value="48">48 hours (2 days)</option>
+                                    <option value="72">72 hours (3 days)</option>
                                 </select>
                             </div>
                         </div>
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="booking-max-advance">Maximaal vooruit boeken</label>
+                                <label for="booking-max-advance">Maximum advance booking</label>
                                 <select id="booking-max-advance" name="maxAdvanceDays">
-                                    <option value="14">2 weken</option>
-                                    <option value="30">1 maand</option>
-                                    <option value="60" selected>2 maanden</option>
-                                    <option value="90">3 maanden</option>
+                                    <option value="14">2 weeks</option>
+                                    <option value="30">1 month</option>
+                                    <option value="60" selected>2 months</option>
+                                    <option value="90">3 months</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label>Verplichte velden</label>
+                                <label>Required fields</label>
                                 <div style="display: flex; gap: 16px; margin-top: 8px;">
                                     <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
                                         <input type="checkbox" id="booking-require-email" name="requireEmail" checked>
@@ -595,45 +595,45 @@
                                     </label>
                                     <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
                                         <input type="checkbox" id="booking-require-phone" name="requirePhone" checked>
-                                        <span>Telefoon</span>
+                                        <span>Phone</span>
                                     </label>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="form-group">
-                            <label for="booking-description">Beschrijving (optioneel)</label>
-                            <textarea id="booking-description" name="description" rows="2" placeholder="Welkomstbericht voor klanten op je boekingspagina"></textarea>
+                            <label for="booking-description">Description (optional)</label>
+                            <textarea id="booking-description" name="description" rows="2" placeholder="Welcome message for customers on your booking page"></textarea>
                         </div>
                         
                         <div class="form-group">
-                            <label for="booking-confirmation">Bevestigingsbericht</label>
-                            <input type="text" id="booking-confirmation" name="confirmationMessage" placeholder="Bedankt voor uw boeking!">
+                            <label for="booking-confirmation">Confirmation message</label>
+                            <input type="text" id="booking-confirmation" name="confirmationMessage" placeholder="Thank you for your booking!">
                         </div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary">💾 Boekingsinstellingen Opslaan</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Booking Settings</button>
                 </form>
             </div>
         </div>
         
-        <!-- Account Instellingen -->
+        <!-- Account Settings -->
         <div class="settings-section">
-            <h2>�👤 Account Instellingen</h2>
+            <h2>�👤 Account Settings</h2>
             <p style="color: #666; margin-bottom: 16px;">
-                Beheer je account gegevens en wachtwoord.
+                Manage your account details and password.
             </p>
             
-            <!-- Profiel formulier -->
+            <!-- Profile formulier -->
             <form id="profileForm">
-                <h3>Profiel</h3>
+                <h3>Profile</h3>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="profileName">Naam</label>
+                        <label for="profileName">Name</label>
                         <input type="text" id="profileName" name="name" required>
                     </div>
                     <div class="form-group">
-                        <label for="profileEmail">E-mailadres</label>
+                        <label for="profileEmail">Email address</label>
                         <input type="email" id="profileEmail" name="email" required>
                     </div>
                 </div>
@@ -643,113 +643,113 @@
                         <!-- Wordt dynamisch ingevuld -->
                     </p>
                 </div>
-                <button type="submit" class="btn btn-primary">💾 Profiel Opslaan</button>
+                <button type="submit" class="btn btn-primary">💾 Save Profile</button>
             </form>
             
-            <!-- Wachtwoord formulier -->
+            <!-- Password form -->
             <form id="passwordForm" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
-                <h3 id="passwordSectionTitle">🔐 Wachtwoord wijzigen</h3>
+                <h3 id="passwordSectionTitle">🔐 Change Password</h3>
                 <p id="passwordSectionDesc" style="color: #666; font-size: 0.9rem; margin-bottom: 16px;">
-                    <!-- Wordt dynamisch ingevuld -->
+                    <!-- Dynamically filled -->
                 </p>
                 
                 <div id="currentPasswordGroup" class="form-group">
-                    <label for="currentPassword">Huidig wachtwoord</label>
+                    <label for="currentPassword">Current password</label>
                     <input type="password" id="currentPassword" name="currentPassword" autocomplete="current-password">
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="newPassword">Nieuw wachtwoord</label>
+                        <label for="newPassword">New password</label>
                         <input type="password" id="newPassword" name="newPassword" required minlength="6" autocomplete="new-password">
-                        <small style="color: #666;">Minimaal 6 tekens</small>
+                        <small style="color: #666;">Minimum 6 characters</small>
                     </div>
                     <div class="form-group">
-                        <label for="confirmPassword">Bevestig nieuw wachtwoord</label>
+                        <label for="confirmPassword">Confirm new password</label>
                         <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6" autocomplete="new-password">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" id="passwordSubmitBtn">🔐 Wachtwoord Wijzigen</button>
+                <button type="submit" class="btn btn-primary" id="passwordSubmitBtn">🔐 Change Password</button>
             </form>
         </div>
         
-        <!-- Bedrijfsprofiel -->
+        <!-- Company Profile -->
         <div class="settings-section">
-            <h2>🏢 Bedrijfsprofiel</h2>
+            <h2>🏢 Company Profile</h2>
             <form id="companyForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="companyName">Bedrijfsnaam</label>
+                        <label for="companyName">Company name</label>
                         <input type="text" id="companyName" name="name" required>
                     </div>
                     <div class="form-group">
-                        <label for="ownerName">Naam eigenaar</label>
+                        <label for="ownerName">Owner name</label>
                         <input type="text" id="ownerName" name="ownerName">
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="email">E-mail</label>
+                        <label for="email">Email</label>
                         <input type="email" id="email" name="email">
                     </div>
                     <div class="form-group">
-                        <label for="phone">Telefoon</label>
+                        <label for="phone">Phone</label>
                         <input type="tel" id="phone" name="phone">
                     </div>
                 </div>
                 
-                <h3>📍 Adres (vertrekpunt reistijd)</h3>
+                <h3>📍 Address (travel time start point)</h3>
                 <div class="form-row">
                     <div class="form-group" style="flex: 2; position: relative;">
-                        <label for="address-search">Zoek adres</label>
-                        <input type="text" id="address-search" placeholder="Begin met typen om adres te zoeken..." autocomplete="off">
+                        <label for="address-search">Search address</label>
+                        <input type="text" id="address-search" placeholder="Start typing to search for address..." autocomplete="off">
                         <div id="address-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group" style="flex: 2">
-                        <label for="street">Straat en huisnummer</label>
+                        <label for="street">Street and number</label>
                         <input type="text" id="street" name="street" required>
                     </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="postalCode">Postcode</label>
+                        <label for="postalCode">Postal code</label>
                         <input type="text" id="postalCode" name="postalCode" required>
                     </div>
                     <div class="form-group">
-                        <label for="city">Plaats</label>
+                        <label for="city">City</label>
                         <input type="text" id="city" name="city" required>
                     </div>
                     <div class="form-group">
-                        <label for="country">Land</label>
-                        <input type="text" id="country" name="country" value="Nederland">
+                        <label for="country">Country</label>
+                        <input type="text" id="country" name="country" value="Netherlands">
                     </div>
                 </div>
                 
-                <h3>🕐 Beschikbaarheid per dag</h3>
-                <p style="color: #666; margin-bottom: 16px;">Stel per dag in wanneer je beschikbaar bent voor afspraken.</p>
+                <h3>🕐 Availability per day</h3>
+                <p style="color: #666; margin-bottom: 16px;">Set your availability for appointments per day.</p>
                 
                 <div class="availability-grid" id="availabilityGrid">
-                    <!-- Wordt dynamisch geladen -->
+                    <!-- Loaded dynamically -->
                 </div>
                 
-                <button type="submit" class="btn btn-primary">💾 Bedrijfsprofiel Opslaan</button>
+                <button type="submit" class="btn btn-primary">💾 Save Company Profile</button>
             </form>
         </div>
         
-        <!-- Diensten -->
+        <!-- Services -->
         <div class="settings-section">
-            <h2>🎹 Diensten</h2>
-            <p>Beheer de diensten die je aanbiedt. De buffertijden worden meegerekend bij het plannen van afspraken.</p>
+            <h2>🎹 Services</h2>
+            <p>Manage the services you offer. Buffer times are included when scheduling appointments.</p>
             
-            <button class="btn btn-primary" onclick="openServiceModal()">+ Nieuwe Dienst</button>
+            <button class="btn btn-primary" onclick="openServiceModal()">+ New Service</button>
             
             <div class="services-list" id="servicesList">
-                <!-- Diensten worden hier geladen -->
+                <!-- Services are loaded here -->
             </div>
         </div>
     </div>
@@ -758,7 +758,7 @@
     <div class="modal" id="serviceModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modalTitle">Nieuwe Dienst</h3>
+                <h3 id="modalTitle">New Service</h3>
                 <button class="modal-close" onclick="closeServiceModal()">&times;</button>
             </div>
             
@@ -766,17 +766,17 @@
                 <input type="hidden" id="serviceId" name="id">
                 
                 <div class="form-group">
-                    <label for="serviceName">Naam dienst *</label>
-                    <input type="text" id="serviceName" name="name" required placeholder="bijv. Stemmen vleugel">
+                    <label for="serviceName">Service name *</label>
+                    <input type="text" id="serviceName" name="name" required placeholder="e.g. Tune grand piano">
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="serviceDuration">Duur (minuten) *</label>
+                        <label for="serviceDuration">Duration (minutes) *</label>
                         <input type="number" id="serviceDuration" name="duration" required min="15" step="15" value="60">
                     </div>
                     <div class="form-group">
-                        <label for="servicePrice">Tarief (€) *</label>
+                        <label for="servicePrice">Rate (€) *</label>
                         <input type="number" id="servicePrice" name="price" required min="0" step="0.01" value="95">
                     </div>
                 </div>
@@ -784,17 +784,17 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="bufferBefore">Buffer vóór (min)</label>
-                        <input type="number" id="bufferBefore" name="bufferBefore" min="0" step="5" value="0" placeholder="bijv. 15 voor opzetten">
+                        <input type="number" id="bufferBefore" name="bufferBefore" min="0" step="5" value="0" placeholder="e.g. 15 for setup">
                     </div>
                     <div class="form-group">
                         <label for="bufferAfter">Buffer na (min)</label>
-                        <input type="number" id="bufferAfter" name="bufferAfter" min="0" step="5" value="0" placeholder="bijv. 10 voor opruimen">
+                        <input type="number" id="bufferAfter" name="bufferAfter" min="0" step="5" value="0" placeholder="e.g. 10 for cleanup">
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="serviceDescription">Beschrijving</label>
-                    <input type="text" id="serviceDescription" name="description" placeholder="Korte omschrijving van de dienst">
+                    <input type="text" id="serviceDescription" name="description" placeholder="Short description of the service">
                 </div>
                 
                 <div class="form-group">
@@ -811,7 +811,7 @@
                 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Annuleren</button>
-                    <button type="submit" class="btn btn-primary">💾 Opslaan</button>
+                    <button type="submit" class="btn btn-primary">💾 Save</button>
                 </div>
             </form>
         </div>
@@ -858,15 +858,15 @@
                 if (settings.enabled) {
                     statusEl.className = 'sync-status connected';
                     statusEl.innerHTML = `
-                        <strong>✅ Synchronisatie actief</strong><br>
-                        <span style="color: #666;">Richting: ${getSyncDirectionLabel(settings.syncDirection)}</span>
+                        <strong>✅ Sync active</strong><br>
+                        <span style="color: #666;">Direction: ${getSyncDirectionLabel(settings.syncDirection)}</span>
                     `;
                     document.getElementById('sync-now-btn').style.display = 'inline-block';
                     document.getElementById('last-sync-info').style.display = 'block';
                     
                     if (settings.lastSync) {
                         document.getElementById('last-sync-time').textContent = 
-                            new Date(settings.lastSync).toLocaleString('nl-NL');
+                            new Date(settings.lastSync).toLocaleString('en-US');
                     }
                     
                     // Set saved direction
@@ -875,8 +875,8 @@
                 } else {
                     statusEl.className = 'sync-status disconnected';
                     statusEl.innerHTML = `
-                        <strong>⚠️ Synchronisatie uitgeschakeld</strong><br>
-                        <span style="color: #666;">Je Google account is verbonden, maar sync is niet actief.</span>
+                        <strong>⚠️ Sync disabled</strong><br>
+                        <span style="color: #666;">Your Google account is connected, but sync is not active.</span>
                     `;
                 }
                 
@@ -892,10 +892,10 @@
         
         function getSyncDirectionLabel(direction) {
             switch(direction) {
-                case 'both': return '🔄 Beide richtingen';
-                case 'toGoogle': return '➡️ Alleen naar Google';
-                case 'fromGoogle': return '⬅️ Alleen van Google';
-                default: return 'Onbekend';
+                case 'both': return '🔄 Both directions';
+                case 'toGoogle': return '➡️ To Google only';
+                case 'fromGoogle': return '⬅️ From Google only';
+                default: return 'Unknown';
             }
         }
         
@@ -906,12 +906,12 @@
                 
                 if (data.calendars && data.calendars.length > 0) {
                     const select = document.getElementById('googleCalendarId');
-                    select.innerHTML = '<option value="">Selecteer een agenda...</option>';
+                    select.innerHTML = '<option value="">Select a calendar...</option>';
                     
                     data.calendars.forEach(cal => {
                         const option = document.createElement('option');
                         option.value = cal.id;
-                        option.textContent = cal.summary + (cal.primary ? ' (Primair)' : '');
+                        option.textContent = cal.summary + (cal.primary ? ' (Primary)' : '');
                         if (calendarSyncSettings?.googleCalendarId === cal.id) {
                             option.selected = true;
                         }
@@ -943,36 +943,36 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showAlert('Synchronisatie ingeschakeld!', 'success');
+                    showAlert('Sync enabled!', 'success');
                     loadCalendarSyncStatus();
                 } else {
-                    showAlert(data.error || 'Er ging iets mis', 'error');
+                    showAlert(data.error || 'Something went wrong', 'error');
                 }
             } catch (error) {
-                showAlert('Fout bij opslaan instellingen', 'error');
+                showAlert('Error saving settings', 'error');
             }
         }
         
         async function syncNow() {
             const btn = document.getElementById('sync-now-btn');
             btn.disabled = true;
-            btn.textContent = '🔄 Bezig...';
+            btn.textContent = '🔄 Syncing...';
             
             try {
                 const response = await fetch('/api/calendar/sync', { method: 'POST' });
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showAlert(`Synchronisatie voltooid! ${data.synced || 0} items gesynchroniseerd.`, 'success');
+                    showAlert(`Sync complete! ${data.synced || 0} items synchronized.`, 'success');
                     loadCalendarSyncStatus();
                 } else {
-                    showAlert(data.error || 'Sync mislukt', 'error');
+                    showAlert(data.error || 'Sync failed', 'error');
                 }
             } catch (error) {
-                showAlert('Fout bij synchroniseren', 'error');
+                showAlert('Error syncing', 'error');
             } finally {
                 btn.disabled = false;
-                btn.textContent = '🔄 Nu synchroniseren';
+                btn.textContent = '🔄 Sync now';
             }
         }
         

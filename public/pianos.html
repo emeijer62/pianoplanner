@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piano's - PianoPlanner</title>
+    <title>Pianos - PianoPlanner</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         .pianos-container {
@@ -382,42 +382,42 @@
         </div>
         <div class="nav-links">
             <a href="/dashboard.html">📅 Dashboard</a>
-            <a href="/customers.html">👥 Klanten</a>
-            <a href="/pianos.html" class="active">🎹 Piano's</a>
-            <a href="/settings.html">⚙️ Instellingen</a>
+            <a href="/customers.html">👥 Customers</a>
+            <a href="/pianos.html" class="active">🎹 Pianos</a>
+            <a href="/settings.html">⚙️ Settings</a>
         </div>
         <div class="nav-user">
-            <a href="/auth/logout" class="btn btn-small">Uitloggen</a>
+            <a href="/auth/logout" class="btn btn-small">Log out</a>
         </div>
     </nav>
 
     <main class="pianos-container">
         <div class="page-header">
-            <h1>🎹 Piano's</h1>
+            <h1>🎹 Pianos</h1>
             <div class="header-actions">
                 <div class="search-box">
-                    <input type="text" id="search-input" placeholder="Zoek piano's...">
+                    <input type="text" id="search-input" placeholder="Search pianos...">
                 </div>
-                <button class="btn btn-primary" onclick="openPianoModal()">+ Nieuwe Piano</button>
+                <button class="btn btn-primary" onclick="openPianoModal()">+ New Piano</button>
             </div>
         </div>
 
         <div class="stats-row">
             <div class="stat-badge">
                 <span class="number" id="total-pianos">0</span>
-                <span>Piano's totaal</span>
+                <span>Pianos total</span>
             </div>
             <div class="stat-badge warning" id="due-badge" style="display: none;">
                 <span class="number" id="due-count">0</span>
-                <span>Service nodig</span>
+                <span>Service needed</span>
             </div>
         </div>
 
         <div id="pianos-grid" class="pianos-grid">
             <div class="empty-state">
                 <div class="icon">🎹</div>
-                <h3>Nog geen piano's</h3>
-                <p>Voeg je eerste piano toe om te beginnen</p>
+                <h3>No pianos yet</h3>
+                <p>Add your first piano to get started</p>
             </div>
         </div>
     </main>
@@ -426,7 +426,7 @@
     <div id="piano-modal" class="modal-overlay">
         <div class="modal">
             <div class="modal-header">
-                <h2 id="modal-title">Nieuwe Piano</h2>
+                <h2 id="modal-title">New Piano</h2>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <form id="piano-form">
@@ -435,7 +435,7 @@
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="piano-brand">Merk *</label>
+                            <label for="piano-brand">Brand *</label>
                             <input type="text" id="piano-brand" required placeholder="Steinway, Yamaha, Bösendorfer, etc.">
                         </div>
                         <div class="form-group">
@@ -448,80 +448,80 @@
                         <div class="form-group">
                             <label for="piano-type">Type</label>
                             <select id="piano-type">
-                                <option value="upright">Staande piano</option>
-                                <option value="grand">Vleugel</option>
-                                <option value="digital">Digitale piano</option>
+                                <option value="upright">Upright piano</option>
+                                <option value="grand">Grand piano</option>
+                                <option value="digital">Digital piano</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="piano-year">Bouwjaar</label>
+                            <label for="piano-year">Year built</label>
                             <input type="number" id="piano-year" min="1800" max="2030" placeholder="1985">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="piano-serial">Serienummer</label>
+                            <label for="piano-serial">Serial number</label>
                             <input type="text" id="piano-serial" placeholder="12345678">
                         </div>
                         <div class="form-group">
-                            <label for="piano-finish">Afwerking</label>
-                            <input type="text" id="piano-finish" placeholder="Zwart hoogglans">
+                            <label for="piano-finish">Finish</label>
+                            <input type="text" id="piano-finish" placeholder="Black polished">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="piano-customer">Klant</label>
+                            <label for="piano-customer">Customer</label>
                             <select id="piano-customer">
-                                <option value="">Geen klant gekoppeld</option>
+                                <option value="">No customer linked</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="piano-condition">Conditie</label>
+                            <label for="piano-condition">Condition</label>
                             <select id="piano-condition">
-                                <option value="excellent">Uitstekend</option>
-                                <option value="good" selected>Goed</option>
-                                <option value="fair">Redelijk</option>
-                                <option value="poor">Slecht</option>
+                                <option value="excellent">Excellent</option>
+                                <option value="good" selected>Good</option>
+                                <option value="fair">Fair</option>
+                                <option value="poor">Poor</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="piano-location">Locatie in huis</label>
-                            <input type="text" id="piano-location" placeholder="Woonkamer">
+                            <label for="piano-location">Location in home</label>
+                            <input type="text" id="piano-location" placeholder="Living room">
                         </div>
                         <div class="form-group">
-                            <label for="piano-interval">Service interval (maanden)</label>
+                            <label for="piano-interval">Service interval (months)</label>
                             <select id="piano-interval">
-                                <option value="3">3 maanden</option>
-                                <option value="6" selected>6 maanden</option>
-                                <option value="12">12 maanden</option>
+                                <option value="3">3 months</option>
+                                <option value="6" selected>6 months</option>
+                                <option value="12">12 months</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-group full-width">
-                        <label for="piano-notes">Notities</label>
-                        <textarea id="piano-notes" placeholder="Bijzonderheden over deze piano..."></textarea>
+                        <label for="piano-notes">Notes</label>
+                        <textarea id="piano-notes" placeholder="Special notes about this piano..."></textarea>
                     </div>
 
-                    <!-- Service Panel (alleen bij bewerken) -->
+                    <!-- Service Panel (only when editing) -->
                     <div id="service-panel" class="service-panel" style="display: none;">
                         <h3>
-                            Service Historie
+                            Service History
                             <button type="button" class="btn btn-small btn-secondary" onclick="openServiceModal()">+ Service</button>
                         </h3>
                         <div id="service-list" class="service-list">
-                            <p style="color: #666; text-align: center;">Nog geen service historie</p>
+                            <p style="color: #666; text-align: center;">No service history yet</p>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuleren</button>
-                    <button type="submit" class="btn btn-primary" id="submit-btn">Opslaan</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">Save</button>
                 </div>
             </form>
         </div>
@@ -531,57 +531,57 @@
     <div id="service-modal" class="modal-overlay">
         <div class="modal" style="max-width: 500px;">
             <div class="modal-header">
-                <h2>Service Toevoegen</h2>
+                <h2>Add Service</h2>
                 <button class="modal-close" onclick="closeServiceModal()">&times;</button>
             </div>
             <form id="service-form">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="service-type">Type service</label>
+                        <label for="service-type">Service type</label>
                         <select id="service-type">
-                            <option value="tuning">Stemmen</option>
-                            <option value="repair">Reparatie</option>
-                            <option value="regulation">Regulatie</option>
-                            <option value="voicing">Intoneren</option>
-                            <option value="cleaning">Reiniging</option>
-                            <option value="other">Anders</option>
+                            <option value="tuning">Tuning</option>
+                            <option value="repair">Repair</option>
+                            <option value="regulation">Regulation</option>
+                            <option value="voicing">Voicing</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="service-date">Datum</label>
+                        <label for="service-date">Date</label>
                         <input type="date" id="service-date" required>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="service-pitch-before">Toonhoogte voor</label>
+                            <label for="service-pitch-before">Pitch before</label>
                             <input type="text" id="service-pitch-before" placeholder="435">
                         </div>
                         <div class="form-group">
-                            <label for="service-pitch-after">Toonhoogte na</label>
+                            <label for="service-pitch-after">Pitch after</label>
                             <input type="text" id="service-pitch-after" placeholder="440">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="service-work">Uitgevoerd werk</label>
-                        <textarea id="service-work" placeholder="Beschrijf wat er gedaan is..."></textarea>
+                        <label for="service-work">Work performed</label>
+                        <textarea id="service-work" placeholder="Describe what was done..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="service-observations">Observaties</label>
-                        <textarea id="service-observations" placeholder="Geconstateerde problemen of bijzonderheden..."></textarea>
+                        <label for="service-observations">Observations</label>
+                        <textarea id="service-observations" placeholder="Issues found or special notes..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="service-recommendations">Aanbevelingen</label>
-                        <textarea id="service-recommendations" placeholder="Aanbevelingen voor de klant..."></textarea>
+                        <label for="service-recommendations">Recommendations</label>
+                        <textarea id="service-recommendations" placeholder="Recommendations for the customer..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Annuleren</button>
-                    <button type="submit" class="btn btn-primary">Opslaan</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
@@ -610,7 +610,7 @@
 
         // Merk wordt nu als vrij tekstveld ingevoerd
 
-        // Laad klanten voor dropdown
+        // Load customers for dropdown
         async function loadCustomers() {
             try {
                 const response = await fetch('/api/customers');
@@ -618,7 +618,7 @@
                 allCustomers = data.customers || [];
                 
                 const select = document.getElementById('piano-customer');
-                select.innerHTML = '<option value="">Geen klant gekoppeld</option>';
+                select.innerHTML = '<option value="">No customer linked</option>';
                 allCustomers.forEach(customer => {
                     select.innerHTML += `<option value="${customer.id}">${customer.name}</option>`;
                 });
@@ -658,8 +658,8 @@
                 grid.innerHTML = `
                     <div class="empty-state">
                         <div class="icon">🎹</div>
-                        <h3>Nog geen piano's</h3>
-                        <p>Voeg je eerste piano toe om te beginnen</p>
+                        <h3>No pianos yet</h3>
+                        <p>Add your first piano to get started</p>
                     </div>
                 `;
                 return;
@@ -667,12 +667,12 @@
 
             grid.innerHTML = pianos.map(piano => {
                 const customer = allCustomers.find(c => c.id === piano.customerId);
-                const customerName = customer ? customer.name : 'Geen klant';
+                const customerName = customer ? customer.name : 'No customer';
                 
                 const typeLabels = {
-                    upright: 'Staand',
-                    grand: 'Vleugel',
-                    digital: 'Digitaal'
+                    upright: 'Upright',
+                    grand: 'Grand',
+                    digital: 'Digital'
                 };
 
                 // Service status
@@ -683,26 +683,26 @@
                     nextDue.setMonth(nextDue.getMonth() + (piano.serviceInterval || 6));
                     
                     if (nextDue < new Date()) {
-                        serviceStatus = `<span class="service-due">⚠️ Service nodig</span>`;
+                        serviceStatus = `<span class="service-due">⚠️ Service needed</span>`;
                     } else {
-                        serviceStatus = `<span class="service-ok">✓ Laatste: ${lastTuning.toLocaleDateString('nl-NL')}</span>`;
+                        serviceStatus = `<span class="service-ok">✓ Last: ${lastTuning.toLocaleDateString('en-US')}</span>`;
                     }
                 } else {
-                    serviceStatus = `<span style="color: #666;">Nog niet gestemd</span>`;
+                    serviceStatus = `<span style="color: #666;">Not yet tuned</span>`;
                 }
 
                 return `
                     <div class="piano-card" onclick="editPiano('${piano.id}')">
                         <div class="piano-header">
                             <div>
-                                <div class="piano-brand">${piano.brand || 'Onbekend'}</div>
+                                <div class="piano-brand">${piano.brand || 'Unknown'}</div>
                                 <div class="piano-model">${piano.model || ''}</div>
                             </div>
-                            <span class="piano-type ${piano.type}">${typeLabels[piano.type] || 'Onbekend'}</span>
+                            <span class="piano-type ${piano.type}">${typeLabels[piano.type] || 'Unknown'}</span>
                         </div>
                         <div class="piano-details">
                             ${piano.serialNumber ? `<div class="piano-detail">SN: <span>${piano.serialNumber}</span></div>` : ''}
-                            ${piano.year ? `<div class="piano-detail">Jaar: <span>${piano.year}</span></div>` : ''}
+                            ${piano.year ? `<div class="piano-detail">Year: <span>${piano.year}</span></div>` : ''}
                         </div>
                         <div class="piano-customer">👤 ${customerName}</div>
                         <div class="piano-service">${serviceStatus}</div>
@@ -714,7 +714,7 @@
         // Open piano modal
         function openPianoModal() {
             currentPianoId = null;
-            document.getElementById('modal-title').textContent = 'Nieuwe Piano';
+            document.getElementById('modal-title').textContent = 'New Piano';
             document.getElementById('piano-form').reset();
             document.getElementById('piano-id').value = '';
             document.getElementById('service-panel').style.display = 'none';
@@ -728,7 +728,7 @@
                 const piano = await response.json();
                 
                 currentPianoId = pianoId;
-                document.getElementById('modal-title').textContent = 'Piano Bewerken';
+                document.getElementById('modal-title').textContent = 'Edit Piano';
                 document.getElementById('piano-id').value = piano.id;
                 document.getElementById('piano-brand').value = piano.brand || '';
                 document.getElementById('piano-model').value = piano.model || '';
@@ -749,7 +749,7 @@
                 document.getElementById('piano-modal').classList.add('active');
             } catch (error) {
                 console.error('Error loading piano:', error);
-                alert('Kon piano niet laden');
+                alert('Could not load piano');
             }
         }
 
@@ -758,27 +758,27 @@
             const list = document.getElementById('service-list');
             
             if (services.length === 0) {
-                list.innerHTML = '<p style="color: #666; text-align: center;">Nog geen service historie</p>';
+                list.innerHTML = '<p style="color: #666; text-align: center;">No service history yet</p>';
                 return;
             }
 
             const typeLabels = {
-                tuning: '🎵 Stemmen',
-                repair: '🔧 Reparatie',
-                regulation: '⚙️ Regulatie',
-                voicing: '🎼 Intoneren',
-                cleaning: '🧹 Reiniging',
-                other: '📝 Anders'
+                tuning: '🎵 Tuning',
+                repair: '🔧 Repair',
+                regulation: '⚙️ Regulation',
+                voicing: '🎼 Voicing',
+                cleaning: '🧹 Cleaning',
+                other: '📝 Other'
             };
 
             list.innerHTML = services.map(service => `
                 <div class="service-item">
                     <div class="service-item-header">
                         <span class="service-type">${typeLabels[service.type] || service.type}</span>
-                        <span class="service-date">${new Date(service.date).toLocaleDateString('nl-NL')}</span>
+                        <span class="service-date">${new Date(service.date).toLocaleDateString('en-US')}</span>
                     </div>
                     ${service.workPerformed ? `<div class="service-notes">${service.workPerformed}</div>` : ''}
-                    ${service.pitchAfter ? `<div class="service-notes">Toonhoogte: ${service.pitchAfter} Hz</div>` : ''}
+                    ${service.pitchAfter ? `<div class="service-notes">Pitch: ${service.pitchAfter} Hz</div>` : ''}
                 </div>
             `).join('');
         }
@@ -837,11 +837,11 @@
                     closeModal();
                     loadPianos();
                 } else {
-                    alert(result.error || 'Er ging iets mis');
+                    alert(result.error || 'Something went wrong');
                 }
             } catch (error) {
                 console.error('Error saving piano:', error);
-                alert('Er ging iets mis bij het opslaan');
+                alert('Something went wrong while saving');
             }
         });
 
@@ -850,7 +850,7 @@
             e.preventDefault();
             
             if (!currentPianoId) {
-                alert('Geen piano geselecteerd');
+                alert('No piano selected');
                 return;
             }
 
@@ -878,11 +878,11 @@
                     // Reload piano to show new service
                     editPiano(currentPianoId);
                 } else {
-                    alert(result.error || 'Er ging iets mis');
+                    alert(result.error || 'Something went wrong');
                 }
             } catch (error) {
                 console.error('Error saving service:', error);
-                alert('Er ging iets mis bij het opslaan');
+                alert('Something went wrong while saving');
             }
         });
 
