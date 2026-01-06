@@ -102,6 +102,11 @@ const geocodeAddress = async (address) => {
 const parseAddressComponents = (components) => {
     const result = {};
     
+    if (!components || !Array.isArray(components)) {
+        console.log('📍 No address components to parse');
+        return result;
+    }
+    
     for (const component of components) {
         if (component.types.includes('street_number')) {
             result.streetNumber = component.long_name;
@@ -109,17 +114,34 @@ const parseAddressComponents = (components) => {
         if (component.types.includes('route')) {
             result.street = component.long_name;
         }
+        // City can be in locality, postal_town, or sublocality
         if (component.types.includes('locality')) {
+            result.city = component.long_name;
+        }
+        // postal_town is used in some countries like UK
+        if (component.types.includes('postal_town') && !result.city) {
+            result.city = component.long_name;
+        }
+        // sublocality as fallback for city
+        if (component.types.includes('sublocality_level_1') && !result.city) {
             result.city = component.long_name;
         }
         if (component.types.includes('administrative_area_level_1')) {
             result.state = component.long_name;
+        }
+        // administrative_area_level_2 can also be the city/region
+        if (component.types.includes('administrative_area_level_2') && !result.city) {
+            result.city = component.long_name;
         }
         if (component.types.includes('country')) {
             result.country = component.long_name;
             result.countryCode = component.short_name;
         }
         if (component.types.includes('postal_code')) {
+            result.postalCode = component.long_name;
+        }
+        // postal_code_prefix for areas without full postal code
+        if (component.types.includes('postal_code_prefix') && !result.postalCode) {
             result.postalCode = component.long_name;
         }
     }
@@ -184,7 +206,8 @@ const getPlaceDetails = async (placeId) => {
         throw new Error('Geen Google Maps API key geconfigureerd');
     }
     
-    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=formatted_address,geometry,address_components&key=${apiKey}`;
+    // Request more fields to ensure we get postal_code
+    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=formatted_address,geometry,address_components,name&key=${apiKey}`;
     
     return new Promise((resolve, reject) => {
         https.get(url, (res) => {
@@ -194,16 +217,26 @@ const getPlaceDetails = async (placeId) => {
                 try {
                     const result = JSON.parse(data);
                     
+                    console.log('📍 Place Details API response status:', result.status);
+                    
                     if (result.status === 'OK') {
                         const place = result.result;
+                        
+                        console.log('📍 Address components:', JSON.stringify(place.address_components, null, 2));
+                        
+                        const components = parseAddressComponents(place.address_components);
+                        
+                        console.log('📍 Parsed components:', components);
+                        
                         resolve({
                             formattedAddress: place.formatted_address,
                             lat: place.geometry.location.lat,
                             lng: place.geometry.location.lng,
-                            components: parseAddressComponents(place.address_components)
+                            components: components
                         });
                     } else {
-                        reject(new Error('Place niet gevonden'));
+                        console.error('📍 Place Details API error:', result.status, result.error_message);
+                        reject(new Error('Place niet gevonden: ' + result.status));
                     }
                 } catch (err) {
                     reject(err);

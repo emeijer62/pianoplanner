@@ -54,10 +54,38 @@ router.get('/place-details/:placeId?', async (req, res) => {
             return res.status(400).json({ error: 'Place ID is verplicht' });
         }
         
-        const details = await getPlaceDetails(placeId);
+        let details = await getPlaceDetails(placeId);
         
         // Transformeer naar address formaat voor frontend compatibiliteit
-        const address = details.components || {};
+        let address = details.components || {};
+        
+        console.log('📍 Initial components:', address);
+        
+        // If postal code is missing, try geocoding the formatted address
+        if (!address.postalCode && details.formattedAddress) {
+            console.log('📍 Postal code missing, trying geocode fallback for:', details.formattedAddress);
+            try {
+                const geocodeResult = await geocodeAddress(details.formattedAddress);
+                if (geocodeResult && geocodeResult.components) {
+                    console.log('📍 Geocode fallback components:', geocodeResult.components);
+                    // Merge geocode results - prioritize original but fill in missing
+                    if (geocodeResult.components.postalCode && !address.postalCode) {
+                        address.postalCode = geocodeResult.components.postalCode;
+                    }
+                    if (geocodeResult.components.city && !address.city) {
+                        address.city = geocodeResult.components.city;
+                    }
+                    if (geocodeResult.components.street && !address.street) {
+                        address.street = geocodeResult.components.street;
+                    }
+                    if (geocodeResult.components.streetNumber && !address.streetNumber) {
+                        address.streetNumber = geocodeResult.components.streetNumber;
+                    }
+                }
+            } catch (geocodeErr) {
+                console.error('📍 Geocode fallback failed:', geocodeErr.message);
+            }
+        }
         
         // Combineer straat en huisnummer
         let street = address.street || '';
@@ -65,7 +93,7 @@ router.get('/place-details/:placeId?', async (req, res) => {
             street = street ? `${street} ${address.streetNumber}` : address.streetNumber;
         }
         
-        res.json({
+        const response = {
             formattedAddress: details.formattedAddress,
             lat: details.lat,
             lng: details.lng,
@@ -75,8 +103,12 @@ router.get('/place-details/:placeId?', async (req, res) => {
                 city: address.city || '',
                 country: address.country || 'Nederland'
             },
-            components: details.components // Ook originele componenten meesturen
-        });
+            components: address // Updated components with fallback data
+        };
+        
+        console.log('📍 Final response:', response);
+        
+        res.json(response);
     } catch (error) {
         console.error('Place details error:', error);
         res.status(404).json({ error: 'Place niet gevonden' });
