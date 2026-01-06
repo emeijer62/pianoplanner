@@ -153,7 +153,16 @@
                 if (placeId) {
                     try {
                         console.log('Fetching place details for:', placeId);
-                        const res = await fetch(`/api/booking/place-details/${placeId}`);
+                        const encodedPlaceId = encodeURIComponent(placeId);
+                        const res = await fetch(`/api/booking/place-details/${encodedPlaceId}`);
+                        
+                        if (!res.ok) {
+                            console.error('API returned status:', res.status, res.statusText);
+                            const errorText = await res.text();
+                            console.error('Error response:', errorText);
+                            return;
+                        }
+                        
                         const data = await res.json();
                         
                         console.log('Place details response:', JSON.stringify(data, null, 2));
