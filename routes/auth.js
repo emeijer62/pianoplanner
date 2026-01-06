@@ -268,7 +268,7 @@ router.get('/admin/status', (req, res) => {
 // ==================== PROFILE MANAGEMENT ====================
 
 // Update profiel (naam en email)
-router.put('/profile', (req, res) => {
+router.put('/profile', async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ error: 'Niet ingelogd' });
     }
@@ -287,7 +287,7 @@ router.put('/profile', (req, res) => {
         }
     }
 
-    const result = userStore.updateUserProfile(req.session.user.id, { name, email });
+    const result = await userStore.updateUserProfile(req.session.user.id, { name, email });
 
     if (result.error) {
         return res.status(400).json({ error: result.error });
@@ -310,13 +310,13 @@ router.put('/profile', (req, res) => {
 });
 
 // Wijzig wachtwoord
-router.put('/password', (req, res) => {
+router.put('/password', async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ error: 'Niet ingelogd' });
     }
 
     const { currentPassword, newPassword, confirmPassword } = req.body;
-    const user = userStore.getUser(req.session.user.id);
+    const user = await userStore.getUser(req.session.user.id);
 
     // Voor Google gebruikers die voor het eerst een wachtwoord instellen
     if (user.authType === 'google' && !user.passwordHash) {
@@ -327,10 +327,13 @@ router.put('/password', (req, res) => {
             return res.status(400).json({ error: 'Wachtwoorden komen niet overeen' });
         }
         
-        const result = userStore.changePassword(req.session.user.id, '', newPassword);
+        const result = await userStore.changePassword(req.session.user.id, '', newPassword);
         if (result.error) {
             return res.status(400).json({ error: result.error });
         }
+        
+        // Update session authType since user can now login with email/password
+        req.session.user.authType = 'email';
         
         console.log(`🔐 Wachtwoord ingesteld voor Google gebruiker: ${req.session.user.email}`);
         return res.json({ success: true, message: 'Wachtwoord ingesteld! Je kunt nu ook inloggen met email en wachtwoord.' });
@@ -345,7 +348,7 @@ router.put('/password', (req, res) => {
         return res.status(400).json({ error: 'Nieuwe wachtwoorden komen niet overeen' });
     }
 
-    const result = userStore.changePassword(req.session.user.id, currentPassword, newPassword);
+    const result = await userStore.changePassword(req.session.user.id, currentPassword, newPassword);
 
     if (result.error) {
         return res.status(400).json({ error: result.error });
@@ -356,12 +359,12 @@ router.put('/password', (req, res) => {
 });
 
 // Haal huidige profiel gegevens op
-router.get('/profile', (req, res) => {
+router.get('/profile', async (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ error: 'Niet ingelogd' });
     }
 
-    const user = userStore.getUser(req.session.user.id);
+    const user = await userStore.getUser(req.session.user.id);
     if (!user) {
         return res.status(404).json({ error: 'Gebruiker niet gevonden' });
     }

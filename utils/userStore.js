@@ -185,6 +185,46 @@ const registerUser = async (email, password, name) => {
     return { user, needsApproval: true };
 };
 
+const changePassword = async (userId, currentPassword, newPassword) => {
+    const user = await getUser(userId);
+    if (!user) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    // Valideer nieuw wachtwoord
+    if (!newPassword || newPassword.length < 6) {
+        return { error: 'Nieuw wachtwoord moet minimaal 6 tekens zijn' };
+    }
+    
+    // Voor Google gebruikers die voor het eerst een wachtwoord instellen
+    // (currentPassword mag dan leeg zijn)
+    if (user.authType === 'google' && !user.passwordHash) {
+        const hashedPassword = hashPassword(newPassword);
+        // Update password AND change authType to 'email' so they can login with email/password
+        await dbRun(`
+            UPDATE users SET password_hash = ?, auth_type = 'email', updated_at = ? WHERE id = ?
+        `, [hashedPassword, new Date().toISOString(), userId]);
+        
+        return { success: true };
+    }
+    
+    // Normale wachtwoord wijziging - verifieer huidig wachtwoord
+    if (!currentPassword) {
+        return { error: 'Huidig wachtwoord is verplicht' };
+    }
+    
+    if (!verifyPassword(currentPassword, user.passwordHash)) {
+        return { error: 'Huidig wachtwoord is onjuist' };
+    }
+    
+    const hashedPassword = hashPassword(newPassword);
+    await dbRun(`
+        UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?
+    `, [hashedPassword, new Date().toISOString(), userId]);
+    
+    return { success: true };
+};
+
 const loginWithEmail = async (email, password) => {
     const user = await getUserByEmail(email);
     
@@ -637,6 +677,7 @@ module.exports = {
     // Auth
     registerUser,
     loginWithEmail,
+    changePassword,
     hashPassword,
     verifyPassword,
     // Subscription
