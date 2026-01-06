@@ -336,8 +336,30 @@ app.post('/api/admin/users/:userId/set-plan', requireAdmin, async (req, res) => 
 });
 
 // Health check endpoint voor Railway
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/health', async (req, res) => {
+    try {
+        // Check database connectivity
+        const { dbGet } = require('./utils/database');
+        const userCount = await dbGet('SELECT COUNT(*) as count FROM users');
+        const appointmentCount = await dbGet('SELECT COUNT(*) as count FROM appointments');
+        const companyCount = await dbGet('SELECT COUNT(*) as count FROM company_settings');
+        
+        res.status(200).json({ 
+            status: 'ok', 
+            timestamp: new Date().toISOString(),
+            database: {
+                users: userCount?.count || 0,
+                appointments: appointmentCount?.count || 0,
+                companySettings: companyCount?.count || 0
+            }
+        });
+    } catch (err) {
+        res.status(200).json({ 
+            status: 'ok', 
+            timestamp: new Date().toISOString(),
+            dbError: err.message
+        });
+    }
 });
 
 // Hoofdpagina
