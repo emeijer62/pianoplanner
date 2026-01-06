@@ -313,8 +313,8 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
                         title: event.summary || 'Google Agenda',
                         description: event.description || '',
                         location: event.location || '',
-                        startTime: event.start.dateTime,
-                        endTime: event.end.dateTime,
+                        start: event.start.dateTime,
+                        end: event.end.dateTime,
                         allDay: false,
                         source: 'google',
                         lastSynced: new Date().toISOString()
