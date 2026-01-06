@@ -524,9 +524,18 @@ async function loadModalData() {
             fetch('/api/services')
         ]);
         
-        if (customersRes.ok) customersCache = await customersRes.json();
-        if (pianosRes.ok) pianosCache = await pianosRes.json();
-        if (servicesRes.ok) servicesCache = await servicesRes.json();
+        if (customersRes.ok) {
+            const data = await customersRes.json();
+            customersCache = Array.isArray(data) ? data : (data.customers || []);
+        }
+        if (pianosRes.ok) {
+            const data = await pianosRes.json();
+            pianosCache = Array.isArray(data) ? data : (data.pianos || []);
+        }
+        if (servicesRes.ok) {
+            const data = await servicesRes.json();
+            servicesCache = Array.isArray(data) ? data : (data.services || []);
+        }
         
         populateCustomerDropdown();
         populateServiceDropdown();
@@ -740,7 +749,7 @@ function setupNewCustomerAutocomplete() {
         
         debounceTimer = setTimeout(async () => {
             try {
-                const response = await fetch(`/api/booking/autocomplete?input=${encodeURIComponent(query)}`);
+                const response = await fetch(`/api/booking/address-autocomplete?input=${encodeURIComponent(query)}`);
                 if (!response.ok) return;
                 
                 const predictions = await response.json();
