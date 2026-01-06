@@ -273,6 +273,9 @@ function renderDayView(container) {
     // Get events for this day
     const dayEvents = getEventsForDay(currentDate);
     
+    // Format date for data attribute
+    const dateStr = formatDateForInput(currentDate);
+    
     let html = `<div class="day-view">`;
     html += `<div class="time-grid">`;
     
@@ -285,7 +288,7 @@ function renderDayView(container) {
         });
         
         html += `
-            <div class="time-slot">
+            <div class="time-slot" data-date="${dateStr}" data-hour="${hour}" onclick="openModalWithTime(this)">
                 <div class="time-label">${timeStr}</div>
                 <div class="time-content">
                     ${hourEvents.map(e => createEventElement(e)).join('')}
@@ -336,6 +339,7 @@ function renderWeekView(container) {
         const day = new Date(weekStart);
         day.setDate(day.getDate() + i);
         const dayEvents = getEventsForDay(day);
+        const dateStr = formatDateForInput(day);
         
         html += `<div class="week-day-col">`;
         
@@ -346,7 +350,7 @@ function renderWeekView(container) {
             });
             
             html += `
-                <div class="week-day-slot">
+                <div class="week-day-slot" data-date="${dateStr}" data-hour="${hour}" onclick="openModalWithTime(this)">
                     ${hourEvents.map(e => createEventElement(e, true)).join('')}
                 </div>
             `;
@@ -517,6 +521,39 @@ function openModal() {
     
     document.getElementById('event-start').value = formatDateTimeLocal(startDate);
     document.getElementById('event-end').value = formatDateTimeLocal(endDate);
+}
+
+// Open modal with pre-filled time from clicked slot
+function openModalWithTime(element) {
+    // Don't trigger if clicking on an event
+    if (event.target.closest('.calendar-event')) {
+        return;
+    }
+    
+    const dateStr = element.dataset.date;
+    const hour = parseInt(element.dataset.hour);
+    
+    document.getElementById('event-modal').style.display = 'flex';
+    
+    // Create start date from clicked slot
+    const startDate = new Date(dateStr + 'T' + hour.toString().padStart(2, '0') + ':00:00');
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
+    
+    document.getElementById('event-start').value = formatDateTimeLocal(startDate);
+    document.getElementById('event-end').value = formatDateTimeLocal(endDate);
+    
+    // Focus on title field
+    setTimeout(() => {
+        document.getElementById('event-title').focus();
+    }, 100);
+}
+
+// Format date for data attribute (YYYY-MM-DD)
+function formatDateForInput(date) {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 function closeModal() {
