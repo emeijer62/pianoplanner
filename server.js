@@ -335,12 +335,18 @@ app.post('/api/admin/users/:userId/set-plan', requireAdmin, async (req, res) => 
     }
 });
 
+// Health check endpoint voor Railway
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // Hoofdpagina
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Start server
+console.log('🚀 Server wordt gestart...');
 app.listen(PORT, () => {
     console.log(`🎹 PianoPlanner draait op http://localhost:${PORT}`);
     
