@@ -117,13 +117,15 @@ router.post('/login', async (req, res) => {
 router.get('/google', (req, res) => {
     // Sla remember voorkeur op in sessie voor na de callback
     req.session.rememberMe = req.query.remember === '1';
+    // Check of we consent moeten forceren (voor nieuwe refresh_token)
+    req.session.forceConsent = req.query.reauth === '1';
     
-    // Force prompt=consent om altijd refresh_token te krijgen
-    // Dit is nodig omdat Google alleen een refresh_token geeft bij eerste consent
+    // Standaard: alleen account selectie (gebruikersvriendelijk)
+    // Bij reauth=1: forceer consent om nieuwe refresh_token te krijgen
     const authUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES,
-        prompt: 'consent', // Forceer toestemming voor refresh_token
+        prompt: req.query.reauth === '1' ? 'consent' : 'select_account',
         include_granted_scopes: true
     });
     res.redirect(authUrl);
@@ -150,13 +152,30 @@ router.get('/google/callback', async (req, res) => {
         const existingUser = await userStore.getUser(userInfo.id);
         const isNewUser = !existingUser;
 
+        // Combineer tokens: behoud bestaande refresh_token als nieuwe niet aanwezig is
+        let finalTokens = tokens;
+        if (existingUser?.tokens?.refresh_token && !tokens.refresh_token) {
+            // Behoud de bestaande refresh_token
+            finalTokens = {
+                ...tokens,
+                refresh_token: existingUser.tokens.refresh_token
+            };
+            console.log(`🔄 Bestaande refresh_token behouden voor ${userInfo.email}`);
+        }
+        
+        // Als we GEEN refresh_token hebben (nieuw of bestaand), vraag om reauth
+        if (!finalTokens.refresh_token && !isNewUser) {
+            console.log(`⚠️ Geen refresh_token voor ${userInfo.email}, redirect naar reauth`);
+            return res.redirect('/auth/google?reauth=1');
+        }
+
         // Sla gebruiker op (of update)
         const user = await userStore.saveUser({
             id: userInfo.id,
             email: userInfo.email,
             name: userInfo.name,
             picture: userInfo.picture,
-            tokens: tokens,
+            tokens: finalTokens,
             authType: 'google'
         });
 
@@ -179,7 +198,7 @@ router.get('/google/callback', async (req, res) => {
             picture: user.picture,
             authType: 'google'
         };
-        req.session.tokens = tokens;
+        req.session.tokens = finalTokens;
 
         // Sla sessie expliciet op voor redirect
         req.session.save((err) => {
