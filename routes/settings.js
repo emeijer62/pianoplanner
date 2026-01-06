@@ -10,7 +10,9 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 // Haal bedrijfsinstellingen op
 router.get('/company', requireAuth, async (req, res) => {
     try {
+        console.log('🏢 GET /company for user:', req.session.user.id, req.session.user.email);
         const settings = await companyStore.getSettings(req.session.user.id);
+        console.log('🏢 Company settings found:', settings?.name || 'empty');
         res.json(settings);
     } catch (error) {
         console.error('Error getting company settings:', error);

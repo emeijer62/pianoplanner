@@ -178,9 +178,17 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 
 async function loadCompanySettings() {
     try {
+        // First get user info to see current user ID
+        const userResponse = await fetch('/api/user');
+        const userData = await userResponse.json();
+        console.log('🏢 Current user for company settings:', userData.user?.id, userData.user?.email);
+        
         const response = await fetch('/api/settings/company');
+        console.log('🏢 Company settings response status:', response.status);
+        
         if (response.ok) {
             const settings = await response.json();
+            console.log('🏢 Loaded company settings:', settings);
             
             // Fill form
             document.getElementById('companyName').value = settings.name || '';
@@ -194,6 +202,8 @@ async function loadCompanySettings() {
             
             // Load availability
             renderAvailabilityGrid(settings.availability);
+        } else {
+            console.error('🏢 Failed to load company settings:', await response.text());
         }
     } catch (error) {
         console.error('Could not load company settings:', error);
