@@ -120,7 +120,7 @@
                     
                     if (data.predictions && data.predictions.length > 0) {
                         suggestions.innerHTML = data.predictions.map(p => 
-                            `<div class="autocomplete-item" data-place-id="${p.place_id}">${p.description}</div>`
+                            `<div class="autocomplete-item" data-place-id="${p.placeId}">${p.description}</div>`
                         ).join('');
                         suggestions.style.display = 'block';
                     } else {
