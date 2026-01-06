@@ -26,9 +26,20 @@ function showAlert(message, type = 'success') {
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
     alert.textContent = message;
+    
+    // Clear any existing alerts
+    container.innerHTML = '';
     container.appendChild(alert);
     
-    setTimeout(() => alert.remove(), 5000);
+    // Scroll to alert
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        alert.style.opacity = '0';
+        alert.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => alert.remove(), 300);
+    }, 5000);
 }
 
 // ========== ACCOUNT/PROFILE SETTINGS ==========

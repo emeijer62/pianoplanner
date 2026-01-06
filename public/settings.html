@@ -285,20 +285,33 @@
         
         /* Alert messages */
         .alert {
-            padding: 0.875rem 1rem;
+            padding: 1rem 1.25rem;
             border-radius: var(--radius);
             margin-bottom: 1rem;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .alert-success {
-            background: var(--success-light);
+            background: #d1fae5;
             color: #047857;
             border: 1px solid #6ee7b7;
         }
         
         .alert-error {
-            background: var(--danger-light);
+            background: #fee2e2;
             color: #b91c1c;
             border: 1px solid #fca5a5;
         }
