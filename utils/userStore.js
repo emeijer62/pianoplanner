@@ -449,10 +449,14 @@ const getCalendarSync = async (userId) => {
 const updateCalendarSync = async (userId, settings) => {
     console.log('📅 updateCalendarSync called with:', { userId, settings });
     
+    // First get existing settings to preserve values
+    const existingSettings = await getCalendarSync(userId);
+    
     const calendarSync = JSON.stringify({
         enabled: settings.enabled === true || settings.enabled === 'true',
-        syncDirection: settings.syncDirection || 'both',
-        googleCalendarId: settings.googleCalendarId || 'primary',
+        syncDirection: settings.syncDirection || existingSettings.syncDirection || 'both',
+        googleCalendarId: settings.googleCalendarId || existingSettings.googleCalendarId || 'primary',
+        lastSync: settings.lastSync || existingSettings.lastSync || null,
         updatedAt: new Date().toISOString()
     });
     
