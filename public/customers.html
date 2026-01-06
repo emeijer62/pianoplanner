@@ -153,47 +153,35 @@
                 if (placeId) {
                     try {
                         console.log('Fetching place details for:', placeId);
-                        const encodedPlaceId = encodeURIComponent(placeId);
-                        const res = await fetch(`/api/booking/place-details/${encodedPlaceId}`);
+                        const res = await fetch(`/api/booking/place-details?placeId=${encodeURIComponent(placeId)}`);
                         
                         if (!res.ok) {
                             console.error('API returned status:', res.status, res.statusText);
-                            const errorText = await res.text();
-                            console.error('Error response:', errorText);
                             return;
                         }
                         
                         const data = await res.json();
-                        
-                        console.log('Place details response:', JSON.stringify(data, null, 2));
+                        console.log('Place details response:', data);
                         
                         // Get references to input elements
                         const postalCodeInput = document.getElementById('customer-postalcode');
                         const cityInput = document.getElementById('customer-city');
                         
-                        console.log('Found inputs - postalCode:', postalCodeInput, 'city:', cityInput);
-                        
+                        // Fill in fields from response
                         if (data.address) {
-                            // New format
-                            console.log('Using address format:', data.address);
                             if (postalCodeInput) postalCodeInput.value = data.address.postalCode || '';
                             if (cityInput) cityInput.value = data.address.city || '';
                             if (data.address.street) {
                                 streetInput.value = data.address.street;
                             }
-                            console.log('Set values - postalCode:', postalCodeInput?.value, 'city:', cityInput?.value);
-                        } else if (data.components) {
-                            // Fallback to components
-                            console.log('Using components format:', data.components);
-                            if (postalCodeInput) postalCodeInput.value = data.components.postalCode || '';
-                            if (cityInput) cityInput.value = data.components.city || '';
-                            console.log('Set values - postalCode:', postalCodeInput?.value, 'city:', cityInput?.value);
-                        } else {
-                            console.warn('No address or components in response:', data);
+                        } else if (data.street || data.postalCode || data.city) {
+                            // Direct format
+                            if (postalCodeInput) postalCodeInput.value = data.postalCode || '';
+                            if (cityInput) cityInput.value = data.city || '';
+                            if (data.street) streetInput.value = data.street;
                         }
                     } catch (err) {
                         console.error('Could not fetch address details:', err);
-                        alert('Error fetching address details: ' + err.message);
                     }
                 }
             }
