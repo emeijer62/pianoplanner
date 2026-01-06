@@ -56,12 +56,12 @@ const saveSettings = async (userId, settingsData) => {
         // Insert
         await dbRun(`
             INSERT INTO company_settings (
-                id, user_id, name, owner_name, email, phone,
+                user_id, name, owner_name, email, phone,
                 street, postal_code, city, country,
                 kvk_number, btw_number, iban,
                 website, logo_url, travel_origin, working_hours, updated_at
             )
-            VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             userId,
             settingsData.name || null,
