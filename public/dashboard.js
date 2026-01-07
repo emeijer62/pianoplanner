@@ -737,7 +737,7 @@ function cancelNewCustomer() {
 async function saveNewCustomer() {
     const name = document.getElementById('new-customer-name').value.trim();
     if (!name) {
-        alert('Vul een klantnaam in');
+        alert('Please enter a customer name');
         return;
     }
     
@@ -750,7 +750,7 @@ async function saveNewCustomer() {
     const saveBtn = document.querySelector('#new-customer-form .btn-primary');
     const originalText = saveBtn.textContent;
     saveBtn.disabled = true;
-    saveBtn.textContent = 'Opslaan...';
+    saveBtn.textContent = 'Saving...';
     
     try {
         // Create customer
@@ -819,17 +819,17 @@ async function saveNewCustomer() {
         }
         
         // Show success message
-        console.log(`✅ Klant "${name}" aangemaakt`);
+        console.log(`✅ Customer "${name}" created`);
         
     } catch (err) {
         console.error('Error creating customer:', err);
-        alert('Kon klant niet aanmaken. Probeer het opnieuw.');
+        alert('Could not create customer. Please try again.');
     } finally {
         // Re-enable button
         const saveBtn = document.querySelector('#new-customer-form .btn-primary');
         if (saveBtn) {
             saveBtn.disabled = false;
-            saveBtn.textContent = 'Klant toevoegen';
+            saveBtn.textContent = 'Add customer';
         }
     }
 }
@@ -1026,9 +1026,9 @@ async function deleteCurrentAppointment() {
     
     // Get appointment title for confirmation
     const appointment = allEvents.find(e => e.id === editingAppointmentId);
-    const title = appointment?.summary || 'deze afspraak';
+    const title = appointment?.summary || 'this appointment';
     
-    if (!confirm(`Weet je zeker dat je "${title}" wilt verwijderen?\n\nDeze actie kan niet ongedaan gemaakt worden.`)) {
+    if (!confirm(`Are you sure you want to delete "${title}"?\n\nThis action cannot be undone.`)) {
         return;
     }
     
