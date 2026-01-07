@@ -4,47 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - PianoPlanner</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>">
     <script src="/js/i18n.js"></script>
     <style>
-        /* Settings Page - Minimal White Design */
+        /* Settings Page - Apple Style */
         .settings-container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 1.5rem;
+            padding: 32px 24px;
         }
         
         .settings-section {
             background: var(--white);
             border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-sm);
+            padding: 28px;
+            margin-bottom: 24px;
+            border: 1px solid var(--gray-200);
         }
         
         .settings-section h2 {
             margin-top: 0;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 0.75rem;
-            font-size: 1.15rem;
+            margin-bottom: 20px;
+            color: var(--gray-900);
+            font-size: 20px;
             font-weight: 600;
         }
         
         .settings-section h3 {
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            color: var(--text-primary);
-            font-size: 1rem;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: var(--gray-900);
+            font-size: 16px;
             font-weight: 600;
         }
         
         .settings-section p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
+            color: var(--gray-500);
+            font-size: 14px;
+            margin-bottom: 16px;
         }
         
         /* Availability Grid */
@@ -434,27 +435,29 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <a href="/dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
-                <span class="piano-icon">🎹</span>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="/dashboard.html" class="nav-logo">
+                <span class="nav-logo-icon">🎹</span>
                 <span>PianoPlanner</span>
             </a>
-        </div>
-        <div class="nav-links">
-            <a href="/dashboard.html">📅 <span data-i18n="nav.dashboard">Dashboard</span></a>
-            <a href="/customers.html">👥 <span data-i18n="nav.customers">Customers</span></a>
-            <a href="/pianos.html">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
-            <a href="/settings.html" class="active">⚙️ <span data-i18n="nav.settings">Settings</span></a>
-        </div>
-        <div class="nav-user">
-            <a href="/auth/logout" class="btn btn-small" data-i18n="nav.logout">Log out</a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/customers.html" class="nav-link">Customers</a>
+                <a href="/pianos.html" class="nav-link">Pianos</a>
+                <a href="/settings.html" class="nav-link active">Settings</a>
+            </div>
+            <div class="nav-user">
+                <a href="/booking.html" class="btn btn-primary btn-small">+ Appointment</a>
+                <a href="/auth/logout" class="btn btn-secondary btn-small">Log out</a>
+            </div>
         </div>
     </nav>
 
     <div class="settings-container">
-        <div class="page-header">
-            <h1>⚙️ <span data-i18n="settings.title">Settings</span></h1>
+        <div class="page-header" style="margin-bottom: 32px;">
+            <h1 style="font-size: 34px; font-weight: 700;">⚙️ Settings</h1>
         </div>
         
         <div id="alertContainer"></div>
@@ -462,7 +465,7 @@
         <!-- Google Calendar Sync -->
         <div class="settings-section">
             <h2>🔄 Google Calendar Sync</h2>
-            <p style="color: #666; margin-bottom: 16px;">
+            <p style="color: var(--gray-500); margin-bottom: 16px;">
                 Sync your local PianoPlanner calendar with Google Calendar. 
                 This way you have all your appointments in one place.
             </p>

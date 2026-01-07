@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subscription - PianoPlanner</title>
-    <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>">
     <script src="/js/i18n.js"></script>
     <style>
         .billing-container {
@@ -251,19 +252,23 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <a href="/dashboard.html" class="logo">
-                <span class="logo-icon">🎹</span>
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="/dashboard.html" class="nav-brand">
+                <span class="nav-logo">🎹</span>
                 <span>PianoPlanner</span>
             </a>
-            <nav class="nav-links">
-                <a href="/dashboard.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
-                <a href="/settings.html" class="nav-link" data-i18n="nav.settings">Settings</a>
-                <a href="/billing.html" class="nav-link active" data-i18n="billing.title">Subscription</a>
-            </nav>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link">📅 <span data-i18n="nav.dashboard">Calendar</span></a>
+                <a href="/customers.html" class="nav-link">👥 <span data-i18n="nav.customers">Customers</span></a>
+                <a href="/pianos.html" class="nav-link">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
+                <a href="/settings.html" class="nav-link">⚙️</a>
+            </div>
+            <div class="nav-actions">
+                <a href="/auth/logout" class="btn btn-secondary btn-sm" data-i18n="nav.logout">Logout</a>
+            </div>
         </div>
-    </header>
+    </nav>
 
     <main>
         <div class="billing-container">

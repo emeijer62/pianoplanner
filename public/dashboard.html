@@ -7,8 +7,12 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Dashboard - PianoPlanner</title>
-    <!-- VERSION: 2026-01-04 v4 - Compact Cockpit Layout -->
-    <link rel="stylesheet" href="styles.css?v=2026010404">
+    <!-- VERSION: 2026-01-07 v5 - Apple Style Navigation -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>">
     <script src="/js/i18n.js"></script>
     <style>
         /* Cockpit Layout - Alles op 1 scherm */
@@ -605,22 +609,24 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <span class="piano-icon">🎹</span>
-            <span>PianoPlanner</span>
-        </div>
-        <div class="nav-links">
-            <a href="/dashboard.html" class="active">📅 <span data-i18n="nav.dashboard">Calendar</span></a>
-            <a href="/customers.html">👥 <span data-i18n="nav.customers">Customers</span></a>
-            <a href="/pianos.html">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
-            <a href="/settings.html">⚙️</a>
-        </div>
-        <div class="nav-user">
-            <a href="/admin-dashboard.html" id="admin-link" class="btn btn-small btn-secondary" style="display: none;">Admin</a>
-            <img id="nav-user-picture" src="" alt="" class="nav-user-picture">
-            <span id="nav-user-name"></span>
-            <a href="/auth/logout" class="btn btn-small" data-i18n="nav.logout">Out</a>
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="/dashboard.html" class="nav-brand">
+                <span class="nav-logo">🎹</span>
+                <span>PianoPlanner</span>
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link active">📅 <span data-i18n="nav.dashboard">Calendar</span></a>
+                <a href="/customers.html" class="nav-link">👥 <span data-i18n="nav.customers">Customers</span></a>
+                <a href="/pianos.html" class="nav-link">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
+                <a href="/settings.html" class="nav-link">⚙️</a>
+            </div>
+            <div class="nav-actions">
+                <a href="/admin-dashboard.html" id="admin-link" class="btn btn-secondary btn-sm" style="display: none;">Admin</a>
+                <img id="nav-user-picture" src="" alt="" class="nav-user-picture" style="width: 32px; height: 32px; border-radius: 50%; display: none;">
+                <span id="nav-user-name" style="font-size: 0.875rem; color: var(--gray-600);"></span>
+                <a href="/auth/logout" class="btn btn-secondary btn-sm" data-i18n="nav.logout">Out</a>
+            </div>
         </div>
     </nav>
 

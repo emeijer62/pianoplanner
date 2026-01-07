@@ -4,27 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pianos - PianoPlanner</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>">
     <script src="/js/i18n.js"></script>
     <style>
         .pianos-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 32px 24px;
         }
 
         .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 32px;
             flex-wrap: wrap;
             gap: 16px;
         }
 
         .page-header h1 {
             margin: 0;
-            font-size: 1.75rem;
+            font-size: 34px;
+            font-weight: 700;
         }
 
         .header-actions {
@@ -34,43 +39,65 @@
         }
 
         .search-box input {
-            padding: 10px 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            width: 250px;
+            padding: 12px 16px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            width: 280px;
+            font-family: var(--font-family);
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px var(--blue-light);
         }
 
         /* Stats */
         .stats-row {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
-            flex-wrap: wrap;
         }
 
         .stat-badge {
-            background: white;
-            border: 1px solid #e8e8e8;
-            border-radius: 8px;
-            padding: 12px 20px;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 8px;
+            transition: all var(--transition-fast);
+        }
+        
+        .stat-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-badge .label {
+            font-size: 13px;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
         }
 
         .stat-badge .number {
-            font-size: 1.25rem;
-            font-weight: 600;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--gray-900);
         }
 
         .stat-badge.warning {
-            border-color: #ffcc00;
-            background: #fffbeb;
+            border-color: var(--orange);
+            background: var(--orange-light);
         }
 
         .stat-badge.warning .number {
-            color: #b8860b;
+            color: var(--orange);
         }
 
         /* Piano Grid */
@@ -81,120 +108,125 @@
         }
 
         .piano-card {
-            background: white;
-            border: 1px solid #e8e8e8;
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.2s;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            transition: all var(--transition-fast);
             cursor: pointer;
         }
 
         .piano-card:hover {
-            border-color: #1a1a1a;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: var(--gray-300);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
         }
 
         .piano-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
         .piano-brand {
-            font-size: 1.1rem;
+            font-size: 18px;
             font-weight: 600;
-            color: #1a1a1a;
+            color: var(--gray-900);
         }
 
         .piano-model {
-            color: #666;
-            font-size: 0.9rem;
+            color: var(--gray-500);
+            font-size: 14px;
+            margin-top: 2px;
         }
 
         .piano-type {
-            background: #f0f0f0;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            background: var(--gray-100);
+            padding: 6px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
             font-weight: 500;
         }
 
         .piano-type.grand {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background: var(--green-light);
+            color: var(--green);
         }
 
         .piano-type.upright {
-            background: #e3f2fd;
-            color: #1565c0;
+            background: var(--blue-light);
+            color: var(--blue);
         }
 
         .piano-type.digital {
-            background: #f3e5f5;
-            color: #7b1fa2;
+            background: var(--purple-light);
+            color: var(--purple);
         }
 
         .piano-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 12px;
-            font-size: 0.85rem;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
         }
 
         .piano-detail {
-            color: #666;
+            color: var(--gray-500);
         }
 
         .piano-detail span {
-            color: #333;
-        }
-
-        .piano-customer {
-            background: #f8f8f8;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .piano-service {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #f0f0f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
-        }
-
-        .service-due {
-            color: #c62828;
+            color: var(--gray-900);
             font-weight: 500;
         }
 
+        .piano-customer {
+            background: var(--gray-50);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .piano-service {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-100);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .service-due {
+            color: var(--red);
+            font-weight: 600;
+        }
+
         .service-ok {
-            color: #2e7d32;
+            color: var(--green);
+            font-weight: 500;
         }
 
         /* Empty state */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #666;
+            padding: 80px 24px;
+            color: var(--gray-500);
         }
 
         .empty-state .icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
+            font-size: 64px;
+            margin-bottom: 20px;
         }
 
         .empty-state h3 {
-            margin: 0 0 8px 0;
-            color: #333;
+            margin: 0 0 12px 0;
+            font-size: 22px;
+            color: var(--gray-900);
         }
 
         /* Modal */
@@ -374,21 +406,23 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <a href="/dashboard.html" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
-                <span class="piano-icon">🎹</span>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="/dashboard.html" class="nav-logo">
+                <span class="nav-logo-icon">🎹</span>
                 <span>PianoPlanner</span>
             </a>
-        </div>
-        <div class="nav-links">
-            <a href="/dashboard.html">📅 <span data-i18n="nav.dashboard">Dashboard</span></a>
-            <a href="/customers.html">👥 <span data-i18n="nav.customers">Customers</span></a>
-            <a href="/pianos.html" class="active">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
-            <a href="/settings.html">⚙️ <span data-i18n="nav.settings">Settings</span></a>
-        </div>
-        <div class="nav-user">
-            <a href="/auth/logout" class="btn btn-small" data-i18n="nav.logout">Log out</a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/customers.html" class="nav-link">Customers</a>
+                <a href="/pianos.html" class="nav-link active">Pianos</a>
+                <a href="/settings.html" class="nav-link">Settings</a>
+            </div>
+            <div class="nav-user">
+                <a href="/booking.html" class="btn btn-primary btn-small">+ Appointment</a>
+                <a href="/auth/logout" class="btn btn-secondary btn-small">Log out</a>
+            </div>
         </div>
     </nav>
 
@@ -397,7 +431,7 @@
             <h1>🎹 <span data-i18n="pianos.title">Pianos</span></h1>
             <div class="header-actions">
                 <div class="search-box">
-                    <input type="text" id="search-input" placeholder="Search pianos...">
+                    <input type="text" id="search-input" placeholder="🔍 Search pianos...">
                 </div>
                 <button class="btn btn-primary" onclick="openPianoModal()">+ <span data-i18n="pianos.addPiano">New Piano</span></button>
             </div>
@@ -405,6 +439,7 @@
 
         <div class="stats-row">
             <div class="stat-badge">
+                <span class="label">Total</span>
                 <span class="number" id="total-pianos">0</span>
                 <span data-i18n="pianos.title">Pianos total</span>
             </div>

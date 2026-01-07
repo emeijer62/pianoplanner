@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Details - PianoPlanner</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>">
     <script src="/js/i18n.js"></script>
     <style>
         .customer-detail-container {
@@ -413,20 +417,22 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <span class="piano-icon">🎹</span>
-            <span>PianoPlanner</span>
-        </div>
-        <div class="nav-links">
-            <a href="/dashboard.html">📅 Dashboard</a>
-            <a href="/customers.html" class="active">👥 Customers</a>
-            <a href="/pianos.html">🎹 Pianos</a>
-            <a href="/settings.html">⚙️ Settings</a>
-        </div>
-        <div class="nav-user">
-            <a href="/booking.html" class="btn btn-small btn-primary">+ Appointment</a>
-            <a href="/auth/logout" class="btn btn-small">Logout</a>
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="/dashboard.html" class="nav-brand">
+                <span class="nav-logo">🎹</span>
+                <span>PianoPlanner</span>
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link">📅 <span data-i18n="nav.dashboard">Calendar</span></a>
+                <a href="/customers.html" class="nav-link active">👥 <span data-i18n="nav.customers">Customers</span></a>
+                <a href="/pianos.html" class="nav-link">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
+                <a href="/settings.html" class="nav-link">⚙️</a>
+            </div>
+            <div class="nav-actions">
+                <a href="/booking.html" class="btn btn-primary btn-sm">+ <span data-i18n="appointments.newAppointment">Appointment</span></a>
+                <a href="/auth/logout" class="btn btn-secondary btn-sm" data-i18n="nav.logout">Logout</a>
+            </div>
         </div>
     </nav>
 
