@@ -379,6 +379,9 @@ async function fetchAppleEvents(credentials, calendarUrl, startDate, endDate) {
     const start = startDate ? new Date(startDate) : new Date();
     const end = endDate ? new Date(endDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     
+    console.log(`🍎 Fetching events from ${calendarUrl}`);
+    console.log(`🍎 Date range: ${start.toISOString()} to ${end.toISOString()}`);
+    
     const reportBody = `<?xml version="1.0" encoding="UTF-8"?>
 <C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
     <D:prop>
@@ -404,27 +407,49 @@ async function fetchAppleEvents(credentials, calendarUrl, startDate, endDate) {
         body: reportBody
     });
     
+    console.log(`🍎 CalDAV REPORT response status: ${response.status}`);
+    
     if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`🍎 CalDAV REPORT error body:`, errorText.substring(0, 500));
         throw new Error(`CalDAV REPORT error: ${response.status}`);
     }
     
     const xmlText = await response.text();
+    console.log(`🍎 CalDAV REPORT response (first 1000 chars):`, xmlText.substring(0, 1000));
+    
     const parsed = xmlParser.parse(xmlText);
     
     const events = [];
     
-    const responses = parsed.multistatus?.response;
+    // Try multiple possible XML structures
+    const multistatus = parsed.multistatus || parsed['D:multistatus'] || parsed['d:multistatus'];
+    const responses = multistatus?.response || multistatus?.['D:response'] || multistatus?.['d:response'];
     const responseArray = Array.isArray(responses) ? responses : [responses].filter(Boolean);
     
+    console.log(`🍎 Found ${responseArray.length} responses in REPORT`);
+    
     for (const resp of responseArray) {
-        const calendarData = resp.propstat?.prop?.['calendar-data'];
-        if (calendarData) {
-            const event = parseICalEvent(calendarData, resp.href);
-            if (event) {
-                events.push(event);
+        // Try multiple propstat paths
+        const propstat = resp.propstat || resp['D:propstat'] || resp['d:propstat'];
+        const propstatArray = Array.isArray(propstat) ? propstat : [propstat].filter(Boolean);
+        
+        for (const ps of propstatArray) {
+            const prop = ps?.prop || ps?.['D:prop'] || ps?.['d:prop'];
+            const calendarData = prop?.['calendar-data'] || prop?.['C:calendar-data'] || prop?.['cal:calendar-data'];
+            
+            if (calendarData) {
+                console.log(`🍎 Found calendar-data, parsing...`);
+                const event = parseICalEvent(calendarData, resp.href || resp['D:href'] || resp['d:href']);
+                if (event) {
+                    console.log(`🍎 Parsed event: ${event.summary} (${event.start})`);
+                    events.push(event);
+                }
             }
         }
     }
+    
+    console.log(`🍎 Total events found: ${events.length}`);
     
     return events.sort((a, b) => new Date(a.start) - new Date(b.start));
 }
@@ -643,25 +668,31 @@ async function performAppleSync(userId, credentials, syncSettings) {
     const appointmentStore = require('../utils/appointmentStore');
     const direction = syncSettings.syncDirection || 'both';
     
+    console.log(`🍎 Starting Apple sync for user ${userId}`);
+    console.log(`🍎 Sync direction: ${direction}`);
+    console.log(`🍎 Calendar URL: ${syncSettings.appleCalendarUrl}`);
+    
     let synced = 0;
     let errors = [];
     
     // Haal lokale afspraken op
     const localAppointments = await appointmentStore.getAllAppointments(userId);
+    console.log(`🍎 Local appointments: ${localAppointments.length}`);
     
     // Haal Apple events op
     const appleEvents = await fetchAppleEvents(
         credentials, 
         syncSettings.appleCalendarUrl
     );
+    console.log(`🍎 Apple events fetched: ${appleEvents.length}`);
     
     // Sync TO Apple (local → Apple)
     if (direction === 'both' || direction === 'toApple') {
-        for (const appointment of localAppointments) {
+        const toSync = localAppointments.filter(a => !a.apple_event_id);
+        console.log(`🍎 Local appointments to sync to Apple: ${toSync.length}`);
+        
+        for (const appointment of toSync) {
             try {
-                // Check of al gesynchroniseerd (apple_event_id)
-                if (appointment.apple_event_id) continue;
-                
                 // Maak event in Apple Calendar
                 const event = await createAppleEvent(credentials, syncSettings.appleCalendarUrl, {
                     summary: appointment.title || appointment.serviceName,
@@ -677,8 +708,10 @@ async function performAppleSync(userId, credentials, syncSettings) {
                     apple_event_url: event.url
                 });
                 
+                console.log(`🍎 Synced to Apple: ${appointment.title}`);
                 synced++;
             } catch (error) {
+                console.error(`🍎 Error syncing to Apple: ${appointment.title}`, error.message);
                 errors.push(`Event "${appointment.title}": ${error.message}`);
             }
         }
@@ -686,13 +719,20 @@ async function performAppleSync(userId, credentials, syncSettings) {
     
     // Sync FROM Apple (Apple → local)
     if (direction === 'both' || direction === 'fromApple') {
+        console.log(`🍎 Checking ${appleEvents.length} Apple events to sync locally`);
+        
         for (const event of appleEvents) {
             try {
-                // Check of al bestaat lokaal
+                // Check of al bestaat lokaal (by apple_event_id)
                 const existing = localAppointments.find(
                     a => a.apple_event_id === event.id
                 );
-                if (existing) continue;
+                if (existing) {
+                    console.log(`🍎 Apple event already exists locally: ${event.summary}`);
+                    continue;
+                }
+                
+                console.log(`🍎 Creating local appointment from Apple: ${event.summary}`);
                 
                 // Maak lokale afspraak aan
                 await appointmentStore.createAppointment(userId, {
@@ -708,6 +748,7 @@ async function performAppleSync(userId, credentials, syncSettings) {
                 
                 synced++;
             } catch (error) {
+                console.error(`🍎 Error syncing from Apple: ${event.summary}`, error.message);
                 errors.push(`Apple event "${event.summary}": ${error.message}`);
             }
         }
