@@ -862,7 +862,10 @@ function setEventProperty(event, key, value) {
         .replace(/\\;/g, ';')
         .replace(/\\\\/g, '\\');
     
-    switch (key) {
+    // Handle keys with parameters like DTSTART;TZID=Europe/Amsterdam
+    const baseKey = key.split(';')[0];
+    
+    switch (baseKey) {
         case 'UID':
             event.id = unescapedValue;
             break;
