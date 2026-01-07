@@ -28,6 +28,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('appointment-date').value = today;
     document.getElementById('appointment-date').min = today;
+    
+    // Check if customer ID is provided in URL (coming from customer detail page)
+    const urlParams = new URLSearchParams(window.location.search);
+    const preselectedCustomerId = urlParams.get('customer');
+    if (preselectedCustomerId) {
+        await preselectCustomer(preselectedCustomerId);
+    }
 });
 
 async function loadServices() {
@@ -68,8 +75,14 @@ function selectService(serviceId) {
     // Store selection
     selectedService = window.servicesData.find(s => s.id === serviceId);
     
-    // Go to next step
-    showStep('step-customer');
+    // If customer is already preselected, skip to date step
+    if (selectedCustomer) {
+        updateSelectedInfo();
+        showStep('step-datetime');
+    } else {
+        // Go to customer step
+        showStep('step-customer');
+    }
 }
 
 async function handleCustomerSearch(e) {
@@ -109,6 +122,54 @@ async function handleCustomerSearch(e) {
             console.error('Search error:', err);
         }
     }, 300);
+}
+
+// Preselect customer when coming from customer detail page
+async function preselectCustomer(customerId) {
+    try {
+        const response = await fetch(`/api/customers/${customerId}`);
+        if (!response.ok) {
+            console.warn('Could not load preselected customer');
+            return;
+        }
+        
+        selectedCustomer = await response.json();
+        
+        // Show customer name in search box
+        document.getElementById('customer-search').value = selectedCustomer.name;
+        
+        // Show a notification that customer is preselected
+        const searchBox = document.querySelector('.customer-search-box');
+        const notification = document.createElement('div');
+        notification.className = 'preselected-notification';
+        notification.innerHTML = `
+            <span>✅ Klant geselecteerd: <strong>${escapeHtml(selectedCustomer.name)}</strong></span>
+            <button onclick="clearPreselectedCustomer()" class="btn btn-small btn-secondary">Andere klant</button>
+        `;
+        notification.style.cssText = 'background: #e8f5e9; padding: 12px 16px; border-radius: 8px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center;';
+        searchBox.appendChild(notification);
+        
+        // Hide the new customer form
+        document.getElementById('customer-form').style.display = 'none';
+        document.querySelector('.divider').style.display = 'none';
+        
+        console.log(`📋 Klant voorgeselecteerd: ${selectedCustomer.name}`);
+        
+    } catch (err) {
+        console.error('Error preselecting customer:', err);
+    }
+}
+
+// Clear preselected customer and show form again
+function clearPreselectedCustomer() {
+    selectedCustomer = null;
+    document.getElementById('customer-search').value = '';
+    document.getElementById('customer-form').style.display = 'block';
+    document.querySelector('.divider').style.display = 'block';
+    
+    // Remove notification
+    const notification = document.querySelector('.preselected-notification');
+    if (notification) notification.remove();
 }
 
 async function selectExistingCustomer(customerId) {
