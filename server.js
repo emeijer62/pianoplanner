@@ -25,7 +25,7 @@ const appointmentRoutes = require('./routes/appointments');
 const adminRoutes = require('./routes/admin');
 const calendarFeedRoutes = require('./routes/calendarFeed');
 const userStore = require('./utils/userStore');
-const { requireAdmin, isAdmin } = require('./middleware/auth');
+const { requireAuth, requireAdmin, isAdmin } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
