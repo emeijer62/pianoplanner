@@ -10,9 +10,79 @@ const serviceStore = require('../utils/serviceStore');
 const customerStore = require('../utils/customerStore');
 const appointmentStore = require('../utils/appointmentStore');
 const companyStore = require('../utils/companyStore');
-const { calculateTravelTime } = require('../utils/travelTime');
+const { calculateTravelTime, getPlaceAutocomplete, getPlaceDetails, geocodeAddress } = require('../utils/travelTime');
 const emailService = require('../utils/emailService');
 const { getDb } = require('../utils/database');
+
+// ==================== PUBLIC ADDRESS AUTOCOMPLETE ====================
+
+/**
+ * Public address autocomplete - geen auth vereist
+ * GET /api/book/address-autocomplete
+ */
+router.get('/address-autocomplete', async (req, res) => {
+    try {
+        const { input, sessionToken } = req.query;
+        
+        if (!input || input.length < 3) {
+            return res.json({ predictions: [] });
+        }
+        
+        const predictions = await getPlaceAutocomplete(input, sessionToken);
+        res.json({ predictions });
+    } catch (error) {
+        console.error('Public autocomplete error:', error);
+        res.json({ predictions: [] });
+    }
+});
+
+/**
+ * Public place details - geen auth vereist
+ * GET /api/book/place-details/:placeId
+ */
+router.get('/place-details/:placeId', async (req, res) => {
+    try {
+        const { placeId } = req.params;
+        
+        if (!placeId) {
+            return res.status(400).json({ error: 'Place ID is verplicht' });
+        }
+        
+        let details = await getPlaceDetails(placeId);
+        let address = details.components || {};
+        
+        // If postal code is missing, try geocoding
+        if (!address.postalCode && details.formattedAddress) {
+            try {
+                const geocodeResult = await geocodeAddress(details.formattedAddress);
+                if (geocodeResult?.components) {
+                    if (geocodeResult.components.postalCode) address.postalCode = geocodeResult.components.postalCode;
+                    if (geocodeResult.components.city && !address.city) address.city = geocodeResult.components.city;
+                }
+            } catch (e) { /* ignore */ }
+        }
+        
+        // Combine street and number
+        let street = address.street || '';
+        if (address.streetNumber) {
+            street = street ? `${street} ${address.streetNumber}` : address.streetNumber;
+        }
+        
+        res.json({
+            formattedAddress: details.formattedAddress,
+            lat: details.lat,
+            lng: details.lng,
+            address: {
+                street,
+                postalCode: address.postalCode || '',
+                city: address.city || ''
+            }
+        });
+    } catch (error) {
+        console.error('Public place details error:', error);
+        res.status(500).json({ error: 'Kon adresgegevens niet ophalen' });
+    }
+});
 
 // ==================== PUBLIC BOOKING PAGE DATA ====================
 

@@ -984,7 +984,7 @@
                 
                 debounceTimer = setTimeout(async () => {
                     try {
-                        const res = await fetch(`/api/booking/address-autocomplete?input=${encodeURIComponent(query)}`);
+                        const res = await fetch(`/api/book/address-autocomplete?input=${encodeURIComponent(query)}`);
                         const data = await res.json();
                         
                         if (data.predictions && data.predictions.length > 0) {
@@ -1015,7 +1015,7 @@
                     
                     if (placeId) {
                         try {
-                            const res = await fetch(`/api/booking/place-details?placeId=${encodeURIComponent(placeId)}`);
+                            const res = await fetch(`/api/book/place-details/${encodeURIComponent(placeId)}`);
                             if (!res.ok) return;
                             
                             const data = await res.json();
