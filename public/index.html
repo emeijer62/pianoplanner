@@ -975,7 +975,7 @@
                     <div class="progress-bar">
                         <div class="progress-fill" id="progress-fill"></div>
                     </div>
-                    <div class="progress-label">65% Complete — Beta Phase</div>
+                    <div class="progress-label">75% Complete — Beta Phase</div>
                 </div>
                 
                 <div class="roadmap">
@@ -984,8 +984,9 @@
                     <div class="roadmap-item done">✓ Client & piano management</div>
                     <div class="roadmap-item done">✓ Services configuration</div>
                     <div class="roadmap-item done">✓ Online booking page</div>
-                    <div class="roadmap-item in-progress">→ Smart route suggestions</div>
-                    <div class="roadmap-item upcoming">○ Apple Calendar sync</div>
+                    <div class="roadmap-item done">✓ Smart route suggestions</div>
+                    <div class="roadmap-item done">✓ Travel distance limits</div>
+                    <div class="roadmap-item in-progress">→ Apple Calendar sync</div>
                     <div class="roadmap-item upcoming">○ Email & SMS reminders</div>
                     <div class="roadmap-item upcoming">○ Invoicing integration</div>
                 </div>
@@ -1097,7 +1098,7 @@
         const progressObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    document.getElementById('progress-fill').style.width = '65%';
+                    document.getElementById('progress-fill').style.width = '75%';
                     progressObserver.unobserve(entry.target);
                 }
             });
