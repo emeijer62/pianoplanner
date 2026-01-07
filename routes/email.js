@@ -173,7 +173,7 @@ router.post('/send-confirmation', requireAuth, async (req, res) => {
 
         // Get company name
         const company = await db.get('SELECT company_name FROM company_settings WHERE user_id = ?', [userId]);
-        const companyName = company?.company_name || 'PianoPlanner';
+        const companyName = company?.company_name || req.user.name || 'PianoPlanner';
 
         const result = await emailService.sendAppointmentConfirmation({
             customerEmail: appointment.customer_email,
@@ -182,7 +182,10 @@ router.post('/send-confirmation', requireAuth, async (req, res) => {
             appointmentTime: appointment.start_time,
             serviceName: appointment.service || 'Piano Service',
             companyName,
-            notes: appointment.notes
+            notes: appointment.notes,
+            // Privacy: customer replies go to the teacher, not PianoPlanner
+            replyTo: req.user.email,
+            fromName: companyName
         });
 
         if (result.success) {
@@ -230,7 +233,7 @@ router.post('/send-reminder', requireAuth, async (req, res) => {
 
         // Get company name
         const company = await db.get('SELECT company_name FROM company_settings WHERE user_id = ?', [userId]);
-        const companyName = company?.company_name || 'PianoPlanner';
+        const companyName = company?.company_name || req.user.name || 'PianoPlanner';
 
         // Calculate hours until appointment
         const appointmentDateTime = new Date(`${appointment.date}T${appointment.start_time}`);
@@ -243,7 +246,10 @@ router.post('/send-reminder', requireAuth, async (req, res) => {
             appointmentTime: appointment.start_time,
             serviceName: appointment.service || 'Piano Service',
             companyName,
-            hoursUntil
+            hoursUntil,
+            // Privacy: customer replies go to the teacher, not PianoPlanner
+            replyTo: req.user.email,
+            fromName: companyName
         });
 
         if (result.success) {

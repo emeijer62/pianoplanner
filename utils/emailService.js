@@ -57,21 +57,35 @@ function isEmailConfigured() {
  * @param {string} options.html - HTML content
  * @param {string} [options.text] - Plain text content
  * @param {string} [options.from] - Sender email (defaults to SMTP_USER)
+ * @param {string} [options.replyTo] - Reply-to email address (for customer replies)
+ * @param {string} [options.fromName] - Display name for sender (e.g. "Jan de Pianist")
  */
-async function sendEmail({ to, subject, html, text, from, skipBcc }) {
+async function sendEmail({ to, subject, html, text, from, replyTo, fromName, skipBcc }) {
     if (!emailTransporter) {
         console.log('📧 Email not sent (not configured):', subject);
         return { success: false, reason: 'Email not configured' };
     }
 
     try {
+        // Build the "From" field with optional display name
+        // Format: "Display Name <email@example.com>"
+        const senderEmail = from || process.env.SMTP_USER;
+        const fromField = fromName 
+            ? `"${fromName} via PianoPlanner" <${senderEmail}>`
+            : senderEmail;
+        
         const mailOptions = {
-            from: from || process.env.SMTP_USER,
+            from: fromField,
             to,
             subject,
             html,
             text: text || html.replace(/<[^>]*>/g, '') // Strip HTML for plain text
         };
+        
+        // Add Reply-To so customer replies go to the teacher/business, not PianoPlanner
+        if (replyTo) {
+            mailOptions.replyTo = replyTo;
+        }
         
         // Add BCC to info@pianoplanner.com for all emails (unless skipBcc)
         if (!skipBcc && to !== 'info@pianoplanner.com') {
@@ -80,7 +94,7 @@ async function sendEmail({ to, subject, html, text, from, skipBcc }) {
         
         const result = await emailTransporter.sendMail(mailOptions);
         
-        console.log('📧 Email sent to:', to, '- Subject:', subject);
+        console.log('📧 Email sent to:', to, '- Subject:', subject, replyTo ? `(Reply-To: ${replyTo})` : '');
         return { success: true, messageId: result.messageId };
     } catch (error) {
         console.error('❌ Email sending failed:', error.message);
@@ -90,8 +104,10 @@ async function sendEmail({ to, subject, html, text, from, skipBcc }) {
 
 /**
  * Send appointment confirmation email to customer
+ * @param {string} replyTo - Email address for customer replies (teacher's email)
+ * @param {string} fromName - Display name for sender (teacher/company name)
  */
-async function sendAppointmentConfirmation({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, notes }) {
+async function sendAppointmentConfirmation({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, notes, replyTo, fromName }) {
     const formattedDate = new Date(appointmentDate).toLocaleDateString('nl-NL', {
         weekday: 'long',
         year: 'numeric',
@@ -170,14 +186,16 @@ async function sendAppointmentConfirmation({ customerEmail, customerName, appoin
     return sendEmail({
         to: customerEmail,
         subject: `Appointment Confirmed - ${formattedDate}`,
-        html
+        html,
+        replyTo: replyTo,
+        fromName: fromName || companyName
     });
 }
 
 /**
  * Send appointment reminder email to customer
  */
-async function sendAppointmentReminder({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, hoursUntil }) {
+async function sendAppointmentReminder({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, hoursUntil, replyTo, fromName }) {
     const formattedDate = new Date(appointmentDate).toLocaleDateString('nl-NL', {
         weekday: 'long',
         year: 'numeric',
@@ -254,14 +272,16 @@ async function sendAppointmentReminder({ customerEmail, customerName, appointmen
     return sendEmail({
         to: customerEmail,
         subject: `Reminder: Your appointment is ${timeUntilText} - ${formattedDate}`,
-        html
+        html,
+        replyTo: replyTo,
+        fromName: fromName || companyName
     });
 }
 
 /**
  * Send cancellation notification to customer
  */
-async function sendAppointmentCancellation({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, companyName, reason }) {
+async function sendAppointmentCancellation({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, companyName, reason, replyTo, fromName }) {
     const formattedDate = new Date(appointmentDate).toLocaleDateString('nl-NL', {
         weekday: 'long',
         year: 'numeric',
@@ -330,7 +350,9 @@ async function sendAppointmentCancellation({ customerEmail, customerName, appoin
     return sendEmail({
         to: customerEmail,
         subject: `Appointment Cancelled - ${formattedDate}`,
-        html
+        html,
+        replyTo: replyTo,
+        fromName: fromName || companyName
     });
 }
 

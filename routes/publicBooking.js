@@ -332,7 +332,10 @@ router.post('/:slug', async (req, res) => {
                         appointmentDate: date,
                         appointmentTime: time,
                         serviceName: service.name,
-                        companyName
+                        companyName,
+                        // Privacy: customer replies go to the teacher, not PianoPlanner
+                        replyTo: user.email,
+                        fromName: companyName
                     });
                     console.log(`📧 Confirmation sent to customer: ${customer.email}`);
                 }

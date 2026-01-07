@@ -214,7 +214,10 @@ router.post('/', async (req, res) => {
                             appointmentTime,
                             serviceName: serviceName || title,
                             companyName: company?.name || 'PianoPlanner',
-                            notes: description
+                            notes: description,
+                            // Privacy: customer replies go to the teacher, not PianoPlanner
+                            replyTo: req.session.user.email,
+                            fromName: company?.name || req.session.user.name || 'PianoPlanner'
                         });
                         
                         console.log(`📧 Confirmation email sent to ${customer.email}`);
