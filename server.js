@@ -500,6 +500,38 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Tijdelijke cleanup route voor kapotte appointments
+app.get('/cleanup-broken', async (req, res) => {
+    try {
+        const { dbAll, dbRun } = require('./utils/database');
+        
+        // Vind kapotte records
+        const broken = await dbAll(
+            'SELECT id, title FROM appointments WHERE start_time IS NULL OR end_time IS NULL'
+        );
+        
+        if (broken.length === 0) {
+            return res.json({ success: true, message: 'Geen kapotte appointments gevonden', deleted: 0 });
+        }
+        
+        // Verwijder ze
+        const result = await dbRun(
+            'DELETE FROM appointments WHERE start_time IS NULL OR end_time IS NULL'
+        );
+        
+        console.log(`🧹 Cleanup: ${result.changes} kapotte appointments verwijderd`);
+        
+        res.json({ 
+            success: true, 
+            deleted: result.changes,
+            ids: broken.map(b => b.id)
+        });
+    } catch (error) {
+        console.error('Cleanup error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Hoofdpagina
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
