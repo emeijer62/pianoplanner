@@ -72,6 +72,7 @@ function isEmailConfigured() {
  * @param {string} [options.userId] - User ID to check for custom SMTP settings
  */
 async function sendEmail({ to, subject, html, text, from, replyTo, fromName, skipBcc, userId }) {
+    console.log('📧 sendEmail called - to:', to, 'userId:', userId);
     try {
         // Check if user has their own SMTP configured
         let transporter = emailTransporter;
@@ -82,13 +83,26 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
         
         if (userId && getUserTransporter) {
             try {
-                const userSmtp = await getUserTransporter(userId);
+                console.log('📧 Checking for user SMTP settings...');
+                // Add timeout to prevent hanging
+                const timeoutPromise = new Promise((resolve) => {
+                    setTimeout(() => {
+                        console.log('📧 User SMTP check timed out, using default');
+                        resolve(null);
+                    }, 3000);
+                });
+                const userSmtp = await Promise.race([
+                    getUserTransporter(userId),
+                    timeoutPromise
+                ]);
                 if (userSmtp && userSmtp.transporter) {
                     transporter = userSmtp.transporter;
                     senderEmail = userSmtp.fromEmail;
                     senderName = userSmtp.fromName || fromName;
                     useUserSmtp = true;
                     console.log(`📧 Using user's own SMTP: ${senderEmail}`);
+                } else {
+                    console.log('📧 No user SMTP, using default');
                 }
             } catch (e) {
                 console.log('Could not get user SMTP, using default:', e.message);
