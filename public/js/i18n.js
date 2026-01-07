@@ -17,7 +17,7 @@ const i18n = {
         const browserLang = navigator.language.split('-')[0];
         
         // Supported languages
-        const supported = ['en', 'nl'];
+        const supported = ['en', 'nl', 'de', 'fr'];
         
         // Priority: saved > browser > default (en)
         if (savedLang && supported.includes(savedLang)) {
@@ -145,7 +145,9 @@ const i18n = {
     getAvailableLanguages() {
         return [
             { code: 'en', name: 'English', flag: '🇬🇧' },
-            { code: 'nl', name: 'Nederlands', flag: '🇳🇱' }
+            { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+            { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+            { code: 'fr', name: 'Français', flag: '🇫🇷' }
         ];
     }
 };

@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="/js/i18n.js"></script>
     <style>
         .billing-container {
             max-width: 700px;
@@ -257,9 +258,9 @@
                 <span>PianoPlanner</span>
             </a>
             <nav class="nav-links">
-                <a href="/dashboard.html" class="nav-link">Dashboard</a>
-                <a href="/settings.html" class="nav-link">Settings</a>
-                <a href="/billing.html" class="nav-link active">Subscription</a>
+                <a href="/dashboard.html" class="nav-link" data-i18n="nav.dashboard">Dashboard</a>
+                <a href="/settings.html" class="nav-link" data-i18n="nav.settings">Settings</a>
+                <a href="/billing.html" class="nav-link active" data-i18n="billing.title">Subscription</a>
             </nav>
         </div>
     </header>
@@ -267,11 +268,11 @@
     <main>
         <div class="billing-container">
             <a href="/dashboard.html" class="back-link">
-                ← Back to dashboard
+                ← <span data-i18n="nav.dashboard">Back to dashboard</span>
             </a>
 
             <div class="page-header">
-                <h1>My subscription</h1>
+                <h1 data-i18n="billing.title">My subscription</h1>
                 <p>Manage your subscription and invoices</p>
             </div>
 
@@ -281,8 +282,8 @@
             <!-- Current Plan -->
             <div class="billing-card" id="currentPlan">
                 <h2>
-                    Current plan
-                    <span class="status-badge trial" id="statusBadge">Loading...</span>
+                    <span data-i18n="billing.currentPlan">Current plan</span>
+                    <span class="status-badge trial" id="statusBadge" data-i18n="common.loading">Loading...</span>
                 </h2>
 
                 <div id="planDetails">

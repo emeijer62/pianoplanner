@@ -195,5 +195,46 @@
     "thisWeek": "This week",
     "nextWeek": "Next week",
     "never": "Never"
+  },
+  "login": {
+    "title": "Log in",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "name": "Name",
+    "forgotPassword": "Forgot password?",
+    "loginWithGoogle": "Login with Google",
+    "createAccount": "Create account",
+    "alreadyHaveAccount": "Already have an account?",
+    "noAccount": "Don't have an account?",
+    "or": "or"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Simple, transparent pricing",
+    "monthly": "per month",
+    "yearly": "per year",
+    "startTrial": "Start free trial",
+    "subscribe": "Subscribe",
+    "currentPlan": "Current plan",
+    "features": "Features",
+    "unlimited": "Unlimited",
+    "support": "Support",
+    "trial": "Trial",
+    "trialDays": "day free trial"
+  },
+  "billing": {
+    "title": "Subscription",
+    "currentPlan": "Current plan",
+    "nextBilling": "Next billing",
+    "paymentMethod": "Payment method",
+    "updatePayment": "Update payment",
+    "cancelSubscription": "Cancel subscription",
+    "reactivate": "Reactivate",
+    "active": "Active",
+    "trial": "Trial",
+    "expired": "Expired",
+    "canceled": "Canceled"
   }
 }

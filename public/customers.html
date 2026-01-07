@@ -14,30 +14,30 @@
             <span>PianoPlanner</span>
         </div>
         <div class="nav-links">
-            <a href="/dashboard.html">📅 Dashboard</a>
-            <a href="/customers.html" class="active">👥 Customers</a>
-            <a href="/pianos.html">🎹 Pianos</a>
-            <a href="/settings.html">⚙️ Settings</a>
+            <a href="/dashboard.html">📅 <span data-i18n="nav.dashboard">Dashboard</span></a>
+            <a href="/customers.html" class="active">👥 <span data-i18n="nav.customers">Customers</span></a>
+            <a href="/pianos.html">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
+            <a href="/settings.html">⚙️ <span data-i18n="nav.settings">Settings</span></a>
         </div>
         <div class="nav-user">
-            <a href="/booking.html" class="btn btn-small btn-primary">+ Appointment</a>
-            <a href="/auth/logout" class="btn btn-small">Log out</a>
+            <a href="/booking.html" class="btn btn-small btn-primary">+ <span data-i18n="appointments.newAppointment">Appointment</span></a>
+            <a href="/auth/logout" class="btn btn-small" data-i18n="nav.logout">Log out</a>
         </div>
     </nav>
 
     <main class="dashboard">
         <div class="dashboard-header">
-            <h1>👥 Customer Management</h1>
-            <button id="add-customer-btn" class="btn btn-primary">+ New Customer</button>
+            <h1>👥 <span data-i18n="customers.title">Customer Management</span></h1>
+            <button id="add-customer-btn" class="btn btn-primary">+ <span data-i18n="customers.addCustomer">New Customer</span></button>
         </div>
 
         <div class="search-bar">
-            <input type="text" id="search-input" placeholder="🔍 Search by name, email, city or phone...">
+            <input type="text" id="search-input" data-i18n="customers.searchPlaceholder" data-i18n-attr="placeholder" placeholder="🔍 Search by name, email, city or phone...">
         </div>
 
         <section class="events-section">
             <div id="customers-list" class="users-list">
-                <div class="loading">Loading customers...</div>
+                <div class="loading" data-i18n="common.loading">Loading customers...</div>
             </div>
         </section>
     </main>
@@ -86,13 +86,13 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="customer-notes">Notes</label>
+                    <label for="customer-notes" data-i18n="customers.notes">Notes</label>
                     <textarea id="customer-notes" rows="3"></textarea>
                 </div>
                 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()" data-i18n="common.cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="common.save">Save</button>
                 </div>
             </form>
         </div>

@@ -442,19 +442,19 @@
             </a>
         </div>
         <div class="nav-links">
-            <a href="/dashboard.html">📅 Dashboard</a>
-            <a href="/customers.html">👥 Customers</a>
-            <a href="/pianos.html">🎹 Pianos</a>
-            <a href="/settings.html" class="active">⚙️ Settings</a>
+            <a href="/dashboard.html">📅 <span data-i18n="nav.dashboard">Dashboard</span></a>
+            <a href="/customers.html">👥 <span data-i18n="nav.customers">Customers</span></a>
+            <a href="/pianos.html">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
+            <a href="/settings.html" class="active">⚙️ <span data-i18n="nav.settings">Settings</span></a>
         </div>
         <div class="nav-user">
-            <a href="/auth/logout" class="btn btn-small">Log out</a>
+            <a href="/auth/logout" class="btn btn-small" data-i18n="nav.logout">Log out</a>
         </div>
     </nav>
 
     <div class="settings-container">
         <div class="page-header">
-            <h1>⚙️ Settings</h1>
+            <h1>⚙️ <span data-i18n="settings.title">Settings</span></h1>
         </div>
         
         <div id="alertContainer"></div>
@@ -839,6 +839,8 @@
                 <select id="language-selector" onchange="changeLanguage(this.value)" style="max-width: 300px;">
                     <option value="en">🇬🇧 English</option>
                     <option value="nl">🇳🇱 Nederlands</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="fr">🇫🇷 Français</option>
                 </select>
             </div>
         </div>

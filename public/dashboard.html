@@ -611,24 +611,24 @@
             <span>PianoPlanner</span>
         </div>
         <div class="nav-links">
-            <a href="/dashboard.html" class="active">📅 Calendar</a>
-            <a href="/customers.html">👥 Customers</a>
-            <a href="/pianos.html">🎹 Pianos</a>
+            <a href="/dashboard.html" class="active">📅 <span data-i18n="nav.dashboard">Calendar</span></a>
+            <a href="/customers.html">👥 <span data-i18n="nav.customers">Customers</span></a>
+            <a href="/pianos.html">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
             <a href="/settings.html">⚙️</a>
         </div>
         <div class="nav-user">
             <a href="/admin-dashboard.html" id="admin-link" class="btn btn-small btn-secondary" style="display: none;">Admin</a>
             <img id="nav-user-picture" src="" alt="" class="nav-user-picture">
             <span id="nav-user-name"></span>
-            <a href="/auth/logout" class="btn btn-small">Out</a>
+            <a href="/auth/logout" class="btn btn-small" data-i18n="nav.logout">Out</a>
         </div>
     </nav>
 
     <main class="dashboard">
         <div class="dashboard-header">
-            <h1>📅 Calendar</h1>
+            <h1>📅 <span data-i18n="nav.dashboard">Calendar</span></h1>
             <div class="header-actions">
-                <button id="add-event-btn" class="btn btn-primary">+ Appointment</button>
+                <button id="add-event-btn" class="btn btn-primary">+ <span data-i18n="appointments.newAppointment">Appointment</span></button>
             </div>
         </div>
 
@@ -636,28 +636,28 @@
             <!-- Left: Stats & Quick Actions -->
             <div class="left-panel">
                 <div class="stat-card">
-                    <h3>Today</h3>
+                    <h3 data-i18n="time.today">Today</h3>
                     <div class="value" id="stat-today">0</div>
-                    <div class="label">appointments</div>
+                    <div class="label" data-i18n="appointments.title">appointments</div>
                 </div>
                 
                 <div class="stat-card">
-                    <h3>This Week</h3>
+                    <h3 data-i18n="time.thisWeek">This Week</h3>
                     <div class="value" id="stat-week">0</div>
-                    <div class="label">appointments</div>
+                    <div class="label" data-i18n="appointments.title">appointments</div>
                 </div>
                 
                 <div class="stat-card">
-                    <h3>Pianos</h3>
+                    <h3 data-i18n="nav.pianos">Pianos</h3>
                     <div class="value" id="stat-pianos">-</div>
                     <div class="label">in management</div>
                 </div>
                 
                 <div class="quick-actions">
                     <h3>Quick Links</h3>
-                    <a href="/customers.html" class="quick-btn">👥 Customers</a>
-                    <a href="/pianos.html" class="quick-btn">🎹 Pianos</a>
-                    <a href="/billing.html" class="quick-btn">💳 Subscription</a>
+                    <a href="/customers.html" class="quick-btn">👥 <span data-i18n="nav.customers">Customers</span></a>
+                    <a href="/pianos.html" class="quick-btn">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
+                    <a href="/billing.html" class="quick-btn">💳 <span data-i18n="billing.title">Subscription</span></a>
                     <button onclick="openRouteOptimizer()" class="quick-btn" style="border: none; background: none; width: 100%; cursor: pointer;">🗺️ Optimize route</button>
                 </div>
             </div>
@@ -690,16 +690,16 @@
             <!-- Right: Today & Upcoming -->
             <div class="right-panel">
                 <div class="today-card">
-                    <div class="panel-header">📍 Today</div>
+                    <div class="panel-header">📍 <span data-i18n="time.today">Today</span></div>
                     <div class="panel-content" id="today-events">
-                        <div class="no-events-small">No appointments</div>
+                        <div class="no-events-small" data-i18n="dashboard.noAppointments">No appointments</div>
                     </div>
                 </div>
                 
                 <div class="upcoming-card">
-                    <div class="panel-header">📆 Upcoming</div>
+                    <div class="panel-header">📆 <span data-i18n="dashboard.upcomingAppointments">Upcoming</span></div>
                     <div class="panel-content" id="upcoming-events">
-                        <div class="no-events-small">No upcoming appointments</div>
+                        <div class="no-events-small" data-i18n="dashboard.noAppointments">No upcoming appointments</div>
                     </div>
                 </div>
             </div>

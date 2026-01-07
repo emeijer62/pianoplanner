@@ -195,5 +195,46 @@
     "thisWeek": "Deze week",
     "nextWeek": "Volgende week",
     "never": "Nooit"
+  },
+  "login": {
+    "title": "Inloggen",
+    "register": "Registreren",
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "confirmPassword": "Wachtwoord bevestigen",
+    "name": "Naam",
+    "forgotPassword": "Wachtwoord vergeten?",
+    "loginWithGoogle": "Inloggen met Google",
+    "createAccount": "Account aanmaken",
+    "alreadyHaveAccount": "Al een account?",
+    "noAccount": "Nog geen account?",
+    "or": "of"
+  },
+  "pricing": {
+    "title": "Prijzen",
+    "subtitle": "Eenvoudige, transparante prijzen",
+    "monthly": "per maand",
+    "yearly": "per jaar",
+    "startTrial": "Gratis proberen",
+    "subscribe": "Abonneren",
+    "currentPlan": "Huidig abonnement",
+    "features": "Functies",
+    "unlimited": "Onbeperkt",
+    "support": "Ondersteuning",
+    "trial": "Proefperiode",
+    "trialDays": "dagen proefperiode"
+  },
+  "billing": {
+    "title": "Abonnement",
+    "currentPlan": "Huidig abonnement",
+    "nextBilling": "Volgende facturering",
+    "paymentMethod": "Betaalmethode",
+    "updatePayment": "Betaling bijwerken",
+    "cancelSubscription": "Abonnement opzeggen",
+    "reactivate": "Heractiveren",
+    "active": "Actief",
+    "trial": "Proefperiode",
+    "expired": "Verlopen",
+    "canceled": "Opgezegd"
   }
 }

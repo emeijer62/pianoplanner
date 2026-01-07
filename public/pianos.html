@@ -382,31 +382,31 @@
             </a>
         </div>
         <div class="nav-links">
-            <a href="/dashboard.html">📅 Dashboard</a>
-            <a href="/customers.html">👥 Customers</a>
-            <a href="/pianos.html" class="active">🎹 Pianos</a>
-            <a href="/settings.html">⚙️ Settings</a>
+            <a href="/dashboard.html">📅 <span data-i18n="nav.dashboard">Dashboard</span></a>
+            <a href="/customers.html">👥 <span data-i18n="nav.customers">Customers</span></a>
+            <a href="/pianos.html" class="active">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
+            <a href="/settings.html">⚙️ <span data-i18n="nav.settings">Settings</span></a>
         </div>
         <div class="nav-user">
-            <a href="/auth/logout" class="btn btn-small">Log out</a>
+            <a href="/auth/logout" class="btn btn-small" data-i18n="nav.logout">Log out</a>
         </div>
     </nav>
 
     <main class="pianos-container">
         <div class="page-header">
-            <h1>🎹 Pianos</h1>
+            <h1>🎹 <span data-i18n="pianos.title">Pianos</span></h1>
             <div class="header-actions">
                 <div class="search-box">
                     <input type="text" id="search-input" placeholder="Search pianos...">
                 </div>
-                <button class="btn btn-primary" onclick="openPianoModal()">+ New Piano</button>
+                <button class="btn btn-primary" onclick="openPianoModal()">+ <span data-i18n="pianos.addPiano">New Piano</span></button>
             </div>
         </div>
 
         <div class="stats-row">
             <div class="stat-badge">
                 <span class="number" id="total-pianos">0</span>
-                <span>Pianos total</span>
+                <span data-i18n="pianos.title">Pianos total</span>
             </div>
             <div class="stat-badge warning" id="due-badge" style="display: none;">
                 <span class="number" id="due-count">0</span>
@@ -417,7 +417,7 @@
         <div id="pianos-grid" class="pianos-grid">
             <div class="empty-state">
                 <div class="icon">🎹</div>
-                <h3>No pianos yet</h3>
+                <h3 data-i18n="pianos.noPianos">No pianos yet</h3>
                 <p>Add your first piano to get started</p>
             </div>
         </div>
