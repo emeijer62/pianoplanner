@@ -573,11 +573,21 @@ if (process.env.NODE_ENV === 'production') {
     setTimeout(() => createBackup('startup'), 5000);
 }
 
+// Helper function to get db instance (for routes that need direct db access)
+function getDb() {
+    return {
+        get: (sql, params) => dbGet(sql, params),
+        run: (sql, params) => dbRun(sql, params),
+        all: (sql, params) => dbAll(sql, params)
+    };
+}
+
 module.exports = {
     db,
     dbRun,
     dbGet,
     dbAll,
+    getDb,
     createBackup,
     DATABASE_PATH,
     DATA_DIR
