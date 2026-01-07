@@ -412,16 +412,26 @@ router.post('/:slug', async (req, res) => {
         };
         
         // Send email notifications ASYNC (fire-and-forget, na response)
+        console.log('📧 Email configured?', emailService.isEmailConfigured());
         if (emailService.isEmailConfigured()) {
             console.log('📧 Starting async email send for:', emailData.customerEmail);
             setImmediate(async () => {
                 try {
+                    console.log('📧 Inside setImmediate - starting email process');
                     const db = getDb();
+                    
+                    if (!db) {
+                        console.error('❌ Database not available for email settings');
+                        return;
+                    }
                     
                     // Check email settings (default to enabled if not set)
                     const emailSettings = await new Promise((resolve, reject) => {
                         db.get('SELECT * FROM email_settings WHERE user_id = ?', [emailData.userId], (err, row) => {
-                            if (err) reject(err);
+                            if (err) {
+                                console.error('❌ Database error fetching email settings:', err);
+                                reject(err);
+                            }
                             else resolve(row || { 
                                 send_confirmations: 1, 
                                 notify_new_bookings: 1 
@@ -429,7 +439,7 @@ router.post('/:slug', async (req, res) => {
                         });
                     });
                     
-                    console.log('📧 Email settings:', JSON.stringify(emailSettings));
+                    console.log('📧 Email settings for user', emailData.userId, ':', JSON.stringify(emailSettings));
                     
                     // Send confirmation to customer if enabled (default: ON)
                     if (emailSettings.send_confirmations && emailData.customerEmail) {
