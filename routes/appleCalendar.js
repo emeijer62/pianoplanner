@@ -727,11 +727,27 @@ async function performAppleSync(userId, credentials, syncSettings) {
         for (const event of appleEvents) {
             try {
                 // Check of al bestaat lokaal (by apple_event_id)
-                const existing = localAppointments.find(
+                const existingByAppleId = localAppointments.find(
                     a => a.apple_event_id === event.id
                 );
-                if (existing) {
-                    debugLog(`🍎 Apple event already exists locally: ${event.summary}`);
+                if (existingByAppleId) {
+                    debugLog(`🍎 Apple event already exists locally (by ID): ${event.summary}`);
+                    continue;
+                }
+                
+                // Extra check: ook op title + start time (deduplicatie)
+                const eventStart = new Date(event.start).toISOString();
+                const existingByTitleTime = localAppointments.find(a => {
+                    const localStart = new Date(a.start).toISOString();
+                    return a.title === event.summary && localStart === eventStart;
+                });
+                if (existingByTitleTime) {
+                    debugLog(`🍎 Apple event already exists locally (by title+time): ${event.summary}`);
+                    // Update bestaande afspraak met apple_event_id
+                    await appointmentStore.updateAppointment(userId, existingByTitleTime.id, {
+                        apple_event_id: event.id,
+                        apple_event_url: event.url
+                    });
                     continue;
                 }
                 

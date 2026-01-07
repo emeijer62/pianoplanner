@@ -514,4 +514,52 @@ router.post('/apply-optimized-route', async (req, res) => {
     }
 });
 
+// Verwijder duplicaten
+router.delete('/duplicates/clean', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        
+        // Haal alle afspraken op
+        const appointments = await appointmentStore.getAllAppointments(userId);
+        
+        // Groepeer op title + start_time
+        const groups = {};
+        for (const apt of appointments) {
+            const key = `${apt.title}|${apt.start}`;
+            if (!groups[key]) {
+                groups[key] = [];
+            }
+            groups[key].push(apt);
+        }
+        
+        // Verwijder duplicaten (houd de oudste)
+        let deleted = 0;
+        for (const key of Object.keys(groups)) {
+            if (groups[key].length > 1) {
+                // Sorteer op created_at, houd oudste
+                const sorted = groups[key].sort((a, b) => 
+                    new Date(a.createdAt) - new Date(b.createdAt)
+                );
+                
+                // Verwijder alle behalve de eerste
+                for (let i = 1; i < sorted.length; i++) {
+                    await appointmentStore.deleteAppointment(userId, sorted[i].id);
+                    console.log(`🗑️ Duplicate verwijderd: ${sorted[i].title}`);
+                    deleted++;
+                }
+            }
+        }
+        
+        res.json({
+            success: true,
+            message: `${deleted} duplicaten verwijderd`,
+            deleted
+        });
+        
+    } catch (error) {
+        console.error('Error cleaning duplicates:', error);
+        res.status(500).json({ error: 'Kon duplicaten niet verwijderen' });
+    }
+});
+
 module.exports = router;
