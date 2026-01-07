@@ -72,6 +72,87 @@ app.use('/api/pianos', pianoRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Email service for beta signup
+const emailService = require('./utils/emailService');
+
+// Beta signup (public, no auth required)
+app.post('/api/beta-signup', async (req, res) => {
+    try {
+        const { name, email, company } = req.body;
+        
+        if (!name || !email) {
+            return res.status(400).json({ error: 'Name and email are required' });
+        }
+        
+        // Send notification email to info@pianoplanner.com
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #0071e3 0%, #5856d6 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
+                    .content { background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px; }
+                    .detail-card { background: white; border-radius: 12px; padding: 24px; margin: 20px 0; }
+                    .detail-row { padding: 12px 0; border-bottom: 1px solid #e5e5e5; }
+                    .detail-row:last-child { border-bottom: none; }
+                    .label { color: #86868b; font-size: 14px; }
+                    .value { font-weight: 500; color: #1d1d1f; }
+                    .badge { background: #34c759; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>🎹 New Beta Signup!</h1>
+                    </div>
+                    <div class="content">
+                        <span class="badge">NEW BETA REQUEST</span>
+                        <div class="detail-card">
+                            <div class="detail-row">
+                                <div class="label">Name</div>
+                                <div class="value">${name}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="label">Email</div>
+                                <div class="value"><a href="mailto:${email}">${email}</a></div>
+                            </div>
+                            ${company ? `
+                            <div class="detail-row">
+                                <div class="label">Company</div>
+                                <div class="value">${company}</div>
+                            </div>
+                            ` : ''}
+                            <div class="detail-row">
+                                <div class="label">Signed up at</div>
+                                <div class="value">${new Date().toLocaleString('nl-NL')}</div>
+                            </div>
+                        </div>
+                        <p>Reply to this email to send them a beta invite!</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `;
+        
+        await emailService.sendEmail({
+            to: 'info@pianoplanner.com',
+            subject: `🎹 New Beta Signup: ${name}`,
+            html,
+            skipBcc: true // Don't BCC ourselves
+        });
+        
+        console.log(`📧 Beta signup: ${name} <${email}> ${company ? `(${company})` : ''}`);
+        
+        res.json({ success: true, message: 'Beta signup received' });
+    } catch (error) {
+        console.error('Beta signup error:', error);
+        res.status(500).json({ error: 'Could not process signup' });
+    }
+});
+
 // Publieke boekingspagina route (serve book.html voor /book/:slug)
 app.get('/book/:slug', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'book.html'));

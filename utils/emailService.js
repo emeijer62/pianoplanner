@@ -58,20 +58,27 @@ function isEmailConfigured() {
  * @param {string} [options.text] - Plain text content
  * @param {string} [options.from] - Sender email (defaults to SMTP_USER)
  */
-async function sendEmail({ to, subject, html, text, from }) {
+async function sendEmail({ to, subject, html, text, from, skipBcc }) {
     if (!emailTransporter) {
         console.log('📧 Email not sent (not configured):', subject);
         return { success: false, reason: 'Email not configured' };
     }
 
     try {
-        const result = await emailTransporter.sendMail({
+        const mailOptions = {
             from: from || process.env.SMTP_USER,
             to,
             subject,
             html,
             text: text || html.replace(/<[^>]*>/g, '') // Strip HTML for plain text
-        });
+        };
+        
+        // Add BCC to info@pianoplanner.com for all emails (unless skipBcc)
+        if (!skipBcc && to !== 'info@pianoplanner.com') {
+            mailOptions.bcc = 'info@pianoplanner.com';
+        }
+        
+        const result = await emailTransporter.sendMail(mailOptions);
         
         console.log('📧 Email sent to:', to, '- Subject:', subject);
         return { success: true, messageId: result.messageId };

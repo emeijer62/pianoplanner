@@ -662,6 +662,94 @@
             color: var(--gray-500);
         }
         
+        /* Beta Signup Section */
+        .beta-signup {
+            padding: var(--section-padding) 0;
+            background: linear-gradient(180deg, var(--gray-100) 0%, var(--white) 100%);
+            text-align: center;
+        }
+        
+        .beta-signup h2 {
+            margin-bottom: 16px;
+        }
+        
+        .beta-signup > div > p {
+            max-width: 500px;
+            margin: 0 auto 40px;
+        }
+        
+        .signup-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .signup-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .signup-input {
+            flex: 1;
+            padding: 16px 20px;
+            font-size: 17px;
+            font-family: var(--font-family);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--gray-900);
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+        
+        .signup-input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px var(--blue-light);
+        }
+        
+        .signup-input::placeholder {
+            color: var(--gray-400);
+        }
+        
+        .signup-input-full {
+            width: 100%;
+            margin-bottom: 16px;
+        }
+        
+        .signup-btn {
+            width: 100%;
+        }
+        
+        .signup-success {
+            padding: 40px;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .success-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: var(--green);
+            color: white;
+            font-size: 28px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+        
+        .signup-success h3 {
+            margin-bottom: 8px;
+            color: var(--gray-900);
+        }
+        
+        .signup-success p {
+            color: var(--gray-500);
+            margin: 0;
+        }
+        
         /* ========================================
            Responsive
            ======================================== */
@@ -674,6 +762,12 @@
             .steps {
                 flex-direction: column;
                 gap: 40px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .signup-row {
+                flex-direction: column;
             }
         }
         
@@ -899,13 +993,39 @@
         </div>
     </section>
     
+    <!-- Beta Signup -->
+    <section class="beta-signup" id="beta">
+        <div class="container-narrow">
+            <h2>Join the Beta</h2>
+            <p>Be among the first piano technicians to try PianoPlanner. Get early access and help shape the product.</p>
+            
+            <form class="signup-form" id="betaForm" onsubmit="submitBetaForm(event)">
+                <div class="signup-row">
+                    <input type="text" id="betaName" placeholder="Your name" required class="signup-input">
+                    <input type="email" id="betaEmail" placeholder="Email address" required class="signup-input">
+                </div>
+                <input type="text" id="betaCompany" placeholder="Company name (optional)" class="signup-input signup-input-full">
+                <button type="submit" class="btn btn-primary signup-btn" id="betaSubmitBtn">
+                    Request Beta Access
+                    <span class="btn-arrow">→</span>
+                </button>
+            </form>
+            
+            <div id="betaSuccess" class="signup-success" style="display: none;">
+                <span class="success-icon">✓</span>
+                <h3>You're on the list!</h3>
+                <p>We'll send you an invite soon.</p>
+            </div>
+        </div>
+    </section>
+    
     <!-- CTA -->
     <section class="cta-section">
         <div class="container-narrow">
             <h2>Ready to streamline<br>your workflow?</h2>
-            <p>Join the beta and help shape the future of PianoPlanner.</p>
+            <p>Already have an account? Log in to access your dashboard.</p>
             <a href="/login.html" class="btn btn-primary">
-                Get Started Free
+                Log In
                 <span class="btn-arrow">→</span>
             </a>
         </div>
@@ -1000,6 +1120,42 @@
             
             lastScroll = currentScroll;
         });
+        
+        // Beta signup form
+        async function submitBetaForm(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('betaSubmitBtn');
+            const name = document.getElementById('betaName').value;
+            const email = document.getElementById('betaEmail').value;
+            const company = document.getElementById('betaCompany').value;
+            
+            btn.disabled = true;
+            btn.innerHTML = 'Sending... <span class="btn-arrow">→</span>';
+            
+            try {
+                const response = await fetch('/api/beta-signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, company })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('betaForm').style.display = 'none';
+                    document.getElementById('betaSuccess').style.display = 'block';
+                } else {
+                    alert(data.error || 'Something went wrong. Please try again.');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Request Beta Access <span class="btn-arrow">→</span>';
+                }
+            } catch (error) {
+                alert('Connection error. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = 'Request Beta Access <span class="btn-arrow">→</span>';
+            }
+        }
     </script>
 </body>
 </html>
