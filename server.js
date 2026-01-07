@@ -5,6 +5,7 @@ const SQLiteStore = require('connect-sqlite3')(session);
 const path = require('path');
 
 // Database initialisatie (moet eerst!)
+// Version: 2026-01-07 - Duplicate fix & drag-drop
 const { DATABASE_PATH, DATA_DIR } = require('./utils/database');
 
 // Routes (nu met database versies)
