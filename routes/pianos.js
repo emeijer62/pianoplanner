@@ -243,7 +243,8 @@ router.post('/:pianoId/service', async (req, res) => {
         }
         
         const service = await pianoStore.addServiceRecord(userId, pianoId, serviceData);
-        console.log(`🔧 Service toegevoegd voor ${piano.brand} ${piano.model}: ${service.type}`);
+        const serviceName = serviceData.typeName || service.type;
+        console.log(`🔧 Service logged: ${serviceName} on ${piano.brand} ${piano.model || ''} (${serviceData.date || 'no date'})`);
         
         res.status(201).json({
             success: true,

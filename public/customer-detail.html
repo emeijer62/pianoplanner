@@ -613,6 +613,7 @@
                 </form>
             </div>
             <div class="modal-actions">
+                <button id="delete-piano-btn" class="btn btn-danger" onclick="deletePiano()" style="display: none; margin-right: auto;">Delete piano</button>
                 <button class="btn btn-secondary" onclick="closePianoModal()">Cancel</button>
                 <button class="btn btn-primary" onclick="savePiano()">Save</button>
             </div>
@@ -633,12 +634,7 @@
                     <div class="form-group">
                         <label for="service-type">Service type</label>
                         <select id="service-type">
-                            <option value="tuning">Tuning</option>
-                            <option value="regulation">Regulation</option>
-                            <option value="voicing">Voicing</option>
-                            <option value="repair">Repair</option>
-                            <option value="inspection">Inspection</option>
-                            <option value="other">Other</option>
+                            <!-- Options loaded dynamically from services -->
                         </select>
                     </div>
 
@@ -670,6 +666,7 @@
         let customerId = null;
         let customerData = null;
         let pianosData = [];
+        let servicesData = []; // Available services
 
         // Get customer ID from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -677,6 +674,54 @@
 
         if (!customerId) {
             window.location.href = '/customers.html';
+        }
+
+        // Load available services for dropdown
+        async function loadServices() {
+            try {
+                const response = await fetch('/api/services');
+                if (response.ok) {
+                    const data = await response.json();
+                    servicesData = Array.isArray(data) ? data : (data.services || []);
+                    populateServiceTypes();
+                }
+            } catch (err) {
+                console.error('Error loading services:', err);
+                // Fall back to default options
+                populateServiceTypes();
+            }
+        }
+
+        function populateServiceTypes() {
+            const select = document.getElementById('service-type');
+            select.innerHTML = '';
+            
+            if (servicesData.length > 0) {
+                // Use defined services
+                servicesData.forEach(s => {
+                    const option = document.createElement('option');
+                    option.value = s.id;
+                    option.textContent = s.name;
+                    option.dataset.serviceName = s.name;
+                    select.appendChild(option);
+                });
+            } else {
+                // Fallback to defaults
+                const defaults = [
+                    { value: 'tuning', name: 'Tuning' },
+                    { value: 'regulation', name: 'Regulation' },
+                    { value: 'voicing', name: 'Voicing' },
+                    { value: 'repair', name: 'Repair' },
+                    { value: 'inspection', name: 'Inspection' },
+                    { value: 'other', name: 'Other' }
+                ];
+                defaults.forEach(d => {
+                    const option = document.createElement('option');
+                    option.value = d.value;
+                    option.textContent = d.name;
+                    select.appendChild(option);
+                });
+            }
         }
 
         // Tab switching
@@ -875,6 +920,7 @@
             document.getElementById('piano-modal-title').textContent = 'Add piano';
             document.getElementById('piano-form').reset();
             document.getElementById('piano-id').value = '';
+            document.getElementById('delete-piano-btn').style.display = 'none';
             document.getElementById('piano-modal').classList.add('active');
         }
 
@@ -896,11 +942,46 @@
             document.getElementById('piano-interval').value = piano.serviceInterval || 6;
             document.getElementById('piano-notes').value = piano.notes || '';
 
+            // Show delete button for existing pianos
+            document.getElementById('delete-piano-btn').style.display = 'inline-flex';
+
             document.getElementById('piano-modal').classList.add('active');
         }
 
         function closePianoModal() {
             document.getElementById('piano-modal').classList.remove('active');
+            document.getElementById('delete-piano-btn').style.display = 'none';
+        }
+
+        async function deletePiano() {
+            const pianoId = document.getElementById('piano-id').value;
+            if (!pianoId) return;
+
+            const piano = pianosData.find(p => p.id === pianoId);
+            const pianoName = piano ? `${piano.brand} ${piano.model || ''}`.trim() : 'this piano';
+
+            if (!confirm(`Are you sure you want to delete "${pianoName}"?\n\nThis will also delete all service history for this piano.\n\nThis action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/pianos/${pianoId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    console.log(`🗑️ Piano deleted: ${pianoName}`);
+                    closePianoModal();
+                    loadPianos();
+                    loadServiceHistory();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Could not delete piano');
+                }
+            } catch (error) {
+                console.error('Error deleting piano:', error);
+                alert('Could not delete piano. Please try again.');
+            }
         }
 
         async function savePiano() {
@@ -957,12 +1038,20 @@
 
         async function saveService() {
             const pianoId = document.getElementById('service-piano-id').value;
+            const serviceSelect = document.getElementById('service-type');
+            const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+            
             const serviceData = {
-                type: document.getElementById('service-type').value,
+                type: serviceSelect.value,
+                typeName: selectedOption.dataset.serviceName || selectedOption.textContent,
                 date: document.getElementById('service-date').value,
                 pitch: document.getElementById('service-pitch').value,
                 notes: document.getElementById('service-notes').value
             };
+
+            // Get piano info for logging
+            const piano = pianosData.find(p => p.id === pianoId);
+            const pianoName = piano ? `${piano.brand} ${piano.model || ''}`.trim() : 'Unknown piano';
 
             try {
                 const response = await fetch(`/api/pianos/${pianoId}/service`, {
@@ -972,6 +1061,7 @@
                 });
 
                 if (response.ok) {
+                    console.log(`🔧 Service logged: ${serviceData.typeName} on ${pianoName} (${serviceData.date})`);
                     closeServiceModal();
                     loadPianos();
                     loadServiceHistory();
@@ -994,6 +1084,7 @@
 
         // Load on page load
         loadCustomer();
+        loadServices();
     </script>
 </body>
 </html>
