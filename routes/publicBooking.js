@@ -255,17 +255,23 @@ router.get('/:slug/slots', async (req, res) => {
 
 // POST /api/book/:slug - Maak een publieke boeking aan
 router.post('/:slug', async (req, res) => {
+    console.log('📝 Booking POST received for slug:', req.params.slug);
+    console.log('📝 Body:', JSON.stringify(req.body));
     try {
         const { slug } = req.params;
         const { serviceId, date, time, customer } = req.body;
+        
+        console.log('📝 Parsed data - serviceId:', serviceId, 'date:', date, 'time:', time);
         
         // Validatie
         if (!serviceId || !date || !time || !customer) {
             return res.status(400).json({ error: 'Alle velden zijn verplicht' });
         }
         
+        console.log('📝 Looking up user...');
         // Vind de user
         const user = await userStore.getUserByBookingSlug(slug);
+        console.log('📝 User found:', user ? user.email : 'NOT FOUND');
         if (!user) {
             return res.status(404).json({ error: 'Niet gevonden' });
         }
