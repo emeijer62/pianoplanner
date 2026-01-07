@@ -983,8 +983,14 @@ const SMTP_PROVIDER_INSTRUCTIONS = {
 };
 
 async function loadSmtpSettings() {
+    const statusDiv = document.getElementById('smtp-status');
+    if (!statusDiv) return; // Skip if element doesn't exist
+    
     try {
         const response = await fetch('/api/user-smtp/settings');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
         const data = await response.json();
         
         const statusDiv = document.getElementById('smtp-status');
@@ -1023,7 +1029,10 @@ async function loadSmtpSettings() {
                 <small>Emails are sent via info@pianoplanner.com with your name</small>`;
         }
     } catch (error) {
-        console.error('Error loading SMTP settings:', error);
+        // Only log if it's not a network/auth error (those are expected if not on settings page)
+        if (error.message !== 'Load failed' && !error.message.includes('401')) {
+            console.error('Error loading SMTP settings:', error);
+        }
     }
 }
 
@@ -1169,14 +1178,23 @@ function setupSmtpToggle() {
 // ========== CALENDAR FEED / AGENDA ABONNEMENT ==========
 
 async function loadCalendarFeedSettings() {
+    const statusEl = document.getElementById('feed-status');
+    if (!statusEl) return; // Skip if element doesn't exist
+    
     try {
         const response = await fetch('/api/calendar-feed/settings');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
         const data = await response.json();
         
         // Even if there's an error property, we can still use the data
         updateCalendarFeedUI(data);
     } catch (error) {
-        console.error('Error loading calendar feed settings:', error);
+        // Only log if it's not a network/auth error
+        if (error.message !== 'Load failed' && !error.message.includes('401')) {
+            console.error('Error loading calendar feed settings:', error);
+        }
         // Show disabled state on error
         updateCalendarFeedUI({ enabled: false, feedUrl: null });
     }
