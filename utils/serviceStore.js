@@ -112,10 +112,26 @@ const updateService = async (userId, serviceId, updates) => {
 };
 
 const deleteService = async (userId, serviceId) => {
+    console.log('🗑️ deleteService called:', { userId, serviceId });
+    
+    // Check if service exists first
+    const existing = await dbGet(
+        'SELECT * FROM services WHERE id = ? AND user_id = ?',
+        [serviceId, userId]
+    );
+    console.log('🗑️ Found service in DB:', existing);
+    
+    if (!existing) {
+        console.log('🗑️ Service not found, checking without user filter...');
+        const anyService = await dbGet('SELECT * FROM services WHERE id = ?', [serviceId]);
+        console.log('🗑️ Service exists for any user:', anyService);
+    }
+    
     const result = await dbRun(
         'DELETE FROM services WHERE id = ? AND user_id = ?',
         [serviceId, userId]
     );
+    console.log('🗑️ Delete result:', result);
     return result.changes > 0;
 };
 
