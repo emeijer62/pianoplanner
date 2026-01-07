@@ -21,6 +21,8 @@ router.get('/', async (req, res) => {
         const userId = req.session.user.id;
         const { start, end } = req.query;
         
+        console.log(`📅 GET /appointments for user ${userId}, range: ${start} - ${end}`);
+        
         let appointments;
         
         if (start && end) {
@@ -29,36 +31,47 @@ router.get('/', async (req, res) => {
             appointments = await appointmentStore.getAllAppointments(userId);
         }
         
-        // Converteer naar Google Calendar-achtig formaat voor compatibiliteit
-        const events = appointments.map(apt => ({
-            id: apt.id,
-            summary: apt.title,
-            description: apt.description,
-            location: apt.location,
-            start: apt.allDay 
-                ? { date: apt.start.split('T')[0] }
-                : { dateTime: apt.start },
-            end: apt.allDay
-                ? { date: apt.end.split('T')[0] }
-                : { dateTime: apt.end },
-            // Extra PianoPlanner velden
-            customerId: apt.customerId,
-            customerName: apt.customerName,
-            serviceId: apt.serviceId,
-            serviceName: apt.serviceName,
-            pianoId: apt.pianoId,
-            pianoBrand: apt.pianoBrand,
-            pianoModel: apt.pianoModel,
-            status: apt.status,
-            colorId: apt.color,
-            // Reistijd info
-            travelTimeMinutes: apt.travelTimeMinutes,
-            travelDistanceKm: apt.travelDistanceKm,
-            travelStartTime: apt.travelStartTime,
-            originAddress: apt.originAddress,
-            source: 'local'
-        }));
+        console.log(`📅 Found ${appointments.length} appointments in database`);
         
+        // Converteer naar Google Calendar-achtig formaat voor compatibiliteit
+        const events = appointments.map(apt => {
+            // Skip appointments without valid dates
+            if (!apt.start || !apt.end) {
+                console.log(`⚠️ Skipping appointment ${apt.id} - missing start or end date`);
+                return null;
+            }
+            
+            return {
+                id: apt.id,
+                summary: apt.title,
+                description: apt.description,
+                location: apt.location,
+                start: apt.allDay 
+                    ? { date: apt.start.split('T')[0] }
+                    : { dateTime: apt.start },
+                end: apt.allDay
+                    ? { date: apt.end.split('T')[0] }
+                    : { dateTime: apt.end },
+                // Extra PianoPlanner velden
+                customerId: apt.customerId,
+                customerName: apt.customerName,
+                serviceId: apt.serviceId,
+                serviceName: apt.serviceName,
+                pianoId: apt.pianoId,
+                pianoBrand: apt.pianoBrand,
+                pianoModel: apt.pianoModel,
+                status: apt.status,
+                colorId: apt.color,
+                // Reistijd info
+                travelTimeMinutes: apt.travelTimeMinutes,
+                travelDistanceKm: apt.travelDistanceKm,
+                travelStartTime: apt.travelStartTime,
+                originAddress: apt.originAddress,
+                source: 'local'
+            };
+        }).filter(Boolean);  // Remove null entries
+        
+        console.log(`📅 Returning ${events.length} valid events`);
         res.json(events);
     } catch (error) {
         console.error('Error getting appointments:', error);
