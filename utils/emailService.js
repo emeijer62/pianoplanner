@@ -75,7 +75,8 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
     try {
         // Check if user has their own SMTP configured
         let transporter = emailTransporter;
-        let senderEmail = from || process.env.SMTP_USER;
+        // SMTP_FROM allows sending from a different address than SMTP_USER (e.g. alias)
+        let senderEmail = from || process.env.SMTP_FROM || process.env.SMTP_USER;
         let senderName = fromName;
         let useUserSmtp = false;
         
