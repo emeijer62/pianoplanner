@@ -1190,6 +1190,7 @@
             };
             
             try {
+                console.log('📤 Sending booking request...');
                 const response = await fetch(`/api/book/${bookingSlug}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1201,21 +1202,24 @@
                     })
                 });
                 
-                const result = await response.json();
+                console.log('📥 Response status:', response.status);
+                const text = await response.text();
+                console.log('📥 Response text:', text);
+                
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (parseErr) {
+                    console.error('JSON parse error:', parseErr);
+                    throw new Error('Server returned invalid response');
+                }
                 
                 if (!response.ok) {
                     throw new Error(result.error || 'Booking failed');
                 }
                 
-                // Show success - with extra safety
-                try {
-                    showSuccess(result);
-                } catch (displayErr) {
-                    console.error('Display error:', displayErr);
-                    // Fallback: just show a simple success message
-                    alert('Appointment booked successfully!');
-                    submitBtn.textContent = '✅ Booked!';
-                }
+                console.log('✅ Booking success, showing result...');
+                showSuccess(result);
                 
             } catch (error) {
                 console.error('Booking error:', error);
@@ -1226,38 +1230,49 @@
         }
         
         function showSuccess(result) {
-            // Hide step 3
-            const step3 = document.getElementById('step3');
-            const step3Indicator = document.getElementById('step3-indicator');
-            if (step3) step3.style.display = 'none';
-            if (step3Indicator) {
-                step3Indicator.classList.remove('active');
-                step3Indicator.classList.add('completed');
-            }
+            console.log('🎉 showSuccess called with:', result);
             
-            // Show success
-            const successStep = document.getElementById('step-success');
-            const confirmMsg = document.getElementById('confirmation-message');
-            const finalSummary = document.getElementById('final-summary');
-            
-            if (successStep) successStep.style.display = 'block';
-            if (confirmMsg) confirmMsg.textContent = result?.message || 'Your appointment has been scheduled!';
-            
-            if (finalSummary) {
-                finalSummary.innerHTML = `
-                    <div class="summary-row">
-                        <span class="summary-label">Service</span>
-                        <span class="summary-value">${escapeHtml(selectedService?.name || 'Service')}</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Date</span>
-                        <span class="summary-value">${selectedSuggestion?.displayDate || ''}</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Time</span>
-                        <span class="summary-value">${selectedSuggestion?.displayTime || ''}</span>
-                    </div>
-                `;
+            try {
+                // Hide step 3
+                const step3 = document.getElementById('step3');
+                const step3Indicator = document.getElementById('step3-indicator');
+                if (step3) step3.style.display = 'none';
+                if (step3Indicator) {
+                    step3Indicator.classList.remove('active');
+                    step3Indicator.classList.add('completed');
+                }
+                
+                // Show success
+                const successStep = document.getElementById('step-success');
+                const confirmMsg = document.getElementById('confirmation-message');
+                const finalSummary = document.getElementById('final-summary');
+                
+                console.log('Elements found:', { successStep: !!successStep, confirmMsg: !!confirmMsg, finalSummary: !!finalSummary });
+                
+                if (successStep) successStep.style.display = 'block';
+                if (confirmMsg) confirmMsg.textContent = result?.message || 'Your appointment has been scheduled!';
+                
+                if (finalSummary) {
+                    finalSummary.innerHTML = `
+                        <div class="summary-row">
+                            <span class="summary-label">Service</span>
+                            <span class="summary-value">${escapeHtml(selectedService?.name || 'Service')}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Date</span>
+                            <span class="summary-value">${selectedSuggestion?.displayDate || ''}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Time</span>
+                            <span class="summary-value">${selectedSuggestion?.displayTime || ''}</span>
+                        </div>
+                    `;
+                }
+                
+                console.log('✅ Success screen displayed');
+            } catch (err) {
+                console.error('Error in showSuccess:', err);
+                alert('Appointment booked successfully!');
             }
         }
         
