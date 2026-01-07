@@ -712,17 +712,13 @@
         
         <!-- Email Notifications -->
         <div class="settings-section">
-            <h2>📧 Email Notifications</h2>
+            <h2>📧 Email Notificaties</h2>
             <p style="color: #666; margin-bottom: 16px;">
-                Send automatic email notifications to your customers for appointments.
+                Automatische email notificaties naar je klanten voor afspraken.
             </p>
             
-            <div id="email-status" class="sync-status disconnected">
-                <!-- Status wordt dynamisch geladen -->
-            </div>
-            
             <div id="email-settings-form" style="margin-top: 20px;">
-                <h3 style="margin-bottom: 16px; color: #333;">Notification Settings</h3>
+                <h3 style="margin-bottom: 16px; color: #333;">Notificatie Instellingen</h3>
                 
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
@@ -731,8 +727,8 @@
                             <span class="toggle-slider"></span>
                         </div>
                         <div>
-                            <span style="display: block;">📬 Confirmation emails</span>
-                            <small style="color: #666;">Send confirmation when appointment is booked</small>
+                            <span style="display: block;">📬 Bevestigings emails</span>
+                            <small style="color: #666;">Verstuur bevestiging bij nieuwe afspraak</small>
                         </div>
                     </label>
                 </div>
@@ -744,20 +740,20 @@
                             <span class="toggle-slider"></span>
                         </div>
                         <div>
-                            <span style="display: block;">⏰ Reminder emails</span>
-                            <small style="color: #666;">Send reminder before appointment</small>
+                            <span style="display: block;">⏰ Herinnerings emails</span>
+                            <small style="color: #666;">Verstuur herinnering voor afspraak</small>
                         </div>
                     </label>
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 16px; margin-left: 56px;" id="reminder-hours-group">
-                    <label for="reminder-hours">Send reminder</label>
+                    <label for="reminder-hours">Verstuur herinnering</label>
                     <select id="reminder-hours" style="width: auto; margin-left: 8px;">
-                        <option value="2">2 hours before</option>
-                        <option value="6">6 hours before</option>
-                        <option value="12">12 hours before</option>
-                        <option value="24" selected>24 hours before</option>
-                        <option value="48">48 hours before</option>
+                        <option value="2">2 uur van tevoren</option>
+                        <option value="6">6 uur van tevoren</option>
+                        <option value="12">12 uur van tevoren</option>
+                        <option value="24" selected>24 uur van tevoren</option>
+                        <option value="48">48 uur van tevoren</option>
                     </select>
                 </div>
                 
@@ -768,8 +764,8 @@
                             <span class="toggle-slider"></span>
                         </div>
                         <div>
-                            <span style="display: block;">❌ Cancellation emails</span>
-                            <small style="color: #666;">Notify customer when appointment is cancelled</small>
+                            <span style="display: block;">❌ Annulerings emails</span>
+                            <small style="color: #666;">Bericht klant bij annulering van afspraak</small>
                         </div>
                     </label>
                 </div>
@@ -781,37 +777,19 @@
                             <span class="toggle-slider"></span>
                         </div>
                         <div>
-                            <span style="display: block;">🔔 New booking alerts</span>
-                            <small style="color: #666;">Get notified when customers book appointments</small>
+                            <span style="display: block;">🔔 Nieuwe boeking meldingen</span>
+                            <small style="color: #666;">Ontvang bericht als klanten afspraken boeken</small>
                         </div>
                     </label>
                 </div>
                 
                 <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                     <button type="button" class="btn btn-primary" onclick="saveEmailSettings()">
-                        💾 Save settings
+                        💾 Opslaan
                     </button>
                     <button type="button" class="btn btn-secondary" onclick="sendTestEmail(this)">
-                        📤 Send test email
+                        📤 Test email versturen
                     </button>
-                </div>
-            </div>
-            
-            <div id="email-not-configured" style="display: none;">
-                <div class="info-box" style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 16px;">
-                    <strong>⚠️ Email not configured</strong>
-                    <p style="margin: 12px 0 0 0; color: #856404;">
-                        To enable email notifications, add these environment variables to your server:
-                    </p>
-                    <ul style="margin: 12px 0 0 20px; color: #856404;">
-                        <li><code>SMTP_USER</code> - Your Google Workspace email</li>
-                        <li><code>SMTP_PASS</code> - App-specific password from Google</li>
-                    </ul>
-                    <p style="margin: 12px 0 0 0; color: #856404;">
-                        <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color: #0071e3;">
-                            Generate an App Password →
-                        </a>
-                    </p>
                 </div>
             </div>
         </div>
@@ -1585,26 +1563,13 @@
                 const response = await fetch('/api/email/status');
                 const data = await response.json();
                 
-                const statusEl = document.getElementById('email-status');
-                const settingsForm = document.getElementById('email-settings-form');
-                const notConfigured = document.getElementById('email-not-configured');
-                
+                // Email is always configured (via PianoPlanner or user's own SMTP)
+                // Just load the settings
                 if (data.configured) {
-                    statusEl.className = 'sync-status connected';
-                    statusEl.innerHTML = `<strong>✅ Email configured</strong><br><small>SMTP: ${data.smtpUser}</small>`;
-                    settingsForm.style.display = 'block';
-                    notConfigured.style.display = 'none';
                     loadEmailSettings();
-                } else {
-                    statusEl.className = 'sync-status disconnected';
-                    statusEl.innerHTML = '<strong>⚠️ Email not configured</strong>';
-                    settingsForm.style.display = 'none';
-                    notConfigured.style.display = 'block';
                 }
             } catch (error) {
                 console.error('Error loading email status:', error);
-                document.getElementById('email-status').innerHTML = 
-                    '<strong>⚠️ Could not load email status</strong>';
             }
         }
         
