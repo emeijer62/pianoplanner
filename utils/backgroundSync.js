@@ -10,8 +10,12 @@ const appointmentStore = require('./appointmentStore');
 // Sync interval: elke 15 minuten
 const SYNC_INTERVAL = 15 * 60 * 1000;
 
+// Rate limiting: max requests per user
+const RATE_LIMIT_DELAY = 500; // ms between API calls
+
 /**
  * Maak OAuth client voor een gebruiker (zonder sessie)
+ * Inclusief automatische token refresh
  */
 const createAuthClient = (tokens) => {
     const oauth2Client = new google.auth.OAuth2(
@@ -20,7 +24,29 @@ const createAuthClient = (tokens) => {
         process.env.GOOGLE_REDIRECT_URI
     );
     oauth2Client.setCredentials(tokens);
+    
+    // Auto-refresh tokens wanneer ze verlopen
+    oauth2Client.on('tokens', (newTokens) => {
+        console.log('🔄 Google tokens refreshed');
+        // Tokens worden automatisch bijgewerkt in de client
+    });
+    
     return oauth2Client;
+};
+
+/**
+ * Valideer en formatteer een datum voor Google Calendar API
+ */
+const formatDateTimeForGoogle = (dateValue) => {
+    if (!dateValue) return null;
+    
+    try {
+        const date = new Date(dateValue);
+        if (isNaN(date.getTime())) return null;
+        return date.toISOString();
+    } catch (e) {
+        return null;
+    }
 };
 
 /**
@@ -60,16 +86,25 @@ const syncUserCalendar = async (user) => {
                 // Skip als al gesynchroniseerd
                 if (appointment.googleEventId) continue;
                 
+                // Valideer datums voordat we naar Google sturen
+                const startDateTime = formatDateTimeForGoogle(appointment.startTime || appointment.start);
+                const endDateTime = formatDateTimeForGoogle(appointment.endTime || appointment.end);
+                
+                if (!startDateTime || !endDateTime) {
+                    console.log(`⏭️ Skip appointment zonder geldige datums: ${appointment.title || appointment.id}`);
+                    continue;
+                }
+                
                 try {
                     const event = {
                         summary: appointment.title || appointment.serviceName || 'PianoPlanner Afspraak',
                         description: `Klant: ${appointment.customerName || 'Onbekend'}\n${appointment.notes || ''}`,
                         start: {
-                            dateTime: appointment.startTime || appointment.start,
+                            dateTime: startDateTime,
                             timeZone: 'Europe/Amsterdam'
                         },
                         end: {
-                            dateTime: appointment.endTime || appointment.end,
+                            dateTime: endDateTime,
                             timeZone: 'Europe/Amsterdam'
                         },
                         location: appointment.address || appointment.location || ''
@@ -85,7 +120,18 @@ const syncUserCalendar = async (user) => {
                         lastSynced: new Date().toISOString()
                     });
                     synced++;
+                    
+                    // Rate limiting: kleine delay tussen API calls
+                    await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
+                    
                 } catch (err) {
+                    // Check voor token errors
+                    if (err.message?.includes('invalid_grant') || err.message?.includes('Token has been expired')) {
+                        console.error(`🔑 Token verlopen voor ${user.email} - markeer voor re-auth`);
+                        await userStore.updateUser(user.id, { tokens: null });
+                        return { error: 'token_expired', needsReauth: true };
+                    }
+                    
                     errors++;
                     console.error(`❌ Error syncing event for ${user.email}:`, err.message, 'Appointment:', appointment.title || appointment.id);
                 }
@@ -110,8 +156,20 @@ const syncUserCalendar = async (user) => {
                 const googleEvents = response.data.items || [];
                 
                 for (const event of googleEvents) {
-                    // Skip all-day events
-                    if (!event.start?.dateTime) continue;
+                    // Skip all-day events of events zonder geldige tijden
+                    if (!event.start?.dateTime || !event.end?.dateTime) {
+                        console.log(`⏭️ Skip all-day/invalid event: ${event.summary || event.id}`);
+                        continue;
+                    }
+                    
+                    // Valideer datums
+                    const startDateTime = formatDateTimeForGoogle(event.start.dateTime);
+                    const endDateTime = formatDateTimeForGoogle(event.end.dateTime);
+                    
+                    if (!startDateTime || !endDateTime) {
+                        console.log(`⏭️ Skip event met ongeldige datums: ${event.summary || event.id}`);
+                        continue;
+                    }
                     
                     // Check of dit event al bestaat in lokale database (via googleEventId)
                     const existingAppointments = localAppointments.filter(a => a.googleEventId === event.id);
@@ -121,14 +179,18 @@ const syncUserCalendar = async (user) => {
                             await appointmentStore.createAppointment(user.id, {
                                 title: event.summary || 'Google Agenda Event',
                                 description: event.description || '',
-                                start: event.start.dateTime,
-                                end: event.end.dateTime,
+                                start: startDateTime,
+                                end: endDateTime,
                                 location: event.location || '',
                                 googleEventId: event.id,
                                 source: 'google',
                                 lastSynced: new Date().toISOString()
                             });
                             synced++;
+                            
+                            // Rate limiting
+                            await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
+                            
                         } catch (err) {
                             errors++;
                             console.error(`❌ Error importing Google event:`, err.message, 'Event:', event.summary || event.id);
@@ -136,6 +198,13 @@ const syncUserCalendar = async (user) => {
                     }
                 }
             } catch (err) {
+                // Check voor token errors
+                if (err.message?.includes('invalid_grant') || err.message?.includes('Token has been expired')) {
+                    console.error(`🔑 Token verlopen voor ${user.email} - markeer voor re-auth`);
+                    await userStore.updateUser(user.id, { tokens: null });
+                    return { error: 'token_expired', needsReauth: true };
+                }
+                
                 errors++;
                 console.error(`❌ Error fetching Google events for ${user.email}:`, err.message);
             }
