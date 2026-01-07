@@ -6,6 +6,7 @@
 const { dbRun, dbGet, dbAll } = require('./database');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
+const { encrypt, decrypt } = require('./encryption');
 
 // ==================== PASSWORD HASHING ====================
 
@@ -32,9 +33,9 @@ const createUser = async (userData) => {
         INSERT INTO users (
             id, email, name, picture, google_id, tokens,
             password_hash, auth_type, approval_status,
-            subscription_status, created_at, updated_at
+            subscription_status, timezone, created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
         id,
         userData.email,
@@ -46,6 +47,7 @@ const createUser = async (userData) => {
         userData.authType || 'google',
         userData.approvalStatus || 'approved',
         userData.subscriptionStatus || 'trial',
+        userData.timezone || 'Europe/Amsterdam',
         now,
         now
     ]);
@@ -133,7 +135,7 @@ const deleteUser = async (id) => {
 };
 
 // Update user profile (name and email)
-const updateUserProfile = async (id, { name, email }) => {
+const updateUserProfile = async (id, { name, email, timezone }) => {
     const user = await getUser(id);
     if (!user) {
         return { error: 'User not found' };
@@ -151,8 +153,31 @@ const updateUserProfile = async (id, { name, email }) => {
     if (name) updates.name = name;
     if (email) updates.email = email;
     
-    const updatedUser = await updateUser(id, updates);
-    return { user: updatedUser };
+    // Update timezone directly in database (not in standard user fields)
+    if (timezone) {
+        await dbRun('UPDATE users SET timezone = ?, updated_at = ? WHERE id = ?', 
+            [timezone, new Date().toISOString(), id]);
+    }
+    
+    if (Object.keys(updates).length > 0) {
+        const updatedUser = await updateUser(id, updates);
+        return { user: updatedUser };
+    }
+    
+    return { user: await getUser(id) };
+};
+
+// Get user profile with timezone
+const getUserProfile = async (id) => {
+    const user = await dbGet('SELECT id, email, name, picture, timezone FROM users WHERE id = ?', [id]);
+    if (!user) return null;
+    return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        timezone: user.timezone || 'Europe/Amsterdam'
+    };
 };
 
 // ==================== EMAIL/PASSWORD AUTH ====================
@@ -404,7 +429,7 @@ const setUserPlan = async (userId, plan) => {
     return { user: updatedUser };
 };
 
-const createUserByAdmin = async ({ email, name, password, approvalStatus, plan, createdBy }) => {
+const createUserByAdmin = async ({ email, name, password, approvalStatus, plan, createdBy, timezone }) => {
     try {
         // Hash password
         const passwordHash = await hashPassword(password);
@@ -414,9 +439,9 @@ const createUserByAdmin = async ({ email, name, password, approvalStatus, plan, 
         
         // Create user
         await dbRun(`
-            INSERT INTO users (id, email, name, password_hash, auth_type, approval_status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, 'email', ?, ?, ?)
-        `, [userId, email, name, passwordHash, approvalStatus || 'approved', new Date().toISOString(), new Date().toISOString()]);
+            INSERT INTO users (id, email, name, password_hash, auth_type, approval_status, timezone, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 'email', ?, ?, ?, ?)
+        `, [userId, email, name, passwordHash, approvalStatus || 'approved', timezone || 'Europe/Amsterdam', new Date().toISOString(), new Date().toISOString()]);
         
         // Set plan
         if (plan === 'trial' || !plan) {
@@ -668,13 +693,13 @@ function formatUser(row) {
 // ==================== APPLE CALENDAR ====================
 
 /**
- * Sla Apple Calendar credentials op
+ * Sla Apple Calendar credentials op (wachtwoord wordt versleuteld)
  */
 const saveAppleCalendarCredentials = async (userId, credentials) => {
     try {
         const appleCalendar = JSON.stringify({
             appleId: credentials.appleId,
-            appPassword: credentials.appPassword, // TODO: encrypt dit in productie
+            appPassword: encrypt(credentials.appPassword), // Encrypted!
             principalUrl: credentials.principalUrl,
             connected: credentials.connected || true,
             connectedAt: credentials.connectedAt || new Date().toISOString()
@@ -692,14 +717,19 @@ const saveAppleCalendarCredentials = async (userId, credentials) => {
 };
 
 /**
- * Haal Apple Calendar credentials op
+ * Haal Apple Calendar credentials op (wachtwoord wordt ontsleuteld)
  */
 const getAppleCalendarCredentials = async (userId) => {
     const user = await dbGet('SELECT apple_calendar FROM users WHERE id = ?', [userId]);
     if (!user || !user.apple_calendar) return null;
     
     try {
-        return JSON.parse(user.apple_calendar);
+        const credentials = JSON.parse(user.apple_calendar);
+        // Decrypt het wachtwoord bij ophalen
+        if (credentials.appPassword) {
+            credentials.appPassword = decrypt(credentials.appPassword);
+        }
+        return credentials;
     } catch (e) {
         return null;
     }
@@ -768,6 +798,7 @@ module.exports = {
     getUserByGoogleId,
     updateUser,
     updateUserProfile,
+    getUserProfile,
     saveUser,
     getAllUsers,
     deleteUser,

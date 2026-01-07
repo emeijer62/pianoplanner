@@ -175,9 +175,15 @@ app.get('/api/user', async (req, res) => {
                 subscriptionStatus = await userStore.getSubscriptionStatus(req.session.user.id);
             }
             
+            // Get user profile with timezone
+            const profile = await userStore.getUserProfile(req.session.user.id);
+            
             res.json({ 
                 loggedIn: true, 
-                user: req.session.user,
+                user: {
+                    ...req.session.user,
+                    timezone: profile?.timezone || 'Europe/Amsterdam'
+                },
                 isAdmin: isAdminUser,
                 subscription: subscriptionStatus
             });
@@ -192,6 +198,29 @@ app.get('/api/user', async (req, res) => {
         }
     } else {
         res.json({ loggedIn: false });
+    }
+});
+
+// Update user profile (timezone, etc.)
+app.put('/api/user/profile', requireAuth, async (req, res) => {
+    try {
+        const { timezone } = req.body;
+        const userId = req.session.user.id;
+        
+        // Validate timezone
+        if (timezone) {
+            try {
+                Intl.DateTimeFormat(undefined, { timeZone: timezone });
+            } catch (e) {
+                return res.status(400).json({ error: 'Invalid timezone' });
+            }
+        }
+        
+        await userStore.updateUserProfile(userId, { timezone });
+        res.json({ success: true, timezone });
+    } catch (error) {
+        console.error('Error updating user profile:', error);
+        res.status(500).json({ error: 'Could not update profile' });
     }
 });
 

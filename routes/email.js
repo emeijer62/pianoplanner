@@ -28,8 +28,8 @@ router.post('/test', requireAuth, async (req, res) => {
     try {
         if (!emailService.isEmailConfigured()) {
             return res.status(400).json({ 
-                error: 'Email not configured',
-                message: 'SMTP_USER and SMTP_PASS environment variables are required'
+                error: 'Email niet geconfigureerd',
+                message: 'SMTP_USER en SMTP_PASS omgevingsvariabelen zijn vereist'
             });
         }
 
@@ -37,7 +37,7 @@ router.post('/test', requireAuth, async (req, res) => {
         const testEmail = email || req.session.user.email;
 
         if (!testEmail) {
-            return res.status(400).json({ error: 'No email address provided' });
+            return res.status(400).json({ error: 'Geen e-mailadres opgegeven' });
         }
 
         const result = await emailService.sendTestEmail(testEmail);
@@ -45,12 +45,12 @@ router.post('/test', requireAuth, async (req, res) => {
         if (result.success) {
             res.json({ 
                 success: true, 
-                message: `Test email sent to ${testEmail}`,
+                message: `Test e-mail verzonden naar ${testEmail}`,
                 messageId: result.messageId
             });
         } else {
             res.status(500).json({ 
-                error: 'Failed to send test email',
+                error: 'Kon test e-mail niet versturen',
                 message: result.error
             });
         }
@@ -134,7 +134,7 @@ router.put('/settings', requireAuth, async (req, res) => {
             notifyNewBookings ? 1 : 0
         ]);
 
-        res.json({ success: true, message: 'Email settings updated' });
+        res.json({ success: true, message: 'E-mailinstellingen bijgewerkt' });
     } catch (error) {
         console.error('Update email settings error:', error);
         res.status(500).json({ error: error.message });
@@ -192,7 +192,7 @@ router.post('/send-confirmation', requireAuth, async (req, res) => {
         if (result.success) {
             // Mark confirmation as sent
             await db.run('UPDATE appointments SET confirmation_sent = 1 WHERE id = ?', [appointmentId]);
-            res.json({ success: true, message: 'Confirmation email sent' });
+            res.json({ success: true, message: 'Bevestigingse-mail verzonden' });
         } else {
             res.status(500).json({ error: result.error });
         }
@@ -209,7 +209,7 @@ router.post('/send-confirmation', requireAuth, async (req, res) => {
 router.post('/send-reminder', requireAuth, async (req, res) => {
     try {
         if (!emailService.isEmailConfigured()) {
-            return res.status(400).json({ error: 'Email not configured' });
+            return res.status(400).json({ error: 'Email niet geconfigureerd' });
         }
 
         const { appointmentId } = req.body;
@@ -225,11 +225,11 @@ router.post('/send-reminder', requireAuth, async (req, res) => {
         `, [appointmentId, userId]);
 
         if (!appointment) {
-            return res.status(404).json({ error: 'Appointment not found' });
+            return res.status(404).json({ error: 'Afspraak niet gevonden' });
         }
 
         if (!appointment.customer_email) {
-            return res.status(400).json({ error: 'Customer has no email address' });
+            return res.status(400).json({ error: 'Klant heeft geen e-mailadres' });
         }
 
         // Get company name
@@ -257,7 +257,7 @@ router.post('/send-reminder', requireAuth, async (req, res) => {
         if (result.success) {
             // Mark reminder as sent
             await db.run('UPDATE appointments SET reminder_sent = 1 WHERE id = ?', [appointmentId]);
-            res.json({ success: true, message: 'Reminder email sent' });
+            res.json({ success: true, message: 'Herinneringse-mail verzonden' });
         } else {
             res.status(500).json({ error: result.error });
         }

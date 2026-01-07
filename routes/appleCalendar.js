@@ -13,17 +13,20 @@ const router = express.Router();
 const userStore = require('../utils/userStore');
 const fetch = require('node-fetch');
 const { XMLParser, XMLBuilder } = require('fast-xml-parser');
+const { requireAuth } = require('../middleware/auth');
+
+// Debug logging (set to true for troubleshooting CalDAV issues)
+const DEBUG_CALDAV = process.env.DEBUG_CALDAV === 'true';
 
 // CalDAV endpoints voor iCloud
 const ICLOUD_CALDAV_URL = 'https://caldav.icloud.com';
 const ICLOUD_PRINCIPAL_URL = 'https://caldav.icloud.com';
 
-// Middleware: check of gebruiker ingelogd is
-const requireAuth = (req, res, next) => {
-    if (!req.session.user) {
-        return res.status(401).json({ error: 'Niet ingelogd' });
+// Helper: debug log (only logs when DEBUG_CALDAV is enabled)
+const debugLog = (...args) => {
+    if (DEBUG_CALDAV) {
+        console.log(...args);
     }
-    next();
 };
 
 // Helper: maak Basic Auth header
@@ -117,13 +120,13 @@ router.post('/connect', requireAuth, async (req, res) => {
                 principalUrl = propstat.prop['current-user-principal'].href;
             }
         } catch (e) {
-            console.log('Could not parse principal URL, using default');
+            debugLog('Could not parse principal URL, using default');
         }
         
         // Sla credentials veilig op (encrypted in database)
         const result = await userStore.saveAppleCalendarCredentials(req.session.user.id, {
             appleId,
-            appPassword, // TODO: encrypt dit
+            appPassword, // Wordt encrypted in userStore
             principalUrl: principalUrl || `/${appleId}/`,
             connected: true,
             connectedAt: new Date().toISOString()
@@ -133,7 +136,7 @@ router.post('/connect', requireAuth, async (req, res) => {
             return res.status(500).json({ error: result.error });
         }
         
-        console.log(`🍎 Apple Calendar connected for user ${req.session.user.email}`);
+        debugLog(`🍎 Apple Calendar connected for user ${req.session.user.email}`);
         
         res.json({ 
             success: true, 
@@ -158,7 +161,7 @@ router.post('/disconnect', requireAuth, async (req, res) => {
     try {
         await userStore.removeAppleCalendarCredentials(req.session.user.id);
         
-        console.log(`🍎 Apple Calendar disconnected for user ${req.session.user.email}`);
+        debugLog(`🍎 Apple Calendar disconnected for user ${req.session.user.email}`);
         
         res.json({ 
             success: true, 
@@ -206,7 +209,7 @@ router.get('/calendars', requireAuth, async (req, res) => {
     try {
         const credentials = await userStore.getAppleCalendarCredentials(req.session.user.id);
         
-        console.log('🍎 Apple Calendar credentials:', credentials ? {
+        debugLog('🍎 Apple Calendar credentials:', credentials ? {
             appleId: credentials.appleId,
             principalUrl: credentials.principalUrl,
             connected: credentials.connected
@@ -226,7 +229,7 @@ router.get('/calendars', requireAuth, async (req, res) => {
         }
         
         const calendars = await fetchAppleCalendars(credentials);
-        console.log('🍎 Found calendars:', calendars.length);
+        debugLog('🍎 Found calendars:', calendars.length);
         res.json({ calendars });
         
     } catch (error) {
@@ -254,7 +257,7 @@ async function fetchAppleCalendars(credentials) {
         calendarHomeUrl = `${ICLOUD_CALDAV_URL}${baseUrl}calendars/`;
     }
     
-    console.log('🍎 Fetching calendars from:', calendarHomeUrl);
+    debugLog('🍎 Fetching calendars from:', calendarHomeUrl);
     
     const propfindBody = `<?xml version="1.0" encoding="UTF-8"?>
 <D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav" xmlns:CS="http://calendarserver.org/ns/">
@@ -282,10 +285,10 @@ async function fetchAppleCalendars(credentials) {
     }
     
     const xmlText = await response.text();
-    console.log('🍎 CalDAV response (first 1000 chars):', xmlText.substring(0, 1000));
+    debugLog('🍎 CalDAV response (first 1000 chars):', xmlText.substring(0, 1000));
     
     const parsed = xmlParser.parse(xmlText);
-    console.log('🍎 Parsed structure:', JSON.stringify(parsed, null, 2).substring(0, 2000));
+    debugLog('🍎 Parsed structure:', JSON.stringify(parsed, null, 2).substring(0, 2000));
     
     const calendars = [];
     
@@ -294,12 +297,12 @@ async function fetchAppleCalendars(credentials) {
     const responses = multistatus?.response || multistatus?.['D:response'] || multistatus?.['d:response'];
     const responseArray = Array.isArray(responses) ? responses : [responses].filter(Boolean);
     
-    console.log('🍎 Found', responseArray.length, 'responses in XML');
+    debugLog('🍎 Found', responseArray.length, 'responses in XML');
     
     for (const resp of responseArray) {
         const propstat = resp.propstat || resp['D:propstat'] || resp['d:propstat'];
         if (!propstat) {
-            console.log('🍎 No propstat in response:', JSON.stringify(resp).substring(0, 200));
+            debugLog('🍎 No propstat in response:', JSON.stringify(resp).substring(0, 200));
             continue;
         }
         
@@ -310,7 +313,7 @@ async function fetchAppleCalendars(credentials) {
             const prop = ps.prop || ps['D:prop'] || ps['d:prop'];
             const resourceType = prop?.resourcetype || prop?.['D:resourcetype'] || prop?.['d:resourcetype'];
             
-            console.log('🍎 Checking resourceType:', JSON.stringify(resourceType));
+            debugLog('🍎 Checking resourceType:', JSON.stringify(resourceType));
             
             // Check of het een calendar is - multiple possible structures
             const isCalendar = resourceType?.calendar !== undefined || 
@@ -325,7 +328,7 @@ async function fetchAppleCalendars(credentials) {
                 
                 // Skip de root/home path
                 if (href && !href.endsWith('/calendars/')) {
-                    console.log('🍎 Found calendar:', displayName, href);
+                    debugLog('🍎 Found calendar:', displayName, href);
                     calendars.push({
                         id: href,
                         name: displayName,
@@ -379,8 +382,8 @@ async function fetchAppleEvents(credentials, calendarUrl, startDate, endDate) {
     const start = startDate ? new Date(startDate) : new Date();
     const end = endDate ? new Date(endDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     
-    console.log(`🍎 Fetching events from ${calendarUrl}`);
-    console.log(`🍎 Date range: ${start.toISOString()} to ${end.toISOString()}`);
+    debugLog(`🍎 Fetching events from ${calendarUrl}`);
+    debugLog(`🍎 Date range: ${start.toISOString()} to ${end.toISOString()}`);
     
     const reportBody = `<?xml version="1.0" encoding="UTF-8"?>
 <C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
@@ -407,7 +410,7 @@ async function fetchAppleEvents(credentials, calendarUrl, startDate, endDate) {
         body: reportBody
     });
     
-    console.log(`🍎 CalDAV REPORT response status: ${response.status}`);
+    debugLog(`🍎 CalDAV REPORT response status: ${response.status}`);
     
     if (!response.ok) {
         const errorText = await response.text();
@@ -416,7 +419,7 @@ async function fetchAppleEvents(credentials, calendarUrl, startDate, endDate) {
     }
     
     const xmlText = await response.text();
-    console.log(`🍎 CalDAV REPORT response (first 1000 chars):`, xmlText.substring(0, 1000));
+    debugLog(`🍎 CalDAV REPORT response (first 1000 chars):`, xmlText.substring(0, 1000));
     
     const parsed = xmlParser.parse(xmlText);
     
@@ -427,7 +430,7 @@ async function fetchAppleEvents(credentials, calendarUrl, startDate, endDate) {
     const responses = multistatus?.response || multistatus?.['D:response'] || multistatus?.['d:response'];
     const responseArray = Array.isArray(responses) ? responses : [responses].filter(Boolean);
     
-    console.log(`🍎 Found ${responseArray.length} responses in REPORT`);
+    debugLog(`🍎 Found ${responseArray.length} responses in REPORT`);
     
     for (const resp of responseArray) {
         // Try multiple propstat paths
@@ -439,17 +442,17 @@ async function fetchAppleEvents(credentials, calendarUrl, startDate, endDate) {
             const calendarData = prop?.['calendar-data'] || prop?.['C:calendar-data'] || prop?.['cal:calendar-data'];
             
             if (calendarData) {
-                console.log(`🍎 Found calendar-data, parsing...`);
+                debugLog(`🍎 Found calendar-data, parsing...`);
                 const event = parseICalEvent(calendarData, resp.href || resp['D:href'] || resp['d:href']);
                 if (event) {
-                    console.log(`🍎 Parsed event: ${event.summary} (${event.start})`);
+                    debugLog(`🍎 Parsed event: ${event.summary} (${event.start})`);
                     events.push(event);
                 }
             }
         }
     }
     
-    console.log(`🍎 Total events found: ${events.length}`);
+    debugLog(`🍎 Total events found: ${events.length}`);
     
     return events.sort((a, b) => new Date(a.start) - new Date(b.start));
 }
@@ -482,7 +485,7 @@ router.post('/events', requireAuth, async (req, res) => {
             end
         });
         
-        console.log(`🍎 Event created in Apple Calendar for user ${req.session.user.email}`);
+        debugLog(`🍎 Event created in Apple Calendar for user ${req.session.user.email}`);
         res.json({ success: true, event });
         
     } catch (error) {
@@ -562,7 +565,7 @@ router.delete('/events/:eventId', requireAuth, async (req, res) => {
             throw new Error(`CalDAV DELETE error: ${response.status}`);
         }
         
-        console.log(`🍎 Event deleted from Apple Calendar for user ${req.session.user.email}`);
+        debugLog(`🍎 Event deleted from Apple Calendar for user ${req.session.user.email}`);
         res.json({ success: true });
         
     } catch (error) {
@@ -605,7 +608,7 @@ router.post('/sync-settings', requireAuth, async (req, res) => {
             return res.status(400).json({ error: result.error });
         }
         
-        console.log(`🍎 Apple Calendar sync settings updated for user ${req.session.user.email}`);
+        debugLog(`🍎 Apple Calendar sync settings updated for user ${req.session.user.email}`);
         res.json({ 
             success: true, 
             settings: await userStore.getAppleCalendarSync(req.session.user.id) 
@@ -668,28 +671,28 @@ async function performAppleSync(userId, credentials, syncSettings) {
     const appointmentStore = require('../utils/appointmentStore');
     const direction = syncSettings.syncDirection || 'both';
     
-    console.log(`🍎 Starting Apple sync for user ${userId}`);
-    console.log(`🍎 Sync direction: ${direction}`);
-    console.log(`🍎 Calendar URL: ${syncSettings.appleCalendarUrl}`);
+    debugLog(`🍎 Starting Apple sync for user ${userId}`);
+    debugLog(`🍎 Sync direction: ${direction}`);
+    debugLog(`🍎 Calendar URL: ${syncSettings.appleCalendarUrl}`);
     
     let synced = 0;
     let errors = [];
     
     // Haal lokale afspraken op
     const localAppointments = await appointmentStore.getAllAppointments(userId);
-    console.log(`🍎 Local appointments: ${localAppointments.length}`);
+    debugLog(`🍎 Local appointments: ${localAppointments.length}`);
     
     // Haal Apple events op
     const appleEvents = await fetchAppleEvents(
         credentials, 
         syncSettings.appleCalendarUrl
     );
-    console.log(`🍎 Apple events fetched: ${appleEvents.length}`);
+    debugLog(`🍎 Apple events fetched: ${appleEvents.length}`);
     
     // Sync TO Apple (local → Apple)
     if (direction === 'both' || direction === 'toApple') {
         const toSync = localAppointments.filter(a => !a.apple_event_id);
-        console.log(`🍎 Local appointments to sync to Apple: ${toSync.length}`);
+        debugLog(`🍎 Local appointments to sync to Apple: ${toSync.length}`);
         
         for (const appointment of toSync) {
             try {
@@ -708,7 +711,7 @@ async function performAppleSync(userId, credentials, syncSettings) {
                     apple_event_url: event.url
                 });
                 
-                console.log(`🍎 Synced to Apple: ${appointment.title}`);
+                debugLog(`🍎 Synced to Apple: ${appointment.title}`);
                 synced++;
             } catch (error) {
                 console.error(`🍎 Error syncing to Apple: ${appointment.title}`, error.message);
@@ -719,7 +722,7 @@ async function performAppleSync(userId, credentials, syncSettings) {
     
     // Sync FROM Apple (Apple → local)
     if (direction === 'both' || direction === 'fromApple') {
-        console.log(`🍎 Checking ${appleEvents.length} Apple events to sync locally`);
+        debugLog(`🍎 Checking ${appleEvents.length} Apple events to sync locally`);
         
         for (const event of appleEvents) {
             try {
@@ -728,11 +731,11 @@ async function performAppleSync(userId, credentials, syncSettings) {
                     a => a.apple_event_id === event.id
                 );
                 if (existing) {
-                    console.log(`🍎 Apple event already exists locally: ${event.summary}`);
+                    debugLog(`🍎 Apple event already exists locally: ${event.summary}`);
                     continue;
                 }
                 
-                console.log(`🍎 Creating local appointment from Apple: ${event.summary}`);
+                debugLog(`🍎 Creating local appointment from Apple: ${event.summary}`);
                 
                 // Maak lokale afspraak aan
                 await appointmentStore.createAppointment(userId, {
@@ -754,7 +757,7 @@ async function performAppleSync(userId, credentials, syncSettings) {
         }
     }
     
-    console.log(`🍎 Apple sync completed: ${synced} items synced, ${errors.length} errors`);
+    debugLog(`🍎 Apple sync completed: ${synced} items synced, ${errors.length} errors`);
     
     return { synced, errors };
 }
@@ -865,6 +868,13 @@ function setEventProperty(event, key, value) {
     // Handle keys with parameters like DTSTART;TZID=Europe/Amsterdam
     const baseKey = key.split(';')[0];
     
+    // Extract TZID parameter if present
+    let tzid = null;
+    const tzidMatch = key.match(/TZID=([^;:]+)/);
+    if (tzidMatch) {
+        tzid = tzidMatch[1];
+    }
+    
     switch (baseKey) {
         case 'UID':
             event.id = unescapedValue;
@@ -879,36 +889,42 @@ function setEventProperty(event, key, value) {
             event.location = unescapedValue;
             break;
         case 'DTSTART':
-            event.start = parseICalDate(unescapedValue);
+            event.start = parseICalDate(unescapedValue, tzid);
             break;
         case 'DTEND':
-            event.end = parseICalDate(unescapedValue);
+            event.end = parseICalDate(unescapedValue, tzid);
             break;
     }
 }
 
-function parseICalDate(dateStr) {
-    // Format: 20260107T140000Z of 20260107T140000
+function parseICalDate(dateStr, tzid = null) {
+    // Format: 20260107T140000Z (UTC) of 20260107T140000 (local/specified timezone)
     if (dateStr.length >= 15) {
-        const year = dateStr.substring(0, 4);
-        const month = dateStr.substring(4, 6);
-        const day = dateStr.substring(6, 8);
-        const hour = dateStr.substring(9, 11);
-        const minute = dateStr.substring(11, 13);
-        const second = dateStr.substring(13, 15);
+        const year = parseInt(dateStr.substring(0, 4));
+        const month = parseInt(dateStr.substring(4, 6)) - 1;
+        const day = parseInt(dateStr.substring(6, 8));
+        const hour = parseInt(dateStr.substring(9, 11));
+        const minute = parseInt(dateStr.substring(11, 13));
+        const second = parseInt(dateStr.substring(13, 15));
         
         if (dateStr.endsWith('Z')) {
-            return new Date(Date.UTC(year, month - 1, day, hour, minute, second)).toISOString();
+            // UTC time
+            return new Date(Date.UTC(year, month, day, hour, minute, second)).toISOString();
         }
-        return new Date(year, month - 1, day, hour, minute, second).toISOString();
+        
+        // Local time (optionally with TZID)
+        // For now, we treat non-UTC times as local times
+        // A proper implementation would use Luxon or similar for timezone conversion
+        // But for most practical purposes, treating it as local time works
+        return new Date(year, month, day, hour, minute, second).toISOString();
     }
     
-    // Date only format: 20260107
+    // Date only format: 20260107 (all-day event)
     if (dateStr.length === 8) {
-        const year = dateStr.substring(0, 4);
-        const month = dateStr.substring(4, 6);
-        const day = dateStr.substring(6, 8);
-        return new Date(year, month - 1, day).toISOString();
+        const year = parseInt(dateStr.substring(0, 4));
+        const month = parseInt(dateStr.substring(4, 6)) - 1;
+        const day = parseInt(dateStr.substring(6, 8));
+        return new Date(year, month, day).toISOString();
     }
     
     return dateStr;

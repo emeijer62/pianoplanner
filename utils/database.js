@@ -150,6 +150,13 @@ function initDatabase() {
             }
         });
         
+        // Migratie: voeg timezone kolom toe voor internationale ondersteuning
+        db.run(`ALTER TABLE users ADD COLUMN timezone TEXT DEFAULT 'Europe/Amsterdam'`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error timezone:', err);
+            }
+        });
+        
         // Index voor snelle booking slug lookup
         db.run('CREATE INDEX IF NOT EXISTS idx_users_booking_slug ON users(booking_slug)');
 

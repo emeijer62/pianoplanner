@@ -2,16 +2,8 @@ const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
 const userStore = require('../utils/userStore');
-const fs = require('fs');
 const path = require('path');
-
-// Middleware: check of gebruiker ingelogd is
-const requireAuth = (req, res, next) => {
-    if (!req.session.user) {
-        return res.status(401).json({ error: 'Niet ingelogd' });
-    }
-    next();
-};
+const { requireAuth } = require('../middleware/auth');
 
 // Middleware: check of gebruiker Google tokens heeft
 const requireGoogleAuth = (req, res, next) => {

@@ -1158,6 +1158,89 @@
         <!-- ==================== ACCOUNT TAB ==================== -->
         <div class="tab-panel" id="panel-account">
             
+            <!-- Regional Settings Card (Timezone) -->
+            <div class="settings-card" id="regional-card">
+                <div class="settings-card-header" onclick="toggleCard('regional-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">🌍</span>
+                        Regional Settings
+                    </div>
+                    <div class="settings-card-status">
+                        <span class="status-badge connected" id="timezone-badge">Europe/Amsterdam</span>
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Set your timezone for accurate appointment scheduling and calendar sync.
+                    </p>
+                    
+                    <div class="form-group">
+                        <label for="user-timezone">Timezone</label>
+                        <select id="user-timezone" style="width: 100%;">
+                            <optgroup label="Europe">
+                                <option value="Europe/Amsterdam">Amsterdam (CET/CEST)</option>
+                                <option value="Europe/Brussels">Brussels (CET/CEST)</option>
+                                <option value="Europe/London">London (GMT/BST)</option>
+                                <option value="Europe/Paris">Paris (CET/CEST)</option>
+                                <option value="Europe/Berlin">Berlin (CET/CEST)</option>
+                                <option value="Europe/Madrid">Madrid (CET/CEST)</option>
+                                <option value="Europe/Rome">Rome (CET/CEST)</option>
+                                <option value="Europe/Vienna">Vienna (CET/CEST)</option>
+                                <option value="Europe/Zurich">Zurich (CET/CEST)</option>
+                                <option value="Europe/Stockholm">Stockholm (CET/CEST)</option>
+                                <option value="Europe/Oslo">Oslo (CET/CEST)</option>
+                                <option value="Europe/Copenhagen">Copenhagen (CET/CEST)</option>
+                                <option value="Europe/Helsinki">Helsinki (EET/EEST)</option>
+                                <option value="Europe/Warsaw">Warsaw (CET/CEST)</option>
+                                <option value="Europe/Prague">Prague (CET/CEST)</option>
+                                <option value="Europe/Athens">Athens (EET/EEST)</option>
+                                <option value="Europe/Lisbon">Lisbon (WET/WEST)</option>
+                                <option value="Europe/Dublin">Dublin (GMT/IST)</option>
+                            </optgroup>
+                            <optgroup label="Americas">
+                                <option value="America/New_York">New York (EST/EDT)</option>
+                                <option value="America/Chicago">Chicago (CST/CDT)</option>
+                                <option value="America/Denver">Denver (MST/MDT)</option>
+                                <option value="America/Los_Angeles">Los Angeles (PST/PDT)</option>
+                                <option value="America/Toronto">Toronto (EST/EDT)</option>
+                                <option value="America/Vancouver">Vancouver (PST/PDT)</option>
+                                <option value="America/Sao_Paulo">São Paulo (BRT)</option>
+                                <option value="America/Buenos_Aires">Buenos Aires (ART)</option>
+                                <option value="America/Mexico_City">Mexico City (CST/CDT)</option>
+                            </optgroup>
+                            <optgroup label="Asia & Pacific">
+                                <option value="Asia/Tokyo">Tokyo (JST)</option>
+                                <option value="Asia/Shanghai">Shanghai (CST)</option>
+                                <option value="Asia/Hong_Kong">Hong Kong (HKT)</option>
+                                <option value="Asia/Singapore">Singapore (SGT)</option>
+                                <option value="Asia/Seoul">Seoul (KST)</option>
+                                <option value="Asia/Bangkok">Bangkok (ICT)</option>
+                                <option value="Asia/Dubai">Dubai (GST)</option>
+                                <option value="Asia/Kolkata">India (IST)</option>
+                                <option value="Australia/Sydney">Sydney (AEST/AEDT)</option>
+                                <option value="Australia/Melbourne">Melbourne (AEST/AEDT)</option>
+                                <option value="Pacific/Auckland">Auckland (NZST/NZDT)</option>
+                            </optgroup>
+                            <optgroup label="Other">
+                                <option value="UTC">UTC (Coordinated Universal Time)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
+                        <button type="button" class="btn btn-secondary btn-small" onclick="detectTimezone()">🔍 Auto-detect</button>
+                        <span id="detected-timezone" style="font-size: 12px; color: var(--gray-500);"></span>
+                    </div>
+                    
+                    <div class="form-actions" style="margin-top: 16px;">
+                        <button type="button" class="btn btn-primary" onclick="saveTimezone()">Save Timezone</button>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Booking Link Card -->
             <div class="settings-card" id="booking-card">
                 <div class="settings-card-header" onclick="toggleCard('booking-card')">

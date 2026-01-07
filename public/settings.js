@@ -86,6 +86,113 @@ async function loadProfileSettings() {
     } catch (error) {
         console.error('Could not load profile:', error);
     }
+    
+    // Load timezone setting
+    await loadTimezone();
+}
+
+// ========== TIMEZONE SETTINGS ==========
+
+async function loadTimezone() {
+    try {
+        const response = await fetch('/api/user');
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const timezone = data.user?.timezone || 'Europe/Amsterdam';
+        
+        const timezoneSelect = document.getElementById('user-timezone');
+        const timezoneBadge = document.getElementById('timezone-badge');
+        
+        if (timezoneSelect) {
+            // Try to select the timezone, if not found it'll stay on default
+            const option = timezoneSelect.querySelector(`option[value="${timezone}"]`);
+            if (option) {
+                timezoneSelect.value = timezone;
+            }
+        }
+        
+        if (timezoneBadge) {
+            // Show friendly timezone name
+            const friendlyName = timezone.split('/').pop().replace('_', ' ');
+            timezoneBadge.textContent = friendlyName;
+        }
+    } catch (error) {
+        console.error('Error loading timezone:', error);
+    }
+}
+
+function detectTimezone() {
+    try {
+        const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const timezoneSelect = document.getElementById('user-timezone');
+        const detectedSpan = document.getElementById('detected-timezone');
+        
+        if (timezoneSelect) {
+            const option = timezoneSelect.querySelector(`option[value="${detectedTz}"]`);
+            if (option) {
+                timezoneSelect.value = detectedTz;
+                if (detectedSpan) {
+                    detectedSpan.textContent = `Detected: ${detectedTz}`;
+                    detectedSpan.style.color = 'var(--green-600, #16a34a)';
+                }
+            } else {
+                if (detectedSpan) {
+                    detectedSpan.textContent = `${detectedTz} (not in list, but will be saved)`;
+                    detectedSpan.style.color = 'var(--orange-600, #ea580c)';
+                }
+                // Add the detected timezone as an option
+                const newOption = document.createElement('option');
+                newOption.value = detectedTz;
+                newOption.textContent = detectedTz;
+                timezoneSelect.appendChild(newOption);
+                timezoneSelect.value = detectedTz;
+            }
+        }
+    } catch (error) {
+        console.error('Could not detect timezone:', error);
+        const detectedSpan = document.getElementById('detected-timezone');
+        if (detectedSpan) {
+            detectedSpan.textContent = 'Could not detect timezone';
+            detectedSpan.style.color = 'var(--red-600, #dc2626)';
+        }
+    }
+}
+
+async function saveTimezone() {
+    const timezoneSelect = document.getElementById('user-timezone');
+    const timezone = timezoneSelect?.value;
+    
+    if (!timezone) {
+        showAlert('Please select a timezone', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/user/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timezone })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Could not save timezone');
+        }
+        
+        // Update badge
+        const timezoneBadge = document.getElementById('timezone-badge');
+        if (timezoneBadge) {
+            const friendlyName = timezone.split('/').pop().replace('_', ' ');
+            timezoneBadge.textContent = friendlyName;
+        }
+        
+        showAlert('🌍 Timezone saved!', 'success');
+        
+    } catch (error) {
+        showAlert(error.message, 'error');
+    }
 }
 
 // Save profile
