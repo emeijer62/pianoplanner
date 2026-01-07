@@ -564,22 +564,33 @@ async function saveService(e) {
 }
 
 async function deleteService(id) {
+    console.log('deleteService called with id:', id, 'type:', typeof id);
     const service = services.find(s => s.id === id);
-    if (!service) return;
+    console.log('Found service:', service);
+    if (!service) {
+        console.log('Service not found in local array, services:', services);
+        return;
+    }
     
     if (!confirm(`Are you sure you want to delete "${service.name}"?`)) {
         return;
     }
     
     try {
-        const response = await fetch(`/api/settings/services/${id}`, {
+        const url = `/api/settings/services/${id}`;
+        console.log('DELETE request to:', url);
+        const response = await fetch(url, {
             method: 'DELETE'
         });
+        
+        console.log('Response status:', response.status);
         
         if (response.ok) {
             showAlert('Service deleted', 'success');
             loadServices();
         } else {
+            const errorText = await response.text();
+            console.log('Error response:', errorText);
             throw new Error('Delete failed');
         }
     } catch (error) {
