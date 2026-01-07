@@ -737,7 +737,7 @@ function cancelNewCustomer() {
 async function saveNewCustomer() {
     const name = document.getElementById('new-customer-name').value.trim();
     if (!name) {
-        alert('Please enter a customer name');
+        alert('Vul een klantnaam in');
         return;
     }
     
@@ -745,6 +745,12 @@ async function saveNewCustomer() {
     const postalCode = document.getElementById('new-customer-postalcode').value.trim();
     const city = document.getElementById('new-customer-city').value.trim();
     const pianoBrand = document.getElementById('new-customer-piano').value.trim();
+    
+    // Disable button during save
+    const saveBtn = document.querySelector('#new-customer-form .btn-primary');
+    const originalText = saveBtn.textContent;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Opslaan...';
     
     try {
         // Create customer
@@ -812,9 +818,19 @@ async function saveNewCustomer() {
             document.getElementById('event-location').value = fullAddress;
         }
         
+        // Show success message
+        console.log(`✅ Klant "${name}" aangemaakt`);
+        
     } catch (err) {
         console.error('Error creating customer:', err);
-        alert('Could not create customer. Please try again.');
+        alert('Kon klant niet aanmaken. Probeer het opnieuw.');
+    } finally {
+        // Re-enable button
+        const saveBtn = document.querySelector('#new-customer-form .btn-primary');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Klant toevoegen';
+        }
     }
 }
 
@@ -1008,7 +1024,11 @@ async function openEditModal(appointmentId) {
 async function deleteCurrentAppointment() {
     if (!editingAppointmentId) return;
     
-    if (!confirm('Are you sure you want to delete this appointment?')) {
+    // Get appointment title for confirmation
+    const appointment = allEvents.find(e => e.id === editingAppointmentId);
+    const title = appointment?.summary || 'deze afspraak';
+    
+    if (!confirm(`Weet je zeker dat je "${title}" wilt verwijderen?\n\nDeze actie kan niet ongedaan gemaakt worden.`)) {
         return;
     }
     
