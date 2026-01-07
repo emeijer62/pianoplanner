@@ -11,6 +11,8 @@ const customerStore = require('../utils/customerStore');
 const appointmentStore = require('../utils/appointmentStore');
 const companyStore = require('../utils/companyStore');
 const { calculateTravelTime } = require('../utils/travelTime');
+const emailService = require('../utils/emailService');
+const { getDb } = require('../utils/database');
 
 // ==================== PUBLIC BOOKING PAGE DATA ====================
 
@@ -304,7 +306,54 @@ router.post('/:slug', async (req, res) => {
             originAddress: originAddress || null
         });
         
-        // TODO: Stuur bevestigingsmail naar klant
+        // Send email notifications
+        if (emailService.isEmailConfigured()) {
+            try {
+                const db = getDb();
+                
+                // Check email settings
+                const emailSettings = await new Promise((resolve, reject) => {
+                    db.get('SELECT * FROM email_settings WHERE user_id = ?', [user.id], (err, row) => {
+                        if (err) reject(err);
+                        else resolve(row);
+                    });
+                });
+                
+                const companyName = company?.name || 'Piano Services';
+                
+                // Send confirmation to customer if enabled
+                if (emailSettings?.send_confirmations && customer.email) {
+                    await emailService.sendAppointmentConfirmation({
+                        customerEmail: customer.email,
+                        customerName: customer.name,
+                        appointmentDate: date,
+                        appointmentTime: time,
+                        serviceName: service.name,
+                        companyName
+                    });
+                    console.log(`📧 Confirmation sent to customer: ${customer.email}`);
+                }
+                
+                // Send notification to technician if enabled
+                if (emailSettings?.notify_new_bookings && user.email) {
+                    await emailService.sendNewBookingNotification({
+                        technicianEmail: user.email,
+                        customerName: customer.name,
+                        customerEmail: customer.email,
+                        customerPhone: customer.phone,
+                        appointmentDate: date,
+                        appointmentTime: time,
+                        serviceName: service.name,
+                        notes: customer.notes,
+                        companyName
+                    });
+                    console.log(`📧 New booking notification sent to: ${user.email}`);
+                }
+            } catch (emailError) {
+                console.error('Failed to send booking emails:', emailError.message);
+                // Don't fail the booking if email fails
+            }
+        }
         
         res.json({
             success: true,

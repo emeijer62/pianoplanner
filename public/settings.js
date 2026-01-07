@@ -588,6 +588,235 @@ function setupBookingToggle() {
     });
 }
 
+// ========== APPLE CALENDAR SYNC ==========
+
+async function loadAppleCalendarStatus() {
+    try {
+        const response = await fetch('/api/apple-calendar/status');
+        const data = await response.json();
+        
+        const statusDiv = document.getElementById('apple-calendar-status');
+        const connectForm = document.getElementById('apple-connect-form');
+        const syncOptions = document.getElementById('apple-sync-options');
+        
+        if (data.connected) {
+            statusDiv.className = 'sync-status connected';
+            statusDiv.innerHTML = `<strong>✅ Connected to Apple Calendar</strong><br>
+                <small>Apple ID: ${data.appleId}</small>`;
+            
+            connectForm.style.display = 'none';
+            syncOptions.style.display = 'block';
+            
+            // Laad calendars
+            loadAppleCalendars();
+            
+            // Laad sync settings
+            loadAppleSyncSettings();
+        } else {
+            statusDiv.className = 'sync-status disconnected';
+            statusDiv.innerHTML = '<strong>⚪ Not connected to Apple Calendar</strong>';
+            
+            connectForm.style.display = 'block';
+            syncOptions.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading Apple Calendar status:', error);
+    }
+}
+
+async function connectAppleCalendar() {
+    const appleId = document.getElementById('apple-id').value.trim();
+    const appPassword = document.getElementById('apple-password').value.trim();
+    
+    if (!appleId || !appPassword) {
+        showAlert('Please enter your Apple ID and app-specific password', 'error');
+        return;
+    }
+    
+    try {
+        showAlert('Connecting to Apple Calendar...', 'info');
+        
+        const response = await fetch('/api/apple-calendar/connect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ appleId, appPassword })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            showAlert(data.error + (data.hint ? '\n' + data.hint : ''), 'error');
+            return;
+        }
+        
+        showAlert('🍎 Apple Calendar connected successfully!', 'success');
+        
+        // Clear form
+        document.getElementById('apple-id').value = '';
+        document.getElementById('apple-password').value = '';
+        
+        // Reload status
+        loadAppleCalendarStatus();
+        
+    } catch (error) {
+        console.error('Error connecting Apple Calendar:', error);
+        showAlert('Failed to connect: ' + error.message, 'error');
+    }
+}
+
+async function disconnectAppleCalendar() {
+    if (!confirm('Are you sure you want to disconnect Apple Calendar?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/apple-calendar/disconnect', {
+            method: 'POST'
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            showAlert(data.error, 'error');
+            return;
+        }
+        
+        showAlert('Apple Calendar disconnected', 'success');
+        loadAppleCalendarStatus();
+        
+    } catch (error) {
+        console.error('Error disconnecting Apple Calendar:', error);
+        showAlert('Failed to disconnect: ' + error.message, 'error');
+    }
+}
+
+async function loadAppleCalendars() {
+    try {
+        const response = await fetch('/api/apple-calendar/calendars');
+        const data = await response.json();
+        
+        if (data.error) {
+            console.error('Error loading calendars:', data.error);
+            return;
+        }
+        
+        const select = document.getElementById('appleCalendarSelect');
+        select.innerHTML = '<option value="">Select a calendar...</option>';
+        
+        for (const calendar of data.calendars) {
+            const option = document.createElement('option');
+            option.value = calendar.url;
+            option.textContent = calendar.name;
+            select.appendChild(option);
+        }
+        
+        document.getElementById('apple-calendar-select-group').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error loading Apple calendars:', error);
+    }
+}
+
+async function loadAppleSyncSettings() {
+    try {
+        const response = await fetch('/api/apple-calendar/sync-settings');
+        const data = await response.json();
+        
+        if (data.settings) {
+            // Set sync direction
+            const direction = data.settings.syncDirection || 'both';
+            document.querySelector(`input[name="appleSyncDirection"][value="${direction}"]`).checked = true;
+            
+            // Set calendar
+            if (data.settings.appleCalendarUrl) {
+                document.getElementById('appleCalendarSelect').value = data.settings.appleCalendarUrl;
+            }
+            
+            // Show sync now button if enabled
+            if (data.settings.enabled) {
+                document.getElementById('apple-sync-now-btn').style.display = 'inline-block';
+            }
+            
+            // Show last sync time
+            if (data.settings.lastSync) {
+                document.getElementById('apple-last-sync-info').style.display = 'block';
+                document.getElementById('apple-last-sync-time').textContent = 
+                    new Date(data.settings.lastSync).toLocaleString();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading Apple sync settings:', error);
+    }
+}
+
+async function enableAppleCalendarSync() {
+    const direction = document.querySelector('input[name="appleSyncDirection"]:checked')?.value || 'both';
+    const calendarUrl = document.getElementById('appleCalendarSelect').value;
+    
+    if (!calendarUrl) {
+        showAlert('Please select a calendar first', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/apple-calendar/sync-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                enabled: true,
+                syncDirection: direction,
+                appleCalendarUrl: calendarUrl
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            showAlert(data.error, 'error');
+            return;
+        }
+        
+        showAlert('🍎 Apple Calendar sync enabled!', 'success');
+        document.getElementById('apple-sync-now-btn').style.display = 'inline-block';
+        
+    } catch (error) {
+        console.error('Error enabling Apple sync:', error);
+        showAlert('Failed to enable sync: ' + error.message, 'error');
+    }
+}
+
+async function syncAppleNow() {
+    try {
+        showAlert('🔄 Syncing with Apple Calendar...', 'info');
+        
+        const response = await fetch('/api/apple-calendar/sync', {
+            method: 'POST'
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            showAlert(data.error, 'error');
+            return;
+        }
+        
+        let message = `✅ Sync complete! ${data.synced} items synchronized.`;
+        if (data.errors && data.errors.length > 0) {
+            message += ` (${data.errors.length} errors)`;
+        }
+        
+        showAlert(message, 'success');
+        
+        // Update last sync time
+        document.getElementById('apple-last-sync-info').style.display = 'block';
+        document.getElementById('apple-last-sync-time').textContent = new Date().toLocaleString();
+        
+    } catch (error) {
+        console.error('Error syncing Apple Calendar:', error);
+        showAlert('Sync failed: ' + error.message, 'error');
+    }
+}
+
 // ========== INITIALIZATION ==========
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -596,6 +825,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadServices();
         loadProfileSettings();
         loadBookingSettings();
+        loadAppleCalendarStatus();
         
         // Event listeners
         document.getElementById('companyForm').addEventListener('submit', saveCompanySettings);

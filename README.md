@@ -1,15 +1,18 @@
 # 🎹 PianoPlanner
 
-Een simpele planner voor pianolessen met Google Agenda integratie. Geen database nodig - alles synchroniseert direct met Google Calendar.
+Een professionele planning applicatie voor pianotechnici met Google Calendar en Apple Calendar integratie.
 
 ## Features
 
 - ✅ Google OAuth login
-- ✅ Bekijk events van komende 7 dagen
-- ✅ Maak nieuwe events aan
-- ✅ Verwijder events
-- ✅ Bekijk al je Google agenda's
-- ✅ Lokale gebruikersopslag (JSON, geen database)
+- ✅ Google Calendar sync (two-way)
+- ✅ Apple Calendar/iCloud sync (CalDAV)
+- ✅ Email notifications (Google Workspace SMTP)
+- ✅ Customer & piano management
+- ✅ Public booking page
+- ✅ Service configuration
+- ✅ Travel time calculation
+- ✅ SQLite database for all data
 
 ## Installatie
 
@@ -20,8 +23,25 @@ npm install
 # Kopieer environment bestand
 cp .env.example .env
 
-# Vul je Google OAuth credentials in .env
+# Vul je credentials in .env
 ```
+
+## Environment Variables
+
+### Required
+- `SESSION_SECRET` - Random secret for sessions
+- `GOOGLE_CLIENT_ID` - Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET` - Google OAuth client secret
+
+### Optional - Email (Google Workspace)
+- `SMTP_USER` - Google Workspace email (info@yourcompany.com)
+- `SMTP_PASS` - App-specific password (generate at myaccount.google.com/apppasswords)
+- `SMTP_HOST` - SMTP server (default: smtp.gmail.com)
+- `SMTP_PORT` - SMTP port (default: 587)
+
+### Optional - Stripe
+- `STRIPE_SECRET_KEY` - Stripe API secret key
+- `STRIPE_WEBHOOK_SECRET` - Stripe webhook signing secret
 
 ## Google OAuth Setup
 

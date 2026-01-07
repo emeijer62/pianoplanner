@@ -657,11 +657,108 @@ function formatUser(row) {
         subscriptionEndsAt: row.subscription_ends_at,
         stripeCustomerId: row.stripe_customer_id,
         calendarSync: calendarSync,
+        appleCalendar: row.apple_calendar ? JSON.parse(row.apple_calendar) : null,
+        appleCalendarSync: row.apple_calendar_sync ? JSON.parse(row.apple_calendar_sync) : null,
         bookingSlug: row.booking_slug,
         createdAt: row.created_at,
         updatedAt: row.updated_at
     };
 }
+
+// ==================== APPLE CALENDAR ====================
+
+/**
+ * Sla Apple Calendar credentials op
+ */
+const saveAppleCalendarCredentials = async (userId, credentials) => {
+    try {
+        const appleCalendar = JSON.stringify({
+            appleId: credentials.appleId,
+            appPassword: credentials.appPassword, // TODO: encrypt dit in productie
+            principalUrl: credentials.principalUrl,
+            connected: credentials.connected || true,
+            connectedAt: credentials.connectedAt || new Date().toISOString()
+        });
+        
+        await dbRun(`
+            UPDATE users SET apple_calendar = ?, updated_at = ? WHERE id = ?
+        `, [appleCalendar, new Date().toISOString(), userId]);
+        
+        return { success: true };
+    } catch (error) {
+        console.error('Error saving Apple Calendar credentials:', error);
+        return { error: error.message };
+    }
+};
+
+/**
+ * Haal Apple Calendar credentials op
+ */
+const getAppleCalendarCredentials = async (userId) => {
+    const user = await dbGet('SELECT apple_calendar FROM users WHERE id = ?', [userId]);
+    if (!user || !user.apple_calendar) return null;
+    
+    try {
+        return JSON.parse(user.apple_calendar);
+    } catch (e) {
+        return null;
+    }
+};
+
+/**
+ * Verwijder Apple Calendar verbinding
+ */
+const removeAppleCalendarCredentials = async (userId) => {
+    await dbRun(`
+        UPDATE users SET apple_calendar = NULL, apple_calendar_sync = NULL, updated_at = ? WHERE id = ?
+    `, [new Date().toISOString(), userId]);
+    
+    return { success: true };
+};
+
+/**
+ * Haal Apple Calendar sync settings op
+ */
+const getAppleCalendarSync = async (userId) => {
+    const user = await dbGet('SELECT apple_calendar_sync FROM users WHERE id = ?', [userId]);
+    if (!user || !user.apple_calendar_sync) {
+        return {
+            enabled: false,
+            syncDirection: 'both',
+            appleCalendarUrl: null
+        };
+    }
+    try {
+        return JSON.parse(user.apple_calendar_sync);
+    } catch (e) {
+        return {
+            enabled: false,
+            syncDirection: 'both',
+            appleCalendarUrl: null
+        };
+    }
+};
+
+/**
+ * Update Apple Calendar sync settings
+ */
+const updateAppleCalendarSync = async (userId, settings) => {
+    const existingSettings = await getAppleCalendarSync(userId);
+    
+    const appleCalendarSync = JSON.stringify({
+        enabled: settings.enabled === true || settings.enabled === 'true',
+        syncDirection: settings.syncDirection || existingSettings.syncDirection || 'both',
+        appleCalendarUrl: settings.appleCalendarUrl || existingSettings.appleCalendarUrl,
+        lastSync: settings.lastSync || existingSettings.lastSync || null,
+        updatedAt: new Date().toISOString()
+    });
+    
+    await dbRun(`
+        UPDATE users SET apple_calendar_sync = ?, updated_at = ? WHERE id = ?
+    `, [appleCalendarSync, new Date().toISOString(), userId]);
+    
+    return { success: true };
+};
 
 module.exports = {
     // User CRUD
@@ -695,9 +792,15 @@ module.exports = {
     setUserPlan,
     createUserByAdmin,
     updateUserByAdmin,
-    // Calendar Sync
+    // Calendar Sync (Google)
     getCalendarSync,
     updateCalendarSync,
+    // Apple Calendar
+    saveAppleCalendarCredentials,
+    getAppleCalendarCredentials,
+    removeAppleCalendarCredentials,
+    getAppleCalendarSync,
+    updateAppleCalendarSync,
     // Public Booking
     getUserByBookingSlug,
     getBookingSettings,

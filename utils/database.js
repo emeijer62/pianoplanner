@@ -114,6 +114,30 @@ function initDatabase() {
             }
         });
         
+        // Migratie: voeg Apple Calendar kolommen toe aan users
+        db.run(`ALTER TABLE users ADD COLUMN apple_calendar TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error apple_calendar:', err);
+            }
+        });
+        db.run(`ALTER TABLE users ADD COLUMN apple_calendar_sync TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error apple_calendar_sync:', err);
+            }
+        });
+        
+        // Migratie: voeg Apple event tracking toe aan appointments
+        db.run(`ALTER TABLE appointments ADD COLUMN apple_event_id TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error apple_event_id:', err);
+            }
+        });
+        db.run(`ALTER TABLE appointments ADD COLUMN apple_event_url TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error apple_event_url:', err);
+            }
+        });
+        
         // Index voor snelle booking slug lookup
         db.run('CREATE INDEX IF NOT EXISTS idx_users_booking_slug ON users(booking_slug)');
 
@@ -252,6 +276,34 @@ function initDatabase() {
         // MIGRATIE: Fix company_settings tabel als deze de oude CHECK (id = 1) constraint heeft
         // Dit zorgt ervoor dat elke gebruiker zijn eigen company settings kan hebben
         migrateCompanySettingsTable();
+
+        // Email settings tabel (per user)
+        db.run(`
+            CREATE TABLE IF NOT EXISTS email_settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL UNIQUE,
+                send_confirmations INTEGER DEFAULT 1,
+                send_reminders INTEGER DEFAULT 1,
+                reminder_hours INTEGER DEFAULT 24,
+                send_cancellations INTEGER DEFAULT 1,
+                notify_new_bookings INTEGER DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `, logTableCreation('email_settings'));
+
+        // Migratie: voeg email tracking kolommen toe aan appointments
+        db.run(`ALTER TABLE appointments ADD COLUMN confirmation_sent INTEGER DEFAULT 0`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error confirmation_sent:', err);
+            }
+        });
+        db.run(`ALTER TABLE appointments ADD COLUMN reminder_sent INTEGER DEFAULT 0`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error reminder_sent:', err);
+            }
+        });
 
         // Maak indexen voor betere performance
         db.run('CREATE INDEX IF NOT EXISTS idx_customers_user ON customers(user_id)');

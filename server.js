@@ -10,6 +10,8 @@ const { DATABASE_PATH, DATA_DIR } = require('./utils/database');
 // Routes (nu met database versies)
 const authRoutes = require('./routes/auth');
 const calendarRoutes = require('./routes/calendar');
+const appleCalendarRoutes = require('./routes/appleCalendar');
+const emailRoutes = require('./routes/email');
 const customerRoutes = require('./routes/customers');
 const serviceRoutes = require('./routes/services');
 const bookingRoutes = require('./routes/booking');
@@ -58,6 +60,8 @@ app.use(session({
 // Routes
 app.use('/auth', authRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/apple-calendar', appleCalendarRoutes);
+app.use('/api/email', emailRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/booking', bookingRoutes);

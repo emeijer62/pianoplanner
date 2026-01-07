@@ -7,6 +7,8 @@ const express = require('express');
 const router = express.Router();
 const appointmentStore = require('../utils/appointmentStore');
 const { requireAuth } = require('../middleware/auth');
+const emailService = require('../utils/emailService');
+const { getDb } = require('../utils/database');
 
 // Alle routes vereisen authenticatie
 router.use(requireAuth);
@@ -161,6 +163,66 @@ router.post('/', async (req, res) => {
         });
         
         console.log(`📅 Nieuwe afspraak aangemaakt: ${title}`);
+        
+        // Send confirmation email if enabled
+        if (emailService.isEmailConfigured() && customerId) {
+            try {
+                const db = getDb();
+                
+                // Check email settings
+                const emailSettings = await new Promise((resolve, reject) => {
+                    db.get('SELECT * FROM email_settings WHERE user_id = ?', [userId], (err, row) => {
+                        if (err) reject(err);
+                        else resolve(row);
+                    });
+                });
+                
+                if (emailSettings?.send_confirmations) {
+                    // Get customer email
+                    const customer = await new Promise((resolve, reject) => {
+                        db.get('SELECT email, name FROM customers WHERE id = ? AND user_id = ?', 
+                            [customerId, userId], (err, row) => {
+                            if (err) reject(err);
+                            else resolve(row);
+                        });
+                    });
+                    
+                    if (customer?.email) {
+                        const company = await new Promise((resolve, reject) => {
+                            db.get('SELECT name FROM company_settings WHERE user_id = ?', [userId], (err, row) => {
+                                if (err) reject(err);
+                                else resolve(row);
+                            });
+                        });
+                        
+                        // Extract date and time from start
+                        const startDate = new Date(start);
+                        const appointmentDate = startDate.toISOString().split('T')[0];
+                        const appointmentTime = startDate.toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: false 
+                        });
+                        
+                        await emailService.sendAppointmentConfirmation({
+                            customerEmail: customer.email,
+                            customerName: customer.name || customerName,
+                            appointmentDate,
+                            appointmentTime,
+                            serviceName: serviceName || title,
+                            companyName: company?.name || 'PianoPlanner',
+                            notes: description
+                        });
+                        
+                        console.log(`📧 Confirmation email sent to ${customer.email}`);
+                    }
+                }
+            } catch (emailError) {
+                console.error('Failed to send confirmation email:', emailError.message);
+                // Don't fail the appointment creation if email fails
+            }
+        }
+        
         res.status(201).json(appointment);
     } catch (error) {
         console.error('Error creating appointment:', error);

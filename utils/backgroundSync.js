@@ -158,16 +158,128 @@ const syncUserCalendar = async (user) => {
 };
 
 /**
+ * Sync Apple Calendar voor een gebruiker
+ */
+const syncUserAppleCalendar = async (user) => {
+    try {
+        // Check of user Apple credentials heeft
+        const credentials = await userStore.getAppleCalendarCredentials(user.id);
+        if (!credentials?.connected) {
+            return { skipped: true, reason: 'apple_not_connected' };
+        }
+        
+        // Check sync instellingen
+        const syncSettings = await userStore.getAppleCalendarSync(user.id);
+        if (!syncSettings?.enabled || !syncSettings.appleCalendarUrl) {
+            return { skipped: true, reason: 'apple_sync_disabled' };
+        }
+        
+        console.log(`🍎 Start Apple sync voor ${user.email}...`);
+        
+        // Import Apple Calendar route functions
+        const appleCalendarRoute = require('../routes/appleCalendar');
+        
+        let synced = 0;
+        let errors = 0;
+        
+        // Haal lokale afspraken op
+        const localAppointments = await appointmentStore.getAllAppointments(user.id);
+        
+        const direction = syncSettings.syncDirection || 'both';
+        
+        // Sync TO Apple (local → Apple)
+        if (direction === 'both' || direction === 'toApple') {
+            for (const appointment of localAppointments) {
+                // Skip als al gesynchroniseerd
+                if (appointment.apple_event_id) continue;
+                
+                try {
+                    // Maak event in Apple Calendar via CalDAV
+                    const authHeader = Buffer.from(`${credentials.appleId}:${credentials.appPassword}`).toString('base64');
+                    const uid = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}@pianoplanner.com`;
+                    
+                    // Format dates voor iCalendar
+                    const formatICalDate = (date) => {
+                        return new Date(date).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+                    };
+                    
+                    const dtstart = formatICalDate(appointment.start_time || appointment.startTime);
+                    const dtend = formatICalDate(appointment.end_time || appointment.endTime);
+                    const dtstamp = formatICalDate(new Date());
+                    
+                    const icalEvent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//PianoPlanner//NONSGML v1.0//EN
+BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${dtstamp}
+DTSTART:${dtstart}
+DTEND:${dtend}
+SUMMARY:${(appointment.title || appointment.service_name || 'PianoPlanner').replace(/[\\;,]/g, ' ')}
+DESCRIPTION:Klant: ${(appointment.customer_name || 'Onbekend').replace(/[\\;,\n]/g, ' ')}
+LOCATION:${(appointment.address || appointment.location || '').replace(/[\\;,]/g, ' ')}
+END:VEVENT
+END:VCALENDAR`;
+                    
+                    const eventUrl = `${syncSettings.appleCalendarUrl}${uid}.ics`;
+                    
+                    const fetch = require('node-fetch');
+                    const response = await fetch(eventUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Basic ${authHeader}`,
+                            'Content-Type': 'text/calendar; charset=utf-8',
+                            'If-None-Match': '*'
+                        },
+                        body: icalEvent
+                    });
+                    
+                    if (response.ok || response.status === 201) {
+                        // Update lokale afspraak met Apple event ID
+                        await appointmentStore.updateAppointment(appointment.id, {
+                            apple_event_id: uid,
+                            apple_event_url: eventUrl
+                        });
+                        synced++;
+                    } else {
+                        errors++;
+                    }
+                    
+                } catch (err) {
+                    console.error(`Apple sync error voor appointment ${appointment.id}:`, err.message);
+                    errors++;
+                }
+            }
+        }
+        
+        // Update last sync time
+        await userStore.updateAppleCalendarSync(user.id, {
+            ...syncSettings,
+            lastSync: new Date().toISOString()
+        });
+        
+        console.log(`🍎 Apple sync voltooid voor ${user.email}: ${synced} events, ${errors} errors`);
+        
+        return { synced, errors };
+        
+    } catch (error) {
+        console.error(`❌ Apple sync error voor ${user.email}:`, error.message);
+        return { error: error.message };
+    }
+};
+
+/**
  * Voer achtergrond sync uit voor alle gebruikers
  */
 const runBackgroundSync = async () => {
     console.log('🔄 Background sync gestart...');
     
     try {
-        // Haal alle gebruikers op met Google auth
+        // Haal alle gebruikers op
         const users = await userStore.getAllUsers();
-        const googleUsers = users.filter(u => u.authType === 'google' && u.tokens);
         
+        // Google Calendar sync
+        const googleUsers = users.filter(u => u.authType === 'google' && u.tokens);
         console.log(`📊 ${googleUsers.length} gebruikers met Google auth gevonden`);
         
         let totalSynced = 0;
@@ -190,7 +302,32 @@ const runBackgroundSync = async () => {
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
-        console.log(`✅ Background sync voltooid: ${totalSynced} synced, ${skipped} skipped, ${totalErrors} errors`);
+        console.log(`✅ Google sync voltooid: ${totalSynced} synced, ${skipped} skipped, ${totalErrors} errors`);
+        
+        // Apple Calendar sync
+        let appleSynced = 0;
+        let appleErrors = 0;
+        let appleSkipped = 0;
+        
+        for (const user of users) {
+            const result = await syncUserAppleCalendar(user);
+            
+            if (result.skipped) {
+                appleSkipped++;
+            } else if (result.error) {
+                appleErrors++;
+            } else {
+                appleSynced += result.synced || 0;
+                appleErrors += result.errors || 0;
+            }
+            
+            // Kleine delay
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+        if (appleSynced > 0 || appleErrors > 0) {
+            console.log(`🍎 Apple sync voltooid: ${appleSynced} synced, ${appleSkipped} skipped, ${appleErrors} errors`);
+        }
         
     } catch (error) {
         console.error('❌ Background sync failed:', error);
@@ -218,5 +355,6 @@ const startBackgroundSync = () => {
 module.exports = {
     startBackgroundSync,
     runBackgroundSync,
-    syncUserCalendar
+    syncUserCalendar,
+    syncUserAppleCalendar
 };
