@@ -3,269 +3,612 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PianoPlanner - Scheduling for Piano Technicians</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Login - PianoPlanner</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>">
+    
+    <!-- Fonts - SF Pro style -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <script src="/js/i18n.js"></script>
+    
     <style>
-        .pricing-link {
-            display: block;
-            text-align: center;
-            margin-top: 16px;
-            color: #666;
-            font-size: 0.9rem;
-        }
-        .pricing-link a {
-            color: #1a1a1a;
-            font-weight: 500;
+        /* ========================================
+           Apple-Style Design System
+           ======================================== */
+        
+        :root {
+            --white: #ffffff;
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f7;
+            --gray-200: #e8e8ed;
+            --gray-300: #d2d2d7;
+            --gray-400: #86868b;
+            --gray-500: #6e6e73;
+            --gray-600: #424245;
+            --gray-900: #1d1d1f;
+            --black: #000000;
+            
+            --blue: #0071e3;
+            --blue-hover: #0077ed;
+            --blue-light: rgba(0, 113, 227, 0.1);
+            
+            --green: #34c759;
+            --red: #ff3b30;
+            --orange: #ff9500;
+            
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-full: 980px;
+            
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+            
+            --transition-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
         
-        /* Login Tabs */
-        .login-tabs {
-            display: flex;
-            border-bottom: 2px solid #e8e8e8;
-            margin-bottom: 24px;
-        }
-        .login-tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-size: 0.95rem;
-            color: #666;
-            transition: all 0.2s;
-        }
-        .login-tab:hover {
-            color: #1a1a1a;
-        }
-        .login-tab.active {
-            color: #1a1a1a;
-            font-weight: 600;
-            border-bottom: 2px solid #1a1a1a;
-            margin-bottom: -2px;
-        }
-        
-        /* Login Forms */
-        .login-form {
-            display: none;
-        }
-        .login-form.active {
-            display: block;
-        }
-        .form-group {
-            margin-bottom: 16px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        .form-group input:focus {
-            outline: none;
-            border-color: #1a1a1a;
-        }
-        .submit-btn {
-            width: 100%;
-            padding: 14px;
-            background: #1a1a1a;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            margin-top: 8px;
-        }
-        .submit-btn:hover {
-            background: #333;
-        }
-        .submit-btn:disabled {
-            background: #999;
-            cursor: not-allowed;
+        
+        html {
+            height: 100%;
         }
         
+        body {
+            font-family: var(--font-family);
+            font-size: 17px;
+            line-height: 1.5;
+            color: var(--gray-900);
+            background: linear-gradient(180deg, var(--gray-100) 0%, var(--white) 100%);
+            min-height: 100%;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .nav-content {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--gray-900);
+            text-decoration: none;
+        }
+        
+        .nav-logo-icon {
+            font-size: 24px;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .nav-link {
+            font-size: 14px;
+            color: var(--gray-600);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+        
+        .nav-link:hover {
+            color: var(--blue);
+        }
+        
+        /* Main Container */
+        .main {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 24px 60px;
+        }
+        
+        /* Login Card */
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .login-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .login-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+        
+        .login-header p {
+            font-size: 17px;
+            color: var(--gray-500);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--gray-100);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            margin-bottom: 32px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            font-family: var(--font-family);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--gray-500);
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+        }
+        
+        .tab.active {
+            background: var(--white);
+            color: var(--gray-900);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .tab:hover:not(.active) {
+            color: var(--gray-900);
+        }
+        
+        /* Card */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+        }
+        
+        /* Forms */
+        .form-panel {
+            display: none;
+        }
+        
+        .form-panel.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-family: var(--font-family);
+            font-size: 16px;
+            color: var(--gray-900);
+            background: var(--white);
+            transition: all var(--transition-fast);
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 4px var(--blue-light);
+        }
+        
+        .form-group input::placeholder {
+            color: var(--gray-400);
+        }
+        
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .form-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--blue);
+            cursor: pointer;
+        }
+        
+        .form-row label {
+            font-size: 14px;
+            color: var(--gray-500);
+            cursor: pointer;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            font-family: var(--font-family);
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all var(--transition-fast);
+        }
+        
+        .btn-primary {
+            background: var(--blue);
+            color: var(--white);
+        }
+        
+        .btn-primary:hover {
+            background: var(--blue-hover);
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-google {
+            background: var(--white);
+            color: var(--gray-900);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .btn-google:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-300);
+        }
+        
+        .btn-google svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Divider */
         .divider {
             display: flex;
             align-items: center;
-            margin: 20px 0;
-            color: #999;
-            font-size: 0.85rem;
+            gap: 16px;
+            margin: 24px 0;
         }
-        .divider::before, .divider::after {
+        
+        .divider::before,
+        .divider::after {
             content: '';
             flex: 1;
-            border-bottom: 1px solid #ddd;
+            height: 1px;
+            background: var(--gray-200);
         }
+        
         .divider span {
-            padding: 0 12px;
+            font-size: 13px;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
         
-        .switch-link {
-            text-align: center;
-            margin-top: 16px;
-            font-size: 0.9rem;
-            color: #666;
-        }
-        .switch-link a {
-            color: #1a1a1a;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 16px;
+        /* Messages */
+        .message {
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            margin-bottom: 20px;
             display: none;
+        }
+        
+        .message.error {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--red);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+        }
+        
+        .message.success {
+            background: rgba(52, 199, 89, 0.1);
+            color: var(--green);
+            border: 1px solid rgba(52, 199, 89, 0.2);
+        }
+        
+        /* Beta Badge */
+        .beta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--orange);
+            color: var(--white);
+            padding: 6px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+        
+        .beta-info {
+            background: var(--blue-light);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .beta-info p {
+            font-size: 14px;
+            color: var(--blue);
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        /* Footer text */
+        .footer-text {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--gray-500);
+        }
+        
+        .footer-text a {
+            color: var(--blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+        
+        /* User Section (when logged in) */
+        .user-section {
+            text-align: center;
+            display: none;
+        }
+        
+        .user-picture {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 16px;
+            border: 3px solid var(--gray-200);
+        }
+        
+        .user-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+        
+        .user-email {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: 24px;
+        }
+        
+        .user-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-600);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .card {
+                padding: 32px 24px;
+            }
+            
+            .nav-links {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="login-card">
-            <div class="logo">
-                <span class="piano-icon">🎹</span>
-                <h1>PianoPlanner</h1>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="/" class="nav-logo">
+                <span class="nav-logo-icon">🎹</span>
+                <span>PianoPlanner</span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/pricing.html" class="nav-link">Pricing</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main">
+        <div class="login-container">
+            <div class="login-header">
+                <span class="login-icon">🎹</span>
+                <h1>Welcome</h1>
+                <p data-i18n="app.tagline">Smart scheduling for piano technicians</p>
             </div>
             
-            <p class="subtitle" data-i18n="app.tagline">The scheduling solution for piano tuners and technicians</p>
+            <!-- Error/Success Messages -->
+            <div id="error-message" class="message error"></div>
+            <div id="success-message" class="message success"></div>
             
-            <div id="error-message" class="error-message" style="display: none;"></div>
-            <div id="success-message" class="success-message" style="display: none;"></div>
+            <!-- Login/Beta Tabs -->
+            <div class="tabs" id="auth-tabs">
+                <button class="tab active" onclick="showTab('login')" data-i18n="login.title">Log in</button>
+                <button class="tab" onclick="showTab('beta')">Join Beta</button>
+            </div>
             
-            <div id="login-section">
-                <!-- Login Tabs -->
-                <div class="login-tabs">
-                    <button class="login-tab active" onclick="showTab('login')" data-i18n="login.title">Log in</button>
-                    <button class="login-tab" onclick="showTab('register')" data-i18n="login.register">Sign up</button>
-                </div>
-                
+            <div class="card">
                 <!-- Login Form -->
-                <div id="login-form" class="login-form active">
+                <div id="login-panel" class="form-panel active">
                     <form onsubmit="handleLogin(event)">
                         <div class="form-group">
-                            <label for="login-email" data-i18n="login.email">Email address</label>
+                            <label for="login-email" data-i18n="login.email">Email</label>
                             <input type="email" id="login-email" placeholder="your@email.com" required>
                         </div>
                         <div class="form-group">
                             <label for="login-password" data-i18n="login.password">Password</label>
                             <input type="password" id="login-password" placeholder="••••••••" required>
                         </div>
-                        <button type="submit" class="submit-btn" id="login-btn" data-i18n="login.title">Log in</button>
+                        <div class="form-row">
+                            <input type="checkbox" id="remember-me">
+                            <label for="remember-me">Remember me</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="login-btn" data-i18n="login.title">Log in</button>
                     </form>
-                    
-                    <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0;">
-                        <input type="checkbox" id="remember-google" style="width: auto; margin: 0;">
-                        <label for="remember-google" style="margin: 0; font-weight: normal; cursor: pointer; font-size: 0.9rem;">Remember me</label>
-                    </div>
                     
                     <div class="divider"><span data-i18n="login.or">or</span></div>
                     
-                    <a href="/auth/google" class="google-btn" onclick="handleGoogleLogin(event)">
-                        <svg viewBox="0 0 24 24" width="24" height="24">
+                    <a href="/auth/google" class="btn btn-google" onclick="handleGoogleLogin(event)">
+                        <svg viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
-                        <span data-i18n="login.loginWithGoogle">Sign in with Google</span>
+                        <span data-i18n="login.loginWithGoogle">Continue with Google</span>
                     </a>
+                    
+                    <p class="footer-text">
+                        New here? <a href="#" onclick="showTab('beta'); return false;">Join the beta →</a>
+                    </p>
                 </div>
                 
-                <!-- Register Form -->
-                <div id="register-form" class="login-form">
-                    <form onsubmit="handleRegister(event)">
+                <!-- Beta Signup Form -->
+                <div id="beta-panel" class="form-panel">
+                    <div class="beta-badge">
+                        <span>✨</span> Beta Access
+                    </div>
+                    
+                    <div class="beta-info">
+                        <p>Join our beta program and get <strong>14 days free access</strong> to all features. Help shape the future of PianoPlanner!</p>
+                    </div>
+                    
+                    <form onsubmit="handleBetaSignup(event)">
                         <div class="form-group">
-                            <label for="register-name" data-i18n="login.name">Name</label>
-                            <input type="text" id="register-name" placeholder="Your name">
+                            <label for="beta-name" data-i18n="login.name">Your name</label>
+                            <input type="text" id="beta-name" placeholder="John Smith" required>
                         </div>
                         <div class="form-group">
-                            <label for="register-email" data-i18n="login.email">Email address</label>
-                            <input type="email" id="register-email" placeholder="your@email.com" required>
+                            <label for="beta-email" data-i18n="login.email">Email</label>
+                            <input type="email" id="beta-email" placeholder="your@email.com" required>
                         </div>
                         <div class="form-group">
-                            <label for="register-password" data-i18n="login.password">Password</label>
-                            <input type="password" id="register-password" placeholder="Minimum 6 characters" minlength="6" required>
+                            <label for="beta-company">Company name (optional)</label>
+                            <input type="text" id="beta-company" placeholder="Piano Services Inc.">
                         </div>
-                        <div class="form-group">
-                            <label for="register-password2" data-i18n="login.confirmPassword">Confirm password</label>
-                            <input type="password" id="register-password2" placeholder="Repeat password" required>
-                        </div>
-                        <button type="submit" class="submit-btn" id="register-btn" data-i18n="login.createAccount">Create account</button>
+                        <button type="submit" class="btn btn-primary" id="beta-btn">
+                            Join the Beta
+                        </button>
                     </form>
                     
                     <div class="divider"><span data-i18n="login.or">or</span></div>
                     
-                    <a href="/auth/google" class="google-btn">
-                        <svg viewBox="0 0 24 24" width="24" height="24">
+                    <a href="/auth/google" class="btn btn-google">
+                        <svg viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
-                        <span data-i18n="login.loginWithGoogle">Sign up with Google</span>
+                        <span>Sign up with Google</span>
                     </a>
                     
-                    <p class="pricing-link">14 days free • <a href="/pricing.html" data-i18n="pricing.title">View pricing</a></p>
+                    <p class="footer-text">
+                        Already have an account? <a href="#" onclick="showTab('login'); return false;">Log in →</a>
+                    </p>
                 </div>
-            </div>
-            
-            <div id="user-section" style="display: none;">
-                <div class="user-info">
-                    <img id="user-picture" src="" alt="Profile picture" class="user-picture">
-                    <div class="user-details">
-                        <span id="user-name" class="user-name"></span>
-                        <span id="user-email" class="user-email"></span>
+                
+                <!-- User Section (when logged in) -->
+                <div id="user-panel" class="form-panel user-section">
+                    <img id="user-picture" src="" alt="" class="user-picture">
+                    <div id="user-name" class="user-name"></div>
+                    <div id="user-email" class="user-email"></div>
+                    <div class="user-actions">
+                        <a href="/dashboard.html" class="btn btn-primary" data-i18n="nav.dashboard">Go to Dashboard</a>
+                        <a href="/auth/logout" class="btn btn-secondary" data-i18n="nav.logout">Log out</a>
                     </div>
                 </div>
-                <a href="/dashboard.html" class="btn btn-primary" data-i18n="nav.dashboard">Go to Dashboard</a>
-                <a href="/auth/logout" class="btn btn-secondary" data-i18n="nav.logout">Log out</a>
             </div>
         </div>
-        
-        <div class="features">
-            <div class="feature">
-                <span class="feature-icon">📅</span>
-                <h3>Local Calendar</h3>
-                <p>Work offline with your own calendar</p>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">🔄</span>
-                <h3>Google Sync</h3>
-                <p>Optional: sync with Google Calendar</p>
-            </div>
-            <div class="feature">
-                <span class="feature-icon">🔒</span>
-                <h3>Secure</h3>
-                <p>Your data stays yours</p>
-            </div>
-        </div>
-    </div>
-    
+    </main>
+
     <script>
         // Tab switching
         function showTab(tab) {
-            document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.login-form').forEach(f => f.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
             
             if (tab === 'login') {
-                document.querySelector('.login-tab:first-child').classList.add('active');
-                document.getElementById('login-form').classList.add('active');
-            } else {
-                document.querySelector('.login-tab:last-child').classList.add('active');
-                document.getElementById('register-form').classList.add('active');
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('login-panel').classList.add('active');
+            } else if (tab === 'beta') {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('beta-panel').classList.add('active');
             }
             
             hideMessages();
@@ -290,10 +633,10 @@
             document.getElementById('success-message').style.display = 'none';
         }
         
-        // Google login handler met remember optie
+        // Google login handler
         function handleGoogleLogin(e) {
             e.preventDefault();
-            const remember = document.getElementById('remember-google')?.checked || false;
+            const remember = document.getElementById('remember-me')?.checked || false;
             window.location.href = '/auth/google?remember=' + (remember ? '1' : '0');
         }
         
@@ -304,11 +647,11 @@
             
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
-            const remember = document.getElementById('remember-google')?.checked || false;
+            const remember = document.getElementById('remember-me')?.checked || false;
             const btn = document.getElementById('login-btn');
             
             btn.disabled = true;
-            btn.textContent = 'Loading...';
+            btn.textContent = 'Logging in...';
             
             try {
                 const response = await fetch('/auth/login', {
@@ -320,7 +663,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showSuccess('Logged in! Please wait...');
+                    showSuccess('Welcome back! Redirecting...');
                     setTimeout(() => {
                         window.location.href = '/dashboard.html';
                     }, 500);
@@ -336,56 +679,72 @@
             }
         }
         
-        // Register handler
-        async function handleRegister(e) {
+        // Beta signup handler
+        async function handleBetaSignup(e) {
             e.preventDefault();
             hideMessages();
             
-            const name = document.getElementById('register-name').value;
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const password2 = document.getElementById('register-password2').value;
-            const btn = document.getElementById('register-btn');
-            
-            if (password !== password2) {
-                showError('Passwords do not match');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showError('Password must be at least 6 characters');
-                return;
-            }
+            const name = document.getElementById('beta-name').value;
+            const email = document.getElementById('beta-email').value;
+            const company = document.getElementById('beta-company').value;
+            const btn = document.getElementById('beta-btn');
             
             btn.disabled = true;
-            btn.textContent = 'Loading...';
+            btn.textContent = 'Signing up...';
             
             try {
-                const response = await fetch('/auth/register', {
+                const response = await fetch('/api/beta-signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, name })
+                    body: JSON.stringify({ name, email, company })
                 });
                 
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showSuccess('Account created! Redirecting...');
-                    setTimeout(() => {
-                        window.location.href = '/dashboard.html';
-                    }, 1000);
+                    showSuccess('🎉 You\'re on the list! Check your email for next steps.');
+                    document.getElementById('beta-name').value = '';
+                    document.getElementById('beta-email').value = '';
+                    document.getElementById('beta-company').value = '';
+                    btn.textContent = 'Signed up!';
                 } else {
-                    showError(data.error || 'Registration failed');
+                    showError(data.error || 'Something went wrong');
                     btn.disabled = false;
-                    btn.textContent = 'Create account';
+                    btn.textContent = 'Join the Beta';
                 }
             } catch (error) {
                 showError('Something went wrong. Please try again.');
                 btn.disabled = false;
-                btn.textContent = 'Create account';
+                btn.textContent = 'Join the Beta';
             }
         }
         
+        // Check if already logged in
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                
+                if (data.loggedIn) {
+                    // Show user section
+                    document.getElementById('auth-tabs').style.display = 'none';
+                    document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+                    
+                    const userPanel = document.getElementById('user-panel');
+                    userPanel.classList.add('active');
+                    userPanel.style.display = 'block';
+                    
+                    document.getElementById('user-picture').src = data.user.picture || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23e8e8ed"/><text x="50" y="60" text-anchor="middle" font-size="40">👤</text></svg>';
+                    document.getElementById('user-name').textContent = data.user.name || 'User';
+                    document.getElementById('user-email').textContent = data.user.email;
+                }
+            } catch (error) {
+                console.log('Not logged in');
+            }
+        }
+        
+        // Init
+        checkAuth();
     </script>
 </body>
 </html>
