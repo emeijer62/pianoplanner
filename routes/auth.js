@@ -85,6 +85,9 @@ router.post('/login', async (req, res) => {
             req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 dagen
         }
 
+        // Update last login timestamp
+        await userStore.updateLastLogin(result.user.id);
+
         // Zet sessie
         req.session.user = {
             id: result.user.id,
@@ -184,6 +187,9 @@ router.get('/google/callback', async (req, res) => {
             await userStore.startTrial(user.id);
             console.log(`🎁 Nieuwe gebruiker, trial gestart: ${user.email}`);
         }
+
+        // Update last login timestamp
+        await userStore.updateLastLogin(user.id);
 
         // Pas sessie duur aan als "ingelogd blijven" was aangevinkt
         if (req.session.rememberMe) {

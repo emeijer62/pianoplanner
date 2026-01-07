@@ -157,6 +157,13 @@ function initDatabase() {
             }
         });
         
+        // Migratie: voeg last_login kolom toe voor actieve gebruiker tracking
+        db.run(`ALTER TABLE users ADD COLUMN last_login DATETIME`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error last_login:', err);
+            }
+        });
+        
         // Index voor snelle booking slug lookup
         db.run('CREATE INDEX IF NOT EXISTS idx_users_booking_slug ON users(booking_slug)');
 

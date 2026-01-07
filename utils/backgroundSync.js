@@ -1,14 +1,18 @@
 /**
  * Background Calendar Sync Service
- * Synchroniseert automatisch agenda's voor alle gebruikers met sync enabled
+ * Synchroniseert automatisch agenda's voor ACTIEVE gebruikers
+ * (alleen users die recent ingelogd waren)
  */
 
 const { google } = require('googleapis');
 const userStore = require('./userStore');
 const appointmentStore = require('./appointmentStore');
 
-// Sync interval: elke 15 minuten
-const SYNC_INTERVAL = 15 * 60 * 1000;
+// Sync interval: elke 30 minuten (was 15)
+const SYNC_INTERVAL = 30 * 60 * 1000;
+
+// Alleen users synchen die in de laatste 24 uur actief waren
+const ACTIVE_USER_THRESHOLD = 24 * 60 * 60 * 1000;
 
 // Rate limiting: max requests per user
 const RATE_LIMIT_DELAY = 500; // ms between API calls
@@ -338,18 +342,35 @@ END:VCALENDAR`;
 };
 
 /**
- * Voer achtergrond sync uit voor alle gebruikers
+ * Voer achtergrond sync uit voor ACTIEVE gebruikers
+ * (alleen users die recent ingelogd waren)
  */
 const runBackgroundSync = async () => {
     console.log('🔄 Background sync gestart...');
     
     try {
         // Haal alle gebruikers op
-        const users = await userStore.getAllUsers();
+        const allUsers = await userStore.getAllUsers();
         
-        // Google Calendar sync
-        const googleUsers = users.filter(u => u.authType === 'google' && u.tokens);
-        console.log(`📊 ${googleUsers.length} gebruikers met Google auth gevonden`);
+        // Filter alleen actieve gebruikers (laatst ingelogd < 24 uur)
+        const now = Date.now();
+        const activeUsers = allUsers.filter(u => {
+            if (!u.lastLogin && !u.createdAt) return false;
+            const lastActivity = new Date(u.lastLogin || u.createdAt).getTime();
+            const isActive = (now - lastActivity) < ACTIVE_USER_THRESHOLD;
+            return isActive;
+        });
+        
+        console.log(`📊 ${activeUsers.length} van ${allUsers.length} gebruikers zijn actief (laatste 24 uur)`);
+        
+        if (activeUsers.length === 0) {
+            console.log('ℹ️ Geen actieve gebruikers, sync overgeslagen');
+            return;
+        }
+        
+        // Google Calendar sync - alleen actieve users
+        const googleUsers = activeUsers.filter(u => u.authType === 'google' && u.tokens);
+        console.log(`📊 ${googleUsers.length} actieve gebruikers met Google auth`);
         
         let totalSynced = 0;
         let totalErrors = 0;
@@ -373,12 +394,15 @@ const runBackgroundSync = async () => {
         
         console.log(`✅ Google sync voltooid: ${totalSynced} synced, ${skipped} skipped, ${totalErrors} errors`);
         
-        // Apple Calendar sync
+        // Apple Calendar sync - alleen actieve users
+        const appleUsers = activeUsers.filter(u => u.appleCalendarSync);
+        console.log(`📊 ${appleUsers.length} actieve gebruikers met Apple Calendar`);
+        
         let appleSynced = 0;
         let appleErrors = 0;
         let appleSkipped = 0;
         
-        for (const user of users) {
+        for (const user of appleUsers) {
             const result = await syncUserAppleCalendar(user);
             
             if (result.skipped) {
@@ -409,11 +433,12 @@ const runBackgroundSync = async () => {
 const startBackgroundSync = () => {
     console.log('🚀 Background sync service gestart');
     console.log(`⏰ Sync interval: ${SYNC_INTERVAL / 60000} minuten`);
+    console.log(`👥 Alleen actieve gebruikers (laatste ${ACTIVE_USER_THRESHOLD / 3600000} uur)`);
     
-    // Eerste sync na 1 minuut (geef server tijd om op te starten)
+    // Eerste sync na 2 minuten (geef server tijd om op te starten)
     setTimeout(() => {
         runBackgroundSync();
-    }, 60000);
+    }, 120000);
     
     // Daarna elke SYNC_INTERVAL
     setInterval(() => {

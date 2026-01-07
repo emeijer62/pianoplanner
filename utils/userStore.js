@@ -685,6 +685,7 @@ function formatUser(row) {
         appleCalendar: row.apple_calendar ? JSON.parse(row.apple_calendar) : null,
         appleCalendarSync: row.apple_calendar_sync ? JSON.parse(row.apple_calendar_sync) : null,
         bookingSlug: row.booking_slug,
+        lastLogin: row.last_login,
         createdAt: row.created_at,
         updatedAt: row.updated_at
     };
@@ -790,6 +791,22 @@ const updateAppleCalendarSync = async (userId, settings) => {
     return { success: true };
 };
 
+// ==================== LAST LOGIN TRACKING ====================
+
+const updateLastLogin = async (userId) => {
+    try {
+        await dbRun(`
+            UPDATE users 
+            SET last_login = ?
+            WHERE id = ?
+        `, [new Date().toISOString(), userId]);
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating last login:', error);
+        return { success: false };
+    }
+};
+
 module.exports = {
     // User CRUD
     createUser,
@@ -835,5 +852,7 @@ module.exports = {
     // Public Booking
     getUserByBookingSlug,
     getBookingSettings,
-    updateBookingSettings
+    updateBookingSettings,
+    // Activity Tracking
+    updateLastLogin
 };
