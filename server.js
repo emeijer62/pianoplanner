@@ -530,11 +530,9 @@ console.log('🚀 Server wordt gestart...');
 const server = app.listen(PORT, () => {
     console.log(`🎹 PianoPlanner draait op http://localhost:${PORT}`);
     
-    // Start background sync service (delayed to allow cleanup first)
-    // TEMP DISABLED - re-enable after broken appointments are cleaned
-    // const { startBackgroundSync } = require('./utils/backgroundSync');
-    // startBackgroundSync();
-    console.log('⚠️ Background sync DISABLED - run /api/appointments/cleanup-broken first, then re-enable');
+    // Start background sync service
+    const { startBackgroundSync } = require('./utils/backgroundSync');
+    startBackgroundSync();
 });
 
 // Graceful shutdown handling
