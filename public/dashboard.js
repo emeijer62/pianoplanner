@@ -952,9 +952,11 @@ function setupNewCustomerAutocomplete() {
                             const detailsResponse = await fetch(`/api/booking/place-details?placeId=${placeId}`);
                             if (detailsResponse.ok) {
                                 const details = await detailsResponse.json();
-                                document.getElementById('new-customer-street').value = details.street || item.textContent.trim().split(',')[0];
-                                document.getElementById('new-customer-postalcode').value = details.postalCode || '';
-                                document.getElementById('new-customer-city').value = details.city || '';
+                                // API returns { address: { street, postalCode, city } }
+                                const addr = details.address || details;
+                                document.getElementById('new-customer-street').value = addr.street || item.textContent.trim().split(',')[0];
+                                document.getElementById('new-customer-postalcode').value = addr.postalCode || '';
+                                document.getElementById('new-customer-city').value = addr.city || '';
                             } else {
                                 // Fallback: just use the description
                                 const parts = item.textContent.trim().split(',').map(p => p.trim());

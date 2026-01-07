@@ -7,37 +7,146 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="apple-style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>">
     <script src="/js/i18n.js"></script>
     <style>
-        /* Public Booking Page Styles */
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
-            min-height: 100vh;
+        /* ========================================
+           Apple-Style Design System
+           ======================================== */
+        :root {
+            /* Colors - Apple Palette */
+            --white: #ffffff;
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f7;
+            --gray-200: #e8e8ed;
+            --gray-300: #d2d2d7;
+            --gray-400: #86868b;
+            --gray-500: #6e6e73;
+            --gray-600: #424245;
+            --gray-900: #1d1d1f;
+            --black: #000000;
+            
+            /* Accent */
+            --blue: #0071e3;
+            --blue-hover: #0077ed;
+            --blue-light: rgba(0, 113, 227, 0.1);
+            
+            /* Legacy variables for compatibility */
+            --accent: #0071e3;
+            --accent-light: rgba(0, 113, 227, 0.1);
+            --text-primary: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --text-muted: #86868b;
+            --border-color: #e8e8ed;
+            --light-gray: #f5f5f7;
+            --off-white: #fafafa;
+            --success: #34c759;
+            
+            /* Typography */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            
+            /* Border Radius */
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 30px;
+            --radius-full: 980px;
+            
+            /* Shadows */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+            
+            /* Transitions */
+            --transition: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            --transition-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            --transition-medium: 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
         
+        /* Reset */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: var(--font-family);
+            font-size: 17px;
+            line-height: 1.5;
+            color: var(--gray-900);
+            background: linear-gradient(180deg, var(--gray-100) 0%, var(--white) 100%);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Navigation */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .nav-content {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--gray-900);
+            text-decoration: none;
+        }
+        
+        .nav-logo-icon {
+            font-size: 24px;
+        }
+        
+        /* Public Booking Page Styles */
         .booking-container {
             max-width: 600px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+            margin: 0 auto;
+            padding: 100px 24px 60px;
         }
         
         .booking-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 40px;
         }
         
         .booking-header .business-name {
-            font-size: 1.5rem;
+            font-size: clamp(28px, 4vw, 36px);
             font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
         
         .booking-header .booking-title {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
+            font-size: 18px;
+            color: var(--gray-500);
+            font-weight: 400;
         }
         
         .booking-card {
@@ -50,20 +159,22 @@
         .booking-steps {
             display: flex;
             border-bottom: 1px solid var(--border-color);
-            background: var(--light-gray);
+            background: var(--gray-50);
         }
         
         .booking-step {
             flex: 1;
-            padding: 1rem;
+            padding: 16px;
             text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-muted);
+            font-size: 14px;
+            color: var(--gray-400);
             position: relative;
+            font-weight: 500;
+            transition: var(--transition);
         }
         
         .booking-step.active {
-            color: var(--accent);
+            color: var(--blue);
             font-weight: 600;
         }
         
@@ -75,157 +186,195 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            background: var(--border-color);
-            color: white;
-            font-size: 0.75rem;
-            margin-right: 0.5rem;
+            background: var(--gray-200);
+            color: var(--gray-500);
+            font-size: 13px;
+            font-weight: 600;
+            margin-right: 8px;
+            transition: var(--transition);
         }
         
         .booking-step.active .booking-step-number {
-            background: var(--accent);
+            background: var(--blue);
+            color: white;
         }
         
         .booking-step.completed .booking-step-number {
             background: var(--success);
+            color: white;
         }
         
         .booking-content {
-            padding: 1.5rem;
+            padding: 32px;
+        }
+        
+        .booking-content h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
         
         /* Service Selection */
         .services-list {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 12px;
         }
         
         .service-option {
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius);
-            padding: 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 20px;
             cursor: pointer;
             transition: var(--transition);
+            background: var(--white);
         }
         
         .service-option:hover {
-            border-color: var(--accent-light);
-            background: var(--off-white);
+            border-color: var(--blue);
+            background: var(--gray-50);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
         }
         
         .service-option.selected {
-            border-color: var(--accent);
-            background: var(--accent-light);
+            border-color: var(--blue);
+            background: var(--blue-light);
         }
         
         .service-option h4 {
-            margin: 0 0 0.25rem 0;
-            font-size: 1rem;
+            margin: 0 0 8px 0;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--gray-900);
         }
         
         .service-option .service-meta {
             display: flex;
-            gap: 1rem;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
+            gap: 16px;
+            font-size: 14px;
+            color: var(--gray-500);
         }
         
         .service-option .service-description {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 0.5rem;
+            font-size: 14px;
+            color: var(--gray-400);
+            margin-top: 8px;
+            line-height: 1.5;
         }
         
         /* Date Selection */
         .date-picker-section {
-            margin-bottom: 1.5rem;
+            margin-bottom: 24px;
         }
         
         .date-picker-section label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 8px;
             font-weight: 600;
+            font-size: 14px;
+            color: var(--gray-600);
         }
         
         .date-picker-section input[type="date"] {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            font-size: 1rem;
+            padding: 14px 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-family: var(--font-family);
+            background: var(--white);
+            transition: var(--transition);
+        }
+        
+        .date-picker-section input[type="date"]:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px var(--blue-light);
         }
         
         /* Time Slots */
         .time-slots-section h4 {
-            margin-bottom: 1rem;
+            margin-bottom: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-900);
         }
         
         .time-slots-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 0.5rem;
+            gap: 10px;
         }
         
         .time-slot {
-            padding: 0.75rem;
+            padding: 14px;
             text-align: center;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
             cursor: pointer;
             transition: var(--transition);
-            font-size: 0.9rem;
+            font-size: 15px;
+            font-weight: 500;
+            background: var(--white);
         }
         
         .time-slot:hover {
-            border-color: var(--accent);
-            background: var(--accent-light);
+            border-color: var(--blue);
+            background: var(--blue-light);
         }
         
         .time-slot.selected {
-            background: var(--accent);
+            background: var(--blue);
             color: white;
-            border-color: var(--accent);
+            border-color: var(--blue);
         }
         
         .no-slots {
             text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
+            padding: 32px;
+            color: var(--gray-400);
+            font-size: 15px;
         }
         
         /* Smart Suggestions */
         .smart-suggestions {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 12px;
         }
         
         .suggestion-card {
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius);
-            padding: 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 20px;
             cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 16px;
+            background: var(--white);
         }
         
         .suggestion-card:hover {
-            border-color: var(--accent-light);
-            background: var(--off-white);
+            border-color: var(--blue);
+            background: var(--gray-50);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
         }
         
         .suggestion-card.selected {
-            border-color: var(--accent);
-            background: var(--accent-light);
+            border-color: var(--blue);
+            background: var(--blue-light);
         }
         
         .suggestion-icon {
-            font-size: 2rem;
+            font-size: 32px;
             flex-shrink: 0;
         }
         
@@ -235,81 +384,144 @@
         
         .suggestion-datetime {
             font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 0.25rem;
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: var(--gray-900);
         }
         
         .suggestion-reason {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
+            font-size: 14px;
+            color: var(--gray-500);
         }
         
         .suggestion-badge {
             display: inline-block;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.02em;
+            margin-left: 8px;
         }
         
         .suggestion-badge.high {
-            background: #d4edda;
-            color: #155724;
+            background: rgba(52, 199, 89, 0.15);
+            color: #1d7a3a;
         }
         
         .suggestion-badge.normal {
-            background: #e2e3e5;
-            color: #383d41;
+            background: var(--gray-100);
+            color: var(--gray-600);
         }
         
         /* Customer Form */
         .customer-form {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 16px;
+        }
+        
+        .form-group {
+            position: relative;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 0.25rem;
-            font-size: 0.9rem;
-            font-weight: 500;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-600);
         }
         
         .form-group input {
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            font-size: 1rem;
+            padding: 14px 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-family: var(--font-family);
+            background: var(--white);
+            transition: var(--transition);
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px var(--blue-light);
+        }
+        
+        .form-group input::placeholder {
+            color: var(--gray-300);
         }
         
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 16px;
         }
         
         @media (max-width: 500px) {
             .form-row {
                 grid-template-columns: 1fr;
             }
+            
+            .booking-content {
+                padding: 24px 20px;
+            }
+            
+            .booking-container {
+                padding: 80px 16px 40px;
+            }
+        }
+        
+        /* Address Autocomplete */
+        .address-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            display: none;
+            margin-top: 4px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+        
+        .autocomplete-item {
+            padding: 14px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 14px;
+            color: var(--gray-900);
+            transition: var(--transition);
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-item:hover {
+            background: var(--blue-light);
         }
         
         /* Summary */
         .booking-summary {
-            background: var(--light-gray);
-            border-radius: var(--radius);
-            padding: 1rem;
-            margin-bottom: 1.5rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 24px;
         }
         
         .summary-row {
             display: flex;
             justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border-color);
+            padding: 10px 0;
+            border-bottom: 1px solid var(--gray-200);
         }
         
         .summary-row:last-child {
@@ -317,18 +529,20 @@
         }
         
         .summary-label {
-            color: var(--text-secondary);
+            color: var(--gray-500);
+            font-size: 14px;
         }
         
         .summary-value {
             font-weight: 600;
+            color: var(--gray-900);
         }
         
         /* Buttons */
         .booking-actions {
             display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
+            gap: 12px;
+            margin-top: 24px;
         }
         
         .btn-back {
@@ -337,6 +551,46 @@
         
         .btn-next {
             flex: 1;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border-radius: var(--radius-full);
+            font-size: 15px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            font-family: var(--font-family);
+        }
+        
+        .btn-primary {
+            background: var(--blue);
+            color: var(--white);
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: var(--blue-hover);
+            transform: scale(1.02);
+        }
+        
+        .btn-primary:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-900);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gray-200);
         }
         
         /* Success Message */
@@ -362,18 +616,20 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255,255,255,0.9);
+            background: rgba(255, 255, 255, 0.95);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 16px;
             z-index: 1000;
         }
         
         .spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--accent);
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--blue);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -385,28 +641,49 @@
         /* Error */
         .error-page {
             text-align: center;
-            padding: 3rem 1rem;
+            padding: 60px 24px;
         }
         
         .error-page h1 {
-            font-size: 4rem;
-            color: var(--text-muted);
+            font-size: 80px;
+            color: var(--gray-300);
+            margin-bottom: 16px;
+        }
+        
+        .error-page p {
+            font-size: 17px;
+            color: var(--gray-500);
         }
         
         /* Footer */
         .booking-footer {
             text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
-            font-size: 0.85rem;
+            padding: 40px 24px;
+            color: var(--gray-400);
+            font-size: 14px;
         }
         
         .booking-footer a {
-            color: var(--accent);
+            color: var(--blue);
+            text-decoration: none;
+        }
+        
+        .booking-footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="https://pianoplanner.com" class="nav-logo">
+                <span class="nav-logo-icon">🎹</span>
+                PianoPlanner
+            </a>
+        </div>
+    </nav>
+
     <div id="loading" class="loading-overlay">
         <div class="spinner"></div>
     </div>
@@ -450,7 +727,7 @@
                 <!-- Step 2: Customer Details (needed for location matching) -->
                 <div id="step2" class="step-content" style="display: none;">
                     <h3>Your details</h3>
-                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+                    <p style="color: var(--gray-500); font-size: 15px; margin-bottom: 20px;">
                         We'll find the best appointment times based on your location.
                     </p>
                     
@@ -473,7 +750,8 @@
                         
                         <div class="form-group">
                             <label for="customer-street">Address (street + number) *</label>
-                            <input type="text" id="customer-street" required placeholder="e.g. Main Street 123">
+                            <input type="text" id="customer-street" required placeholder="Start typing an address..." autocomplete="off">
+                            <div id="address-suggestions" class="address-suggestions"></div>
                         </div>
                         
                         <div class="form-row">
@@ -637,8 +915,85 @@
             // Set required attributes
             document.getElementById('customer-email').required = settings.requireEmail;
             document.getElementById('customer-phone').required = settings.requirePhone;
+            
+            // Setup address autocomplete
+            setupAddressAutocomplete();
         }
         
+        // Address Autocomplete
+        function setupAddressAutocomplete() {
+            const streetInput = document.getElementById('customer-street');
+            const suggestions = document.getElementById('address-suggestions');
+            let debounceTimer;
+            
+            streetInput.addEventListener('input', (e) => {
+                clearTimeout(debounceTimer);
+                const query = e.target.value;
+                
+                if (query.length < 3) {
+                    suggestions.style.display = 'none';
+                    return;
+                }
+                
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const res = await fetch(`/api/booking/address-autocomplete?input=${encodeURIComponent(query)}`);
+                        const data = await res.json();
+                        
+                        if (data.predictions && data.predictions.length > 0) {
+                            suggestions.innerHTML = data.predictions.map(p => 
+                                `<div class="autocomplete-item" data-place-id="${p.placeId}">${p.description}</div>`
+                            ).join('');
+                            suggestions.style.display = 'block';
+                        } else {
+                            suggestions.style.display = 'none';
+                        }
+                    } catch (err) {
+                        suggestions.style.display = 'none';
+                    }
+                }, 300);
+            });
+            
+            suggestions.addEventListener('mousedown', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const item = e.target.closest('.autocomplete-item');
+                if (item) {
+                    const placeId = item.dataset.placeId;
+                    const description = item.textContent;
+                    
+                    streetInput.value = description.split(',')[0];
+                    suggestions.style.display = 'none';
+                    
+                    if (placeId) {
+                        try {
+                            const res = await fetch(`/api/booking/place-details?placeId=${encodeURIComponent(placeId)}`);
+                            if (!res.ok) return;
+                            
+                            const data = await res.json();
+                            const postalCodeInput = document.getElementById('customer-postalcode');
+                            const cityInput = document.getElementById('customer-city');
+                            
+                            // Handle nested address structure
+                            const addr = data.address || data;
+                            if (postalCodeInput) postalCodeInput.value = addr.postalCode || '';
+                            if (cityInput) cityInput.value = addr.city || '';
+                            if (addr.street) streetInput.value = addr.street;
+                        } catch (err) {
+                            console.error('Could not fetch address details:', err);
+                        }
+                    }
+                }
+            });
+            
+            document.addEventListener('mousedown', (e) => {
+                if (!e.target.closest('#customer-street') && !e.target.closest('#address-suggestions')) {
+                    suggestions.style.display = 'none';
+                }
+            });
+        }
+
         async function loadSmartSuggestions() {
             // Validate customer form first
             const form = document.getElementById('customer-form');
