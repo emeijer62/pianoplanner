@@ -374,6 +374,28 @@ function initDatabase() {
         db.run('CREATE INDEX IF NOT EXISTS idx_service_records_piano ON service_records(piano_id)');
         db.run('CREATE UNIQUE INDEX IF NOT EXISTS idx_company_settings_user ON company_settings(user_id)');
 
+        // Migratie: voeg travel settings kolommen toe aan company_settings
+        db.run(`ALTER TABLE company_settings ADD COLUMN max_booking_travel_minutes INTEGER`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error max_booking_travel_minutes:', err.message);
+            }
+        });
+        db.run(`ALTER TABLE company_settings ADD COLUMN far_location_message TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error far_location_message:', err.message);
+            }
+        });
+        db.run(`ALTER TABLE company_settings ADD COLUMN max_between_travel_minutes INTEGER`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error max_between_travel_minutes:', err.message);
+            }
+        });
+        db.run(`ALTER TABLE company_settings ADD COLUMN travel_settings_enabled INTEGER DEFAULT 0`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error travel_settings_enabled:', err.message);
+            }
+        });
+
         console.log('✅ Database tabellen en indexen aangemaakt');
         
         // Insert default services als ze niet bestaan

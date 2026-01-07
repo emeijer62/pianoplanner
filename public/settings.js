@@ -1391,6 +1391,99 @@ function initExportDates() {
     document.getElementById('export-to').value = oneYearFromNow.toISOString().split('T')[0];
 }
 
+// ========== TRAVEL SETTINGS ==========
+
+let travelSettings = {};
+
+async function loadTravelSettings() {
+    try {
+        const response = await fetch('/api/settings/travel');
+        if (!response.ok) throw new Error('Could not load travel settings');
+        
+        const data = await response.json();
+        travelSettings = data.settings || {};
+        
+        // Update UI
+        const enabledCheckbox = document.getElementById('travel-enabled');
+        const optionsDiv = document.getElementById('travel-options');
+        const statusBadge = document.getElementById('travel-status-badge');
+        
+        if (enabledCheckbox) {
+            enabledCheckbox.checked = travelSettings.enabled || false;
+        }
+        
+        if (optionsDiv) {
+            optionsDiv.style.display = travelSettings.enabled ? 'block' : 'none';
+        }
+        
+        if (statusBadge) {
+            if (travelSettings.enabled) {
+                statusBadge.textContent = 'Active';
+                statusBadge.className = 'status-badge connected';
+            } else {
+                statusBadge.textContent = 'Disabled';
+                statusBadge.className = 'status-badge disconnected';
+            }
+        }
+        
+        // Fill form fields
+        const maxBookingEl = document.getElementById('travel-max-booking');
+        const farMessageEl = document.getElementById('travel-far-message');
+        const maxBetweenEl = document.getElementById('travel-max-between');
+        
+        if (maxBookingEl) maxBookingEl.value = travelSettings.maxBookingTravelMinutes || '';
+        if (farMessageEl) farMessageEl.value = travelSettings.farLocationMessage || '';
+        if (maxBetweenEl) maxBetweenEl.value = travelSettings.maxBetweenTravelMinutes || '';
+        
+    } catch (error) {
+        console.error('Could not load travel settings:', error);
+    }
+}
+
+async function saveTravelSettings(e) {
+    e.preventDefault();
+    
+    const settings = {
+        enabled: document.getElementById('travel-enabled').checked,
+        maxBookingTravelMinutes: document.getElementById('travel-max-booking').value || null,
+        farLocationMessage: document.getElementById('travel-far-message').value.trim() || null,
+        maxBetweenTravelMinutes: document.getElementById('travel-max-between').value || null
+    };
+    
+    try {
+        const response = await fetch('/api/settings/travel', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Could not save settings');
+        }
+        
+        showAlert('Travel settings saved!', 'success');
+        
+        // Update UI with new settings
+        await loadTravelSettings();
+        
+    } catch (error) {
+        showAlert(error.message, 'error');
+    }
+}
+
+function setupTravelToggle() {
+    const checkbox = document.getElementById('travel-enabled');
+    const optionsDiv = document.getElementById('travel-options');
+    
+    if (checkbox && optionsDiv) {
+        checkbox.addEventListener('change', () => {
+            optionsDiv.style.display = checkbox.checked ? 'block' : 'none';
+        });
+    }
+}
+
 // ========== INITIALIZATION ==========
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1399,6 +1492,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadServices();
         loadProfileSettings();
         loadBookingSettings();
+        loadTravelSettings();
         loadAppleCalendarStatus();
         loadSmtpSettings();
         loadCalendarFeedSettings();
@@ -1410,9 +1504,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('profileForm').addEventListener('submit', saveProfile);
         document.getElementById('passwordForm').addEventListener('submit', changePassword);
         document.getElementById('bookingSettingsForm').addEventListener('submit', saveBookingSettings);
+        document.getElementById('travelSettingsForm').addEventListener('submit', saveTravelSettings);
         
         // Setup booking toggle
         setupBookingToggle();
+        
+        // Setup travel toggle
+        setupTravelToggle();
         
         // Setup SMTP toggle
         setupSmtpToggle();

@@ -166,10 +166,84 @@ function formatSettings(row) {
     };
 }
 
+// ==================== TRAVEL SETTINGS ====================
+
+const getTravelSettings = async (userId) => {
+    const settings = await dbGet(
+        `SELECT 
+            travel_settings_enabled as enabled,
+            max_booking_travel_minutes as maxBookingTravelMinutes,
+            far_location_message as farLocationMessage,
+            max_between_travel_minutes as maxBetweenTravelMinutes
+         FROM company_settings WHERE user_id = ?`,
+        [userId]
+    );
+    
+    if (!settings) {
+        return {
+            enabled: false,
+            maxBookingTravelMinutes: null,
+            farLocationMessage: 'For locations further away, please contact us directly to schedule an appointment.',
+            maxBetweenTravelMinutes: null
+        };
+    }
+    
+    return {
+        enabled: Boolean(settings.enabled),
+        maxBookingTravelMinutes: settings.maxBookingTravelMinutes,
+        farLocationMessage: settings.farLocationMessage || 'For locations further away, please contact us directly to schedule an appointment.',
+        maxBetweenTravelMinutes: settings.maxBetweenTravelMinutes
+    };
+};
+
+const saveTravelSettings = async (userId, travelData) => {
+    // Ensure company_settings row exists
+    const existing = await dbGet('SELECT id FROM company_settings WHERE user_id = ?', [userId]);
+    
+    if (existing) {
+        await dbRun(`
+            UPDATE company_settings SET
+                travel_settings_enabled = ?,
+                max_booking_travel_minutes = ?,
+                far_location_message = ?,
+                max_between_travel_minutes = ?,
+                updated_at = ?
+            WHERE user_id = ?
+        `, [
+            travelData.enabled ? 1 : 0,
+            travelData.maxBookingTravelMinutes || null,
+            travelData.farLocationMessage || null,
+            travelData.maxBetweenTravelMinutes || null,
+            new Date().toISOString(),
+            userId
+        ]);
+    } else {
+        // Create minimal company_settings with travel data
+        await dbRun(`
+            INSERT INTO company_settings (
+                user_id, travel_settings_enabled, max_booking_travel_minutes,
+                far_location_message, max_between_travel_minutes, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+        `, [
+            userId,
+            travelData.enabled ? 1 : 0,
+            travelData.maxBookingTravelMinutes || null,
+            travelData.farLocationMessage || null,
+            travelData.maxBetweenTravelMinutes || null,
+            new Date().toISOString()
+        ]);
+    }
+    
+    return getTravelSettings(userId);
+};
+
 module.exports = {
     getSettings,
     getCompanySettings: getSettings,  // Alias voor duidelijkheid
     saveSettings,
     getOriginAddress,
-    getDefaultSettings
+    getDefaultSettings,
+    getTravelSettings,
+    saveTravelSettings
 };

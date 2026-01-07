@@ -565,9 +565,42 @@ router.get('/:slug/smart-suggestions', async (req, res) => {
         const company = await companyStore.getCompanySettings(user.id);
         const workingHours = normalizeWorkingHours(company?.workingHours);
         
+        // Haal travel settings op
+        const travelSettings = await companyStore.getTravelSettings(user.id);
+        
         // Bouw klant locatie string
         const customerLocation = [customerAddress, customerPostalCode, customerCity]
             .filter(Boolean).join(', ');
+        
+        // Bouw bedrijfs origin adres
+        const originAddress = company?.travelOrigin || 
+            [company?.address?.street, company?.address?.postalCode, company?.address?.city].filter(Boolean).join(', ');
+        
+        // Check reistijd limiet als travel settings enabled zijn
+        if (travelSettings.enabled && travelSettings.maxBookingTravelMinutes && customerLocation && originAddress) {
+            try {
+                const travelInfo = await calculateTravelTime(originAddress, customerLocation);
+                
+                if (travelInfo && travelInfo.duration > travelSettings.maxBookingTravelMinutes) {
+                    console.log(`🚗 Customer too far: ${travelInfo.duration} min > ${travelSettings.maxBookingTravelMinutes} min limit`);
+                    return res.json({
+                        success: false,
+                        tooFar: true,
+                        travelTime: travelInfo.duration,
+                        travelDistance: travelInfo.distance,
+                        maxAllowed: travelSettings.maxBookingTravelMinutes,
+                        message: travelSettings.farLocationMessage || 'For locations further away, please contact us directly to schedule an appointment.',
+                        contactEmail: company?.email,
+                        contactPhone: company?.phone
+                    });
+                }
+                
+                console.log(`🚗 Customer within range: ${travelInfo.duration} min <= ${travelSettings.maxBookingTravelMinutes} min limit`);
+            } catch (travelErr) {
+                console.log('⚠️ Could not calculate travel time:', travelErr.message);
+                // Continue without travel check if calculation fails
+            }
+        }
         
         // Datum range: van morgen tot maxAdvanceDays
         const now = new Date();
@@ -585,7 +618,7 @@ router.get('/:slug/smart-suggestions', async (req, res) => {
         console.log(`📅 Date range: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
         console.log(`📊 Found ${allAppointments.length} existing appointments`);
         
-        // Genereer suggesties
+        // Genereer suggesties met travel settings
         const suggestions = await generateSmartSuggestions({
             customerLocation,
             service,
@@ -593,7 +626,9 @@ router.get('/:slug/smart-suggestions', async (req, res) => {
             existingAppointments: allAppointments,
             startDate,
             endDate,
-            maxSuggestions: 5
+            maxSuggestions: 5,
+            maxBetweenTravelMinutes: travelSettings.enabled ? travelSettings.maxBetweenTravelMinutes : null,
+            originAddress
         });
         
         res.json({

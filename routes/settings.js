@@ -243,4 +243,39 @@ router.put('/booking', requireAuth, async (req, res) => {
     }
 });
 
+// ==================== TRAVEL SETTINGS ====================
+
+// Haal travel settings op
+router.get('/travel', requireAuth, async (req, res) => {
+    try {
+        const settings = await companyStore.getTravelSettings(req.session.user.id);
+        res.json({ settings });
+    } catch (error) {
+        console.error('Error getting travel settings:', error);
+        res.status(500).json({ error: 'Kon reisinstellingen niet ophalen' });
+    }
+});
+
+// Update travel settings
+router.put('/travel', requireAuth, async (req, res) => {
+    try {
+        const { enabled, maxBookingTravelMinutes, farLocationMessage, maxBetweenTravelMinutes } = req.body;
+        
+        const settings = await companyStore.saveTravelSettings(req.session.user.id, {
+            enabled,
+            maxBookingTravelMinutes: maxBookingTravelMinutes ? parseInt(maxBookingTravelMinutes) : null,
+            farLocationMessage,
+            maxBetweenTravelMinutes: maxBetweenTravelMinutes ? parseInt(maxBetweenTravelMinutes) : null
+        });
+        
+        res.json({ 
+            success: true,
+            settings
+        });
+    } catch (error) {
+        console.error('Error updating travel settings:', error);
+        res.status(500).json({ error: 'Kon reisinstellingen niet opslaan' });
+    }
+});
+
 module.exports = router;

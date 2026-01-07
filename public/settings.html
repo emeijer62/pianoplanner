@@ -1436,6 +1436,88 @@
                 </div>
             </div>
             
+            <!-- Travel Settings Card -->
+            <div class="settings-card" id="travel-card">
+                <div class="settings-card-header" onclick="toggleCard('travel-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">🚗</span>
+                        Travel Settings
+                    </div>
+                    <div class="settings-card-status">
+                        <span class="status-badge disconnected" id="travel-status-badge">Disabled</span>
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Control booking radius and optimize travel time between appointments.
+                    </p>
+                    
+                    <form id="travelSettingsForm">
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="travel-enabled" name="enabled">
+                                    <span class="toggle-slider"></span>
+                                </div>
+                                <span style="font-weight: 500;">Enable travel limits</span>
+                            </label>
+                        </div>
+                        
+                        <div id="travel-options" style="display: none;">
+                            <div class="form-section-header">📍 Online Booking Radius</div>
+                            <p class="form-section-hint">Limit online bookings to customers within a certain travel distance from your location.</p>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="travel-max-booking">Maximum travel time for bookings</label>
+                                    <select id="travel-max-booking" name="maxBookingTravelMinutes">
+                                        <option value="">No limit</option>
+                                        <option value="30">30 minutes</option>
+                                        <option value="45">45 minutes</option>
+                                        <option value="60">1 hour</option>
+                                        <option value="90">1.5 hours</option>
+                                        <option value="120">2 hours</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="travel-far-message">Message for far locations</label>
+                                <textarea id="travel-far-message" name="farLocationMessage" rows="2" placeholder="For locations further away, please contact us directly to schedule an appointment."></textarea>
+                                <span class="form-section-hint" style="margin-top: 6px;">Shown when a customer's location exceeds the maximum travel time.</span>
+                            </div>
+                            
+                            <div class="form-section-header">🔄 Route Efficiency</div>
+                            <p class="form-section-hint">Optimize smart suggestions by limiting travel between consecutive appointments.</p>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="travel-max-between">Max travel between appointments</label>
+                                    <select id="travel-max-between" name="maxBetweenTravelMinutes">
+                                        <option value="">No limit</option>
+                                        <option value="15">15 minutes</option>
+                                        <option value="30">30 minutes</option>
+                                        <option value="45">45 minutes</option>
+                                        <option value="60">1 hour</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="background: var(--gray-100); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+                                <p style="font-size: 13px; color: var(--gray-600); margin: 0;">
+                                    ℹ️ Smart suggestions will prioritize time slots where travel to/from other appointments stays within this limit.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">💾 Save Travel Settings</button>
+                    </form>
+                </div>
+            </div>
+            
             <!-- Profile Card -->
             <div class="settings-card" id="profile-card">
                 <div class="settings-card-header" onclick="toggleCard('profile-card')">

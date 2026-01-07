@@ -415,6 +415,53 @@
             color: var(--gray-600);
         }
         
+        /* Too Far Message */
+        .too-far-message {
+            text-align: center;
+            padding: 40px 24px;
+            background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+            border: 2px solid #fecaca;
+            border-radius: var(--radius-lg);
+        }
+        
+        .too-far-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .too-far-message h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 12px;
+        }
+        
+        .too-far-distance {
+            font-size: 15px;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+        
+        .too-far-text {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: 24px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .too-far-contact {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .too-far-contact .btn {
+            min-width: 140px;
+        }
+        
         /* Customer Form */
         .customer-form {
             display: flex;
@@ -1024,6 +1071,12 @@
                 const response = await fetch(`/api/book/${bookingSlug}/smart-suggestions?${params}`);
                 const data = await response.json();
                 
+                // Check if customer is too far away
+                if (data.tooFar) {
+                    renderTooFarMessage(data);
+                    return;
+                }
+                
                 if (data.suggestions && data.suggestions.length > 0) {
                     renderSuggestions(data.suggestions);
                 } else {
@@ -1034,6 +1087,34 @@
                 console.error('Error loading suggestions:', error);
                 container.innerHTML = '<p class="no-slots">Error loading available times. Please try again.</p>';
             }
+        }
+        
+        function renderTooFarMessage(data) {
+            const container = document.getElementById('smart-suggestions');
+            const travelHours = Math.floor(data.travelTime / 60);
+            const travelMins = data.travelTime % 60;
+            const travelTimeStr = travelHours > 0 
+                ? `${travelHours}h ${travelMins}min` 
+                : `${data.travelTime} min`;
+            
+            container.innerHTML = `
+                <div class="too-far-message">
+                    <div class="too-far-icon">🚗</div>
+                    <h3>Outside Service Area</h3>
+                    <p class="too-far-distance">
+                        Your location is approximately <strong>${travelTimeStr}</strong> away 
+                        (max: ${data.maxAllowed} min).
+                    </p>
+                    <p class="too-far-text">${escapeHtml(data.message)}</p>
+                    <div class="too-far-contact">
+                        ${data.contactPhone ? `<a href="tel:${data.contactPhone}" class="btn btn-secondary">📞 ${data.contactPhone}</a>` : ''}
+                        ${data.contactEmail ? `<a href="mailto:${data.contactEmail}" class="btn btn-primary">✉️ Send Email</a>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Disable the confirm button since no slot can be selected
+            document.getElementById('btn-step3').disabled = true;
         }
         
         function renderSuggestions(suggestions) {
