@@ -32,9 +32,9 @@ jobs:
         languages: ${{ matrix.language }}
         queries: security-extended,security-and-quality
         config: |
+          # Scan all JavaScript/TypeScript in this repo (root contains the app)
           paths:
-            - pianoinfo
-            - Planner
+            - .
           paths-ignore:
             - '**/node_modules'
             - '**/uploads'
