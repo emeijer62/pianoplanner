@@ -25,15 +25,16 @@ let emailConfigured = false;
 function initializeEmail() {
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
         emailTransporter = nodemailer.createTransport(emailConfig);
+        // Mark as configured immediately if credentials exist
+        emailConfigured = true;
         
-        // Test email configuration
+        // Test email configuration (async, just for logging)
         emailTransporter.verify((error, success) => {
             if (error) {
                 console.log('❌ Email configuration error:', error.message);
-                emailConfigured = false;
+                // Keep emailConfigured true - we'll handle errors when sending
             } else {
                 console.log('✅ Email server ready:', process.env.SMTP_USER);
-                emailConfigured = true;
             }
         });
     } else {
