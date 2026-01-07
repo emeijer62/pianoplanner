@@ -1126,11 +1126,19 @@
                     throw new Error(result.error || 'Booking failed');
                 }
                 
-                // Show success
-                showSuccess(result);
+                // Show success - with extra safety
+                try {
+                    showSuccess(result);
+                } catch (displayErr) {
+                    console.error('Display error:', displayErr);
+                    // Fallback: just show a simple success message
+                    alert('Appointment booked successfully!');
+                    submitBtn.textContent = '✅ Booked!';
+                }
                 
             } catch (error) {
-                alert(error.message);
+                console.error('Booking error:', error);
+                alert(error.message || 'Could not book appointment. Please try again.');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Confirm Appointment ✓';
             }
@@ -1138,28 +1146,38 @@
         
         function showSuccess(result) {
             // Hide step 3
-            document.getElementById('step3').style.display = 'none';
-            document.getElementById('step3-indicator').classList.remove('active');
-            document.getElementById('step3-indicator').classList.add('completed');
+            const step3 = document.getElementById('step3');
+            const step3Indicator = document.getElementById('step3-indicator');
+            if (step3) step3.style.display = 'none';
+            if (step3Indicator) {
+                step3Indicator.classList.remove('active');
+                step3Indicator.classList.add('completed');
+            }
             
             // Show success
-            document.getElementById('step-success').style.display = 'block';
-            document.getElementById('confirmation-message').textContent = result.message;
+            const successStep = document.getElementById('step-success');
+            const confirmMsg = document.getElementById('confirmation-message');
+            const finalSummary = document.getElementById('final-summary');
             
-            document.getElementById('final-summary').innerHTML = `
-                <div class="summary-row">
-                    <span class="summary-label">Service</span>
-                    <span class="summary-value">${escapeHtml(selectedService.name)}</span>
-                </div>
-                <div class="summary-row">
-                    <span class="summary-label">Date</span>
-                    <span class="summary-value">${selectedSuggestion.displayDate}</span>
-                </div>
-                <div class="summary-row">
-                    <span class="summary-label">Time</span>
-                    <span class="summary-value">${selectedSuggestion.displayTime}</span>
-                </div>
-            `;
+            if (successStep) successStep.style.display = 'block';
+            if (confirmMsg) confirmMsg.textContent = result?.message || 'Your appointment has been scheduled!';
+            
+            if (finalSummary) {
+                finalSummary.innerHTML = `
+                    <div class="summary-row">
+                        <span class="summary-label">Service</span>
+                        <span class="summary-value">${escapeHtml(selectedService?.name || 'Service')}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Date</span>
+                        <span class="summary-value">${selectedSuggestion?.displayDate || ''}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">Time</span>
+                        <span class="summary-value">${selectedSuggestion?.displayTime || ''}</span>
+                    </div>
+                `;
+            }
         }
         
         function escapeHtml(text) {
