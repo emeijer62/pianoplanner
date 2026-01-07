@@ -22,6 +22,48 @@ const DEBUG_CALDAV = process.env.DEBUG_CALDAV === 'true';
 const ICLOUD_CALDAV_URL = 'https://caldav.icloud.com';
 const ICLOUD_PRINCIPAL_URL = 'https://caldav.icloud.com';
 
+// SECURITY: Whitelist van toegestane CalDAV hosts (SSRF protection)
+const ALLOWED_CALDAV_HOSTS = [
+    'caldav.icloud.com',
+    'p01-caldav.icloud.com',
+    'p02-caldav.icloud.com',
+    'p03-caldav.icloud.com',
+    'p04-caldav.icloud.com',
+    'p05-caldav.icloud.com',
+    'p06-caldav.icloud.com',
+    'p07-caldav.icloud.com',
+    'p08-caldav.icloud.com',
+    'p09-caldav.icloud.com',
+    'p10-caldav.icloud.com',
+    // Voeg meer Apple datacenter hosts toe indien nodig
+];
+
+/**
+ * Validate CalDAV URL against whitelist (SSRF protection)
+ * @param {string} url - The URL to validate
+ * @returns {boolean} - True if URL is safe
+ */
+const isValidCalDAVUrl = (url) => {
+    try {
+        const parsed = new URL(url);
+        // Must be HTTPS
+        if (parsed.protocol !== 'https:') {
+            console.warn(`⚠️ SSRF blocked: non-HTTPS URL: ${url}`);
+            return false;
+        }
+        // Must be on whitelist
+        if (!ALLOWED_CALDAV_HOSTS.includes(parsed.hostname)) {
+            console.warn(`⚠️ SSRF blocked: hostname not in whitelist: ${parsed.hostname}`);
+            return false;
+        }
+        // No redirect to internal IPs
+        return true;
+    } catch (e) {
+        console.warn(`⚠️ SSRF blocked: invalid URL: ${url}`);
+        return false;
+    }
+};
+
 // Helper: debug log (only logs when DEBUG_CALDAV is enabled)
 const debugLog = (...args) => {
     if (DEBUG_CALDAV) {
@@ -363,6 +405,11 @@ router.get('/events', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Calendar URL is verplicht' });
         }
         
+        // SECURITY: Validate CalDAV URL against whitelist (SSRF protection)
+        if (!isValidCalDAVUrl(calendarUrl)) {
+            return res.status(400).json({ error: 'Ongeldige calendar URL' });
+        }
+        
         const events = await fetchAppleEvents(credentials, calendarUrl, start, end);
         res.json({ events });
         
@@ -376,6 +423,11 @@ router.get('/events', requireAuth, async (req, res) => {
  * Haal events op via CalDAV REPORT
  */
 async function fetchAppleEvents(credentials, calendarUrl, startDate, endDate) {
+    // SSRF protection: validate URL before making request
+    if (!isValidCalDAVUrl(calendarUrl)) {
+        throw new Error('Invalid CalDAV URL');
+    }
+    
     const authHeader = getAuthHeader(credentials.appleId, credentials.appPassword);
     
     // Default: komende 30 dagen
@@ -477,6 +529,11 @@ router.post('/events', requireAuth, async (req, res) => {
             });
         }
         
+        // SSRF protection: validate CalDAV URL
+        if (!isValidCalDAVUrl(calendarUrl)) {
+            return res.status(400).json({ error: 'Ongeldige calendar URL' });
+        }
+        
         const event = await createAppleEvent(credentials, calendarUrl, {
             summary,
             description,
@@ -498,6 +555,11 @@ router.post('/events', requireAuth, async (req, res) => {
  * Maak event aan via CalDAV PUT
  */
 async function createAppleEvent(credentials, calendarUrl, eventData) {
+    // SSRF protection: validate URL before making request
+    if (!isValidCalDAVUrl(calendarUrl)) {
+        throw new Error('Invalid CalDAV URL');
+    }
+    
     const authHeader = getAuthHeader(credentials.appleId, credentials.appPassword);
     
     // Genereer unieke UID
@@ -598,6 +660,11 @@ router.post('/sync-settings', requireAuth, async (req, res) => {
     try {
         const { enabled, syncDirection, appleCalendarUrl } = req.body;
         
+        // SSRF protection: validate CalDAV URL if provided
+        if (appleCalendarUrl && !isValidCalDAVUrl(appleCalendarUrl)) {
+            return res.status(400).json({ error: 'Ongeldige calendar URL' });
+        }
+        
         const result = await userStore.updateAppleCalendarSync(req.session.user.id, {
             enabled: enabled,
             syncDirection: syncDirection || 'both',
@@ -638,6 +705,11 @@ router.post('/sync', requireAuth, async (req, res) => {
         
         if (!syncSettings.appleCalendarUrl) {
             return res.status(400).json({ error: 'Geen Apple Calendar geselecteerd' });
+        }
+        
+        // SSRF protection: validate stored CalDAV URL
+        if (!isValidCalDAVUrl(syncSettings.appleCalendarUrl)) {
+            return res.status(400).json({ error: 'Ongeldige calendar URL in instellingen' });
         }
         
         const result = await performAppleSync(
