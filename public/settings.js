@@ -617,6 +617,7 @@ async function loadBookingSettings() {
         const linkDisplay = document.getElementById('booking-link-display');
         const statusDiv = document.getElementById('booking-status');
         const statusText = document.getElementById('booking-status-text');
+        const statusBadge = document.getElementById('booking-status-badge');
         
         enabledCheckbox.checked = bookingSettings.enabled || false;
         
@@ -627,11 +628,21 @@ async function loadBookingSettings() {
             document.getElementById('booking-link-preview').href = data.bookingUrl;
             statusDiv.className = 'sync-status connected';
             statusText.textContent = '✅ Booking link is active';
+            // Update header badge
+            if (statusBadge) {
+                statusBadge.textContent = 'Active';
+                statusBadge.className = 'status-badge connected';
+            }
         } else {
             optionsDiv.style.display = enabledCheckbox.checked ? 'block' : 'none';
             linkDisplay.style.display = 'none';
             statusDiv.className = 'sync-status disconnected';
             statusText.textContent = '⏸️ Booking link is disabled';
+            // Update header badge
+            if (statusBadge) {
+                statusBadge.textContent = 'Disabled';
+                statusBadge.className = 'status-badge disconnected';
+            }
         }
         
         // Fill form fields
