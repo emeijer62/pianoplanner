@@ -271,7 +271,15 @@ const syncUserAppleCalendar = async (user) => {
                 const endTime = appointment.end_time || appointment.endTime;
                 
                 if (!startTime || !endTime) {
-                    console.warn(`⚠️ Skipping appointment ${appointment.id}: missing start/end time`);
+                    console.warn(`⚠️ Deleting broken appointment ${appointment.id}: missing start/end time`);
+                    // Auto-delete broken appointments
+                    try {
+                        const { dbRun } = require('./database');
+                        await dbRun('DELETE FROM appointments WHERE id = ?', [appointment.id]);
+                        console.log(`🧹 Deleted broken appointment ${appointment.id}`);
+                    } catch (deleteErr) {
+                        console.error(`Failed to delete broken appointment ${appointment.id}:`, deleteErr.message);
+                    }
                     continue;
                 }
                 
