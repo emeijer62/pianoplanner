@@ -32,6 +32,49 @@ const { requireAuth, requireAdmin, isAdmin } = require('./middleware/auth');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ============================================
+// SECURITY: Input Sanitization Middleware
+// ============================================
+
+/**
+ * Sanitize input to prevent injection attacks
+ * - Removes null bytes (path traversal)
+ * - Strips dangerous patterns
+ */
+const sanitizeInput = (obj) => {
+    if (typeof obj === 'string') {
+        return obj
+            .replace(/\0/g, '')                    // Null bytes
+            .replace(/\.\.\//g, '')                // Path traversal
+            .replace(/\.\.\\/g, '')                // Windows path traversal
+            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Script tags
+            .trim();
+    }
+    if (Array.isArray(obj)) {
+        return obj.map(sanitizeInput);
+    }
+    if (obj && typeof obj === 'object') {
+        const sanitized = {};
+        for (const [key, value] of Object.entries(obj)) {
+            // Sanitize keys too (prevent prototype pollution)
+            const safeKey = key.replace(/[^a-zA-Z0-9_-]/g, '');
+            if (safeKey && safeKey !== '__proto__' && safeKey !== 'constructor' && safeKey !== 'prototype') {
+                sanitized[safeKey] = sanitizeInput(value);
+            }
+        }
+        return sanitized;
+    }
+    return obj;
+};
+
+// Apply sanitization to all requests
+app.use((req, res, next) => {
+    if (req.body) req.body = sanitizeInput(req.body);
+    if (req.query) req.query = sanitizeInput(req.query);
+    if (req.params) req.params = sanitizeInput(req.params);
+    next();
+});
+
 // Stripe webhook moet raw body hebben - VOOR json middleware
 app.use('/webhook/stripe', express.raw({ type: 'application/json' }), stripeWebhookRoutes);
 
