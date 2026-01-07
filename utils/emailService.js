@@ -5,14 +5,14 @@
 
 const nodemailer = require('nodemailer');
 
-// Email configuration for PianoPlanner central SMTP (Google Workspace)
+// Email configuration for PianoPlanner central SMTP (TransIP)
 const emailConfig = {
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: false, // true for 465, false for other ports
+    host: process.env.SMTP_HOST || 'smtp.transip.email',
+    port: parseInt(process.env.SMTP_PORT) || 465,
+    secure: process.env.SMTP_SECURE === 'true' || parseInt(process.env.SMTP_PORT) === 465, // true for 465
     auth: {
         user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS // Google App Password
+        pass: process.env.SMTP_PASS
     }
 };
 

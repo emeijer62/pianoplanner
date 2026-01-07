@@ -667,11 +667,19 @@
             background: var(--gray-50, #fafafa);
             border-left: 3px solid var(--accent, #007aff);
             transition: all 0.2s ease;
+            cursor: pointer;
         }
         
         .event-item:hover {
             background: var(--white);
             box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            border-left-color: var(--primary, #007aff);
+            transform: translateX(2px);
+        }
+        
+        .event-item:active {
+            transform: translateX(1px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
         
         .event-item:last-child {
@@ -1116,7 +1124,7 @@
                 const start = new Date(e.start?.dateTime);
                 const time = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                 return `
-                    <div class="event-item">
+                    <div class="event-item" onclick="openEditModal('${e.id}')" title="Klik om te bewerken">
                         <div class="event-item-time">${time}</div>
                         <div class="event-item-title">${escapeHtml(e.summary || 'No title')}</div>
                         ${e.location ? `<div class="event-item-location">📍 ${escapeHtml(e.location)}</div>` : ''}
@@ -1151,9 +1159,10 @@
                 const dateStr = start.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
                 const time = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                 return `
-                    <div class="event-item">
+                    <div class="event-item" onclick="openEditModal('${e.id}')" title="Klik om te bewerken">
                         <div class="event-item-time">${dateStr} ${time}</div>
                         <div class="event-item-title">${escapeHtml(e.summary || 'No title')}</div>
+                        ${e.location ? `<div class="event-item-location">📍 ${escapeHtml(e.location)}</div>` : ''}
                     </div>
                 `;
             }).join('');
