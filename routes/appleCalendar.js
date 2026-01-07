@@ -282,38 +282,62 @@ async function fetchAppleCalendars(credentials) {
     }
     
     const xmlText = await response.text();
+    console.log('🍎 CalDAV response (first 1000 chars):', xmlText.substring(0, 1000));
+    
     const parsed = xmlParser.parse(xmlText);
+    console.log('🍎 Parsed structure:', JSON.stringify(parsed, null, 2).substring(0, 2000));
     
     const calendars = [];
     
-    // Parse de response
-    const responses = parsed.multistatus?.response;
+    // Parse de response - handle different XML structures
+    const multistatus = parsed.multistatus || parsed['D:multistatus'] || parsed['d:multistatus'];
+    const responses = multistatus?.response || multistatus?.['D:response'] || multistatus?.['d:response'];
     const responseArray = Array.isArray(responses) ? responses : [responses].filter(Boolean);
     
+    console.log('🍎 Found', responseArray.length, 'responses in XML');
+    
     for (const resp of responseArray) {
-        const propstat = resp.propstat;
-        if (!propstat) continue;
+        const propstat = resp.propstat || resp['D:propstat'] || resp['d:propstat'];
+        if (!propstat) {
+            console.log('🍎 No propstat in response:', JSON.stringify(resp).substring(0, 200));
+            continue;
+        }
         
-        const prop = propstat.prop;
-        const resourceType = prop?.resourcetype;
+        // propstat can be an array
+        const propstatArray = Array.isArray(propstat) ? propstat : [propstat];
         
-        // Check of het een calendar is
-        if (resourceType?.calendar !== undefined || resourceType?.calendar === '') {
-            const href = resp.href;
-            const displayName = prop?.displayname || 'Unnamed Calendar';
-            const ctag = prop?.getctag;
+        for (const ps of propstatArray) {
+            const prop = ps.prop || ps['D:prop'] || ps['d:prop'];
+            const resourceType = prop?.resourcetype || prop?.['D:resourcetype'] || prop?.['d:resourcetype'];
             
-            // Skip de root/home path
-            if (href && href !== calendarHomeUrl && !href.endsWith('/calendars/')) {
-                calendars.push({
-                    id: href,
-                    name: displayName,
-                    ctag: ctag,
-                    url: `${ICLOUD_CALDAV_URL}${href}`
-                });
+            console.log('🍎 Checking resourceType:', JSON.stringify(resourceType));
+            
+            // Check of het een calendar is - multiple possible structures
+            const isCalendar = resourceType?.calendar !== undefined || 
+                               resourceType?.['C:calendar'] !== undefined ||
+                               resourceType?.['cal:calendar'] !== undefined ||
+                               (typeof resourceType === 'object' && Object.keys(resourceType).some(k => k.toLowerCase().includes('calendar')));
+            
+            if (isCalendar) {
+                const href = resp.href || resp['D:href'] || resp['d:href'];
+                const displayName = prop?.displayname || prop?.['D:displayname'] || prop?.['d:displayname'] || 'Unnamed Calendar';
+                const ctag = prop?.getctag || prop?.['CS:getctag'] || prop?.['cs:getctag'];
+                
+                // Skip de root/home path
+                if (href && !href.endsWith('/calendars/')) {
+                    console.log('🍎 Found calendar:', displayName, href);
+                    calendars.push({
+                        id: href,
+                        name: displayName,
+                        ctag: ctag,
+                        url: `${ICLOUD_CALDAV_URL}${href}`
+                    });
+                }
             }
         }
     }
+    
+    return calendars;
     
     return calendars;
 }
