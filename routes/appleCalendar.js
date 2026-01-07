@@ -206,18 +206,32 @@ router.get('/calendars', requireAuth, async (req, res) => {
     try {
         const credentials = await userStore.getAppleCalendarCredentials(req.session.user.id);
         
+        console.log('🍎 Apple Calendar credentials:', credentials ? {
+            appleId: credentials.appleId,
+            principalUrl: credentials.principalUrl,
+            connected: credentials.connected
+        } : 'none');
+        
         if (!credentials || !credentials.connected) {
             return res.status(400).json({ 
                 error: 'Apple Calendar niet verbonden' 
             });
         }
         
+        if (!credentials.principalUrl) {
+            console.error('🍎 Missing principalUrl in credentials');
+            return res.status(400).json({ 
+                error: 'Apple Calendar configuratie incompleet. Maak opnieuw verbinding.' 
+            });
+        }
+        
         const calendars = await fetchAppleCalendars(credentials);
+        console.log('🍎 Found calendars:', calendars.length);
         res.json({ calendars });
         
     } catch (error) {
-        console.error('Apple Calendar list error:', error);
-        res.status(500).json({ error: 'Kon calendars niet ophalen' });
+        console.error('Apple Calendar list error:', error.message, error.stack);
+        res.status(500).json({ error: 'Kon calendars niet ophalen: ' + error.message });
     }
 });
 
@@ -228,7 +242,19 @@ async function fetchAppleCalendars(credentials) {
     const authHeader = getAuthHeader(credentials.appleId, credentials.appPassword);
     
     // Eerst de calendar home URL ophalen
-    const calendarHomeUrl = `${ICLOUD_CALDAV_URL}${credentials.principalUrl}calendars/`;
+    // principalUrl is typically like "/123456789/principal/"
+    // We need to build the calendars URL
+    let calendarHomeUrl;
+    if (credentials.principalUrl.includes('/calendars/')) {
+        calendarHomeUrl = `${ICLOUD_CALDAV_URL}${credentials.principalUrl}`;
+    } else {
+        // Remove trailing slash and "principal" if present, then add "calendars/"
+        let baseUrl = credentials.principalUrl.replace(/\/principal\/?$/, '');
+        if (!baseUrl.endsWith('/')) baseUrl += '/';
+        calendarHomeUrl = `${ICLOUD_CALDAV_URL}${baseUrl}calendars/`;
+    }
+    
+    console.log('🍎 Fetching calendars from:', calendarHomeUrl);
     
     const propfindBody = `<?xml version="1.0" encoding="UTF-8"?>
 <D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav" xmlns:CS="http://calendarserver.org/ns/">
