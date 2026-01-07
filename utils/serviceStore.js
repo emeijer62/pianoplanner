@@ -49,22 +49,31 @@ const getService = async (userId, serviceId) => {
 };
 
 const getAllServices = async (userId) => {
-    // Haal zowel globale als user-specifieke services op
+    // Haal zowel user-specifiek als globale diensten op, maar filter verborgen globales
     const services = await dbAll(`
-        SELECT * FROM services 
-        WHERE user_id = ? OR user_id IS NULL
-        ORDER BY name ASC
-    `, [userId]);
+        SELECT * FROM services s
+        WHERE (s.user_id = ? OR s.user_id IS NULL)
+          AND NOT EXISTS (
+              SELECT 1 FROM service_visibility v
+              WHERE v.user_id = ? AND v.service_id = s.id AND v.hidden = 1
+          )
+        ORDER BY s.name ASC
+    `, [userId, userId]);
     
     return services.map(formatService);
 };
 
 const getActiveServices = async (userId) => {
     const services = await dbAll(`
-        SELECT * FROM services 
-        WHERE (user_id = ? OR user_id IS NULL) AND active = 1
-        ORDER BY name ASC
-    `, [userId]);
+        SELECT * FROM services s
+        WHERE (s.user_id = ? OR s.user_id IS NULL) 
+          AND s.active = 1
+          AND NOT EXISTS (
+              SELECT 1 FROM service_visibility v
+              WHERE v.user_id = ? AND v.service_id = s.id AND v.hidden = 1
+          )
+        ORDER BY s.name ASC
+    `, [userId, userId]);
     
     return services.map(formatService);
 };
@@ -114,7 +123,7 @@ const updateService = async (userId, serviceId, updates) => {
 const deleteService = async (userId, serviceId) => {
     console.log('🗑️ deleteService called:', { userId, serviceId });
     
-    // Check if service exists first
+    // Check if service exists voor deze user
     const existing = await dbGet(
         'SELECT * FROM services WHERE id = ? AND user_id = ?',
         [serviceId, userId]
@@ -122,9 +131,19 @@ const deleteService = async (userId, serviceId) => {
     console.log('🗑️ Found service in DB:', existing);
     
     if (!existing) {
-        console.log('🗑️ Service not found, checking without user filter...');
-        const anyService = await dbGet('SELECT * FROM services WHERE id = ?', [serviceId]);
-        console.log('🗑️ Service exists for any user:', anyService);
+        console.log('🗑️ Service not found for user, checking global...');
+        const globalService = await dbGet('SELECT * FROM services WHERE id = ? AND user_id IS NULL', [serviceId]);
+        console.log('🗑️ Global service:', globalService);
+        
+        if (globalService) {
+            // Verberg de globale dienst voor deze gebruiker
+            await dbRun(
+                'INSERT OR REPLACE INTO service_visibility (user_id, service_id, hidden) VALUES (?, ?, 1)',
+                [userId, serviceId]
+            );
+            console.log('🗑️ Marked global service hidden for user');
+            return true;
+        }
     }
     
     const result = await dbRun(

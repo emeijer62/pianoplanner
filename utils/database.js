@@ -274,6 +274,17 @@ function initDatabase() {
             )
         `, logTableCreation('services'));
 
+        // Service visibility (verbergt globale diensten per gebruiker)
+        db.run(`
+            CREATE TABLE IF NOT EXISTS service_visibility (
+                user_id TEXT NOT NULL,
+                service_id TEXT NOT NULL,
+                hidden INTEGER DEFAULT 1,
+                PRIMARY KEY (user_id, service_id),
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `, logTableCreation('service_visibility'));
+
         // Company settings tabel - user_id is UNIQUE zodat elke gebruiker 1 record heeft
         db.run(`
             CREATE TABLE IF NOT EXISTS company_settings (
