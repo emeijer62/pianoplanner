@@ -164,19 +164,21 @@ router.put('/services/:id', requireAuth, async (req, res) => {
     }
 });
 
-// Verwijder dienst (soft delete)
+// Verwijder dienst (hard delete)
 router.delete('/services/:id', requireAuth, async (req, res) => {
+    console.log('🗑️ DELETE /services/:id called with:', req.params.id, 'for user:', req.session.user.id);
     try {
         const deleted = await serviceStore.deleteService(req.session.user.id, req.params.id);
+        console.log('🗑️ Delete result:', deleted);
         
         if (!deleted) {
-            return res.status(404).json({ error: 'Dienst niet gevonden' });
+            return res.status(404).json({ error: 'Service not found' });
         }
         
         res.json({ success: true });
     } catch (error) {
         console.error('Error deleting service:', error);
-        res.status(500).json({ error: 'Kon dienst niet verwijderen' });
+        res.status(500).json({ error: 'Could not delete service' });
     }
 });
 
