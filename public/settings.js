@@ -1202,6 +1202,42 @@ function copyFeedUrl() {
     }, 2000);
 }
 
+// ========== CALENDAR EXPORT / BACKUP ==========
+
+function exportCalendar() {
+    const fromDate = document.getElementById('export-from').value;
+    const toDate = document.getElementById('export-to').value;
+    
+    // Build URL with optional date params
+    let url = '/api/calendar-feed/export';
+    const params = new URLSearchParams();
+    
+    if (fromDate) params.append('from', fromDate);
+    if (toDate) params.append('to', toDate);
+    
+    if (params.toString()) {
+        url += '?' + params.toString();
+    }
+    
+    // Trigger download
+    window.location.href = url;
+    
+    showAlert('Agenda wordt gedownload...', 'success');
+}
+
+// Set default export dates on page load
+function initExportDates() {
+    const today = new Date();
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(today.getFullYear() - 1);
+    const oneYearFromNow = new Date();
+    oneYearFromNow.setFullYear(today.getFullYear() + 1);
+    
+    // Format as YYYY-MM-DD
+    document.getElementById('export-from').value = oneYearAgo.toISOString().split('T')[0];
+    document.getElementById('export-to').value = oneYearFromNow.toISOString().split('T')[0];
+}
+
 // ========== INITIALIZATION ==========
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1213,6 +1249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadAppleCalendarStatus();
         loadSmtpSettings();
         loadCalendarFeedSettings();
+        initExportDates();
         
         // Event listeners
         document.getElementById('companyForm').addEventListener('submit', saveCompanySettings);

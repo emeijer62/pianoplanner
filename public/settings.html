@@ -859,6 +859,52 @@
                     Je moet dan opnieuw abonneren in je kalender apps.
                 </p>
             </div>
+            
+            <!-- Export / Backup section -->
+            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                <h3 style="margin: 0 0 12px 0;">💾 Agenda Exporteren / Backup</h3>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 16px;">
+                    Download je volledige agenda als .ics bestand. Dit kun je importeren in Apple Calendar, Google Calendar, Outlook of andere kalender apps.
+                </p>
+                
+                <!-- Date range selection -->
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; align-items: end;">
+                    <div class="form-group" style="margin: 0;">
+                        <label for="export-from" style="font-size: 0.85rem;">Van datum</label>
+                        <input type="date" id="export-from" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label for="export-to" style="font-size: 0.85rem;">Tot datum</label>
+                        <input type="date" id="export-to" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="exportCalendar()">
+                        📥 Download .ics
+                    </button>
+                </div>
+                
+                <p style="color: #888; font-size: 0.8rem; margin: 0;">
+                    💡 Standaard wordt 1 jaar terug tot 1 jaar vooruit geëxporteerd als je geen datums selecteert.
+                </p>
+                
+                <!-- Import instructions -->
+                <div style="background: var(--light-gray); padding: 16px; border-radius: 8px; margin-top: 16px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 0.95rem;">Zo importeer je het bestand:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem;">
+                        <div>
+                            <strong>🍎 Apple Calendar:</strong><br>
+                            Archief → Importeer → Selecteer .ics bestand
+                        </div>
+                        <div>
+                            <strong>📱 Google Calendar:</strong><br>
+                            Instellingen → Importeren → Upload .ics
+                        </div>
+                        <div>
+                            <strong>📧 Outlook:</strong><br>
+                            Bestand → Openen → Agenda importeren
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- Account Settings -->

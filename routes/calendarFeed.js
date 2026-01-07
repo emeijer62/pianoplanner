@@ -352,6 +352,68 @@ router.delete('/disable', requireAuth, async (req, res) => {
 });
 
 /**
+ * GET /api/calendar-feed/export
+ * Download calendar as .ics file (backup/export)
+ * Requires authentication
+ */
+router.get('/export', requireAuth, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const userName = req.session.user.name || 'PianoPlanner';
+        
+        // Get date range from query params, default to all
+        const { from, to, format } = req.query;
+        
+        let startDate, endDate;
+        
+        if (from) {
+            startDate = new Date(from);
+        } else {
+            // Default: 1 year ago
+            startDate = new Date();
+            startDate.setFullYear(startDate.getFullYear() - 1);
+        }
+        
+        if (to) {
+            endDate = new Date(to);
+        } else {
+            // Default: 1 year from now
+            endDate = new Date();
+            endDate.setFullYear(endDate.getFullYear() + 1);
+        }
+
+        // Get appointments
+        const appointments = await appointmentStore.getAppointmentsByDateRange(
+            userId,
+            startDate.toISOString(),
+            endDate.toISOString()
+        );
+
+        // Generate calendar name with date
+        const dateStr = new Date().toISOString().split('T')[0];
+        const calendarName = `${userName} - PianoPlanner Export ${dateStr}`;
+
+        // Generate iCal content
+        const icalContent = generateICalContent(appointments, calendarName);
+
+        // Set headers for download
+        const filename = `pianoplanner-backup-${dateStr}.ics`;
+        res.set({
+            'Content-Type': 'text/calendar; charset=utf-8',
+            'Content-Disposition': `attachment; filename="${filename}"`,
+            'Cache-Control': 'no-cache'
+        });
+
+        console.log(`📅 Calendar exported for user ${req.session.user.email}: ${appointments.length} appointments`);
+
+        res.send(icalContent);
+    } catch (error) {
+        console.error('Calendar export error:', error);
+        res.status(500).json({ error: 'Kon agenda niet exporteren: ' + error.message });
+    }
+});
+
+/**
  * Get base URL for feed links
  */
 function getBaseUrl(req) {
