@@ -361,7 +361,11 @@ function renderDayView(container) {
         });
         
         html += `
-            <div class="time-slot" data-date="${dateStr}" data-hour="${hour}" onclick="openModalWithTime(this)">
+            <div class="time-slot" data-date="${dateStr}" data-hour="${hour}" 
+                 onclick="openModalWithTime(this)"
+                 ondragover="handleDragOver(event)"
+                 ondragleave="handleDragLeave(event)"
+                 ondrop="handleDrop(event, '${dateStr}', ${hour})">
                 <div class="time-label">${timeStr}</div>
                 <div class="time-content">
                     ${hourEvents.map(e => createEventElement(e)).join('')}
@@ -423,7 +427,11 @@ function renderWeekView(container) {
             });
             
             html += `
-                <div class="week-day-slot" data-date="${dateStr}" data-hour="${hour}" onclick="openModalWithTime(this)">
+                <div class="week-day-slot" data-date="${dateStr}" data-hour="${hour}" 
+                     onclick="openModalWithTime(this)"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event, '${dateStr}', ${hour})">
                     ${hourEvents.map(e => createEventElement(e, true)).join('')}
                 </div>
             `;
@@ -546,9 +554,12 @@ function createEventElement(event, compact = false) {
     
     if (compact) {
         return `
-            <div class="calendar-event" style="background: ${color}; cursor: pointer;" 
+            <div class="calendar-event" style="background: ${color}; cursor: grab;" 
                  title="${escapeHtml(event.summary || 'No title')}${hasTravelTime ? ` (🚗 ${event.travelTimeMinutes} min)` : ''}"
-                 onclick="openEditModal('${event.id}')">
+                 onclick="openEditModal('${event.id}')"
+                 draggable="true"
+                 ondragstart="handleDragStart(event, '${event.id}')"
+                 ondragend="handleDragEnd(event)">
                 ${escapeHtml(event.summary || 'No title')}
             </div>
         `;
@@ -567,7 +578,11 @@ function createEventElement(event, compact = false) {
     
     return `
         ${travelBlock}
-        <div class="calendar-event" style="background: ${color}; cursor: pointer;" onclick="openEditModal('${event.id}')">
+        <div class="calendar-event" style="background: ${color}; cursor: grab;" 
+             onclick="openEditModal('${event.id}')"
+             draggable="true"
+             ondragstart="handleDragStart(event, '${event.id}')"
+             ondragend="handleDragEnd(event)">
             <div class="calendar-event-time">${timeStr}</div>
             <div>${escapeHtml(event.summary || 'No title')}</div>
         </div>
@@ -1146,3 +1161,102 @@ document.addEventListener('keydown', (e) => {
         closeModal();
     }
 });
+
+// ========== DRAG & DROP FUNCTIONS ==========
+
+let draggedEventId = null;
+
+function handleDragStart(event, eventId) {
+    draggedEventId = eventId;
+    event.target.classList.add('dragging');
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', eventId);
+    
+    // Prevent click event from firing
+    event.stopPropagation();
+}
+
+function handleDragEnd(event) {
+    event.target.classList.remove('dragging');
+    draggedEventId = null;
+    
+    // Remove all drag-over highlights
+    document.querySelectorAll('.drag-over').forEach(el => {
+        el.classList.remove('drag-over');
+    });
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    
+    // Add visual feedback
+    const slot = event.target.closest('.week-day-slot, .time-slot');
+    if (slot && !slot.classList.contains('drag-over')) {
+        // Remove from other slots first
+        document.querySelectorAll('.drag-over').forEach(el => {
+            el.classList.remove('drag-over');
+        });
+        slot.classList.add('drag-over');
+    }
+}
+
+function handleDragLeave(event) {
+    const slot = event.target.closest('.week-day-slot, .time-slot');
+    if (slot && !slot.contains(event.relatedTarget)) {
+        slot.classList.remove('drag-over');
+    }
+}
+
+async function handleDrop(event, dateStr, hour) {
+    event.preventDefault();
+    
+    // Remove visual feedback
+    const slot = event.target.closest('.week-day-slot, .time-slot');
+    if (slot) slot.classList.remove('drag-over');
+    
+    const eventId = event.dataTransfer.getData('text/plain') || draggedEventId;
+    if (!eventId) return;
+    
+    // Find the event
+    const eventData = allEvents.find(e => e.id === eventId);
+    if (!eventData) return;
+    
+    // Calculate the new start time
+    const originalStart = new Date(eventData.start.dateTime || eventData.start.date);
+    const originalEnd = new Date(eventData.end.dateTime || eventData.end.date);
+    const duration = originalEnd - originalStart; // Duration in ms
+    
+    // Parse dateStr (YYYY-MM-DD)
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const newStart = new Date(year, month - 1, day, hour, 0, 0);
+    const newEnd = new Date(newStart.getTime() + duration);
+    
+    // Update the appointment
+    try {
+        const res = await fetch(`/api/appointments/${eventId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...eventData,
+                start: { dateTime: newStart.toISOString() },
+                end: { dateTime: newEnd.toISOString() }
+            })
+        });
+        
+        if (res.ok) {
+            // Update local data and re-render
+            await loadAllEvents();
+            renderCalendar();
+            
+            // Show brief feedback
+            console.log(`✅ Appointment moved to ${newStart.toLocaleString()}`);
+        } else {
+            const error = await res.json();
+            alert('Could not move appointment: ' + (error.error || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error('Error moving appointment:', err);
+        alert('Could not move appointment. Please try again.');
+    }
+}
