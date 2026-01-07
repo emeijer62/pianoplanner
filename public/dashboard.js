@@ -1101,17 +1101,26 @@ async function deleteCurrentAppointment() {
     }
     
     try {
-        const response = await fetch(`/api/appointments/${editingAppointmentId}`, {
+        // Instantly remove from UI (optimistic update)
+        const deletedId = editingAppointmentId;
+        allEvents = allEvents.filter(e => e.id !== deletedId);
+        closeModal();
+        renderCalendar();
+        
+        // Then delete on server
+        const response = await fetch(`/api/appointments/${deletedId}`, {
             method: 'DELETE'
         });
         
         if (!response.ok) {
+            // Restore if failed
+            await loadAllEvents();
+            renderCalendar();
             throw new Error('Failed to delete appointment');
         }
         
-        closeModal();
-        await loadAllEvents();
-        renderCalendar();
+        // Show brief success feedback
+        showToast('Appointment deleted');
         
     } catch (err) {
         console.error('Error deleting appointment:', err);
@@ -1201,26 +1210,76 @@ async function handleEventSubmit(e) {
 }
 
 async function deleteEvent(eventId) {
-    if (!confirm('Are you sure you want to delete this appointment?')) {
+    const appointment = allEvents.find(e => e.id === eventId);
+    const title = appointment?.summary || 'this appointment';
+    
+    if (!confirm(`Are you sure you want to delete "${title}"?`)) {
         return;
     }
     
     try {
+        // Instantly remove from UI (optimistic update)
+        allEvents = allEvents.filter(e => e.id !== eventId);
+        renderCalendar();
+        
+        // Then delete on server
         const response = await fetch(`/api/appointments/${eventId}`, {
             method: 'DELETE'
         });
         
         if (!response.ok) {
+            // Restore if failed
+            await loadAllEvents();
+            renderCalendar();
             throw new Error('Failed to delete appointment');
         }
         
-        await loadAllEvents();
-        renderCalendar();
+        showToast('Appointment deleted');
         
     } catch (err) {
         console.error('Error deleting appointment:', err);
         alert('Could not delete appointment. Please try again.');
     }
+}
+
+// ========== TOAST NOTIFICATION ==========
+
+function showToast(message, duration = 2000) {
+    // Remove existing toast
+    const existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a1a1a;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    document.body.appendChild(toast);
+    
+    // Fade in
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+    });
+    
+    // Fade out and remove
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
 }
 
 // ========== UTILITY FUNCTIONS ==========
