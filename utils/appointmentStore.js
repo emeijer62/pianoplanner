@@ -77,6 +77,8 @@ const getAllAppointments = async (userId) => {
 };
 
 const getAppointmentsByDateRange = async (userId, startDate, endDate) => {
+    console.log(`📅 DB Query: user=${userId}, start=${startDate}, end=${endDate}`);
+    
     const appointments = await dbAll(`
         SELECT * FROM appointments 
         WHERE user_id = ? 
@@ -84,6 +86,17 @@ const getAppointmentsByDateRange = async (userId, startDate, endDate) => {
         AND start_time <= ?
         ORDER BY start_time ASC
     `, [userId, startDate, endDate]);
+    
+    console.log(`📅 DB Query found: ${appointments.length} appointments`);
+    
+    // Als we niks vinden, debug: haal alle appointments op en check dates
+    if (appointments.length === 0) {
+        const all = await dbAll('SELECT id, title, start_time, end_time FROM appointments WHERE user_id = ?', [userId]);
+        if (all.length > 0) {
+            console.log(`📅 DEBUG: User has ${all.length} total appointments:`);
+            all.forEach(a => console.log(`   - ${a.title}: ${a.start_time} to ${a.end_time}`));
+        }
+    }
     
     return appointments.map(formatAppointment);
 };
