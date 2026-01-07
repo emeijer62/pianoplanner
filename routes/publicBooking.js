@@ -416,18 +416,31 @@ router.post('/:slug', async (req, res) => {
             setImmediate(async () => {
                 try {
                     console.log('📧 Starting email process for booking');
-                    const db = getDb();
+                    
+                    let db;
+                    try {
+                        db = getDb();
+                    } catch (dbErr) {
+                        console.error('❌ Database connection error in email process:', dbErr.message);
+                        return;
+                    }
                     
                     // Check email settings (default to enabled if not set)
-                    const emailSettings = await new Promise((resolve, reject) => {
-                        db.get('SELECT * FROM email_settings WHERE user_id = ?', [emailData.userId], (err, row) => {
-                            if (err) reject(err);
-                            else resolve(row || { 
-                                send_confirmations: 1, 
-                                notify_new_bookings: 1 
-                            }); // Default: all emails ON
+                    let emailSettings = { send_confirmations: 1, notify_new_bookings: 1 };
+                    try {
+                        emailSettings = await new Promise((resolve, reject) => {
+                            db.get('SELECT * FROM email_settings WHERE user_id = ?', [emailData.userId], (err, row) => {
+                                if (err) {
+                                    console.error('❌ Error fetching email settings:', err.message);
+                                    resolve({ send_confirmations: 1, notify_new_bookings: 1 }); // Default on error
+                                } else {
+                                    resolve(row || { send_confirmations: 1, notify_new_bookings: 1 });
+                                }
+                            });
                         });
-                    });
+                    } catch (settingsErr) {
+                        console.error('❌ Failed to get email settings:', settingsErr.message);
+                    }
                     
                     console.log('📧 Email settings:', JSON.stringify(emailSettings));
                     console.log('📧 Customer email:', emailData.customerEmail);

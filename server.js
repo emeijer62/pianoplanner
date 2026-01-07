@@ -5,6 +5,16 @@ const SQLiteStore = require('connect-sqlite3')(session);
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 
+// Global error handlers to prevent crashes
+process.on('uncaughtException', (err) => {
+    console.error('❌ Uncaught Exception:', err.message);
+    console.error(err.stack);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 // Database initialisatie (moet eerst!)
 // Version: 2026-01-07 - Security hardening: rate limiting, session regeneration
 const { DATABASE_PATH, DATA_DIR } = require('./utils/database');
