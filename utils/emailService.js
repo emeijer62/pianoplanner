@@ -123,9 +123,9 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
                 ? `"${senderName}" <${senderEmail}>`
                 : senderEmail;
         } else {
-            // Central PianoPlanner SMTP
+            // Central PianoPlanner SMTP - keep it simple to avoid spam filters
             fromField = senderName 
-                ? `"${senderName} via PianoPlanner" <${senderEmail}>`
+                ? `"${senderName}" <${senderEmail}>`
                 : senderEmail;
         }
         
@@ -143,10 +143,12 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
             mailOptions.replyTo = replyTo;
         }
         
-        // Add BCC to info@pianoplanner.com for all emails (unless skipBcc or user's own SMTP)
-        if (!skipBcc && !useUserSmtp && to !== 'info@pianoplanner.com') {
-            mailOptions.bcc = 'info@pianoplanner.com';
-        }
+        // Disabled BCC - was causing spam rejection
+        // if (!skipBcc && !useUserSmtp && to !== 'info@pianoplanner.com') {
+        //     mailOptions.bcc = 'info@pianoplanner.com';
+        // }
+        
+        console.log('📧 Sending email with options:', JSON.stringify({ from: fromField, to, subject, replyTo: mailOptions.replyTo }));
         
         const result = await transporter.sendMail(mailOptions);
         
