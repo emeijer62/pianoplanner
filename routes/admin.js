@@ -289,4 +289,39 @@ router.get('/users/:userId', requireAdminAuth, async (req, res) => {
     }
 });
 
+// ==================== DATABASE MAINTENANCE ====================
+
+// Cleanup broken appointments (missing start/end time)
+router.post('/cleanup-appointments', requireAdminAuth, async (req, res) => {
+    try {
+        const { dbRun, dbAll } = require('../utils/database');
+        
+        // First count broken records
+        const broken = await dbAll(
+            'SELECT id, title FROM appointments WHERE start_time IS NULL OR end_time IS NULL'
+        );
+        
+        if (broken.length === 0) {
+            return res.json({ success: true, message: 'No broken appointments found', deleted: 0 });
+        }
+        
+        // Delete broken records
+        const result = await dbRun(
+            'DELETE FROM appointments WHERE start_time IS NULL OR end_time IS NULL'
+        );
+        
+        console.log(`🧹 Admin cleanup: ${result.changes} broken appointments deleted`);
+        
+        res.json({ 
+            success: true, 
+            message: `Deleted ${result.changes} broken appointments`,
+            deleted: result.changes,
+            deletedIds: broken.map(b => b.id)
+        });
+    } catch (error) {
+        console.error('Error cleaning appointments:', error);
+        res.status(500).json({ error: 'Cleanup failed: ' + error.message });
+    }
+});
+
 module.exports = router;
