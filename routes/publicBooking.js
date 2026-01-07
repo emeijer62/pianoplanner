@@ -415,6 +415,7 @@ router.post('/:slug', async (req, res) => {
         if (emailService.isEmailConfigured()) {
             setImmediate(async () => {
                 try {
+                    console.log('📧 Starting email process for booking');
                     const db = getDb();
                     
                     // Check email settings (default to enabled if not set)
@@ -428,9 +429,13 @@ router.post('/:slug', async (req, res) => {
                         });
                     });
                     
+                    console.log('📧 Email settings:', JSON.stringify(emailSettings));
+                    console.log('📧 Customer email:', emailData.customerEmail);
+                    
                     // Send confirmation to customer if enabled (default: ON)
                     if (emailSettings.send_confirmations && emailData.customerEmail) {
-                        await emailService.sendAppointmentConfirmation({
+                        console.log('📧 Sending confirmation to:', emailData.customerEmail);
+                        const result = await emailService.sendAppointmentConfirmation({
                             customerEmail: emailData.customerEmail,
                             customerName: emailData.customerName,
                             appointmentDate: emailData.date,
@@ -441,12 +446,15 @@ router.post('/:slug', async (req, res) => {
                             fromName: emailData.companyName,
                             userId: emailData.userId
                         });
-                        console.log(`📧 Confirmation sent to: ${emailData.customerEmail}`);
+                        console.log(`📧 Confirmation result:`, JSON.stringify(result));
+                    } else {
+                        console.log('📧 Skipping confirmation - send_confirmations:', emailSettings.send_confirmations, 'customerEmail:', emailData.customerEmail);
                     }
                     
                     // Send notification to technician if enabled (default: ON)
                     if (emailSettings.notify_new_bookings && emailData.userEmail) {
-                        await emailService.sendNewBookingNotification({
+                        console.log('📧 Sending notification to:', emailData.userEmail);
+                        const result2 = await emailService.sendNewBookingNotification({
                             technicianEmail: emailData.userEmail,
                             customerName: emailData.customerName,
                             customerEmail: emailData.customerEmail,
