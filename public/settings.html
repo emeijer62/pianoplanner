@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - PianoPlanner</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="/js/i18n.js"></script>
     <style>
         /* Settings Page - Minimal White Design */
         .settings-container {
@@ -826,9 +827,25 @@
             </div>
         </div>
         
+        <!-- Language Settings -->
+        <div class="settings-section">
+            <h2>🌐 Language</h2>
+            <p style="color: #666; margin-bottom: 16px;">
+                Choose your preferred language for the PianoPlanner interface.
+            </p>
+            
+            <div class="form-group">
+                <label for="language-selector">Select language</label>
+                <select id="language-selector" onchange="changeLanguage(this.value)" style="max-width: 300px;">
+                    <option value="en">🇬🇧 English</option>
+                    <option value="nl">🇳🇱 Nederlands</option>
+                </select>
+            </div>
+        </div>
+        
         <!-- Account Settings -->
         <div class="settings-section">
-            <h2>�👤 Account Settings</h2>
+            <h2>👤 Account Settings</h2>
             <p style="color: #666; margin-bottom: 16px;">
                 Manage your account details and password.
             </p>
@@ -1581,6 +1598,28 @@
         
         // Load email status on page load
         loadEmailStatus();
+        
+        // ========== LANGUAGE ==========
+        
+        async function changeLanguage(lang) {
+            await i18n.setLanguage(lang);
+            // Show confirmation
+            showAlert(`Language changed to ${lang === 'nl' ? 'Nederlands' : 'English'}`, 'success');
+        }
+        
+        // Set current language in selector when i18n is ready
+        window.addEventListener('languageChanged', () => {
+            const selector = document.getElementById('language-selector');
+            if (selector) selector.value = i18n.currentLang;
+        });
+        
+        // Initialize language selector
+        setTimeout(() => {
+            const selector = document.getElementById('language-selector');
+            if (selector && typeof i18n !== 'undefined') {
+                selector.value = i18n.currentLang;
+            }
+        }, 100);
     </script>
     
     <style>
