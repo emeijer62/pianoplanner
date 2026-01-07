@@ -127,7 +127,7 @@ app.post('/api/beta-signup', async (req, res) => {
                             ` : ''}
                             <div class="detail-row">
                                 <div class="label">Signed up at</div>
-                                <div class="value">${new Date().toLocaleString('nl-NL')}</div>
+                                <div class="value">${new Date().toLocaleString('en-US')}</div>
                             </div>
                         </div>
                         <p>Reply to this email to send them a beta invite!</p>
