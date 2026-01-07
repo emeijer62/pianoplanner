@@ -324,4 +324,58 @@ router.post('/cleanup-appointments', requireAdminAuth, async (req, res) => {
     }
 });
 
+// ==================== EMAIL TEST ====================
+
+const emailService = require('../utils/emailService');
+
+// Test email endpoint (geen auth nodig voor debugging)
+router.post('/test-email', async (req, res) => {
+    const { email } = req.body;
+    
+    if (!email) {
+        return res.status(400).json({ error: 'Email adres is verplicht' });
+    }
+    
+    // Check of email geconfigureerd is
+    if (!emailService.isEmailConfigured()) {
+        return res.status(500).json({ 
+            error: 'Email niet geconfigureerd',
+            details: 'SMTP_USER en SMTP_PASS environment variables ontbreken op Railway'
+        });
+    }
+    
+    try {
+        const result = await emailService.sendEmail({
+            to: email,
+            subject: '🎹 PianoPlanner - Test Email',
+            html: `
+                <div style="font-family: -apple-system, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
+                    <h1 style="color: #1d1d1f;">✅ Email Werkt!</h1>
+                    <p>Dit is een test email van PianoPlanner.</p>
+                    <p>Als je deze email ontvangt, is de SMTP configuratie correct.</p>
+                    <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;">
+                    <p style="color: #86868b; font-size: 12px;">
+                        Verstuurd op: ${new Date().toLocaleString('nl-NL')}<br>
+                        Server: ${process.env.SMTP_HOST || 'smtp.transip.email'}
+                    </p>
+                </div>
+            `,
+            text: 'Dit is een test email van PianoPlanner. Als je deze ontvangt, werkt de email configuratie.'
+        });
+        
+        if (result.success) {
+            console.log(`📧 Test email verstuurd naar: ${email}`);
+            res.json({ success: true, messageId: result.messageId });
+        } else {
+            res.status(500).json({ error: result.reason || 'Onbekende fout' });
+        }
+    } catch (error) {
+        console.error('Test email error:', error);
+        res.status(500).json({ 
+            error: 'Email versturen mislukt',
+            details: error.message
+        });
+    }
+});
+
 module.exports = router;
