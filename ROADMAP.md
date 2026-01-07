@@ -9,12 +9,18 @@
 ### Wat al werkt:
 - [x] Google OAuth login
 - [x] Google Calendar integratie
+- [x] Apple Calendar integratie (CalDAV)
 - [x] Klantenbeheer (CRUD)
 - [x] Route optimalisatie (Google Maps Distance Matrix)
 - [x] Abonnementssysteem (€30/maand, 14 dagen trial)
 - [x] Stripe betalingen voorbereid
 - [x] Admin dashboard met gebruikersbeheer
 - [x] Handmatig plan toewijzen (zonder Stripe)
+- [x] Apple-style landing page (premium design)
+- [x] Apple-style login/signup portal met tabs
+- [x] Beta signup formulier met admin notificatie
+- [x] Email service (nodemailer + Google Workspace SMTP)
+- [x] Meertalig (i18n): Engels, Nederlands, Duits, Frans
 
 ---
 
@@ -122,7 +128,7 @@
 - [ ] Automatisch facturen doorsturen
 
 ### 5.2 Communicatie
-- [ ] Email via eigen SMTP of SendGrid
+- [x] Email via eigen SMTP (Google Workspace)
 - [ ] SMS optioneel (MessageBird/Twilio)
 - [ ] WhatsApp Business (later)
 
@@ -137,13 +143,14 @@
 ## 🎯 Fase 6: Marketing & Growth (Week 11-12)
 
 ### 6.1 Website & SEO
-- [ ] Landing page optimaliseren
+- [x] Landing page optimaliseren (Apple-style design)
 - [ ] Feature pagina's
 - [ ] Pricing pagina
 - [ ] Blog met tips voor pianostemmers
 - [ ] Testimonials
 
 ### 6.2 Onboarding
+- [x] Beta signup portal met admin notificatie
 - [ ] Welkom email serie
 - [ ] In-app tutorial
 - [ ] Video uitleg
@@ -202,9 +209,11 @@ Frontend:  HTML/CSS/JavaScript (vanilla)
 Backend:   Node.js + Express
 Database:  JSON files (later: PostgreSQL)
 Auth:      Google OAuth 2.0
-Calendar:  Google Calendar API
+Calendar:  Google Calendar API + Apple Calendar (CalDAV)
 Maps:      Google Maps Platform
 Payments:  Stripe + Mollie
+Email:     nodemailer + Google Workspace SMTP
+i18n:      Custom (EN, NL, DE, FR)
 Hosting:   Railway
 Domain:    pianoplanner.com
 ```
@@ -230,4 +239,4 @@ _Voeg hier je eigen notities toe tijdens de ontwikkeling_
 
 ---
 
-**Laatst bijgewerkt:** 4 januari 2026
+**Laatst bijgewerkt:** 7 januari 2026
