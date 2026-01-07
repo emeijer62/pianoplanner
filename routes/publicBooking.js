@@ -334,11 +334,17 @@ router.post('/:slug', async (req, res) => {
             customer.city || customerRecord?.address?.city
         ].filter(Boolean).join(', ');
         
-        // Bereken reistijd als we beide adressen hebben
+        // Bereken reistijd als we beide adressen hebben (met 5 sec timeout)
         let travelInfo = null;
         if (originAddress && customerAddress) {
             try {
-                travelInfo = await calculateTravelTime(originAddress, customerAddress);
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Timeout')), 5000)
+                );
+                travelInfo = await Promise.race([
+                    calculateTravelTime(originAddress, customerAddress),
+                    timeoutPromise
+                ]);
             } catch (err) {
                 console.log('Kon reistijd niet berekenen:', err.message);
             }
@@ -376,64 +382,7 @@ router.post('/:slug', async (req, res) => {
             originAddress: originAddress || null
         });
         
-        // Send email notifications
-        if (emailService.isEmailConfigured()) {
-            try {
-                const db = getDb();
-                
-                // Check email settings (default to enabled if not set)
-                const emailSettings = await new Promise((resolve, reject) => {
-                    db.get('SELECT * FROM email_settings WHERE user_id = ?', [user.id], (err, row) => {
-                        if (err) reject(err);
-                        else resolve(row || { 
-                            send_confirmations: 1, 
-                            notify_new_bookings: 1 
-                        }); // Default: all emails ON
-                    });
-                });
-                
-                const companyName = company?.name || 'Piano Services';
-                
-                // Send confirmation to customer if enabled (default: ON)
-                if (emailSettings.send_confirmations && customer.email) {
-                    await emailService.sendAppointmentConfirmation({
-                        customerEmail: customer.email,
-                        customerName: customer.name,
-                        appointmentDate: date,
-                        appointmentTime: time,
-                        serviceName: service.name,
-                        companyName,
-                        // Privacy: customer replies go to the teacher, not PianoPlanner
-                        replyTo: user.email,
-                        fromName: companyName,
-                        userId: user.id
-                    });
-                    console.log(`📧 Confirmation sent to customer: ${customer.email}`);
-                }
-                
-                // Send notification to technician if enabled (default: ON)
-                if (emailSettings.notify_new_bookings && user.email) {
-                    await emailService.sendNewBookingNotification({
-                        technicianEmail: user.email,
-                        customerName: customer.name,
-                        customerEmail: customer.email,
-                        customerPhone: customer.phone,
-                        appointmentDate: date,
-                        appointmentTime: time,
-                        serviceName: service.name,
-                        notes: customer.notes,
-                        companyName
-                    });
-                    console.log(`📧 New booking notification sent to: ${user.email}`);
-                }
-            } catch (emailError) {
-                console.error('Failed to send booking emails:', emailError.message);
-                // Don't fail the booking if email fails
-            }
-        } else {
-            console.log('⚠️ Email niet geconfigureerd - geen bevestigingen verstuurd');
-        }
-        
+        // Stuur response DIRECT terug - emails worden async verstuurd
         res.json({
             success: true,
             message: settings.confirmationMessage,
@@ -447,6 +396,64 @@ router.post('/:slug', async (req, res) => {
                 travelDistance: travelInfo?.distance || null
             }
         });
+        
+        // Send email notifications ASYNC (fire-and-forget, na response)
+        if (emailService.isEmailConfigured()) {
+            setImmediate(async () => {
+                try {
+                    const db = getDb();
+                    
+                    // Check email settings (default to enabled if not set)
+                    const emailSettings = await new Promise((resolve, reject) => {
+                        db.get('SELECT * FROM email_settings WHERE user_id = ?', [user.id], (err, row) => {
+                            if (err) reject(err);
+                            else resolve(row || { 
+                                send_confirmations: 1, 
+                                notify_new_bookings: 1 
+                            }); // Default: all emails ON
+                        });
+                    });
+                    
+                    const companyName = company?.name || 'Piano Services';
+                    
+                    // Send confirmation to customer if enabled (default: ON)
+                    if (emailSettings.send_confirmations && customer.email) {
+                        await emailService.sendAppointmentConfirmation({
+                            customerEmail: customer.email,
+                            customerName: customer.name,
+                            appointmentDate: date,
+                            appointmentTime: time,
+                            serviceName: service.name,
+                            companyName,
+                            replyTo: user.email,
+                            fromName: companyName,
+                            userId: user.id
+                        });
+                        console.log(`📧 Confirmation sent to customer: ${customer.email}`);
+                    }
+                    
+                    // Send notification to technician if enabled (default: ON)
+                    if (emailSettings.notify_new_bookings && user.email) {
+                        await emailService.sendNewBookingNotification({
+                            technicianEmail: user.email,
+                            customerName: customer.name,
+                            customerEmail: customer.email,
+                            customerPhone: customer.phone,
+                            appointmentDate: date,
+                            appointmentTime: time,
+                            serviceName: service.name,
+                            notes: customer.notes,
+                            companyName
+                        });
+                        console.log(`📧 New booking notification sent to: ${user.email}`);
+                    }
+                } catch (emailError) {
+                    console.error('Failed to send booking emails:', emailError.message);
+                }
+            });
+        } else {
+            console.log('⚠️ Email niet geconfigureerd - geen bevestigingen verstuurd');
+        }
         
     } catch (error) {
         console.error('Booking error:', error);
