@@ -600,9 +600,27 @@
             font-size: 14px;
         }
         
+        /* Modal overlay fix */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
         /* Modal modern */
         .modal-content {
-            max-width: 420px;
+            background: white;
+            width: 90%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
             border-radius: 16px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
@@ -645,6 +663,19 @@
         
         .form-group textarea {
             min-height: 60px;
+        }
+        
+        /* Form body padding */
+        #event-form {
+            padding: 20px;
+        }
+        
+        .form-actions {
+            padding: 16px 20px;
+            border-top: 1px solid var(--gray-200, #e5e5e5);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
         }
         
         /* Responsive */
