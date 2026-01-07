@@ -255,23 +255,17 @@ router.get('/:slug/slots', async (req, res) => {
 
 // POST /api/book/:slug - Maak een publieke boeking aan
 router.post('/:slug', async (req, res) => {
-    console.log('📝 Booking POST received for slug:', req.params.slug);
-    console.log('📝 Body:', JSON.stringify(req.body));
     try {
         const { slug } = req.params;
         const { serviceId, date, time, customer } = req.body;
-        
-        console.log('📝 Parsed data - serviceId:', serviceId, 'date:', date, 'time:', time);
         
         // Validatie
         if (!serviceId || !date || !time || !customer) {
             return res.status(400).json({ error: 'Alle velden zijn verplicht' });
         }
         
-        console.log('📝 Looking up user...');
         // Vind de user
         const user = await userStore.getUserByBookingSlug(slug);
-        console.log('📝 User found:', user ? user.email : 'NOT FOUND');
         if (!user) {
             return res.status(404).json({ error: 'Niet gevonden' });
         }
@@ -418,64 +412,57 @@ router.post('/:slug', async (req, res) => {
         };
         
         // Send email notifications ASYNC (fire-and-forget, na response)
-        console.log('📧 Email configured?', emailService.isEmailConfigured());
-        console.log('📧 emailData:', JSON.stringify(emailData));
         if (emailService.isEmailConfigured()) {
-            console.log('📧 Starting async email send for:', emailData.customerEmail);
             setImmediate(async () => {
                 try {
-                    console.log('📧 Inside setImmediate - starting email process');
+                    const db = getDb();
                     
-                    // SIMPLIFIED: Send emails without checking settings for debugging
-                    // Send confirmation to customer
-                    if (emailData.customerEmail) {
-                        console.log('📧 Attempting to send confirmation to:', emailData.customerEmail);
-                        try {
-                            const result1 = await emailService.sendAppointmentConfirmation({
-                                customerEmail: emailData.customerEmail,
-                                customerName: emailData.customerName,
-                                appointmentDate: emailData.date,
-                                appointmentTime: emailData.time,
-                                serviceName: emailData.serviceName,
-                                companyName: emailData.companyName,
-                                replyTo: emailData.userEmail,
-                                fromName: emailData.companyName,
-                                userId: emailData.userId
-                            });
-                            console.log('📧 Customer confirmation result:', JSON.stringify(result1));
-                        } catch (e) {
-                            console.error('❌ Customer email error:', e.message, e.stack);
-                        }
+                    // Check email settings (default to enabled if not set)
+                    const emailSettings = await new Promise((resolve, reject) => {
+                        db.get('SELECT * FROM email_settings WHERE user_id = ?', [emailData.userId], (err, row) => {
+                            if (err) reject(err);
+                            else resolve(row || { 
+                                send_confirmations: 1, 
+                                notify_new_bookings: 1 
+                            }); // Default: all emails ON
+                        });
+                    });
+                    
+                    // Send confirmation to customer if enabled (default: ON)
+                    if (emailSettings.send_confirmations && emailData.customerEmail) {
+                        await emailService.sendAppointmentConfirmation({
+                            customerEmail: emailData.customerEmail,
+                            customerName: emailData.customerName,
+                            appointmentDate: emailData.date,
+                            appointmentTime: emailData.time,
+                            serviceName: emailData.serviceName,
+                            companyName: emailData.companyName,
+                            replyTo: emailData.userEmail,
+                            fromName: emailData.companyName,
+                            userId: emailData.userId
+                        });
+                        console.log(`📧 Confirmation sent to: ${emailData.customerEmail}`);
                     }
                     
-                    // Send notification to technician
-                    if (emailData.userEmail) {
-                        console.log('📧 Attempting to send notification to technician:', emailData.userEmail);
-                        try {
-                            const result2 = await emailService.sendNewBookingNotification({
-                                technicianEmail: emailData.userEmail,
-                                customerName: emailData.customerName,
-                                customerEmail: emailData.customerEmail,
-                                customerPhone: emailData.customerPhone,
-                                appointmentDate: emailData.date,
-                                appointmentTime: emailData.time,
-                                serviceName: emailData.serviceName,
-                                notes: emailData.customerNotes,
-                                companyName: emailData.companyName
-                            });
-                            console.log('📧 Technician notification result:', JSON.stringify(result2));
-                        } catch (e) {
-                            console.error('❌ Technician email error:', e.message, e.stack);
-                        }
+                    // Send notification to technician if enabled (default: ON)
+                    if (emailSettings.notify_new_bookings && emailData.userEmail) {
+                        await emailService.sendNewBookingNotification({
+                            technicianEmail: emailData.userEmail,
+                            customerName: emailData.customerName,
+                            customerEmail: emailData.customerEmail,
+                            customerPhone: emailData.customerPhone,
+                            appointmentDate: emailData.date,
+                            appointmentTime: emailData.time,
+                            serviceName: emailData.serviceName,
+                            notes: emailData.customerNotes,
+                            companyName: emailData.companyName
+                        });
+                        console.log(`📧 Notification sent to: ${emailData.userEmail}`);
                     }
-                    
-                    console.log('📧 Email sending completed');
                 } catch (emailError) {
-                    console.error('❌ Failed to send booking emails:', emailError.message, emailError.stack);
+                    console.error('❌ Failed to send booking emails:', emailError.message);
                 }
             });
-        } else {
-            console.log('⚠️ Email niet geconfigureerd - geen bevestigingen verstuurd');
         }
         
     } catch (error) {

@@ -72,7 +72,6 @@ function isEmailConfigured() {
  * @param {string} [options.userId] - User ID to check for custom SMTP settings
  */
 async function sendEmail({ to, subject, html, text, from, replyTo, fromName, skipBcc, userId }) {
-    console.log('📧 sendEmail called - to:', to, 'userId:', userId);
     try {
         // Check if user has their own SMTP configured
         let transporter = emailTransporter;
@@ -83,13 +82,9 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
         
         if (userId && getUserTransporter) {
             try {
-                console.log('📧 Checking for user SMTP settings...');
                 // Add timeout to prevent hanging
                 const timeoutPromise = new Promise((resolve) => {
-                    setTimeout(() => {
-                        console.log('📧 User SMTP check timed out, using default');
-                        resolve(null);
-                    }, 3000);
+                    setTimeout(() => resolve(null), 3000);
                 });
                 const userSmtp = await Promise.race([
                     getUserTransporter(userId),
@@ -100,12 +95,9 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
                     senderEmail = userSmtp.fromEmail;
                     senderName = userSmtp.fromName || fromName;
                     useUserSmtp = true;
-                    console.log(`📧 Using user's own SMTP: ${senderEmail}`);
-                } else {
-                    console.log('📧 No user SMTP, using default');
                 }
             } catch (e) {
-                console.log('Could not get user SMTP, using default:', e.message);
+                // Use default SMTP on error
             }
         }
         
@@ -143,16 +135,7 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
             mailOptions.replyTo = replyTo;
         }
         
-        // Disabled BCC - was causing spam rejection
-        // if (!skipBcc && !useUserSmtp && to !== 'info@pianoplanner.com') {
-        //     mailOptions.bcc = 'info@pianoplanner.com';
-        // }
-        
-        console.log('📧 Sending email with options:', JSON.stringify({ from: fromField, to, subject, replyTo: mailOptions.replyTo }));
-        
         const result = await transporter.sendMail(mailOptions);
-        
-        console.log('📧 Email sent to:', to, '- Subject:', subject, useUserSmtp ? '(User SMTP)' : '');
         return { success: true, messageId: result.messageId };
     } catch (error) {
         console.error('❌ Email sending failed:', error.message);
