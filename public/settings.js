@@ -68,22 +68,19 @@ async function loadProfileSettings() {
         
         // Adjust password section based on situation
         const currentPasswordGroup = document.getElementById('currentPasswordGroup');
-        const passwordSectionTitle = document.getElementById('passwordSectionTitle');
         const passwordSectionDesc = document.getElementById('passwordSectionDesc');
         const passwordSubmitBtn = document.getElementById('passwordSubmitBtn');
         
         if (profile.authType === 'google' && !profile.hasPassword) {
             // Google user without password - can set password
-            currentPasswordGroup.style.display = 'none';
-            passwordSectionTitle.textContent = '🔐 Set Password';
-            passwordSectionDesc.textContent = 'You are logged in via Google. Set a password to also log in with email/password.';
-            passwordSubmitBtn.textContent = '🔐 Set Password';
+            if (currentPasswordGroup) currentPasswordGroup.style.display = 'none';
+            if (passwordSectionDesc) passwordSectionDesc.textContent = 'You are logged in via Google. Set a password to also log in with email/password.';
+            if (passwordSubmitBtn) passwordSubmitBtn.textContent = '🔐 Set Password';
         } else {
             // Normal situation - change password
-            currentPasswordGroup.style.display = 'block';
-            passwordSectionTitle.textContent = '🔐 Change Password';
-            passwordSectionDesc.textContent = 'Enter your current password to set a new password.';
-            passwordSubmitBtn.textContent = '🔐 Change Password';
+            if (currentPasswordGroup) currentPasswordGroup.style.display = 'block';
+            if (passwordSectionDesc) passwordSectionDesc.textContent = 'Enter your current password to set a new password.';
+            if (passwordSubmitBtn) passwordSubmitBtn.textContent = '🔐 Change Password';
         }
         
     } catch (error) {
@@ -520,13 +517,21 @@ async function loadBookingSettings() {
         }
         
         // Fill form fields
-        document.getElementById('booking-title').value = bookingSettings.title || 'Schedule Appointment';
-        document.getElementById('booking-description').value = bookingSettings.description || '';
-        document.getElementById('booking-confirmation').value = bookingSettings.confirmationMessage || 'Thank you for your booking!';
-        document.getElementById('booking-min-advance').value = bookingSettings.minAdvanceHours || 24;
-        document.getElementById('booking-max-advance').value = bookingSettings.maxAdvanceDays || 60;
-        document.getElementById('booking-require-email').checked = bookingSettings.requireEmail !== false;
-        document.getElementById('booking-require-phone').checked = bookingSettings.requirePhone !== false;
+        const titleEl = document.getElementById('booking-title');
+        const descEl = document.getElementById('booking-description');
+        const confirmEl = document.getElementById('booking-confirmation');
+        const minAdvanceEl = document.getElementById('booking-min-advance');
+        const maxAdvanceEl = document.getElementById('booking-max-advance');
+        const reqEmailEl = document.getElementById('booking-require-email');
+        const reqPhoneEl = document.getElementById('booking-require-phone');
+        
+        if (titleEl) titleEl.value = bookingSettings.title || 'Schedule Appointment';
+        if (descEl) descEl.value = bookingSettings.description || '';
+        if (confirmEl) confirmEl.value = bookingSettings.confirmationMessage || 'Thank you for your booking!';
+        if (minAdvanceEl) minAdvanceEl.value = bookingSettings.minAdvanceHours || 24;
+        if (maxAdvanceEl) maxAdvanceEl.value = bookingSettings.maxAdvanceDays || 60;
+        if (reqEmailEl) reqEmailEl.checked = bookingSettings.requireEmail !== false;
+        if (reqPhoneEl) reqPhoneEl.checked = bookingSettings.requirePhone !== false;
         
     } catch (error) {
         console.error('Could not load booking settings:', error);
@@ -536,11 +541,12 @@ async function loadBookingSettings() {
 async function saveBookingSettings(e) {
     e.preventDefault();
     
+    const confirmEl = document.getElementById('booking-confirmation');
     const settings = {
         enabled: document.getElementById('booking-enabled').checked,
         title: document.getElementById('booking-title').value.trim(),
         description: document.getElementById('booking-description').value.trim(),
-        confirmationMessage: document.getElementById('booking-confirmation').value.trim(),
+        confirmationMessage: confirmEl ? confirmEl.value.trim() : 'Thank you for your booking!',
         minAdvanceHours: parseInt(document.getElementById('booking-min-advance').value),
         maxAdvanceDays: parseInt(document.getElementById('booking-max-advance').value),
         requireEmail: document.getElementById('booking-require-email').checked,
@@ -834,37 +840,37 @@ const SMTP_PROVIDER_INSTRUCTIONS = {
     gmail: {
         name: 'Gmail / Google Workspace',
         instructions: [
-            'Ga naar <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a>',
-            'Log in met je Google account',
-            'Klik op "Select app" → "Mail"',
-            'Klik op "Select device" → "Other" en typ "PianoPlanner"',
-            'Kopieer het 16-cijferige wachtwoord'
+            'Go to <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a>',
+            'Log in with your Google account',
+            'Click "Select app" → "Mail"',
+            'Click "Select device" → "Other" and type "PianoPlanner"',
+            'Copy the 16-character password'
         ]
     },
     icloud: {
         name: 'iCloud / Apple Mail',
         instructions: [
-            'Ga naar <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a>',
-            'Log in en ga naar "Sign-In and Security"',
-            'Klik op "App-Specific Passwords"',
-            'Genereer een wachtwoord voor "PianoPlanner"',
-            'Kopieer het wachtwoord'
+            'Go to <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a>',
+            'Log in and go to "Sign-In and Security"',
+            'Click "App-Specific Passwords"',
+            'Generate a password for "PianoPlanner"',
+            'Copy the password'
         ]
     },
     outlook: {
         name: 'Outlook / Microsoft 365',
         instructions: [
-            'Ga naar <a href="https://account.microsoft.com/security" target="_blank">Microsoft Security</a>',
-            'Schakel 2-factor authenticatie in',
-            'Ga naar "App passwords" en maak een nieuw wachtwoord',
-            'Kopieer het wachtwoord'
+            'Go to <a href="https://account.microsoft.com/security" target="_blank">Microsoft Security</a>',
+            'Enable 2-factor authentication',
+            'Go to "App passwords" and create a new password',
+            'Copy the password'
         ]
     },
     custom: {
-        name: 'Andere provider',
+        name: 'Other provider',
         instructions: [
-            'Vraag de SMTP gegevens op bij je email provider',
-            'Je hebt nodig: SMTP host, poort, email en wachtwoord'
+            'Request SMTP details from your email provider',
+            'You will need: SMTP host, port, email and password'
         ]
     }
 };
@@ -878,8 +884,8 @@ async function loadSmtpSettings() {
         
         if (data.enabled && data.verified) {
             statusDiv.className = 'sync-status connected';
-            statusDiv.innerHTML = `<strong>✅ Eigen email geconfigureerd</strong><br>
-                <small>Emails worden verstuurd vanaf: ${data.smtpUser}</small>`;
+            statusDiv.innerHTML = `<strong>✅ Own email configured</strong><br>
+                <small>Emails will be sent from: ${data.smtpUser}</small>`;
             
             // Select "own" radio
             document.querySelector('input[name="smtpChoice"][value="own"]').checked = true;
@@ -895,8 +901,8 @@ async function loadSmtpSettings() {
             statusDiv.className = 'sync-status';
             statusDiv.style.background = '#fff3cd';
             statusDiv.style.border = '1px solid #ffc107';
-            statusDiv.innerHTML = `<strong>⚠️ Niet geverifieerd</strong><br>
-                <small>Test de verbinding om je instellingen te activeren</small>`;
+            statusDiv.innerHTML = `<strong>⚠️ Not verified</strong><br>
+                <small>Test the connection to activate your settings</small>`;
             
             document.querySelector('input[name="smtpChoice"][value="own"]').checked = true;
             document.getElementById('own-smtp-config').style.display = 'block';
@@ -907,7 +913,7 @@ async function loadSmtpSettings() {
         } else {
             statusDiv.className = 'sync-status disconnected';
             statusDiv.innerHTML = `<strong>📧 PianoPlanner email</strong><br>
-                <small>Emails worden verstuurd via info@pianoplanner.com met jouw naam</small>`;
+                <small>Emails are sent via info@pianoplanner.com with your name</small>`;
         }
     } catch (error) {
         console.error('Error loading SMTP settings:', error);
@@ -940,10 +946,10 @@ async function saveSmtpSettings() {
         // Delete SMTP settings to revert to PianoPlanner
         try {
             await fetch('/api/user-smtp/settings', { method: 'DELETE' });
-            showAlert('Emails worden nu verstuurd via PianoPlanner', 'success');
+            showAlert('Emails will now be sent via PianoPlanner', 'success');
             loadSmtpSettings();
         } catch (error) {
-            showAlert('Fout bij opslaan: ' + error.message, 'error');
+            showAlert('Error saving: ' + error.message, 'error');
         }
         return;
     }
@@ -954,12 +960,12 @@ async function saveSmtpSettings() {
     const fromName = document.getElementById('smtp-from-name').value.trim();
     
     if (!email) {
-        showAlert('Vul je email adres in', 'error');
+        showAlert('Please enter your email address', 'error');
         return;
     }
     
-    if (!password && !document.getElementById('smtp-status').innerHTML.includes('geconfigureerd')) {
-        showAlert('Vul je app-specifiek wachtwoord in', 'error');
+    if (!password && !document.getElementById('smtp-status').innerHTML.includes('configured')) {
+        showAlert('Please enter your app-specific password', 'error');
         return;
     }
     
@@ -994,12 +1000,12 @@ async function saveSmtpSettings() {
         if (data.error) {
             showAlert(data.error, 'error');
         } else {
-            showAlert('SMTP instellingen opgeslagen! Test nu de verbinding.', 'success');
+            showAlert('SMTP settings saved! Now test the connection.', 'success');
             document.getElementById('smtp-password').value = ''; // Clear password field
             loadSmtpSettings();
         }
     } catch (error) {
-        showAlert('Fout bij opslaan: ' + error.message, 'error');
+        showAlert('Error saving: ' + error.message, 'error');
     }
 }
 
@@ -1008,7 +1014,7 @@ async function testSmtpConnection() {
     resultDiv.style.display = 'block';
     resultDiv.style.background = '#e3f2fd';
     resultDiv.style.border = '1px solid #2196f3';
-    resultDiv.innerHTML = '⏳ Verbinding testen...';
+    resultDiv.innerHTML = '⏳ Testing connection...';
     
     try {
         const response = await fetch('/api/user-smtp/test', {
@@ -1022,7 +1028,7 @@ async function testSmtpConnection() {
             resultDiv.style.background = '#d4edda';
             resultDiv.style.border = '1px solid #28a745';
             resultDiv.innerHTML = `✅ ${data.message}`;
-            showAlert('SMTP test geslaagd! Check je inbox.', 'success');
+            showAlert('SMTP test successful! Check your inbox.', 'success');
             loadSmtpSettings();
         } else {
             resultDiv.style.background = '#f8d7da';
@@ -1032,7 +1038,7 @@ async function testSmtpConnection() {
     } catch (error) {
         resultDiv.style.background = '#f8d7da';
         resultDiv.style.border = '1px solid #dc3545';
-        resultDiv.innerHTML = '❌ Fout: ' + error.message;
+        resultDiv.innerHTML = '❌ Error: ' + error.message;
     }
 }
 
@@ -1077,28 +1083,37 @@ function updateCalendarFeedUI(data) {
     const disableBtn = document.getElementById('feed-disable-btn');
     const regenerateBtn = document.getElementById('feed-regenerate-btn');
     const securityNote = document.getElementById('feed-security-note');
+    const badge = document.getElementById('feed-status-badge');
     
     if (data.enabled && data.feedUrl) {
         // Feed is active
-        statusEl.className = 'sync-status connected';
-        statusText.textContent = '✅ Agenda feed is actief';
-        urlDisplay.style.display = 'block';
-        urlInput.value = data.feedUrl;
-        instructions.style.display = 'block';
-        enableBtn.style.display = 'none';
-        disableBtn.style.display = 'inline-flex';
-        regenerateBtn.style.display = 'inline-flex';
-        securityNote.style.display = 'block';
+        if (statusEl) statusEl.className = 'sync-status connected';
+        if (statusText) statusText.textContent = '✅ Feed is active';
+        if (urlDisplay) urlDisplay.style.display = 'block';
+        if (urlInput) urlInput.value = data.feedUrl;
+        if (instructions) instructions.style.display = 'block';
+        if (enableBtn) enableBtn.style.display = 'none';
+        if (disableBtn) disableBtn.style.display = 'inline-flex';
+        if (regenerateBtn) regenerateBtn.style.display = 'inline-flex';
+        if (securityNote) securityNote.style.display = 'block';
+        if (badge) {
+            badge.textContent = 'Active';
+            badge.className = 'status-badge connected';
+        }
     } else {
         // Feed is inactive
-        statusEl.className = 'sync-status disconnected';
-        statusText.textContent = '⏸️ Agenda feed is niet actief';
-        urlDisplay.style.display = 'none';
-        instructions.style.display = 'none';
-        enableBtn.style.display = 'inline-flex';
-        disableBtn.style.display = 'none';
-        regenerateBtn.style.display = 'none';
-        securityNote.style.display = 'none';
+        if (statusEl) statusEl.className = 'sync-status disconnected';
+        if (statusText) statusText.textContent = '⏸️ Feed is inactive';
+        if (urlDisplay) urlDisplay.style.display = 'none';
+        if (instructions) instructions.style.display = 'none';
+        if (enableBtn) enableBtn.style.display = 'inline-flex';
+        if (disableBtn) disableBtn.style.display = 'none';
+        if (regenerateBtn) regenerateBtn.style.display = 'none';
+        if (securityNote) securityNote.style.display = 'none';
+        if (badge) {
+            badge.textContent = 'Inactive';
+            badge.className = 'status-badge disconnected';
+        }
     }
 }
 
@@ -1106,7 +1121,7 @@ async function enableCalendarFeed() {
     try {
         const btn = document.getElementById('feed-enable-btn');
         btn.disabled = true;
-        btn.textContent = '⏳ Activeren...';
+        btn.textContent = '⏳ Enabling...';
         
         const response = await fetch('/api/calendar-feed/enable', {
             method: 'POST',
@@ -1116,23 +1131,23 @@ async function enableCalendarFeed() {
         const data = await response.json();
         
         if (response.ok) {
-            showAlert('Agenda feed is nu actief! Kopieer de URL om te abonneren.', 'success');
+            showAlert('Calendar feed is now active! Copy the URL to subscribe.', 'success');
             updateCalendarFeedUI({ enabled: true, feedUrl: data.feedUrl });
         } else {
             throw new Error(data.error || 'Could not enable feed');
         }
     } catch (error) {
         console.error('Enable feed error:', error);
-        showAlert('Kon feed niet activeren: ' + error.message, 'error');
+        showAlert('Could not enable feed: ' + error.message, 'error');
     } finally {
         const btn = document.getElementById('feed-enable-btn');
         btn.disabled = false;
-        btn.textContent = '✅ Feed activeren';
+        btn.textContent = 'Enable Feed';
     }
 }
 
 async function disableCalendarFeed() {
-    if (!confirm('Weet je zeker dat je de agenda feed wilt uitschakelen? Bestaande abonnementen zullen niet meer werken.')) {
+    if (!confirm('Are you sure you want to disable the calendar feed? Existing subscriptions will stop working.')) {
         return;
     }
     
@@ -1144,26 +1159,26 @@ async function disableCalendarFeed() {
         const data = await response.json();
         
         if (response.ok) {
-            showAlert('Agenda feed is uitgeschakeld', 'success');
+            showAlert('Calendar feed disabled', 'success');
             updateCalendarFeedUI({ enabled: false, feedUrl: null });
         } else {
             throw new Error(data.error || 'Could not disable feed');
         }
     } catch (error) {
         console.error('Disable feed error:', error);
-        showAlert('Kon feed niet uitschakelen: ' + error.message, 'error');
+        showAlert('Could not disable feed: ' + error.message, 'error');
     }
 }
 
 async function regenerateCalendarFeed() {
-    if (!confirm('Weet je zeker dat je een nieuwe link wilt genereren? De huidige link zal niet meer werken en je moet opnieuw abonneren in je kalender apps.')) {
+    if (!confirm('Are you sure you want to generate a new link? The current link will stop working and you need to re-subscribe in your calendar apps.')) {
         return;
     }
     
     try {
         const btn = document.getElementById('feed-regenerate-btn');
         btn.disabled = true;
-        btn.textContent = '⏳ Genereren...';
+        btn.textContent = '⏳ Generating...';
         
         const response = await fetch('/api/calendar-feed/regenerate', {
             method: 'POST',
@@ -1173,18 +1188,18 @@ async function regenerateCalendarFeed() {
         const data = await response.json();
         
         if (response.ok) {
-            showAlert('Nieuwe feed link gegenereerd. Vergeet niet opnieuw te abonneren!', 'success');
+            showAlert('New feed link generated. Remember to re-subscribe!', 'success');
             updateCalendarFeedUI({ enabled: true, feedUrl: data.feedUrl });
         } else {
             throw new Error(data.error || 'Could not regenerate feed');
         }
     } catch (error) {
         console.error('Regenerate feed error:', error);
-        showAlert('Kon nieuwe link niet genereren: ' + error.message, 'error');
+        showAlert('Could not generate new link: ' + error.message, 'error');
     } finally {
         const btn = document.getElementById('feed-regenerate-btn');
         btn.disabled = false;
-        btn.textContent = '🔄 Nieuwe link genereren';
+        btn.textContent = '🔄 New Link';
     }
 }
 
@@ -1196,7 +1211,7 @@ function copyFeedUrl() {
     // Visual feedback
     const btn = event.target.closest('button');
     const originalText = btn.innerHTML;
-    btn.innerHTML = '✅ Gekopieerd!';
+    btn.innerHTML = '✅ Copied!';
     setTimeout(() => {
         btn.innerHTML = originalText;
     }, 2000);
@@ -1222,7 +1237,7 @@ function exportCalendar() {
     // Trigger download
     window.location.href = url;
     
-    showAlert('Agenda wordt gedownload...', 'success');
+    showAlert('Downloading calendar...', 'success');
 }
 
 // Set default export dates on page load
