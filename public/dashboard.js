@@ -63,41 +63,110 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Automatische sync met Google Calendar
 async function autoSyncCalendar() {
     try {
-        // Check if sync is enabled
+        // Check if Google sync is enabled
         const settingsRes = await fetch('/api/calendar/sync-settings');
-        if (!settingsRes.ok) return;
-        
-        const { settings } = await settingsRes.json();
-        if (!settings?.enabled) return;
-        
-        // Check cooldown (no more than every 5 minutes)
-        const lastSync = localStorage.getItem('lastCalendarSync');
-        if (lastSync) {
-            const timeSince = Date.now() - parseInt(lastSync);
-            if (timeSince < SYNC_COOLDOWN_MS) {
-                console.log(`⏳ Auto-sync skipped (cooldown: ${Math.round((SYNC_COOLDOWN_MS - timeSince) / 1000)}s remaining)`);
-                return;
+        if (settingsRes.ok) {
+            const { settings } = await settingsRes.json();
+            if (settings?.enabled) {
+                await syncGoogleCalendar();
             }
         }
-        
-        console.log('🔄 Auto-syncing calendar...');
-        
+    } catch (err) {
+        console.log('Google sync check skipped:', err.message);
+    }
+    
+    try {
+        // Check if Apple Calendar sync is enabled
+        const appleStatusRes = await fetch('/api/apple-calendar/status');
+        if (appleStatusRes.ok) {
+            const appleStatus = await appleStatusRes.json();
+            if (appleStatus.connected) {
+                await syncAppleCalendar();
+            }
+        }
+    } catch (err) {
+        console.log('Apple sync check skipped:', err.message);
+    }
+}
+
+// Sync met Google Calendar
+async function syncGoogleCalendar() {
+    // Check cooldown (no more than every 5 minutes)
+    const lastSync = localStorage.getItem('lastCalendarSync');
+    if (lastSync) {
+        const timeSince = Date.now() - parseInt(lastSync);
+        if (timeSince < SYNC_COOLDOWN_MS) {
+            console.log(`⏳ Google sync skipped (cooldown: ${Math.round((SYNC_COOLDOWN_MS - timeSince) / 1000)}s remaining)`);
+            return;
+        }
+    }
+    
+    console.log('🔄 Auto-syncing Google Calendar...');
+    
+    try {
         const syncRes = await fetch('/api/calendar/sync', { method: 'POST' });
         if (syncRes.ok) {
             const result = await syncRes.json();
             localStorage.setItem('lastCalendarSync', Date.now().toString());
             
             if (result.synced > 0) {
-                console.log(`✅ Auto-sync: ${result.synced} items synchronized`);
-                // Reload events if something was synchronized
+                console.log(`✅ Google sync: ${result.synced} items synchronized`);
                 await loadAllEvents();
                 renderCalendar();
             } else {
-                console.log('✅ Auto-sync: everything up-to-date');
+                console.log('✅ Google sync: everything up-to-date');
             }
         }
     } catch (err) {
-        console.log('Auto-sync skipped:', err.message);
+        console.log('Google sync error:', err.message);
+    }
+}
+
+// Sync met Apple Calendar
+async function syncAppleCalendar() {
+    // Check cooldown
+    const lastAppleSync = localStorage.getItem('lastAppleCalendarSync');
+    if (lastAppleSync) {
+        const timeSince = Date.now() - parseInt(lastAppleSync);
+        if (timeSince < SYNC_COOLDOWN_MS) {
+            console.log(`⏳ Apple sync skipped (cooldown: ${Math.round((SYNC_COOLDOWN_MS - timeSince) / 1000)}s remaining)`);
+            return;
+        }
+    }
+    
+    console.log('🍎 Auto-syncing Apple Calendar...');
+    
+    try {
+        // Check sync settings
+        const syncSettingsRes = await fetch('/api/apple-calendar/sync-settings');
+        if (!syncSettingsRes.ok) return;
+        
+        const syncSettings = await syncSettingsRes.json();
+        if (!syncSettings.settings?.enabled) {
+            console.log('🍎 Apple Calendar sync not enabled');
+            return;
+        }
+        
+        // Perform sync
+        const syncRes = await fetch('/api/apple-calendar/sync', { method: 'POST' });
+        if (syncRes.ok) {
+            const result = await syncRes.json();
+            localStorage.setItem('lastAppleCalendarSync', Date.now().toString());
+            
+            if (result.synced > 0) {
+                console.log(`✅ Apple sync: ${result.synced} items synchronized`);
+                await loadAllEvents();
+                renderCalendar();
+            } else {
+                console.log('✅ Apple sync: everything up-to-date');
+            }
+            
+            if (result.errors?.length > 0) {
+                console.warn('🍎 Apple sync errors:', result.errors);
+            }
+        }
+    } catch (err) {
+        console.log('Apple sync error:', err.message);
     }
 }
 

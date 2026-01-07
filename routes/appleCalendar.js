@@ -338,8 +338,6 @@ async function fetchAppleCalendars(credentials) {
     }
     
     return calendars;
-    
-    return calendars;
 }
 
 // ==================== EVENTS ====================
