@@ -1064,12 +1064,14 @@ function setupSmtpToggle() {
 async function loadCalendarFeedSettings() {
     try {
         const response = await fetch('/api/calendar-feed/settings');
-        if (!response.ok) throw new Error('Could not load feed settings');
-        
         const data = await response.json();
+        
+        // Even if there's an error property, we can still use the data
         updateCalendarFeedUI(data);
     } catch (error) {
         console.error('Error loading calendar feed settings:', error);
+        // Show disabled state on error
+        updateCalendarFeedUI({ enabled: false, feedUrl: null });
     }
 }
 

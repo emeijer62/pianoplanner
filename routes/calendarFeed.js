@@ -212,6 +212,31 @@ router.get('/settings', requireAuth, async (req, res) => {
         const db = getDb();
         const userId = req.session.user.id;
 
+        // First check if the column exists
+        const columnExists = await new Promise((resolve) => {
+            db.get(
+                "SELECT COUNT(*) as count FROM pragma_table_info('users') WHERE name='calendar_feed_token'",
+                [],
+                (err, row) => {
+                    if (err) {
+                        console.error('Column check error:', err);
+                        resolve(false);
+                    } else {
+                        resolve(row && row.count > 0);
+                    }
+                }
+            );
+        });
+
+        if (!columnExists) {
+            // Column doesn't exist yet, return disabled state
+            console.log('📅 calendar_feed_token column not found, returning disabled');
+            return res.json({
+                enabled: false,
+                feedUrl: null
+            });
+        }
+
         const user = await new Promise((resolve, reject) => {
             db.get(
                 'SELECT calendar_feed_token FROM users WHERE id = ?',
@@ -224,7 +249,10 @@ router.get('/settings', requireAuth, async (req, res) => {
         });
 
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.json({
+                enabled: false,
+                feedUrl: null
+            });
         }
 
         const hasToken = !!user.calendar_feed_token;
@@ -235,11 +263,15 @@ router.get('/settings', requireAuth, async (req, res) => {
         res.json({
             enabled: hasToken,
             feedUrl,
-            // Don't expose the actual token, just the full URL
         });
     } catch (error) {
         console.error('Get feed settings error:', error);
-        res.status(500).json({ error: error.message });
+        // Return a safe default instead of 500 error
+        res.json({
+            enabled: false,
+            feedUrl: null,
+            error: 'Could not load settings'
+        });
     }
 });
 
