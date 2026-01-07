@@ -293,6 +293,29 @@ function initDatabase() {
             )
         `, logTableCreation('email_settings'));
 
+        // User SMTP settings tabel (voor eigen email verzending)
+        db.run(`
+            CREATE TABLE IF NOT EXISTS user_smtp_settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL UNIQUE,
+                enabled INTEGER DEFAULT 0,
+                provider TEXT DEFAULT 'custom',
+                smtp_host TEXT,
+                smtp_port INTEGER DEFAULT 587,
+                smtp_secure INTEGER DEFAULT 0,
+                smtp_user TEXT,
+                smtp_pass_encrypted TEXT,
+                from_name TEXT,
+                from_email TEXT,
+                verified INTEGER DEFAULT 0,
+                last_test_at DATETIME,
+                last_test_result TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `, logTableCreation('user_smtp_settings'));
+
         // Migratie: voeg email tracking kolommen toe aan appointments
         db.run(`ALTER TABLE appointments ADD COLUMN confirmation_sent INTEGER DEFAULT 0`, (err) => {
             if (err && !err.message.includes('duplicate column')) {

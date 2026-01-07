@@ -217,7 +217,8 @@ router.post('/', async (req, res) => {
                             notes: description,
                             // Privacy: customer replies go to the teacher, not PianoPlanner
                             replyTo: req.session.user.email,
-                            fromName: company?.name || req.session.user.name || 'PianoPlanner'
+                            fromName: company?.name || req.session.user.name || 'PianoPlanner',
+                            userId: userId
                         });
                         
                         console.log(`📧 Confirmation email sent to ${customer.email}`);

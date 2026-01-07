@@ -335,7 +335,8 @@ router.post('/:slug', async (req, res) => {
                         companyName,
                         // Privacy: customer replies go to the teacher, not PianoPlanner
                         replyTo: user.email,
-                        fromName: companyName
+                        fromName: companyName,
+                        userId: user.id
                     });
                     console.log(`📧 Confirmation sent to customer: ${customer.email}`);
                 }

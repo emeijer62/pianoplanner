@@ -623,19 +623,105 @@
             </div>
         </div>
         
+        <!-- Eigen Email / SMTP Setup -->
+        <div class="settings-section">
+            <h2>✉️ Eigen Email Configuratie</h2>
+            <p style="color: #666; margin-bottom: 16px;">
+                Verstuur emails naar je klanten vanaf je eigen emailadres in plaats van via PianoPlanner.
+            </p>
+            
+            <div id="smtp-status" class="sync-status">
+                <!-- Status wordt dynamisch geladen -->
+            </div>
+            
+            <!-- Provider selectie -->
+            <div id="smtp-setup-form" style="margin-top: 20px;">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label>Email verzenden via:</label>
+                    <div class="sync-direction-options">
+                        <label class="radio-option">
+                            <input type="radio" name="smtpChoice" value="pianoplanner" checked>
+                            <span>🎹 PianoPlanner (standaard)</span>
+                            <small>Emails worden verstuurd namens jou via info@pianoplanner.com</small>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="smtpChoice" value="own">
+                            <span>📧 Mijn eigen email</span>
+                            <small>Emails worden verstuurd vanaf je eigen emailadres</small>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Eigen SMTP configuratie (hidden by default) -->
+                <div id="own-smtp-config" style="display: none;">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="smtp-provider">Email provider</label>
+                        <select id="smtp-provider" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="gmail">Gmail / Google Workspace</option>
+                            <option value="icloud">iCloud / Apple Mail</option>
+                            <option value="outlook">Outlook / Microsoft 365</option>
+                            <option value="custom">Andere provider (handmatig)</option>
+                        </select>
+                    </div>
+                    
+                    <div id="smtp-provider-instructions" class="info-box" style="background: #f0f7ff; border: 1px solid #b3d7ff; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                        <!-- Instructies worden dynamisch geladen -->
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="smtp-email">Email adres</label>
+                        <input type="email" id="smtp-email" placeholder="jouw@email.com" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="smtp-password">App-specifiek wachtwoord</label>
+                        <input type="password" id="smtp-password" placeholder="xxxx-xxxx-xxxx-xxxx" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                        <small style="color: #666;">Dit is NIET je normale wachtwoord. Volg de instructies hierboven.</small>
+                    </div>
+                    
+                    <!-- Handmatige SMTP opties (alleen voor custom provider) -->
+                    <div id="smtp-custom-fields" style="display: none;">
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label for="smtp-host">SMTP Host</label>
+                            <input type="text" id="smtp-host" placeholder="smtp.example.com" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label for="smtp-port">SMTP Poort</label>
+                            <input type="number" id="smtp-port" value="587" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="smtp-from-name">Afzender naam (optioneel)</label>
+                        <input type="text" id="smtp-from-name" placeholder="Bijv: Jan's Pianostudio" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                    </div>
+                    
+                    <div class="sync-buttons">
+                        <button type="button" class="btn btn-primary" onclick="saveSmtpSettings()">
+                            💾 Opslaan
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="testSmtpConnection()">
+                            🧪 Test verbinding
+                        </button>
+                    </div>
+                    
+                    <div id="smtp-test-result" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px;"></div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Email Notifications -->
         <div class="settings-section">
             <h2>📧 Email Notifications</h2>
             <p style="color: #666; margin-bottom: 16px;">
-                Send automatic email notifications to your customers for appointments. 
-                Requires SMTP configuration in server environment.
+                Send automatic email notifications to your customers for appointments.
             </p>
             
             <div id="email-status" class="sync-status disconnected">
                 <!-- Status wordt dynamisch geladen -->
             </div>
             
-            <div id="email-settings-form" style="display: none; margin-top: 20px;">
+            <div id="email-settings-form" style="margin-top: 20px;">
                 <h3 style="margin-bottom: 16px; color: #333;">Notification Settings</h3>
                 
                 <div class="form-group" style="margin-bottom: 16px;">

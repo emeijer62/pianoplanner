@@ -828,6 +828,231 @@ async function syncAppleNow() {
     }
 }
 
+// ========== USER SMTP SETTINGS ==========
+
+const SMTP_PROVIDER_INSTRUCTIONS = {
+    gmail: {
+        name: 'Gmail / Google Workspace',
+        instructions: [
+            'Ga naar <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a>',
+            'Log in met je Google account',
+            'Klik op "Select app" → "Mail"',
+            'Klik op "Select device" → "Other" en typ "PianoPlanner"',
+            'Kopieer het 16-cijferige wachtwoord'
+        ]
+    },
+    icloud: {
+        name: 'iCloud / Apple Mail',
+        instructions: [
+            'Ga naar <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a>',
+            'Log in en ga naar "Sign-In and Security"',
+            'Klik op "App-Specific Passwords"',
+            'Genereer een wachtwoord voor "PianoPlanner"',
+            'Kopieer het wachtwoord'
+        ]
+    },
+    outlook: {
+        name: 'Outlook / Microsoft 365',
+        instructions: [
+            'Ga naar <a href="https://account.microsoft.com/security" target="_blank">Microsoft Security</a>',
+            'Schakel 2-factor authenticatie in',
+            'Ga naar "App passwords" en maak een nieuw wachtwoord',
+            'Kopieer het wachtwoord'
+        ]
+    },
+    custom: {
+        name: 'Andere provider',
+        instructions: [
+            'Vraag de SMTP gegevens op bij je email provider',
+            'Je hebt nodig: SMTP host, poort, email en wachtwoord'
+        ]
+    }
+};
+
+async function loadSmtpSettings() {
+    try {
+        const response = await fetch('/api/user-smtp/settings');
+        const data = await response.json();
+        
+        const statusDiv = document.getElementById('smtp-status');
+        
+        if (data.enabled && data.verified) {
+            statusDiv.className = 'sync-status connected';
+            statusDiv.innerHTML = `<strong>✅ Eigen email geconfigureerd</strong><br>
+                <small>Emails worden verstuurd vanaf: ${data.smtpUser}</small>`;
+            
+            // Select "own" radio
+            document.querySelector('input[name="smtpChoice"][value="own"]').checked = true;
+            document.getElementById('own-smtp-config').style.display = 'block';
+            
+            // Fill in fields
+            document.getElementById('smtp-provider').value = data.provider || 'gmail';
+            document.getElementById('smtp-email').value = data.smtpUser || '';
+            document.getElementById('smtp-from-name').value = data.fromName || '';
+            
+            updateSmtpProviderInstructions();
+        } else if (data.configured && !data.verified) {
+            statusDiv.className = 'sync-status';
+            statusDiv.style.background = '#fff3cd';
+            statusDiv.style.border = '1px solid #ffc107';
+            statusDiv.innerHTML = `<strong>⚠️ Niet geverifieerd</strong><br>
+                <small>Test de verbinding om je instellingen te activeren</small>`;
+            
+            document.querySelector('input[name="smtpChoice"][value="own"]').checked = true;
+            document.getElementById('own-smtp-config').style.display = 'block';
+            document.getElementById('smtp-provider').value = data.provider || 'gmail';
+            document.getElementById('smtp-email').value = data.smtpUser || '';
+            
+            updateSmtpProviderInstructions();
+        } else {
+            statusDiv.className = 'sync-status disconnected';
+            statusDiv.innerHTML = `<strong>📧 PianoPlanner email</strong><br>
+                <small>Emails worden verstuurd via info@pianoplanner.com met jouw naam</small>`;
+        }
+    } catch (error) {
+        console.error('Error loading SMTP settings:', error);
+    }
+}
+
+function updateSmtpProviderInstructions() {
+    const provider = document.getElementById('smtp-provider').value;
+    const config = SMTP_PROVIDER_INSTRUCTIONS[provider];
+    const instructionsDiv = document.getElementById('smtp-provider-instructions');
+    
+    if (config) {
+        instructionsDiv.innerHTML = `
+            <strong>📱 Zo stel je ${config.name} in:</strong>
+            <ol style="margin: 12px 0 0 20px; color: #444;">
+                ${config.instructions.map(i => `<li>${i}</li>`).join('')}
+            </ol>
+        `;
+    }
+    
+    // Show/hide custom fields
+    document.getElementById('smtp-custom-fields').style.display = 
+        provider === 'custom' ? 'block' : 'none';
+}
+
+async function saveSmtpSettings() {
+    const useOwn = document.querySelector('input[name="smtpChoice"]:checked').value === 'own';
+    
+    if (!useOwn) {
+        // Delete SMTP settings to revert to PianoPlanner
+        try {
+            await fetch('/api/user-smtp/settings', { method: 'DELETE' });
+            showAlert('Emails worden nu verstuurd via PianoPlanner', 'success');
+            loadSmtpSettings();
+        } catch (error) {
+            showAlert('Fout bij opslaan: ' + error.message, 'error');
+        }
+        return;
+    }
+    
+    const provider = document.getElementById('smtp-provider').value;
+    const email = document.getElementById('smtp-email').value.trim();
+    const password = document.getElementById('smtp-password').value;
+    const fromName = document.getElementById('smtp-from-name').value.trim();
+    
+    if (!email) {
+        showAlert('Vul je email adres in', 'error');
+        return;
+    }
+    
+    if (!password && !document.getElementById('smtp-status').innerHTML.includes('geconfigureerd')) {
+        showAlert('Vul je app-specifiek wachtwoord in', 'error');
+        return;
+    }
+    
+    const settings = {
+        enabled: true,
+        provider: provider,
+        smtpUser: email,
+        fromEmail: email,
+        fromName: fromName || null
+    };
+    
+    // Only send password if provided (allows updating other fields without changing password)
+    if (password) {
+        settings.smtpPass = password;
+    }
+    
+    // Custom provider needs host/port
+    if (provider === 'custom') {
+        settings.smtpHost = document.getElementById('smtp-host').value.trim();
+        settings.smtpPort = parseInt(document.getElementById('smtp-port').value) || 587;
+    }
+    
+    try {
+        const response = await fetch('/api/user-smtp/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(settings)
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            showAlert(data.error, 'error');
+        } else {
+            showAlert('SMTP instellingen opgeslagen! Test nu de verbinding.', 'success');
+            document.getElementById('smtp-password').value = ''; // Clear password field
+            loadSmtpSettings();
+        }
+    } catch (error) {
+        showAlert('Fout bij opslaan: ' + error.message, 'error');
+    }
+}
+
+async function testSmtpConnection() {
+    const resultDiv = document.getElementById('smtp-test-result');
+    resultDiv.style.display = 'block';
+    resultDiv.style.background = '#e3f2fd';
+    resultDiv.style.border = '1px solid #2196f3';
+    resultDiv.innerHTML = '⏳ Verbinding testen...';
+    
+    try {
+        const response = await fetch('/api/user-smtp/test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            resultDiv.style.background = '#d4edda';
+            resultDiv.style.border = '1px solid #28a745';
+            resultDiv.innerHTML = `✅ ${data.message}`;
+            showAlert('SMTP test geslaagd! Check je inbox.', 'success');
+            loadSmtpSettings();
+        } else {
+            resultDiv.style.background = '#f8d7da';
+            resultDiv.style.border = '1px solid #dc3545';
+            resultDiv.innerHTML = `❌ ${data.error}${data.details ? '<br><small>' + data.details + '</small>' : ''}`;
+        }
+    } catch (error) {
+        resultDiv.style.background = '#f8d7da';
+        resultDiv.style.border = '1px solid #dc3545';
+        resultDiv.innerHTML = '❌ Fout: ' + error.message;
+    }
+}
+
+// Setup SMTP radio toggle
+function setupSmtpToggle() {
+    const radios = document.querySelectorAll('input[name="smtpChoice"]');
+    radios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            document.getElementById('own-smtp-config').style.display = 
+                radio.value === 'own' ? 'block' : 'none';
+        });
+    });
+    
+    // Setup provider change
+    document.getElementById('smtp-provider')?.addEventListener('change', updateSmtpProviderInstructions);
+    
+    // Initial instructions
+    updateSmtpProviderInstructions();
+}
+
 // ========== INITIALIZATION ==========
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -837,6 +1062,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadProfileSettings();
         loadBookingSettings();
         loadAppleCalendarStatus();
+        loadSmtpSettings();
         
         // Event listeners
         document.getElementById('companyForm').addEventListener('submit', saveCompanySettings);
@@ -847,6 +1073,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Setup booking toggle
         setupBookingToggle();
+        
+        // Setup SMTP toggle
+        setupSmtpToggle();
         
         // Close modal on click outside
         document.getElementById('serviceModal').addEventListener('click', (e) => {

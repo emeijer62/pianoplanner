@@ -1,11 +1,11 @@
 /**
  * Email Service for PianoPlanner
- * Google Workspace / Gmail SMTP integration
+ * Supports both central SMTP and per-user SMTP configuration
  */
 
 const nodemailer = require('nodemailer');
 
-// Email configuration for Google Workspace
+// Email configuration for PianoPlanner central SMTP (Google Workspace)
 const emailConfig = {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT) || 587,
@@ -18,6 +18,9 @@ const emailConfig = {
 
 let emailTransporter = null;
 let emailConfigured = false;
+
+// Lazy-load user SMTP module to avoid circular dependency
+let getUserTransporter = null;
 
 /**
  * Initialize email transporter
@@ -40,6 +43,13 @@ function initializeEmail() {
     } else {
         console.log('ℹ️ Email not configured (SMTP_USER and SMTP_PASS missing)');
     }
+    
+    // Lazy load user SMTP module
+    try {
+        getUserTransporter = require('../routes/userSmtp').getUserTransporter;
+    } catch (e) {
+        console.log('ℹ️ User SMTP module not available');
+    }
 }
 
 /**
@@ -59,20 +69,50 @@ function isEmailConfigured() {
  * @param {string} [options.from] - Sender email (defaults to SMTP_USER)
  * @param {string} [options.replyTo] - Reply-to email address (for customer replies)
  * @param {string} [options.fromName] - Display name for sender (e.g. "Jan de Pianist")
+ * @param {string} [options.userId] - User ID to check for custom SMTP settings
  */
-async function sendEmail({ to, subject, html, text, from, replyTo, fromName, skipBcc }) {
-    if (!emailTransporter) {
-        console.log('📧 Email not sent (not configured):', subject);
-        return { success: false, reason: 'Email not configured' };
-    }
-
+async function sendEmail({ to, subject, html, text, from, replyTo, fromName, skipBcc, userId }) {
     try {
+        // Check if user has their own SMTP configured
+        let transporter = emailTransporter;
+        let senderEmail = from || process.env.SMTP_USER;
+        let senderName = fromName;
+        let useUserSmtp = false;
+        
+        if (userId && getUserTransporter) {
+            try {
+                const userSmtp = await getUserTransporter(userId);
+                if (userSmtp && userSmtp.transporter) {
+                    transporter = userSmtp.transporter;
+                    senderEmail = userSmtp.fromEmail;
+                    senderName = userSmtp.fromName || fromName;
+                    useUserSmtp = true;
+                    console.log(`📧 Using user's own SMTP: ${senderEmail}`);
+                }
+            } catch (e) {
+                console.log('Could not get user SMTP, using default:', e.message);
+            }
+        }
+        
+        if (!transporter) {
+            console.log('📧 Email not sent (not configured):', subject);
+            return { success: false, reason: 'Email not configured' };
+        }
+
         // Build the "From" field with optional display name
         // Format: "Display Name <email@example.com>"
-        const senderEmail = from || process.env.SMTP_USER;
-        const fromField = fromName 
-            ? `"${fromName} via PianoPlanner" <${senderEmail}>`
-            : senderEmail;
+        let fromField;
+        if (useUserSmtp) {
+            // User's own SMTP - no "via PianoPlanner" needed
+            fromField = senderName 
+                ? `"${senderName}" <${senderEmail}>`
+                : senderEmail;
+        } else {
+            // Central PianoPlanner SMTP
+            fromField = senderName 
+                ? `"${senderName} via PianoPlanner" <${senderEmail}>`
+                : senderEmail;
+        }
         
         const mailOptions = {
             from: fromField,
@@ -82,19 +122,20 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
             text: text || html.replace(/<[^>]*>/g, '') // Strip HTML for plain text
         };
         
-        // Add Reply-To so customer replies go to the teacher/business, not PianoPlanner
-        if (replyTo) {
+        // Add Reply-To so customer replies go to the teacher/business
+        // Only needed when using central SMTP
+        if (replyTo && !useUserSmtp) {
             mailOptions.replyTo = replyTo;
         }
         
-        // Add BCC to info@pianoplanner.com for all emails (unless skipBcc)
-        if (!skipBcc && to !== 'info@pianoplanner.com') {
+        // Add BCC to info@pianoplanner.com for all emails (unless skipBcc or user's own SMTP)
+        if (!skipBcc && !useUserSmtp && to !== 'info@pianoplanner.com') {
             mailOptions.bcc = 'info@pianoplanner.com';
         }
         
-        const result = await emailTransporter.sendMail(mailOptions);
+        const result = await transporter.sendMail(mailOptions);
         
-        console.log('📧 Email sent to:', to, '- Subject:', subject, replyTo ? `(Reply-To: ${replyTo})` : '');
+        console.log('📧 Email sent to:', to, '- Subject:', subject, useUserSmtp ? '(User SMTP)' : '');
         return { success: true, messageId: result.messageId };
     } catch (error) {
         console.error('❌ Email sending failed:', error.message);
@@ -106,8 +147,9 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
  * Send appointment confirmation email to customer
  * @param {string} replyTo - Email address for customer replies (teacher's email)
  * @param {string} fromName - Display name for sender (teacher/company name)
+ * @param {string} userId - User ID to check for custom SMTP settings
  */
-async function sendAppointmentConfirmation({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, notes, replyTo, fromName }) {
+async function sendAppointmentConfirmation({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, notes, replyTo, fromName, userId }) {
     const formattedDate = new Date(appointmentDate).toLocaleDateString('nl-NL', {
         weekday: 'long',
         year: 'numeric',
@@ -188,14 +230,15 @@ async function sendAppointmentConfirmation({ customerEmail, customerName, appoin
         subject: `Appointment Confirmed - ${formattedDate}`,
         html,
         replyTo: replyTo,
-        fromName: fromName || companyName
+        fromName: fromName || companyName,
+        userId: userId
     });
 }
 
 /**
  * Send appointment reminder email to customer
  */
-async function sendAppointmentReminder({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, hoursUntil, replyTo, fromName }) {
+async function sendAppointmentReminder({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, hoursUntil, replyTo, fromName, userId }) {
     const formattedDate = new Date(appointmentDate).toLocaleDateString('nl-NL', {
         weekday: 'long',
         year: 'numeric',
@@ -274,14 +317,15 @@ async function sendAppointmentReminder({ customerEmail, customerName, appointmen
         subject: `Reminder: Your appointment is ${timeUntilText} - ${formattedDate}`,
         html,
         replyTo: replyTo,
-        fromName: fromName || companyName
+        fromName: fromName || companyName,
+        userId: userId
     });
 }
 
 /**
  * Send cancellation notification to customer
  */
-async function sendAppointmentCancellation({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, companyName, reason, replyTo, fromName }) {
+async function sendAppointmentCancellation({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, companyName, reason, replyTo, fromName, userId }) {
     const formattedDate = new Date(appointmentDate).toLocaleDateString('nl-NL', {
         weekday: 'long',
         year: 'numeric',
@@ -352,7 +396,8 @@ async function sendAppointmentCancellation({ customerEmail, customerName, appoin
         subject: `Appointment Cancelled - ${formattedDate}`,
         html,
         replyTo: replyTo,
-        fromName: fromName || companyName
+        fromName: fromName || companyName,
+        userId: userId
     });
 }
 

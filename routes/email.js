@@ -185,7 +185,8 @@ router.post('/send-confirmation', requireAuth, async (req, res) => {
             notes: appointment.notes,
             // Privacy: customer replies go to the teacher, not PianoPlanner
             replyTo: req.user.email,
-            fromName: companyName
+            fromName: companyName,
+            userId: userId
         });
 
         if (result.success) {
@@ -249,7 +250,8 @@ router.post('/send-reminder', requireAuth, async (req, res) => {
             hoursUntil,
             // Privacy: customer replies go to the teacher, not PianoPlanner
             replyTo: req.user.email,
-            fromName: companyName
+            fromName: companyName,
+            userId: userId
         });
 
         if (result.success) {
