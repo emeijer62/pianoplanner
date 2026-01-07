@@ -701,7 +701,7 @@
                     <button type="button" class="btn btn-primary" onclick="saveEmailSettings()">
                         💾 Save settings
                     </button>
-                    <button type="button" class="btn btn-secondary" onclick="sendTestEmail()">
+                    <button type="button" class="btn btn-secondary" onclick="sendTestEmail(this)">
                         📤 Send test email
                     </button>
                 </div>
@@ -1551,8 +1551,8 @@
             }
         }
         
-        async function sendTestEmail() {
-            const btn = event.target;
+        async function sendTestEmail(btn) {
+            if (!btn) btn = document.querySelector('button[onclick*="sendTestEmail"]');
             btn.disabled = true;
             btn.textContent = '📤 Sending...';
             
@@ -1571,6 +1571,7 @@
                     showAlert(data.error || data.message || 'Could not send test email', 'error');
                 }
             } catch (error) {
+                console.error('Test email error:', error);
                 showAlert('Error sending test email', 'error');
             } finally {
                 btn.disabled = false;
