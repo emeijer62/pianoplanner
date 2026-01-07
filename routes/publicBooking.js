@@ -399,6 +399,7 @@ router.post('/:slug', async (req, res) => {
         
         // Send email notifications ASYNC (fire-and-forget, na response)
         if (emailService.isEmailConfigured()) {
+            console.log('📧 Starting async email send...');
             setImmediate(async () => {
                 try {
                     const db = getDb();
