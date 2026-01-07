@@ -454,10 +454,46 @@ app.get('/', (req, res) => {
 
 // Start server
 console.log('🚀 Server wordt gestart...');
-app.listen(PORT, () => {
+
+const server = app.listen(PORT, () => {
     console.log(`🎹 PianoPlanner draait op http://localhost:${PORT}`);
     
     // Start background sync service
     const { startBackgroundSync } = require('./utils/backgroundSync');
     startBackgroundSync();
 });
+
+// Graceful shutdown handling
+process.on('SIGTERM', () => {
+    console.log('⚠️ SIGTERM ontvangen, server wordt afgesloten...');
+    server.close(() => {
+        console.log('✅ Server netjes afgesloten');
+        process.exit(0);
+    });
+    // Force exit after 10 seconds if graceful shutdown fails
+    setTimeout(() => {
+        console.log('⚠️ Force exit na timeout');
+        process.exit(0);
+    }, 10000);
+});
+
+process.on('SIGINT', () => {
+    console.log('⚠️ SIGINT ontvangen, server wordt afgesloten...');
+    server.close(() => {
+        console.log('✅ Server netjes afgesloten');
+        process.exit(0);
+    });
+});
+
+// Uncaught exception handling
+process.on('uncaughtException', (err) => {
+    console.error('❌ Uncaught Exception:', err.message);
+    console.error(err.stack);
+    // Keep running, don't crash
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+    // Keep running, don't crash
+});
+
