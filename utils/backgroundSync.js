@@ -87,7 +87,7 @@ const syncUserCalendar = async (user) => {
                     synced++;
                 } catch (err) {
                     errors++;
-                    console.error(`Error syncing event for ${user.email}:`, err.message);
+                    console.error(`❌ Error syncing event for ${user.email}:`, err.message, 'Appointment:', appointment.title || appointment.id);
                 }
             }
         }
@@ -117,7 +117,6 @@ const syncUserCalendar = async (user) => {
                     const existingAppointments = localAppointments.filter(a => a.googleEventId === event.id);
                     
                     if (existingAppointments.length === 0) {
-                        // Maak nieuw lokaal event aan
                         try {
                             await appointmentStore.createAppointment(user.id, {
                                 title: event.summary || 'Google Agenda Event',
@@ -132,12 +131,13 @@ const syncUserCalendar = async (user) => {
                             synced++;
                         } catch (err) {
                             errors++;
-                            console.error(`Error importing Google event:`, err.message);
+                            console.error(`❌ Error importing Google event:`, err.message, 'Event:', event.summary || event.id);
                         }
                     }
                 }
             } catch (err) {
-                console.error(`Error fetching Google events for ${user.email}:`, err.message);
+                errors++;
+                console.error(`❌ Error fetching Google events for ${user.email}:`, err.message);
             }
         }
         
