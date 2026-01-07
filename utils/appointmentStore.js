@@ -21,9 +21,10 @@ const createAppointment = async (userId, appointmentData) => {
             piano_id, piano_brand, piano_model,
             status, color, google_event_id,
             travel_time_minutes, travel_distance_km, travel_start_time, origin_address,
+            apple_event_id, apple_event_url,
             created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
         id,
         userId,
@@ -47,6 +48,8 @@ const createAppointment = async (userId, appointmentData) => {
         appointmentData.travelDistanceKm || null,
         appointmentData.travelStartTime || null,
         appointmentData.originAddress || null,
+        appointmentData.apple_event_id || null,
+        appointmentData.apple_event_url || null,
         now,
         now
     ]);
@@ -128,7 +131,10 @@ const updateAppointment = async (userId, appointmentId, updates) => {
         status: 'status',
         color: 'color',
         googleEventId: 'google_event_id',
-        lastSynced: 'last_synced'
+        lastSynced: 'last_synced',
+        // Apple Calendar fields
+        apple_event_id: 'apple_event_id',
+        apple_event_url: 'apple_event_url'
     };
     
     for (const [jsField, dbField] of Object.entries(fieldMap)) {
@@ -220,6 +226,9 @@ function formatAppointment(row) {
         travelDistanceKm: row.travel_distance_km,
         travelStartTime: row.travel_start_time,
         originAddress: row.origin_address,
+        // Apple Calendar
+        apple_event_id: row.apple_event_id,
+        apple_event_url: row.apple_event_url,
         createdAt: row.created_at,
         updatedAt: row.updated_at
     };

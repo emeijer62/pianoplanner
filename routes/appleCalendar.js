@@ -666,15 +666,15 @@ async function performAppleSync(userId, credentials, syncSettings) {
                 
                 // Maak event in Apple Calendar
                 const event = await createAppleEvent(credentials, syncSettings.appleCalendarUrl, {
-                    summary: appointment.title || appointment.service_name,
+                    summary: appointment.title || appointment.serviceName,
                     description: formatAppointmentDescription(appointment),
-                    location: appointment.location || appointment.address,
-                    start: appointment.start_time,
-                    end: appointment.end_time
+                    location: appointment.location,
+                    start: appointment.start,
+                    end: appointment.end
                 });
                 
                 // Update lokale afspraak met Apple event ID
-                await appointmentStore.updateAppointment(appointment.id, {
+                await appointmentStore.updateAppointment(userId, appointment.id, {
                     apple_event_id: event.id,
                     apple_event_url: event.url
                 });
@@ -701,8 +701,8 @@ async function performAppleSync(userId, credentials, syncSettings) {
                     title: event.summary,
                     description: event.description,
                     location: event.location,
-                    start_time: event.start,
-                    end_time: event.end,
+                    start: event.start,
+                    end: event.end,
                     apple_event_id: event.id,
                     apple_event_url: event.url,
                     source: 'apple_calendar'
