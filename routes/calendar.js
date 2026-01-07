@@ -253,16 +253,16 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
                 try {
                     const event = {
                         summary: appointment.title || appointment.serviceName || 'PianoPlanner Afspraak',
-                        description: `Klant: ${appointment.customerName || 'Onbekend'}\n${appointment.notes || ''}`,
+                        description: `Klant: ${appointment.customerName || 'Onbekend'}\n${appointment.description || ''}`,
                         start: {
-                            dateTime: appointment.startTime || appointment.start,
+                            dateTime: appointment.start,
                             timeZone: 'Europe/Amsterdam'
                         },
                         end: {
-                            dateTime: appointment.endTime || appointment.end,
+                            dateTime: appointment.end,
                             timeZone: 'Europe/Amsterdam'
                         },
-                        location: appointment.address || appointment.location || ''
+                        location: appointment.location || ''
                     };
                     
                     const response = await calendar.events.insert({
@@ -276,6 +276,7 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
                         lastSynced: new Date().toISOString()
                     });
                     synced++;
+                    console.log(`✅ Synced to Google: ${appointment.title}`);
                 } catch (err) {
                     console.error('Error syncing event to Google:', err.message);
                 }
