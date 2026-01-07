@@ -266,6 +266,24 @@ const syncUserAppleCalendar = async (user) => {
                 // Skip als al gesynchroniseerd
                 if (appointment.apple_event_id) continue;
                 
+                // Skip als geen geldige start/end tijd
+                const startTime = appointment.start_time || appointment.startTime;
+                const endTime = appointment.end_time || appointment.endTime;
+                
+                if (!startTime || !endTime) {
+                    console.warn(`⚠️ Skipping appointment ${appointment.id}: missing start/end time`);
+                    continue;
+                }
+                
+                // Validate dates are parseable
+                const startDate = new Date(startTime);
+                const endDate = new Date(endTime);
+                
+                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                    console.warn(`⚠️ Skipping appointment ${appointment.id}: invalid date format (start: ${startTime}, end: ${endTime})`);
+                    continue;
+                }
+                
                 try {
                     // Maak event in Apple Calendar via CalDAV
                     const authHeader = Buffer.from(`${credentials.appleId}:${credentials.appPassword}`).toString('base64');
@@ -276,8 +294,8 @@ const syncUserAppleCalendar = async (user) => {
                         return new Date(date).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
                     };
                     
-                    const dtstart = formatICalDate(appointment.start_time || appointment.startTime);
-                    const dtend = formatICalDate(appointment.end_time || appointment.endTime);
+                    const dtstart = formatICalDate(startTime);
+                    const dtend = formatICalDate(endTime);
                     const dtstamp = formatICalDate(new Date());
                     
                     const icalEvent = `BEGIN:VCALENDAR
