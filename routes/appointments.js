@@ -562,4 +562,40 @@ router.delete('/duplicates/clean', async (req, res) => {
     }
 });
 
+// Cleanup broken appointments (missing start/end time) for current user
+router.delete('/cleanup-broken', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { dbRun, dbAll } = require('../utils/database');
+        
+        // Find broken records for this user
+        const broken = await dbAll(
+            'SELECT id, title FROM appointments WHERE user_id = ? AND (start_time IS NULL OR end_time IS NULL)',
+            [userId]
+        );
+        
+        if (broken.length === 0) {
+            return res.json({ success: true, message: 'No broken appointments found', deleted: 0 });
+        }
+        
+        // Delete broken records
+        const result = await dbRun(
+            'DELETE FROM appointments WHERE user_id = ? AND (start_time IS NULL OR end_time IS NULL)',
+            [userId]
+        );
+        
+        console.log(`🧹 User ${userId} cleanup: ${result.changes} broken appointments deleted`);
+        
+        res.json({ 
+            success: true, 
+            message: `Deleted ${result.changes} broken appointments`,
+            deleted: result.changes,
+            deletedIds: broken.map(b => b.id)
+        });
+    } catch (error) {
+        console.error('Error cleaning broken appointments:', error);
+        res.status(500).json({ error: 'Cleanup failed: ' + error.message });
+    }
+});
+
 module.exports = router;
