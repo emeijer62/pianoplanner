@@ -2,10 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
+const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 // Database initialisatie (moet eerst!)
-// Version: 2026-01-07 - Duplicate fix & drag-drop
+// Version: 2026-01-07 - Security hardening: rate limiting, session regeneration
 const { DATABASE_PATH, DATA_DIR } = require('./utils/database');
 
 // Routes (nu met database versies)
@@ -59,6 +60,43 @@ app.use(session({
         maxAge: 24 * 60 * 60 * 1000 // 24 uur
     }
 }));
+
+// ============================================
+// SECURITY: Rate Limiting
+// ============================================
+
+// General rate limiter - bescherm tegen DDoS
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minuten
+    max: 500, // max 500 requests per 15 minuten
+    message: { error: 'Too many requests, please try again later' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// Auth rate limiter - bescherm tegen brute force
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minuten
+    max: 10, // max 10 login pogingen
+    message: { error: 'Too many login attempts, please try again in 15 minutes' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// API rate limiter - bescherm tegen abuse
+const apiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minuut
+    max: 100, // max 100 API calls per minuut
+    message: { error: 'API rate limit reached, please slow down' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// Apply rate limiters
+app.use(generalLimiter);
+app.use('/auth/login', authLimiter);
+app.use('/auth/register', authLimiter);
+app.use('/api/', apiLimiter);
 
 // Routes
 app.use('/auth', authRoutes);

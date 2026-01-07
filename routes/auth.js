@@ -80,33 +80,41 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: result.error });
         }
 
-        // Zet sessie met langere duur als "ingelogd blijven" is aangevinkt
-        if (remember) {
-            req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 dagen
-        }
+        // 🔒 SECURITY: Regenerate session to prevent fixation attacks
+        req.session.regenerate((err) => {
+            if (err) {
+                console.error('Session regeneration error:', err);
+                return res.status(500).json({ error: 'Session error' });
+            }
 
-        // Update last login timestamp
-        await userStore.updateLastLogin(result.user.id);
+            // Zet sessie met langere duur als "ingelogd blijven" is aangevinkt
+            if (remember) {
+                req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 dagen
+            }
 
-        // Zet sessie
-        req.session.user = {
-            id: result.user.id,
-            email: result.user.email,
-            name: result.user.name,
-            picture: result.user.picture,
-            authType: result.user.authType
-        };
+            // Update last login timestamp
+            userStore.updateLastLogin(result.user.id);
 
-        console.log(`✅ Gebruiker ingelogd (email): ${email}${remember ? ' (ingelogd blijven)' : ''}`);
-
-        res.json({ 
-            success: true, 
-            message: 'Succesvol ingelogd',
-            user: {
+            // Zet sessie
+            req.session.user = {
                 id: result.user.id,
                 email: result.user.email,
-                name: result.user.name
-            }
+                name: result.user.name,
+                picture: result.user.picture,
+                authType: result.user.authType
+            };
+
+            console.log(`✅ Gebruiker ingelogd (email): ${email}${remember ? ' (ingelogd blijven)' : ''}`);
+
+            res.json({ 
+                success: true, 
+                message: 'Succesvol ingelogd',
+                user: {
+                    id: result.user.id,
+                    email: result.user.email,
+                    name: result.user.name
+                }
+            });
         });
     } catch (error) {
         console.error('Login error:', error);
