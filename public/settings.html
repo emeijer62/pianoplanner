@@ -11,13 +11,163 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>">
     <script src="/js/i18n.js"></script>
     <style>
-        /* Settings Page - Apple Style */
+        /* Settings Cockpit - Tab-based Layout */
         .settings-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 32px 24px;
+            padding: 24px;
         }
         
+        /* Tab Navigation */
+        .settings-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--gray-100, #f5f5f7);
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .settings-tab {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-600, #666);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .settings-tab:hover {
+            color: var(--gray-900, #1a1a1a);
+            background: rgba(255,255,255,0.5);
+        }
+        
+        .settings-tab.active {
+            background: var(--white, #fff);
+            color: var(--gray-900, #1a1a1a);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .settings-tab .tab-icon {
+            font-size: 16px;
+        }
+        
+        .settings-tab .tab-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gray-300, #ccc);
+        }
+        
+        .settings-tab .tab-status.active {
+            background: #34c759;
+        }
+        
+        /* Tab Panels */
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Settings Cards */
+        .settings-card {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--gray-200, #e5e5e5);
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        
+        .settings-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .settings-card-header:hover {
+            background: var(--gray-50, #fafafa);
+        }
+        
+        .settings-card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--gray-900);
+        }
+        
+        .settings-card-title .card-icon {
+            font-size: 20px;
+        }
+        
+        .settings-card-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+        
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-badge.connected {
+            background: #d1fae5;
+            color: #047857;
+        }
+        
+        .status-badge.disconnected {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+        
+        .chevron-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--gray-400);
+            transition: transform 0.2s;
+        }
+        
+        .settings-card.expanded .chevron-icon {
+            transform: rotate(180deg);
+        }
+        
+        .settings-card-body {
+            display: none;
+            padding: 0 20px 20px;
+            border-top: 1px solid var(--gray-100);
+        }
+        
+        .settings-card.expanded .settings-card-body {
+            display: block;
+        }
+        
+        /* Legacy section styles for compatibility */
         .settings-section {
             background: var(--white);
             border-radius: var(--radius-lg);
@@ -46,6 +196,54 @@
             color: var(--gray-500);
             font-size: 14px;
             margin-bottom: 16px;
+        }
+        
+        /* Quick Actions Bar */
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-action:hover {
+            border-color: var(--gray-300);
+            background: var(--gray-50);
+        }
+        
+        /* Responsive tabs */
+        @media (max-width: 768px) {
+            .settings-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .settings-tab {
+                flex: 1 1 45%;
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+            
+            .settings-tab .tab-label {
+                display: none;
+            }
+            
+            .settings-tab .tab-icon {
+                font-size: 18px;
+            }
         }
         
         /* Availability Grid */
@@ -456,709 +654,809 @@
     </nav>
 
     <div class="settings-container">
-        <div class="page-header" style="margin-bottom: 32px;">
-            <h1 style="font-size: 34px; font-weight: 700;">⚙️ Settings</h1>
+        <div class="page-header" style="margin-bottom: 24px;">
+            <h1 style="font-size: 28px; font-weight: 700;">⚙️ Settings</h1>
         </div>
         
         <div id="alertContainer"></div>
         
-        <!-- Google Calendar Sync -->
-        <div class="settings-section">
-            <h2>🔄 Google Calendar Sync</h2>
-            <p style="color: var(--gray-500); margin-bottom: 16px;">
-                Sync your local PianoPlanner calendar with Google Calendar. 
-                This way you have all your appointments in one place.
-            </p>
-            
-            <div id="calendar-sync-status" class="sync-status">
-                <!-- Status is loaded dynamically -->
-            </div>
-            
-            <div id="calendar-sync-options" style="display: none;">
-                <div class="form-group">
-                    <label>Sync direction</label>
-                    <div class="sync-direction-options">
-                        <label class="radio-option">
-                            <input type="radio" name="syncDirection" value="both" checked>
-                            <span>🔄 Both directions</span>
-                            <small>PianoPlanner ↔ Google (recommended)</small>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="syncDirection" value="toGoogle">
-                            <span>➡️ To Google only</span>
-                            <small>PianoPlanner → Google</small>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="syncDirection" value="fromGoogle">
-                            <span>⬅️ From Google only</span>
-                            <small>Google → PianoPlanner</small>
-                        </label>
-                    </div>
-                </div>
-                
-                <div class="form-group" id="calendar-select-group" style="display: none;">
-                    <label for="googleCalendarId">Select Google Calendar</label>
-                    <select id="googleCalendarId">
-                        <option value="">Loading...</option>
-                    </select>
-                </div>
-                
-                <div class="sync-buttons">
-                    <button type="button" class="btn btn-primary" onclick="enableCalendarSync()">
-                        ✓ Enable sync
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="syncNow()" id="sync-now-btn" style="display: none;">
-                        🔄 Sync now
-                    </button>
-                </div>
-                
-                <div id="last-sync-info" style="display: none; margin-top: 12px; color: #666; font-size: 0.9rem;">
-                    Last sync: <span id="last-sync-time">Never</span>
-                </div>
-            </div>
-            
-            <div id="calendar-not-connected">
-                <p style="margin-bottom: 16px;">
-                    <strong>Not connected to Google</strong><br>
-                    Log in with your Google account to enable calendar sync.
-                </p>
-                <a href="/auth/google" class="btn btn-secondary">
-                    <svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align: middle; margin-right: 8px;">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Connect with Google
-                </a>
-            </div>
+        <!-- Tab Navigation -->
+        <div class="settings-tabs">
+            <button class="settings-tab active" data-tab="calendar" onclick="switchTab('calendar')">
+                <span class="tab-icon">📅</span>
+                <span class="tab-label">Calendar</span>
+                <span class="tab-status" id="calendar-tab-status"></span>
+            </button>
+            <button class="settings-tab" data-tab="email" onclick="switchTab('email')">
+                <span class="tab-icon">✉️</span>
+                <span class="tab-label">Email</span>
+                <span class="tab-status" id="email-tab-status"></span>
+            </button>
+            <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
+                <span class="tab-icon">👤</span>
+                <span class="tab-label">Account</span>
+            </button>
+            <button class="settings-tab" data-tab="services" onclick="switchTab('services')">
+                <span class="tab-icon">🎹</span>
+                <span class="tab-label">Services</span>
+            </button>
         </div>
         
-        <!-- Apple Calendar Sync -->
-        <div class="settings-section">
-            <h2>🍎 Apple Calendar Sync</h2>
-            <p style="color: #666; margin-bottom: 16px;">
-                Sync your PianoPlanner calendar with Apple Calendar (iCloud). 
-                View all your appointments on iPhone, iPad and Mac.
-            </p>
+        <!-- ==================== CALENDAR TAB ==================== -->
+        <div class="tab-panel active" id="panel-calendar">
             
-            <div id="apple-calendar-status" class="sync-status">
-                <!-- Status wordt dynamisch geladen -->
-            </div>
-            
-            <!-- Verbinding maken formulier -->
-            <div id="apple-connect-form" style="display: none;">
-                <div class="info-box" style="background: #f0f7ff; border: 1px solid #b3d7ff; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                    <strong>📱 How to connect Apple Calendar:</strong>
-                    <ol style="margin: 12px 0 0 20px; color: #444;">
-                        <li>Go to <a href="https://appleid.apple.com" target="_blank" style="color: #0071e3;">appleid.apple.com</a></li>
-                        <li>Sign in with your Apple ID</li>
-                        <li>Go to <strong>Sign-In and Security</strong> → <strong>App-Specific Passwords</strong></li>
-                        <li>Click <strong>Generate</strong> and name it "PianoPlanner"</li>
-                        <li>Copy the password and paste it below</li>
-                    </ol>
-                </div>
-                
-                <div class="form-group">
-                    <label for="apple-id">Apple ID (email)</label>
-                    <input type="email" id="apple-id" placeholder="your@icloud.com" style="width: 100%;">
-                </div>
-                
-                <div class="form-group">
-                    <label for="apple-password">App-Specific Password</label>
-                    <input type="password" id="apple-password" placeholder="xxxx-xxxx-xxxx-xxxx" style="width: 100%;">
-                    <small style="color: #666;">This is NOT your Apple ID password. Generate one at appleid.apple.com</small>
-                </div>
-                
-                <button type="button" class="btn btn-primary" onclick="connectAppleCalendar()">
-                    🍎 Connect Apple Calendar
-                </button>
-            </div>
-            
-            <!-- Sync opties (wanneer verbonden) -->
-            <div id="apple-sync-options" style="display: none;">
-                <div class="form-group">
-                    <label>Sync direction</label>
-                    <div class="sync-direction-options">
-                        <label class="radio-option">
-                            <input type="radio" name="appleSyncDirection" value="both" checked>
-                            <span>🔄 Both directions</span>
-                            <small>PianoPlanner ↔ Apple (recommended)</small>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="appleSyncDirection" value="toApple">
-                            <span>➡️ To Apple only</span>
-                            <small>PianoPlanner → Apple</small>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="appleSyncDirection" value="fromApple">
-                            <span>⬅️ From Apple only</span>
-                            <small>Apple → PianoPlanner</small>
-                        </label>
+            <!-- Google Calendar Card -->
+            <div class="settings-card" id="google-card">
+                <div class="settings-card-header" onclick="toggleCard('google-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">🔄</span>
+                        Google Calendar
+                    </div>
+                    <div class="settings-card-status">
+                        <span class="status-badge disconnected" id="google-status-badge">Not connected</span>
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
                     </div>
                 </div>
-                
-                <div class="form-group" id="apple-calendar-select-group">
-                    <label for="appleCalendarSelect">Select Apple Calendar</label>
-                    <select id="appleCalendarSelect" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                        <option value="">Loading calendars...</option>
-                    </select>
-                </div>
-                
-                <div class="sync-buttons">
-                    <button type="button" class="btn btn-primary" onclick="enableAppleCalendarSync()">
-                        ✓ Enable sync
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="syncAppleNow()" id="apple-sync-now-btn" style="display: none;">
-                        🔄 Sync now
-                    </button>
-                    <button type="button" class="btn btn-danger" onclick="disconnectAppleCalendar()" style="margin-left: auto;">
-                        ✕ Disconnect
-                    </button>
-                </div>
-                
-                <div id="apple-last-sync-info" style="display: none; margin-top: 12px; color: #666; font-size: 0.9rem;">
-                    Last sync: <span id="apple-last-sync-time">Never</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Eigen Email / SMTP Setup -->
-        <div class="settings-section">
-            <h2>✉️ Eigen Email Configuratie</h2>
-            <p style="color: #666; margin-bottom: 16px;">
-                Verstuur emails naar je klanten vanaf je eigen emailadres in plaats van via PianoPlanner.
-            </p>
-            
-            <div id="smtp-status" class="sync-status">
-                <!-- Status wordt dynamisch geladen -->
-            </div>
-            
-            <!-- Provider selectie -->
-            <div id="smtp-setup-form" style="margin-top: 20px;">
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label>Email verzenden via:</label>
-                    <div class="sync-direction-options">
-                        <label class="radio-option">
-                            <input type="radio" name="smtpChoice" value="pianoplanner" checked>
-                            <span>🎹 PianoPlanner (standaard)</span>
-                            <small>Emails worden verstuurd namens jou via info@pianoplanner.com</small>
-                        </label>
-                        <label class="radio-option">
-                            <input type="radio" name="smtpChoice" value="own">
-                            <span>📧 Mijn eigen email</span>
-                            <small>Emails worden verstuurd vanaf je eigen emailadres</small>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- Eigen SMTP configuratie (hidden by default) -->
-                <div id="own-smtp-config" style="display: none;">
-                    <div class="form-group" style="margin-bottom: 16px;">
-                        <label for="smtp-provider">Email provider</label>
-                        <select id="smtp-provider" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                            <option value="gmail">Gmail / Google Workspace</option>
-                            <option value="icloud">iCloud / Apple Mail</option>
-                            <option value="outlook">Outlook / Microsoft 365</option>
-                            <option value="custom">Andere provider (handmatig)</option>
-                        </select>
-                    </div>
-                    
-                    <div id="smtp-provider-instructions" class="info-box" style="background: #f0f7ff; border: 1px solid #b3d7ff; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                        <!-- Instructies worden dynamisch geladen -->
-                    </div>
-                    
-                    <div class="form-group" style="margin-bottom: 16px;">
-                        <label for="smtp-email">Email adres</label>
-                        <input type="email" id="smtp-email" placeholder="jouw@email.com" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                    </div>
-                    
-                    <div class="form-group" style="margin-bottom: 16px;">
-                        <label for="smtp-password">App-specifiek wachtwoord</label>
-                        <input type="password" id="smtp-password" placeholder="xxxx-xxxx-xxxx-xxxx" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                        <small style="color: #666;">Dit is NIET je normale wachtwoord. Volg de instructies hierboven.</small>
-                    </div>
-                    
-                    <!-- Handmatige SMTP opties (alleen voor custom provider) -->
-                    <div id="smtp-custom-fields" style="display: none;">
-                        <div class="form-group" style="margin-bottom: 16px;">
-                            <label for="smtp-host">SMTP Host</label>
-                            <input type="text" id="smtp-host" placeholder="smtp.example.com" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                        </div>
-                        <div class="form-group" style="margin-bottom: 16px;">
-                            <label for="smtp-port">SMTP Poort</label>
-                            <input type="number" id="smtp-port" value="587" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group" style="margin-bottom: 16px;">
-                        <label for="smtp-from-name">Afzender naam (optioneel)</label>
-                        <input type="text" id="smtp-from-name" placeholder="Bijv: Jan's Pianostudio" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                    </div>
-                    
-                    <div class="sync-buttons">
-                        <button type="button" class="btn btn-primary" onclick="saveSmtpSettings()">
-                            💾 Opslaan
-                        </button>
-                        <button type="button" class="btn btn-secondary" onclick="testSmtpConnection()">
-                            🧪 Test verbinding
-                        </button>
-                    </div>
-                    
-                    <div id="smtp-test-result" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px;"></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Email Notifications -->
-        <div class="settings-section">
-            <h2>📧 Email Notificaties</h2>
-            <p style="color: #666; margin-bottom: 16px;">
-                Automatische email notificaties naar je klanten voor afspraken.
-            </p>
-            
-            <div id="email-settings-form" style="margin-top: 20px;">
-                <h3 style="margin-bottom: 16px; color: #333;">Notificatie Instellingen</h3>
-                
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="email-confirmations" checked>
-                            <span class="toggle-slider"></span>
-                        </div>
-                        <div>
-                            <span style="display: block;">📬 Bevestigings emails</span>
-                            <small style="color: #666;">Verstuur bevestiging bij nieuwe afspraak</small>
-                        </div>
-                    </label>
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="email-reminders" checked>
-                            <span class="toggle-slider"></span>
-                        </div>
-                        <div>
-                            <span style="display: block;">⏰ Herinnerings emails</span>
-                            <small style="color: #666;">Verstuur herinnering voor afspraak</small>
-                        </div>
-                    </label>
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 16px; margin-left: 56px;" id="reminder-hours-group">
-                    <label for="reminder-hours">Verstuur herinnering</label>
-                    <select id="reminder-hours" style="width: auto; margin-left: 8px;">
-                        <option value="2">2 uur van tevoren</option>
-                        <option value="6">6 uur van tevoren</option>
-                        <option value="12">12 uur van tevoren</option>
-                        <option value="24" selected>24 uur van tevoren</option>
-                        <option value="48">48 uur van tevoren</option>
-                    </select>
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="email-cancellations" checked>
-                            <span class="toggle-slider"></span>
-                        </div>
-                        <div>
-                            <span style="display: block;">❌ Annulerings emails</span>
-                            <small style="color: #666;">Bericht klant bij annulering van afspraak</small>
-                        </div>
-                    </label>
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="email-new-bookings" checked>
-                            <span class="toggle-slider"></span>
-                        </div>
-                        <div>
-                            <span style="display: block;">🔔 Nieuwe boeking meldingen</span>
-                            <small style="color: #666;">Ontvang bericht als klanten afspraken boeken</small>
-                        </div>
-                    </label>
-                </div>
-                
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <button type="button" class="btn btn-primary" onclick="saveEmailSettings()">
-                        💾 Opslaan
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="sendTestEmail(this)">
-                        📤 Test email versturen
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Calendar Feed / Abonnement -->
-        <div class="settings-section">
-            <h2>📅 Agenda Abonnement</h2>
-            <p style="color: #666; margin-bottom: 16px;">
-                Abonneer op je PianoPlanner agenda vanuit elke kalender app (Apple Calendar, Google Calendar, Outlook, etc.).
-                Wijzigingen worden automatisch gesynchroniseerd.
-            </p>
-            
-            <div id="calendar-feed-section">
-                <!-- Status -->
-                <div id="feed-status" class="sync-status disconnected" style="margin-bottom: 16px;">
-                    <strong id="feed-status-text">⏸️ Agenda feed is niet actief</strong>
-                </div>
-                
-                <!-- Feed URL display -->
-                <div id="feed-url-display" style="display: none; margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Abonneer URL:</label>
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                        <input type="text" id="feed-url" readonly style="flex: 1; min-width: 200px; background: var(--light-gray); font-family: monospace; font-size: 0.85rem; padding: 10px;">
-                        <button type="button" class="btn btn-secondary" onclick="copyFeedUrl()" title="URL kopiëren">
-                            📋 Kopiëren
-                        </button>
-                    </div>
-                    <p style="color: #888; font-size: 0.85rem; margin-top: 8px;">
-                        💡 Voeg deze URL toe aan je kalender app via "Abonneren" of "Agenda toevoegen via URL"
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Two-way sync between PianoPlanner and Google Calendar.
                     </p>
-                </div>
-                
-                <!-- Instructions -->
-                <div id="feed-instructions" style="display: none; background: var(--light-gray); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-                    <h4 style="margin: 0 0 12px 0; font-size: 0.95rem;">Zo voeg je de agenda toe:</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem;">
-                        <div>
-                            <strong>🍎 Apple Calendar:</strong><br>
-                            Archief → Nieuw agenda-abonnement → Plak URL
+                    
+                    <div id="calendar-sync-status" class="sync-status" style="margin-bottom: 16px;">
+                        <!-- Status loaded dynamically -->
+                    </div>
+                    
+                    <div id="calendar-sync-options" style="display: none;">
+                        <div class="form-group">
+                            <label>Sync direction</label>
+                            <div class="sync-direction-options">
+                                <label class="radio-option">
+                                    <input type="radio" name="syncDirection" value="both" checked>
+                                    <span>🔄 Two-way sync</span>
+                                    <small>PianoPlanner ↔ Google (recommended)</small>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="syncDirection" value="toGoogle">
+                                    <span>➡️ Export only</span>
+                                    <small>PianoPlanner → Google</small>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="syncDirection" value="fromGoogle">
+                                    <span>⬅️ Import only</span>
+                                    <small>Google → PianoPlanner</small>
+                                </label>
+                            </div>
                         </div>
-                        <div>
-                            <strong>📱 Google Calendar:</strong><br>
-                            Instellingen → Agenda toevoegen → Via URL
+                        
+                        <div class="form-group" id="calendar-select-group" style="display: none;">
+                            <label for="googleCalendarId">Calendar</label>
+                            <select id="googleCalendarId">
+                                <option value="">Loading...</option>
+                            </select>
                         </div>
-                        <div>
-                            <strong>📧 Outlook:</strong><br>
-                            Agenda → Toevoegen → Van internet abonneren
+                        
+                        <div class="sync-buttons">
+                            <button type="button" class="btn btn-primary" onclick="enableCalendarSync()">
+                                ✓ Enable Sync
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="syncNow()" id="sync-now-btn" style="display: none;">
+                                🔄 Sync Now
+                            </button>
+                        </div>
+                        
+                        <div id="last-sync-info" style="display: none; margin-top: 12px; color: #666; font-size: 0.9rem;">
+                            Last sync: <span id="last-sync-time">Never</span>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Actions -->
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <button type="button" id="feed-enable-btn" class="btn btn-primary" onclick="enableCalendarFeed()">
-                        ✅ Feed activeren
-                    </button>
-                    <button type="button" id="feed-disable-btn" class="btn btn-secondary" style="display: none;" onclick="disableCalendarFeed()">
-                        ⏸️ Uitschakelen
-                    </button>
-                    <button type="button" id="feed-regenerate-btn" class="btn btn-secondary" style="display: none;" onclick="regenerateCalendarFeed()">
-                        🔄 Nieuwe link genereren
-                    </button>
-                </div>
-                
-                <p id="feed-security-note" style="display: none; color: #e67e22; font-size: 0.85rem; margin-top: 12px;">
-                    ⚠️ Als je een nieuwe link genereert, stoppen oude links met werken. 
-                    Je moet dan opnieuw abonneren in je kalender apps.
-                </p>
-            </div>
-            
-            <!-- Export / Backup section -->
-            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color);">
-                <h3 style="margin: 0 0 12px 0;">💾 Agenda Exporteren / Backup</h3>
-                <p style="color: #666; font-size: 0.9rem; margin-bottom: 16px;">
-                    Download je volledige agenda als .ics bestand. Dit kun je importeren in Apple Calendar, Google Calendar, Outlook of andere kalender apps.
-                </p>
-                
-                <!-- Date range selection -->
-                <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; align-items: end;">
-                    <div class="form-group" style="margin: 0;">
-                        <label for="export-from" style="font-size: 0.85rem;">Van datum</label>
-                        <input type="date" id="export-from" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
-                    </div>
-                    <div class="form-group" style="margin: 0;">
-                        <label for="export-to" style="font-size: 0.85rem;">Tot datum</label>
-                        <input type="date" id="export-to" style="padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
-                    </div>
-                    <button type="button" class="btn btn-primary" onclick="exportCalendar()">
-                        📥 Download .ics
-                    </button>
-                </div>
-                
-                <p style="color: #888; font-size: 0.8rem; margin: 0;">
-                    💡 Standaard wordt 1 jaar terug tot 1 jaar vooruit geëxporteerd als je geen datums selecteert.
-                </p>
-                
-                <!-- Import instructions -->
-                <div style="background: var(--light-gray); padding: 16px; border-radius: 8px; margin-top: 16px;">
-                    <h4 style="margin: 0 0 12px 0; font-size: 0.95rem;">Zo importeer je het bestand:</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem;">
-                        <div>
-                            <strong>🍎 Apple Calendar:</strong><br>
-                            Archief → Importeer → Selecteer .ics bestand
-                        </div>
-                        <div>
-                            <strong>📱 Google Calendar:</strong><br>
-                            Instellingen → Importeren → Upload .ics
-                        </div>
-                        <div>
-                            <strong>📧 Outlook:</strong><br>
-                            Bestand → Openen → Agenda importeren
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Account Settings -->
-        <div class="settings-section">
-            <h2>🔗 Public Booking Link</h2>
-            <p style="color: #666; margin-bottom: 16px;">
-                Share a link where customers can schedule appointments themselves. Great for your website or email signature.
-            </p>
-            
-            <div id="booking-link-section">
-                <!-- Status -->
-                <div id="booking-status" class="sync-status disconnected" style="margin-bottom: 16px;">
-                    <strong id="booking-status-text">⏸️ Booking link is disabled</strong>
-                </div>
-                
-                <!-- Link display -->
-                <div id="booking-link-display" style="display: none; margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Your booking link:</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="text" id="booking-link-url" readonly style="flex: 1; background: var(--light-gray); font-family: monospace; font-size: 0.9rem;">
-                        <button type="button" class="btn btn-secondary" onclick="copyBookingLink()" title="Link kopiëren">
-                            📋 Kopiëren
-                        </button>
-                        <a id="booking-link-preview" href="#" target="_blank" class="btn btn-secondary" title="Bekijken">
-                            👁️ Bekijken
+                    
+                    <div id="calendar-not-connected">
+                        <a href="/auth/google" class="btn btn-secondary">
+                            <svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align: middle; margin-right: 8px;">
+                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                            </svg>
+                            Connect Google Account
                         </a>
                     </div>
                 </div>
-                
-                <!-- Settings -->
-                <form id="bookingSettingsForm">
-                    <div class="form-group">
-                        <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="booking-enabled" name="enabled">
-                                <span class="toggle-slider"></span>
-                            </div>
-                            <span>Enable booking link</span>
-                        </label>
-                    </div>
-                    
-                    <div id="booking-options" style="display: none;">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="booking-title">Page title</label>
-                                <input type="text" id="booking-title" name="title" placeholder="Schedule an appointment">
-                            </div>
-                            <div class="form-group">
-                                <label for="booking-min-advance">Minimum advance booking</label>
-                                <select id="booking-min-advance" name="minAdvanceHours">
-                                    <option value="1">1 hour</option>
-                                    <option value="2">2 hours</option>
-                                    <option value="4">4 hours</option>
-                                    <option value="12">12 hours</option>
-                                    <option value="24" selected>24 hours (1 day)</option>
-                                    <option value="48">48 hours (2 days)</option>
-                                    <option value="72">72 hours (3 days)</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="booking-max-advance">Maximum advance booking</label>
-                                <select id="booking-max-advance" name="maxAdvanceDays">
-                                    <option value="14">2 weeks</option>
-                                    <option value="30">1 month</option>
-                                    <option value="60" selected>2 months</option>
-                                    <option value="90">3 months</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Required fields</label>
-                                <div style="display: flex; gap: 16px; margin-top: 8px;">
-                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                        <input type="checkbox" id="booking-require-email" name="requireEmail" checked>
-                                        <span>Email</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                        <input type="checkbox" id="booking-require-phone" name="requirePhone" checked>
-                                        <span>Phone</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="booking-description">Description (optional)</label>
-                            <textarea id="booking-description" name="description" rows="2" placeholder="Welcome message for customers on your booking page"></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="booking-confirmation">Confirmation message</label>
-                            <input type="text" id="booking-confirmation" name="confirmationMessage" placeholder="Thank you for your booking!">
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">💾 Save Booking Settings</button>
-                </form>
             </div>
-        </div>
-        
-        <!-- Language Settings -->
-        <div class="settings-section">
-            <h2>🌐 Language</h2>
-            <p style="color: #666; margin-bottom: 16px;">
-                Choose your preferred language for the PianoPlanner interface.
-            </p>
             
-            <div class="form-group">
-                <label for="language-selector">Select language</label>
-                <select id="language-selector" onchange="changeLanguage(this.value)" style="max-width: 300px;">
-                    <option value="en">🇬🇧 English</option>
-                    <option value="nl">🇳🇱 Nederlands</option>
-                    <option value="de">🇩🇪 Deutsch</option>
-                    <option value="fr">🇫🇷 Français</option>
-                </select>
-            </div>
-        </div>
-        
-        <!-- Account Settings -->
-        <div class="settings-section">
-            <h2>👤 Account Settings</h2>
-            <p style="color: #666; margin-bottom: 16px;">
-                Manage your account details and password.
-            </p>
-            
-            <!-- Profile formulier -->
-            <form id="profileForm">
-                <h3>Profile</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="profileName">Name</label>
-                        <input type="text" id="profileName" name="name" required>
+            <!-- Apple Calendar Card -->
+            <div class="settings-card" id="apple-card">
+                <div class="settings-card-header" onclick="toggleCard('apple-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">🍎</span>
+                        Apple Calendar
                     </div>
-                    <div class="form-group">
-                        <label for="profileEmail">Email address</label>
-                        <input type="email" id="profileEmail" name="email" required>
+                    <div class="settings-card-status">
+                        <span class="status-badge disconnected" id="apple-status-badge">Not connected</span>
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Login methode</label>
-                    <p id="authTypeInfo" style="margin: 0; padding: 8px 12px; background: var(--light-gray); border-radius: var(--radius-sm); font-size: 0.9rem;">
-                        <!-- Wordt dynamisch ingevuld -->
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Sync with iCloud Calendar on iPhone, iPad and Mac.
+                    </p>
+                    
+                    <div id="apple-calendar-status" class="sync-status" style="margin-bottom: 16px;">
+                        <!-- Status loaded dynamically -->
+                    </div>
+                    
+                    <!-- Connect form -->
+                    <div id="apple-connect-form" style="display: none;">
+                        <div class="info-box" style="background: #f0f7ff; border: 1px solid #b3d7ff; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                            <strong>📱 Setup instructions:</strong>
+                            <ol style="margin: 12px 0 0 20px; color: #444; font-size: 14px;">
+                                <li>Go to <a href="https://appleid.apple.com" target="_blank" style="color: #0071e3;">appleid.apple.com</a></li>
+                                <li>Sign in → Security → App-Specific Passwords</li>
+                                <li>Generate a password named "PianoPlanner"</li>
+                                <li>Copy and paste it below</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="apple-id">Apple ID</label>
+                            <input type="email" id="apple-id" placeholder="your@icloud.com" style="width: 100%;">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="apple-password">App-Specific Password</label>
+                            <input type="password" id="apple-password" placeholder="xxxx-xxxx-xxxx-xxxx" style="width: 100%;">
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary" onclick="connectAppleCalendar()">
+                            🍎 Connect
+                        </button>
+                    </div>
+                    
+                    <!-- Sync options (when connected) -->
+                    <div id="apple-sync-options" style="display: none;">
+                        <div class="form-group">
+                            <label>Sync direction</label>
+                            <div class="sync-direction-options">
+                                <label class="radio-option">
+                                    <input type="radio" name="appleSyncDirection" value="both" checked>
+                                    <span>🔄 Two-way sync</span>
+                                    <small>PianoPlanner ↔ Apple (recommended)</small>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="appleSyncDirection" value="toApple">
+                                    <span>➡️ Export only</span>
+                                    <small>PianoPlanner → Apple</small>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="appleSyncDirection" value="fromApple">
+                                    <span>⬅️ Import only</span>
+                                    <small>Apple → PianoPlanner</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" id="apple-calendar-select-group">
+                            <label for="appleCalendarSelect">Calendar</label>
+                            <select id="appleCalendarSelect" style="width: 100%;">
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="sync-buttons">
+                            <button type="button" class="btn btn-primary" onclick="enableAppleCalendarSync()">
+                                ✓ Enable Sync
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="syncAppleNow()" id="apple-sync-now-btn" style="display: none;">
+                                🔄 Sync Now
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="disconnectAppleCalendar()" style="margin-left: auto;">
+                                Disconnect
+                            </button>
+                        </div>
+                        
+                        <div id="apple-last-sync-info" style="display: none; margin-top: 12px; color: #666; font-size: 0.9rem;">
+                            Last sync: <span id="apple-last-sync-time">Never</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Calendar Feed Card -->
+            <div class="settings-card" id="feed-card">
+                <div class="settings-card-header" onclick="toggleCard('feed-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">📅</span>
+                        Calendar Subscription
+                    </div>
+                    <div class="settings-card-status">
+                        <span class="status-badge disconnected" id="feed-status-badge">Inactive</span>
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Subscribe to your calendar from any app (read-only iCal feed).
+                    </p>
+                    
+                    <div id="feed-url-display" style="display: none; margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">Subscription URL:</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" id="feed-url" readonly style="flex: 1; background: var(--gray-100); font-family: monospace; font-size: 12px; padding: 10px;">
+                            <button type="button" class="btn btn-secondary btn-small" onclick="copyFeedUrl()">
+                                📋 Copy
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="feed-instructions" style="display: none; background: var(--gray-50); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px;">
+                        <strong>Add to your calendar:</strong>
+                        <div style="margin-top: 8px; display: grid; gap: 4px;">
+                            <span>🍎 Apple: File → New Calendar Subscription</span>
+                            <span>📱 Google: Settings → Add Calendar → From URL</span>
+                            <span>📧 Outlook: Add Calendar → Subscribe from web</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" id="feed-enable-btn" class="btn btn-primary" onclick="enableCalendarFeed()">
+                            Enable Feed
+                        </button>
+                        <button type="button" id="feed-disable-btn" class="btn btn-secondary" style="display: none;" onclick="disableCalendarFeed()">
+                            Disable
+                        </button>
+                        <button type="button" id="feed-regenerate-btn" class="btn btn-secondary" style="display: none;" onclick="regenerateCalendarFeed()">
+                            🔄 New Link
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Card -->
+            <div class="settings-card" id="export-card">
+                <div class="settings-card-header" onclick="toggleCard('export-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">💾</span>
+                        Export / Backup
+                    </div>
+                    <div class="settings-card-status">
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Download your calendar as .ics file for backup or import.
+                    </p>
+                    
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: end; margin-bottom: 12px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="export-from" style="font-size: 13px;">From</label>
+                            <input type="date" id="export-from" style="padding: 8px;">
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label for="export-to" style="font-size: 13px;">To</label>
+                            <input type="date" id="export-to" style="padding: 8px;">
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="exportCalendar()">
+                            📥 Download .ics
+                        </button>
+                    </div>
+                    <p style="color: #888; font-size: 12px; margin: 0;">
+                        Leave dates empty to export 1 year back and forward.
                     </p>
                 </div>
-                <button type="submit" class="btn btn-primary">💾 Save Profile</button>
-            </form>
-            
-            <!-- Password form -->
-            <form id="passwordForm" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
-                <h3 id="passwordSectionTitle">🔐 Change Password</h3>
-                <p id="passwordSectionDesc" style="color: #666; font-size: 0.9rem; margin-bottom: 16px;">
-                    <!-- Dynamically filled -->
-                </p>
-                
-                <div id="currentPasswordGroup" class="form-group">
-                    <label for="currentPassword">Current password</label>
-                    <input type="password" id="currentPassword" name="currentPassword" autocomplete="current-password">
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="newPassword">New password</label>
-                        <input type="password" id="newPassword" name="newPassword" required minlength="6" autocomplete="new-password">
-                        <small style="color: #666;">Minimum 6 characters</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm new password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6" autocomplete="new-password">
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary" id="passwordSubmitBtn">🔐 Change Password</button>
-            </form>
-        </div>
-        
-        <!-- Company Profile -->
-        <div class="settings-section">
-            <h2>🏢 Company Profile</h2>
-            <form id="companyForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="companyName">Company name</label>
-                        <input type="text" id="companyName" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="ownerName">Owner name</label>
-                        <input type="text" id="ownerName" name="ownerName">
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email">
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">Phone</label>
-                        <input type="tel" id="phone" name="phone">
-                    </div>
-                </div>
-                
-                <h3>📍 Address (travel time start point)</h3>
-                <div class="form-row">
-                    <div class="form-group" style="flex: 2; position: relative;">
-                        <label for="address-search">Search address</label>
-                        <input type="text" id="address-search" placeholder="Start typing to search for address..." autocomplete="off">
-                        <div id="address-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group" style="flex: 2">
-                        <label for="street">Street and number</label>
-                        <input type="text" id="street" name="street" required>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="postalCode">Postal code</label>
-                        <input type="text" id="postalCode" name="postalCode" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="city">City</label>
-                        <input type="text" id="city" name="city" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="country">Country</label>
-                        <input type="text" id="country" name="country" value="Netherlands">
-                    </div>
-                </div>
-                
-                <h3>🕐 Availability per day</h3>
-                <p style="color: #666; margin-bottom: 16px;">Set your availability for appointments per day.</p>
-                
-                <div class="availability-grid" id="availabilityGrid">
-                    <!-- Loaded dynamically -->
-                </div>
-                
-                <button type="submit" class="btn btn-primary">💾 Save Company Profile</button>
-            </form>
-        </div>
-        
-        <!-- Services -->
-        <div class="settings-section">
-            <h2>🎹 Services</h2>
-            <p>Manage the services you offer. Buffer times are included when scheduling appointments.</p>
-            
-            <button class="btn btn-primary" onclick="openServiceModal()">+ New Service</button>
-            
-            <div class="services-list" id="servicesList">
-                <!-- Services are loaded here -->
             </div>
+            
+        </div>
+        
+        <!-- ==================== EMAIL TAB ==================== -->
+        <div class="tab-panel" id="panel-email">
+            
+            <!-- SMTP Configuration Card -->
+            <div class="settings-card expanded" id="smtp-card">
+                <div class="settings-card-header" onclick="toggleCard('smtp-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">📤</span>
+                        Email Configuration
+                    </div>
+                    <div class="settings-card-status">
+                        <span class="status-badge disconnected" id="smtp-status-badge">Using PianoPlanner</span>
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Send emails from your own address or use PianoPlanner's default.
+                    </p>
+                    
+                    <div id="smtp-status" class="sync-status" style="margin-bottom: 16px;">
+                        <!-- Status loaded dynamically -->
+                    </div>
+                    
+                    <div id="smtp-setup-form">
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label>Send emails via:</label>
+                            <div class="sync-direction-options">
+                                <label class="radio-option">
+                                    <input type="radio" name="smtpChoice" value="pianoplanner" checked>
+                                    <span>🎹 PianoPlanner (default)</span>
+                                    <small>Emails sent on your behalf via info@pianoplanner.com</small>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="smtpChoice" value="own">
+                                    <span>📧 My own email</span>
+                                    <small>Emails sent from your personal email address</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Own SMTP config (hidden by default) -->
+                        <div id="own-smtp-config" style="display: none;">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="smtp-provider">Email provider</label>
+                                <select id="smtp-provider" style="width: 100%;">
+                                    <option value="gmail">Gmail / Google Workspace</option>
+                                    <option value="icloud">iCloud / Apple Mail</option>
+                                    <option value="outlook">Outlook / Microsoft 365</option>
+                                    <option value="custom">Other (manual setup)</option>
+                                </select>
+                            </div>
+                            
+                            <div id="smtp-provider-instructions" class="info-box" style="background: #f0f7ff; border: 1px solid #b3d7ff; border-radius: 8px; padding: 16px; margin-bottom: 16px; font-size: 14px;">
+                                <!-- Instructions loaded dynamically -->
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="smtp-email">Email address</label>
+                                <input type="email" id="smtp-email" placeholder="you@email.com" style="width: 100%;">
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="smtp-password">App-specific password</label>
+                                <input type="password" id="smtp-password" placeholder="xxxx-xxxx-xxxx-xxxx" style="width: 100%;">
+                                <small style="color: #666;">Not your regular password. Follow instructions above.</small>
+                            </div>
+                            
+                            <!-- Manual SMTP options -->
+                            <div id="smtp-custom-fields" style="display: none;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="smtp-host">SMTP Host</label>
+                                        <input type="text" id="smtp-host" placeholder="smtp.example.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="smtp-port">Port</label>
+                                        <input type="number" id="smtp-port" value="587">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label for="smtp-from-name">Sender name (optional)</label>
+                                <input type="text" id="smtp-from-name" placeholder="e.g. John's Piano Service" style="width: 100%;">
+                            </div>
+                            
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-primary" onclick="saveSmtpSettings()">
+                                    💾 Save
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="testSmtpConnection()">
+                                    🧪 Test
+                                </button>
+                            </div>
+                            
+                            <div id="smtp-test-result" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Email Notifications Card -->
+            <div class="settings-card expanded" id="notifications-card">
+                <div class="settings-card-header" onclick="toggleCard('notifications-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">🔔</span>
+                        Notifications
+                    </div>
+                    <div class="settings-card-status">
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Automatic emails to customers for appointments.
+                    </p>
+                    
+                    <div id="email-settings-form">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="email-confirmations" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                                <div>
+                                    <span style="display: block; font-weight: 500;">Confirmation emails</span>
+                                    <small style="color: #666;">Send when appointment is booked</small>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="email-reminders" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                                <div>
+                                    <span style="display: block; font-weight: 500;">Reminder emails</span>
+                                    <small style="color: #666;">Send before appointment</small>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 12px; margin-left: 56px;" id="reminder-hours-group">
+                            <label for="reminder-hours">Send reminder</label>
+                            <select id="reminder-hours" style="width: auto; margin-left: 8px;">
+                                <option value="2">2 hours before</option>
+                                <option value="6">6 hours before</option>
+                                <option value="12">12 hours before</option>
+                                <option value="24" selected>24 hours before</option>
+                                <option value="48">48 hours before</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="email-cancellations" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                                <div>
+                                    <span style="display: block; font-weight: 500;">Cancellation emails</span>
+                                    <small style="color: #666;">Notify customer when cancelled</small>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="email-new-bookings" checked>
+                                    <span class="toggle-slider"></span>
+                                </div>
+                                <div>
+                                    <span style="display: block; font-weight: 500;">New booking alerts</span>
+                                    <small style="color: #666;">Get notified when customers book</small>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn btn-primary" onclick="saveEmailSettings()">
+                                💾 Save
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="sendTestEmail(this)">
+                                📤 Send Test
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- ==================== ACCOUNT TAB ==================== -->
+        <div class="tab-panel" id="panel-account">
+            
+            <!-- Booking Link Card -->
+            <div class="settings-card" id="booking-card">
+                <div class="settings-card-header" onclick="toggleCard('booking-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">🔗</span>
+                        Public Booking Link
+                    </div>
+                    <div class="settings-card-status">
+                        <span class="status-badge disconnected" id="booking-status-badge">Disabled</span>
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Let customers schedule appointments online via a shareable link.
+                    </p>
+                    
+                    <div id="booking-link-section">
+                        <div id="booking-status" class="sync-status disconnected" style="margin-bottom: 16px; display: none;">
+                            <strong id="booking-status-text">Booking link is disabled</strong>
+                        </div>
+                        
+                        <div id="booking-link-display" style="display: none; margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">Your booking URL:</label>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="text" id="booking-link-url" readonly style="flex: 1; background: var(--gray-100); font-family: monospace; font-size: 12px;">
+                                <button type="button" class="btn btn-secondary btn-small" onclick="copyBookingLink()">📋 Copy</button>
+                                <a id="booking-link-preview" href="#" target="_blank" class="btn btn-secondary btn-small">👁️ Preview</a>
+                            </div>
+                        </div>
+                        
+                        <form id="bookingSettingsForm">
+                            <div class="form-group" style="margin-bottom: 16px;">
+                                <label class="toggle-container" style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="booking-enabled" name="enabled">
+                                        <span class="toggle-slider"></span>
+                                    </div>
+                                    <span style="font-weight: 500;">Enable booking link</span>
+                                </label>
+                            </div>
+                            
+                            <div id="booking-options" style="display: none;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="booking-title">Page title</label>
+                                        <input type="text" id="booking-title" name="title" placeholder="Schedule an appointment">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="booking-min-advance">Minimum advance</label>
+                                        <select id="booking-min-advance" name="minAdvanceHours">
+                                            <option value="1">1 hour</option>
+                                            <option value="2">2 hours</option>
+                                            <option value="4">4 hours</option>
+                                            <option value="12">12 hours</option>
+                                            <option value="24" selected>24 hours</option>
+                                            <option value="48">48 hours</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="booking-max-advance">Maximum advance</label>
+                                        <select id="booking-max-advance" name="maxAdvanceDays">
+                                            <option value="14">2 weeks</option>
+                                            <option value="30">1 month</option>
+                                            <option value="60" selected>2 months</option>
+                                            <option value="90">3 months</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Required fields</label>
+                                        <div style="display: flex; gap: 16px; margin-top: 8px;">
+                                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                                <input type="checkbox" id="booking-require-email" name="requireEmail" checked>
+                                                <span>Email</span>
+                                            </label>
+                                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                                <input type="checkbox" id="booking-require-phone" name="requirePhone" checked>
+                                                <span>Phone</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="booking-description">Welcome message (optional)</label>
+                                    <textarea id="booking-description" name="description" rows="2" placeholder="Message shown on your booking page"></textarea>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">💾 Save</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Card -->
+            <div class="settings-card" id="profile-card">
+                <div class="settings-card-header" onclick="toggleCard('profile-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">👤</span>
+                        Profile
+                    </div>
+                    <div class="settings-card-status">
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <form id="profileForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profileName">Name</label>
+                                <input type="text" id="profileName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profileEmail">Email</label>
+                                <input type="email" id="profileEmail" name="email" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Login method</label>
+                            <p id="authTypeInfo" style="margin: 0; padding: 8px 12px; background: var(--gray-100); border-radius: 6px; font-size: 13px;">
+                                <!-- Filled dynamically -->
+                            </p>
+                        </div>
+                        <button type="submit" class="btn btn-primary">💾 Save Profile</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Password Card -->
+            <div class="settings-card" id="password-card">
+                <div class="settings-card-header" onclick="toggleCard('password-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">🔐</span>
+                        Password
+                    </div>
+                    <div class="settings-card-status">
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <form id="passwordForm">
+                        <p id="passwordSectionDesc" style="color: #666; font-size: 13px; margin-bottom: 16px;">
+                            <!-- Filled dynamically -->
+                        </p>
+                        
+                        <div id="currentPasswordGroup" class="form-group">
+                            <label for="currentPassword">Current password</label>
+                            <input type="password" id="currentPassword" name="currentPassword" autocomplete="current-password">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newPassword">New password</label>
+                                <input type="password" id="newPassword" name="newPassword" required minlength="6" autocomplete="new-password">
+                                <small style="color: #666;">Minimum 6 characters</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm password</label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6" autocomplete="new-password">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="passwordSubmitBtn">🔐 Change Password</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Company Card -->
+            <div class="settings-card" id="company-card">
+                <div class="settings-card-header" onclick="toggleCard('company-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">🏢</span>
+                        Company & Availability
+                    </div>
+                    <div class="settings-card-status">
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <form id="companyForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="companyName">Company name</label>
+                                <input type="text" id="companyName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ownerName">Owner name</label>
+                                <input type="text" id="ownerName" name="ownerName">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="tel" id="phone" name="phone">
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin: 20px 0 12px; font-size: 14px; color: var(--gray-700);">📍 Address (travel time calculation)</h4>
+                        <div class="form-group" style="position: relative;">
+                            <label for="address-search">Search address</label>
+                            <input type="text" id="address-search" placeholder="Start typing..." autocomplete="off">
+                            <div id="address-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2">
+                                <label for="street">Street</label>
+                                <input type="text" id="street" name="street" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="postalCode">Postal code</label>
+                                <input type="text" id="postalCode" name="postalCode" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="city">City</label>
+                                <input type="text" id="city" name="city" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="country">Country</label>
+                                <input type="text" id="country" name="country" value="Netherlands">
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin: 20px 0 12px; font-size: 14px; color: var(--gray-700);">🕐 Weekly Availability</h4>
+                        <p style="color: #666; font-size: 13px; margin-bottom: 12px;">Set your working hours for each day.</p>
+                        
+                        <div class="availability-grid" id="availabilityGrid">
+                            <!-- Loaded dynamically -->
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">💾 Save Company</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Language Card -->
+            <div class="settings-card" id="language-card">
+                <div class="settings-card-header" onclick="toggleCard('language-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">🌐</span>
+                        Language
+                    </div>
+                    <div class="settings-card-status">
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <div class="form-group">
+                        <label for="language-selector">Interface language</label>
+                        <select id="language-selector" onchange="changeLanguage(this.value)" style="max-width: 250px;">
+                            <option value="en">🇬🇧 English</option>
+                            <option value="nl">🇳🇱 Nederlands</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                            <option value="fr">🇫🇷 Français</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- ==================== SERVICES TAB ==================== -->
+        <div class="tab-panel" id="panel-services">
+            
+            <div class="settings-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="margin: 0;">🎹 Services</h2>
+                        <p style="margin: 8px 0 0; color: var(--gray-500);">Manage the services you offer. Buffer times are included in scheduling.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openServiceModal()">+ New Service</button>
+                </div>
+                
+                <div class="services-list" id="servicesList">
+                    <!-- Services loaded dynamically -->
+                </div>
+            </div>
+            
         </div>
     </div>
     
@@ -1180,7 +1478,7 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="serviceDuration">Duration (minutes) *</label>
+                        <label for="serviceDuration">Duration (min) *</label>
                         <input type="number" id="serviceDuration" name="duration" required min="15" step="15" value="60">
                     </div>
                     <div class="form-group">
@@ -1191,34 +1489,34 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="bufferBefore">Buffer vóór (min)</label>
-                        <input type="number" id="bufferBefore" name="bufferBefore" min="0" step="5" value="0" placeholder="e.g. 15 for setup">
+                        <label for="bufferBefore">Buffer before (min)</label>
+                        <input type="number" id="bufferBefore" name="bufferBefore" min="0" step="5" value="0" placeholder="e.g. 15">
                     </div>
                     <div class="form-group">
-                        <label for="bufferAfter">Buffer na (min)</label>
-                        <input type="number" id="bufferAfter" name="bufferAfter" min="0" step="5" value="0" placeholder="e.g. 10 for cleanup">
+                        <label for="bufferAfter">Buffer after (min)</label>
+                        <input type="number" id="bufferAfter" name="bufferAfter" min="0" step="5" value="0" placeholder="e.g. 10">
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="serviceDescription">Beschrijving</label>
-                    <input type="text" id="serviceDescription" name="description" placeholder="Short description of the service">
+                    <label for="serviceDescription">Description</label>
+                    <input type="text" id="serviceDescription" name="description" placeholder="Short description">
                 </div>
                 
                 <div class="form-group">
-                    <label for="serviceColor">Kleur in agenda</label>
+                    <label for="serviceColor">Calendar color</label>
                     <select id="serviceColor" name="color">
-                        <option value="#4CAF50">🟢 Groen</option>
-                        <option value="#2196F3">🔵 Blauw</option>
-                        <option value="#FF9800">🟠 Oranje</option>
-                        <option value="#F44336">🔴 Rood</option>
-                        <option value="#9C27B0">🟣 Paars</option>
-                        <option value="#607D8B">⚫ Grijs</option>
+                        <option value="#4CAF50">🟢 Green</option>
+                        <option value="#2196F3">🔵 Blue</option>
+                        <option value="#FF9800">🟠 Orange</option>
+                        <option value="#F44336">🔴 Red</option>
+                        <option value="#9C27B0">🟣 Purple</option>
+                        <option value="#607D8B">⚫ Gray</option>
                     </select>
                 </div>
                 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Annuleren</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">💾 Save</button>
                 </div>
             </form>
@@ -1227,6 +1525,54 @@
     
     <script src="settings.js"></script>
     <script>
+        // ========== TAB NAVIGATION ==========
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+            
+            // Update panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.toggle('active', panel.id === `panel-${tabName}`);
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('settingsActiveTab', tabName);
+        }
+        
+        // Toggle card expand/collapse
+        function toggleCard(cardId) {
+            const card = document.getElementById(cardId);
+            if (card) {
+                card.classList.toggle('expanded');
+            }
+        }
+        
+        // Restore last active tab
+        function restoreActiveTab() {
+            const savedTab = localStorage.getItem('settingsActiveTab');
+            if (savedTab) {
+                switchTab(savedTab);
+            }
+        }
+        
+        // ========== STATUS BADGES UPDATE ==========
+        function updateStatusBadges() {
+            // Google Calendar
+            if (calendarSyncSettings?.enabled) {
+                document.getElementById('google-status-badge').textContent = 'Connected';
+                document.getElementById('google-status-badge').className = 'status-badge connected';
+                document.getElementById('calendar-tab-status')?.classList.add('active');
+            }
+            
+            // Apple Calendar
+            // Updated in loadAppleCalendarStatus
+            
+            // Calendar Feed
+            // Updated in loadCalendarFeedSettings
+        }
+        
         // Calendar Sync Functions
         let calendarSyncSettings = null;
         let userAuthType = null;
@@ -1257,6 +1603,7 @@
             const statusEl = document.getElementById('calendar-sync-status');
             const optionsEl = document.getElementById('calendar-sync-options');
             const notConnectedEl = document.getElementById('calendar-not-connected');
+            const badge = document.getElementById('google-status-badge');
             
             // Check if user has Google tokens (logged in with Google)
             if (user.authType === 'google') {
@@ -1266,11 +1613,17 @@
                 if (settings.enabled) {
                     statusEl.className = 'sync-status connected';
                     statusEl.innerHTML = `
-                        <strong>✅ Sync active</strong><br>
-                        <span style="color: #666;">Direction: ${getSyncDirectionLabel(settings.syncDirection)}</span>
+                        <strong>✅ Sync active</strong>
+                        <span style="color: #666; margin-left: 8px;">${getSyncDirectionLabel(settings.syncDirection)}</span>
                     `;
                     document.getElementById('sync-now-btn').style.display = 'inline-block';
                     document.getElementById('last-sync-info').style.display = 'block';
+                    
+                    // Update badge
+                    if (badge) {
+                        badge.textContent = 'Connected';
+                        badge.className = 'status-badge connected';
+                    }
                     
                     if (settings.lastSync) {
                         document.getElementById('last-sync-time').textContent = 
@@ -1283,9 +1636,14 @@
                 } else {
                     statusEl.className = 'sync-status disconnected';
                     statusEl.innerHTML = `
-                        <strong>⚠️ Sync disabled</strong><br>
-                        <span style="color: #666;">Your Google account is connected, but sync is not active.</span>
+                        <strong>⚠️ Sync disabled</strong>
+                        <span style="color: #666; margin-left: 8px;">Google connected, sync not active</span>
                     `;
+                    
+                    if (badge) {
+                        badge.textContent = 'Not syncing';
+                        badge.className = 'status-badge disconnected';
+                    }
                 }
                 
                 // Load calendars list
@@ -1295,6 +1653,11 @@
                 notConnectedEl.style.display = 'block';
                 optionsEl.style.display = 'none';
                 statusEl.innerHTML = '';
+                
+                if (badge) {
+                    badge.textContent = 'Not connected';
+                    badge.className = 'status-badge disconnected';
+                }
             }
         }
         
@@ -1468,9 +1831,11 @@
         
         // Load on page load
         document.addEventListener('DOMContentLoaded', () => {
+            restoreActiveTab();
             loadCalendarSyncStatus();
             loadAppleCalendarStatus();
             setupAddressAutocomplete();
+            loadCalendarFeedSettings();
         });
         
         // ========== APPLE CALENDAR ==========
@@ -1484,26 +1849,38 @@
                 const statusEl = document.getElementById('apple-calendar-status');
                 const connectForm = document.getElementById('apple-connect-form');
                 const syncOptions = document.getElementById('apple-sync-options');
+                const badge = document.getElementById('apple-status-badge');
                 
                 if (data.connected) {
                     statusEl.className = 'sync-status connected';
-                    statusEl.innerHTML = `<strong>✅ Connected to Apple Calendar</strong><br><small>Apple ID: ${data.appleId}</small>`;
+                    statusEl.innerHTML = `<strong>✅ Connected</strong><br><small>${data.appleId}</small>`;
                     connectForm.style.display = 'none';
                     syncOptions.style.display = 'block';
                     
-                    // Laad calendars en sync settings
+                    // Update badge
+                    if (badge) {
+                        badge.textContent = 'Connected';
+                        badge.className = 'status-badge connected';
+                    }
+                    
+                    // Load calendars and sync settings
                     loadAppleCalendars();
                     loadAppleSyncSettings();
                 } else {
                     statusEl.className = 'sync-status disconnected';
-                    statusEl.innerHTML = '<strong>Not connected to Apple Calendar</strong>';
+                    statusEl.innerHTML = '<strong>Not connected</strong>';
                     connectForm.style.display = 'block';
                     syncOptions.style.display = 'none';
+                    
+                    if (badge) {
+                        badge.textContent = 'Not connected';
+                        badge.className = 'status-badge disconnected';
+                    }
                 }
             } catch (error) {
                 console.error('Error loading Apple Calendar status:', error);
                 document.getElementById('apple-calendar-status').innerHTML = 
-                    '<strong>⚠️ Could not load Apple Calendar status</strong>';
+                    '<strong>⚠️ Could not load status</strong>';
             }
         }
         
