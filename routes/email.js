@@ -34,7 +34,7 @@ router.post('/test', requireAuth, async (req, res) => {
         }
 
         const { email } = req.body;
-        const testEmail = email || req.user.email;
+        const testEmail = email || req.session.user.email;
 
         if (!testEmail) {
             return res.status(400).json({ error: 'No email address provided' });
@@ -67,7 +67,7 @@ router.post('/test', requireAuth, async (req, res) => {
 router.get('/settings', requireAuth, async (req, res) => {
     try {
         const db = getDb();
-        const userId = req.user.id;
+        const userId = req.session.user.id;
 
         // Get or create email settings for user
         let settings = await db.get(
@@ -111,7 +111,7 @@ router.get('/settings', requireAuth, async (req, res) => {
 router.put('/settings', requireAuth, async (req, res) => {
     try {
         const db = getDb();
-        const userId = req.user.id;
+        const userId = req.session.user.id;
         const { sendConfirmations, sendReminders, reminderHours, sendCancellations, notifyNewBookings } = req.body;
 
         // Upsert settings
@@ -153,7 +153,7 @@ router.post('/send-confirmation', requireAuth, async (req, res) => {
 
         const { appointmentId } = req.body;
         const db = getDb();
-        const userId = req.user.id;
+        const userId = req.session.user.id;
 
         // Get appointment details
         const appointment = await db.get(`
@@ -173,7 +173,7 @@ router.post('/send-confirmation', requireAuth, async (req, res) => {
 
         // Get company name
         const company = await db.get('SELECT company_name FROM company_settings WHERE user_id = ?', [userId]);
-        const companyName = company?.company_name || req.user.name || 'PianoPlanner';
+        const companyName = company?.company_name || req.session.user.name || 'PianoPlanner';
 
         const result = await emailService.sendAppointmentConfirmation({
             customerEmail: appointment.customer_email,
@@ -184,7 +184,7 @@ router.post('/send-confirmation', requireAuth, async (req, res) => {
             companyName,
             notes: appointment.notes,
             // Privacy: customer replies go to the teacher, not PianoPlanner
-            replyTo: req.user.email,
+            replyTo: req.session.user.email,
             fromName: companyName,
             userId: userId
         });
@@ -214,7 +214,7 @@ router.post('/send-reminder', requireAuth, async (req, res) => {
 
         const { appointmentId } = req.body;
         const db = getDb();
-        const userId = req.user.id;
+        const userId = req.session.user.id;
 
         // Get appointment details
         const appointment = await db.get(`
@@ -234,7 +234,7 @@ router.post('/send-reminder', requireAuth, async (req, res) => {
 
         // Get company name
         const company = await db.get('SELECT company_name FROM company_settings WHERE user_id = ?', [userId]);
-        const companyName = company?.company_name || req.user.name || 'PianoPlanner';
+        const companyName = company?.company_name || req.session.user.name || 'PianoPlanner';
 
         // Calculate hours until appointment
         const appointmentDateTime = new Date(`${appointment.date}T${appointment.start_time}`);
@@ -249,7 +249,7 @@ router.post('/send-reminder', requireAuth, async (req, res) => {
             companyName,
             hoursUntil,
             // Privacy: customer replies go to the teacher, not PianoPlanner
-            replyTo: req.user.email,
+            replyTo: req.session.user.email,
             fromName: companyName,
             userId: userId
         });

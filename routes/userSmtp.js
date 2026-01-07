@@ -113,7 +113,7 @@ router.get('/providers', requireAuth, (req, res) => {
 router.get('/settings', requireAuth, async (req, res) => {
     try {
         const db = getDb();
-        const userId = req.user.id;
+        const userId = req.session.user.id;
 
         const settings = await new Promise((resolve, reject) => {
             db.get('SELECT * FROM user_smtp_settings WHERE user_id = ?', [userId], (err, row) => {
@@ -159,7 +159,7 @@ router.get('/settings', requireAuth, async (req, res) => {
 router.post('/settings', requireAuth, async (req, res) => {
     try {
         const db = getDb();
-        const userId = req.user.id;
+        const userId = req.session.user.id;
         const { 
             enabled, 
             provider, 
@@ -250,7 +250,7 @@ router.post('/settings', requireAuth, async (req, res) => {
             });
         }
 
-        console.log(`📧 SMTP settings saved for user ${req.user.email}`);
+        console.log(`📧 SMTP settings saved for user ${req.session.user.email}`);
         res.json({ success: true, message: 'SMTP instellingen opgeslagen' });
     } catch (error) {
         console.error('Save SMTP settings error:', error);
@@ -265,8 +265,8 @@ router.post('/settings', requireAuth, async (req, res) => {
 router.post('/test', requireAuth, async (req, res) => {
     try {
         const db = getDb();
-        const userId = req.user.id;
-        const userEmail = req.user.email;
+        const userId = req.session.user.id;
+        const userEmail = req.session.user.email;
 
         // Get settings from database
         const settings = await new Promise((resolve, reject) => {
@@ -371,7 +371,7 @@ router.post('/test', requireAuth, async (req, res) => {
                     last_test_at = CURRENT_TIMESTAMP,
                     last_test_result = ?
                 WHERE user_id = ?
-            `, [error.message, req.user.id], () => resolve());
+            `, [error.message, req.session.user.id], () => resolve());
         });
 
         // Return user-friendly error
@@ -398,7 +398,7 @@ router.post('/test', requireAuth, async (req, res) => {
 router.delete('/settings', requireAuth, async (req, res) => {
     try {
         const db = getDb();
-        const userId = req.user.id;
+        const userId = req.session.user.id;
 
         await new Promise((resolve, reject) => {
             db.run('DELETE FROM user_smtp_settings WHERE user_id = ?', [userId], (err) => {
@@ -407,7 +407,7 @@ router.delete('/settings', requireAuth, async (req, res) => {
             });
         });
 
-        console.log(`📧 SMTP settings removed for user ${req.user.email}`);
+        console.log(`📧 SMTP settings removed for user ${req.session.user.email}`);
         res.json({ success: true, message: 'SMTP instellingen verwijderd' });
     } catch (error) {
         console.error('Delete SMTP settings error:', error);
