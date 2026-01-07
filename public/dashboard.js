@@ -5,6 +5,7 @@ let subscription = null;
 let allEvents = [];
 let currentView = 'week';
 let currentDate = new Date();
+let miniMonthDate = new Date();
 
 const DAYS_NL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -337,6 +338,8 @@ function renderCalendar() {
             renderMonthView(container);
             break;
     }
+
+    renderMiniCalendar();
 }
 
 function renderDayView(container) {
@@ -503,6 +506,71 @@ function goToDay(year, month, day) {
     currentDate = new Date(year, month, day);
     currentView = 'day';
     document.getElementById('viewSelect').value = 'day';
+    renderCalendar();
+}
+
+// ========== MINI MONTH CALENDAR ==========
+
+function renderMiniCalendar() {
+    const grid = document.getElementById('miniCalendarGrid');
+    const title = document.getElementById('miniCalendarTitle');
+    if (!grid || !title) return;
+
+    // Sync mini month with current date
+    miniMonthDate = new Date(currentDate);
+
+    title.textContent = `${MONTHS_NL[miniMonthDate.getMonth()]} ${miniMonthDate.getFullYear()}`;
+    grid.innerHTML = '';
+
+    const today = new Date();
+    const selectedDay = new Date(currentDate);
+    const firstDay = new Date(miniMonthDate.getFullYear(), miniMonthDate.getMonth(), 1);
+    const startDate = new Date(firstDay);
+    const dow = startDate.getDay();
+    const diff = dow === 0 ? 6 : dow - 1; // Monday start
+    startDate.setDate(startDate.getDate() - diff);
+
+    for (let i = 0; i < 42; i++) {
+        const day = new Date(startDate);
+        day.setDate(startDate.getDate() + i);
+
+        const isCurrentMonth = day.getMonth() === miniMonthDate.getMonth();
+        const isToday = isSameDay(day, today);
+        const isSelected = isSameDay(day, selectedDay);
+        const dayEvents = getEventsForDay(day);
+
+        const cell = document.createElement('div');
+        cell.className = `mini-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`;
+        cell.onclick = () => {
+            currentDate = new Date(day);
+            currentView = 'day';
+            document.getElementById('viewSelect').value = 'day';
+            renderCalendar();
+        };
+
+        const num = document.createElement('div');
+        num.className = 'mini-day-number';
+        num.textContent = day.getDate();
+        cell.appendChild(num);
+
+        if (dayEvents.length) {
+            const dots = document.createElement('div');
+            dots.className = 'mini-dots';
+            dayEvents.slice(0, 3).forEach((e) => {
+                const dot = document.createElement('span');
+                dot.className = 'mini-dot';
+                dot.style.background = getEventColor(e);
+                dots.appendChild(dot);
+            });
+            cell.appendChild(dots);
+        }
+
+        grid.appendChild(cell);
+    }
+}
+
+function changeMiniMonth(offset) {
+    currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1);
     renderCalendar();
 }
 

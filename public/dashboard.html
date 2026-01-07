@@ -173,6 +173,116 @@
         .quick-btn:last-child {
             margin-bottom: 0;
         }
+
+        /* Mini month calendar (left panel) */
+        .mini-calendar-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200, #e5e5e5);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mini-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mini-title {
+            font-weight: 600;
+            color: var(--gray-900, #111);
+            font-size: 14px;
+        }
+
+        .mini-nav {
+            display: flex;
+            gap: 6px;
+        }
+
+        .mini-nav button {
+            border: 1px solid var(--gray-200, #e5e5e5);
+            background: var(--gray-50, #f7f7f7);
+            color: var(--gray-700, #444);
+            border-radius: 6px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .mini-daynames {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            font-size: 11px;
+            color: var(--gray-500, #666);
+            text-align: center;
+        }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .mini-day {
+            border-radius: 8px;
+            padding: 6px 4px;
+            min-height: 48px;
+            background: var(--gray-50, #fafafa);
+            border: 1px solid transparent;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s ease;
+            font-size: 12px;
+            color: var(--gray-800, #1f2937);
+        }
+
+        .mini-day:hover {
+            border-color: var(--gray-200, #e5e5e5);
+            background: var(--white);
+        }
+
+        .mini-day.other-month {
+            color: var(--gray-400, #9ca3af);
+            background: var(--gray-50, #f9fafb);
+        }
+
+        .mini-day.today {
+            border-color: var(--accent, #3b82f6);
+            background: #e8f1ff;
+            color: #0b66d6;
+            font-weight: 600;
+        }
+
+        .mini-day.selected {
+            border-color: var(--accent, #3b82f6);
+            background: #eef4ff;
+        }
+
+        .mini-day-number {
+            font-weight: 600;
+        }
+
+        .mini-dots {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .mini-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: var(--accent, #3b82f6);
+        }
         
         /* Center - Calendar */
         .calendar-container {
@@ -791,6 +901,21 @@
                     <a href="/pianos.html" class="quick-btn">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
                     <a href="/billing.html" class="quick-btn">💳 <span data-i18n="billing.title">Subscription</span></a>
                     <button onclick="openRouteOptimizer()" class="quick-btn" style="border: none; background: none; width: 100%; cursor: pointer;">🗺️ Optimize route</button>
+                </div>
+
+                <div class="mini-calendar-card">
+                    <div class="mini-header">
+                        <div class="mini-title" id="miniCalendarTitle">Month</div>
+                        <div class="mini-nav">
+                            <button type="button" onclick="changeMiniMonth(-1)">‹</button>
+                            <button type="button" onclick="goToToday()">Today</button>
+                            <button type="button" onclick="changeMiniMonth(1)">›</button>
+                        </div>
+                    </div>
+                    <div class="mini-daynames">
+                        <div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div><div>Su</div>
+                    </div>
+                    <div class="mini-grid" id="miniCalendarGrid"></div>
                 </div>
             </div>
 
