@@ -169,15 +169,18 @@ router.post('/', async (req, res) => {
             try {
                 const db = getDb();
                 
-                // Check email settings
+                // Check email settings (default to enabled if not set)
                 const emailSettings = await new Promise((resolve, reject) => {
                     db.get('SELECT * FROM email_settings WHERE user_id = ?', [userId], (err, row) => {
                         if (err) reject(err);
-                        else resolve(row);
+                        else resolve(row || { 
+                            send_confirmations: 1, 
+                            notify_new_bookings: 1 
+                        }); // Default: all emails ON
                     });
                 });
                 
-                if (emailSettings?.send_confirmations) {
+                if (emailSettings.send_confirmations) {
                     // Get customer email
                     const customer = await new Promise((resolve, reject) => {
                         db.get('SELECT email, name FROM customers WHERE id = ? AND user_id = ?', 

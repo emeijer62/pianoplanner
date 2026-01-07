@@ -311,18 +311,21 @@ router.post('/:slug', async (req, res) => {
             try {
                 const db = getDb();
                 
-                // Check email settings
+                // Check email settings (default to enabled if not set)
                 const emailSettings = await new Promise((resolve, reject) => {
                     db.get('SELECT * FROM email_settings WHERE user_id = ?', [user.id], (err, row) => {
                         if (err) reject(err);
-                        else resolve(row);
+                        else resolve(row || { 
+                            send_confirmations: 1, 
+                            notify_new_bookings: 1 
+                        }); // Default: all emails ON
                     });
                 });
                 
                 const companyName = company?.name || 'Piano Services';
                 
-                // Send confirmation to customer if enabled
-                if (emailSettings?.send_confirmations && customer.email) {
+                // Send confirmation to customer if enabled (default: ON)
+                if (emailSettings.send_confirmations && customer.email) {
                     await emailService.sendAppointmentConfirmation({
                         customerEmail: customer.email,
                         customerName: customer.name,
@@ -334,8 +337,8 @@ router.post('/:slug', async (req, res) => {
                     console.log(`📧 Confirmation sent to customer: ${customer.email}`);
                 }
                 
-                // Send notification to technician if enabled
-                if (emailSettings?.notify_new_bookings && user.email) {
+                // Send notification to technician if enabled (default: ON)
+                if (emailSettings.notify_new_bookings && user.email) {
                     await emailService.sendNewBookingNotification({
                         technicianEmail: user.email,
                         customerName: customer.name,
@@ -353,6 +356,8 @@ router.post('/:slug', async (req, res) => {
                 console.error('Failed to send booking emails:', emailError.message);
                 // Don't fail the booking if email fails
             }
+        } else {
+            console.log('⚠️ Email niet geconfigureerd - geen bevestigingen verstuurd');
         }
         
         res.json({
