@@ -736,9 +736,10 @@ async function performAppleSync(userId, credentials, syncSettings) {
                 }
                 
                 debugLog(`🍎 Creating local appointment from Apple: ${event.summary}`);
+                debugLog(`🍎 Event data: start=${event.start}, end=${event.end}, id=${event.id}`);
                 
                 // Maak lokale afspraak aan
-                await appointmentStore.createAppointment(userId, {
+                const newAppointment = await appointmentStore.createAppointment(userId, {
                     title: event.summary,
                     description: event.description,
                     location: event.location,
@@ -749,6 +750,7 @@ async function performAppleSync(userId, credentials, syncSettings) {
                     source: 'apple_calendar'
                 });
                 
+                console.log(`🍎 Created appointment: ${newAppointment?.id}, start: ${newAppointment?.start}`);
                 synced++;
             } catch (error) {
                 console.error(`🍎 Error syncing from Apple: ${event.summary}`, error.message);
