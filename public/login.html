@@ -723,6 +723,10 @@
         async function checkAuth() {
             try {
                 const response = await fetch('/api/user');
+                if (!response.ok) {
+                    // Not logged in - this is expected, not an error
+                    return;
+                }
                 const data = await response.json();
                 
                 if (data.loggedIn) {
@@ -739,7 +743,7 @@
                     document.getElementById('user-email').textContent = data.user.email;
                 }
             } catch (error) {
-                console.log('Not logged in');
+                // Network error or other issue - ignore silently
             }
         }
         

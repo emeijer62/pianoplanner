@@ -691,16 +691,28 @@ async function disconnectAppleCalendar() {
 }
 
 async function loadAppleCalendars() {
+    const selectGroup = document.getElementById('apple-calendar-select-group');
+    const select = document.getElementById('appleCalendarSelect');
+    
+    // Toon de selectie groep meteen
+    selectGroup.style.display = 'block';
+    select.innerHTML = '<option value="">Loading calendars...</option>';
+    
     try {
         const response = await fetch('/api/apple-calendar/calendars');
         const data = await response.json();
         
         if (data.error) {
             console.error('Error loading calendars:', data.error);
+            select.innerHTML = '<option value="">Error loading calendars</option>';
             return;
         }
         
-        const select = document.getElementById('appleCalendarSelect');
+        if (!data.calendars || data.calendars.length === 0) {
+            select.innerHTML = '<option value="">No calendars found</option>';
+            return;
+        }
+        
         select.innerHTML = '<option value="">Select a calendar...</option>';
         
         for (const calendar of data.calendars) {
@@ -710,10 +722,9 @@ async function loadAppleCalendars() {
             select.appendChild(option);
         }
         
-        document.getElementById('apple-calendar-select-group').style.display = 'block';
-        
     } catch (error) {
         console.error('Error loading Apple calendars:', error);
+        select.innerHTML = '<option value="">Error: ' + error.message + '</option>';
     }
 }
 
