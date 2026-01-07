@@ -38,58 +38,53 @@ async function loadCustomers() {
 function renderCustomers(customers) {
     const container = document.getElementById('customers-list');
     
+    // Update stats
+    const totalEl = document.getElementById('stat-total');
+    const monthEl = document.getElementById('stat-month');
+    const pianosEl = document.getElementById('stat-pianos');
+    
+    if (totalEl) totalEl.textContent = allCustomers.length;
+    if (pianosEl) pianosEl.textContent = allCustomers.filter(c => c.pianos?.length > 0).length;
+    
+    // Count customers created this month
+    const now = new Date();
+    const thisMonth = allCustomers.filter(c => {
+        if (!c.createdAt) return false;
+        const created = new Date(c.createdAt);
+        return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+    }).length;
+    if (monthEl) monthEl.textContent = thisMonth;
+    
     if (customers.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">👥</div>
-                <p>No customers yet</p>
+                <h3 class="empty-state-title">No customers yet</h3>
+                <p class="empty-state-text">Add your first customer to get started</p>
+                <button onclick="openModal()" class="btn btn-primary">+ Add Customer</button>
             </div>
         `;
         return;
     }
     
     container.innerHTML = customers.map(customer => `
-        <div class="user-card" onclick="viewCustomer('${customer.id}')" style="cursor: pointer;">
-            <div class="user-card-header">
-                <div class="user-avatar" style="display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
-                    ${customer.name.charAt(0).toUpperCase()}
-                </div>
-                <div class="user-info-main">
-                    <h3>${escapeHtml(customer.name)}</h3>
-                    <span class="user-email">${escapeHtml(customer.address.city || 'No city')}</span>
+        <div class="list-item" onclick="viewCustomer('${customer.id}')">
+            <div class="list-item-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600;">
+                ${customer.name.charAt(0).toUpperCase()}
+            </div>
+            <div class="list-item-content">
+                <div class="list-item-title">${escapeHtml(customer.name)}</div>
+                <div class="list-item-subtitle">
+                    ${customer.address.city || 'No city'} 
+                    ${customer.phone ? '• ' + customer.phone : ''} 
+                    ${customer.pianos?.length ? '• 🎹 ' + customer.pianos.length : ''}
                 </div>
             </div>
-            <div class="user-card-details">
-                <div class="user-detail">
-                    <span class="detail-label">📧 Email:</span>
-                    <span>${customer.email || '-'}</span>
+            <div class="list-item-meta" onclick="event.stopPropagation();">
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary btn-small" onclick="openModal('${customer.id}')">Edit</button>
+                    <a href="/booking.html?customer=${customer.id}" class="btn btn-primary btn-small">+ Appointment</a>
                 </div>
-                <div class="user-detail">
-                    <span class="detail-label">📞 Phone:</span>
-                    <span>${customer.phone || '-'}</span>
-                </div>
-                <div class="user-detail">
-                    <span class="detail-label">📍 Address:</span>
-                    <span>${customer.address.street || '-'} ${customer.address.postalCode || ''}</span>
-                </div>
-                <div class="user-detail">
-                    <span class="detail-label">🎹 Pianos:</span>
-                    <span>${customer.pianos?.length || 0}</span>
-                </div>
-            </div>
-            <div class="user-card-actions" onclick="event.stopPropagation();">
-                <a href="/customer-detail.html?id=${customer.id}" class="btn btn-small btn-secondary">
-                    👁️ Details
-                </a>
-                <button class="btn btn-small btn-secondary" onclick="openModal('${customer.id}')">
-                    ✏️ Edit
-                </button>
-                <a href="/booking.html?customer=${customer.id}" class="btn btn-small btn-primary">
-                    📅 Appointment
-                </a>
-                <button class="btn btn-small btn-danger" onclick="deleteCustomer('${customer.id}', '${escapeHtml(customer.name)}')">
-                    🗑️
-                </button>
             </div>
         </div>
     `).join('');
@@ -137,11 +132,11 @@ function openModal(customerId = null) {
         document.getElementById('modal-title').textContent = 'New Customer';
     }
     
-    modal.style.display = 'flex';
+    modal.classList.add('active');
 }
 
 function closeModal() {
-    document.getElementById('customer-modal').style.display = 'none';
+    document.getElementById('customer-modal').classList.remove('active');
 }
 
 async function handleSubmit(e) {

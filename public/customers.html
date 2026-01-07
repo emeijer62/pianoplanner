@@ -4,97 +4,129 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customers - PianoPlanner</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>">
     <script src="/js/i18n.js"></script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <span class="piano-icon">🎹</span>
-            <span>PianoPlanner</span>
-        </div>
-        <div class="nav-links">
-            <a href="/dashboard.html">📅 <span data-i18n="nav.dashboard">Dashboard</span></a>
-            <a href="/customers.html" class="active">👥 <span data-i18n="nav.customers">Customers</span></a>
-            <a href="/pianos.html">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
-            <a href="/settings.html">⚙️ <span data-i18n="nav.settings">Settings</span></a>
-        </div>
-        <div class="nav-user">
-            <a href="/booking.html" class="btn btn-small btn-primary">+ <span data-i18n="appointments.newAppointment">Appointment</span></a>
-            <a href="/auth/logout" class="btn btn-small" data-i18n="nav.logout">Log out</a>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="/dashboard.html" class="nav-logo">
+                <span class="nav-logo-icon">🎹</span>
+                <span>PianoPlanner</span>
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/customers.html" class="nav-link active">Customers</a>
+                <a href="/pianos.html" class="nav-link">Pianos</a>
+                <a href="/settings.html" class="nav-link">Settings</a>
+            </div>
+            <div class="nav-user">
+                <a href="/booking.html" class="btn btn-primary btn-small">+ Appointment</a>
+                <a href="/auth/logout" class="btn btn-secondary btn-small">Log out</a>
+            </div>
         </div>
     </nav>
 
-    <main class="dashboard">
-        <div class="dashboard-header">
-            <h1>👥 <span data-i18n="customers.title">Customer Management</span></h1>
-            <button id="add-customer-btn" class="btn btn-primary">+ <span data-i18n="customers.addCustomer">New Customer</span></button>
-        </div>
-
-        <div class="search-bar">
-            <input type="text" id="search-input" data-i18n="customers.searchPlaceholder" data-i18n-attr="placeholder" placeholder="🔍 Search by name, email, city or phone...">
-        </div>
-
-        <section class="events-section">
-            <div id="customers-list" class="users-list">
-                <div class="loading" data-i18n="common.loading">Loading customers...</div>
+    <!-- Main Content -->
+    <main class="page">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Customers</h1>
+                <p class="page-subtitle">Manage your customer database</p>
             </div>
-        </section>
+            <div class="page-actions">
+                <button id="add-customer-btn" class="btn btn-primary">+ New Customer</button>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="card" style="margin-bottom: 24px; padding: 16px 20px;">
+            <input type="text" id="search-input" class="form-input" placeholder="🔍 Search customers by name, email, city or phone..." style="border: none; padding: 0; font-size: 16px;">
+        </div>
+
+        <!-- Stats -->
+        <div class="stat-grid" style="margin-bottom: 24px;">
+            <div class="stat-card">
+                <div class="stat-label">Total Customers</div>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">This Month</div>
+                <div class="stat-value" id="stat-month">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">With Pianos</div>
+                <div class="stat-value" id="stat-pianos">0</div>
+            </div>
+        </div>
+
+        <!-- Customer List -->
+        <div id="customers-list" class="list">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+        </div>
     </main>
 
     <!-- Modal for adding/editing customer -->
-    <div id="customer-modal" class="modal" style="display: none;">
-        <div class="modal-content">
+    <div id="customer-modal" class="modal-overlay">
+        <div class="modal">
             <div class="modal-header">
-                <h2 id="modal-title">New Customer</h2>
+                <h2 class="modal-title" id="modal-title">New Customer</h2>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            <form id="customer-form">
-                <input type="hidden" id="customer-id">
-                
-                <div class="form-group">
-                    <label for="customer-name">Name *</label>
-                    <input type="text" id="customer-name" required>
-                </div>
-                
-                <div class="form-row">
+            <div class="modal-body">
+                <form id="customer-form">
+                    <input type="hidden" id="customer-id">
+                    
                     <div class="form-group">
-                        <label for="customer-email">Email</label>
-                        <input type="email" id="customer-email">
+                        <label class="form-label" for="customer-name">Name *</label>
+                        <input type="text" id="customer-name" class="form-input" required placeholder="Full name">
                     </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="customer-email">Email</label>
+                            <input type="email" id="customer-email" class="form-input" placeholder="email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="customer-phone">Phone</label>
+                            <input type="tel" id="customer-phone" class="form-input" placeholder="+31 6 12345678">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="position: relative;">
+                        <label class="form-label" for="customer-street">Street + House number</label>
+                        <input type="text" id="customer-street" class="form-input" autocomplete="off" placeholder="Start typing an address...">
+                        <div id="address-suggestions" class="autocomplete-suggestions"></div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="customer-postalcode">Postal Code</label>
+                            <input type="text" id="customer-postalcode" class="form-input" placeholder="1234 AB">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="customer-city">City</label>
+                            <input type="text" id="customer-city" class="form-input" placeholder="Amsterdam">
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
-                        <label for="customer-phone">Phone</label>
-                        <input type="tel" id="customer-phone">
+                        <label class="form-label" for="customer-notes">Notes</label>
+                        <textarea id="customer-notes" class="form-textarea" rows="3" placeholder="Additional notes about this customer..."></textarea>
                     </div>
-                </div>
-                
-                <div class="form-group" style="position: relative;">
-                    <label for="customer-street">Street + house number</label>
-                    <input type="text" id="customer-street" autocomplete="off">
-                    <div id="address-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="customer-postalcode">Postal code</label>
-                        <input type="text" id="customer-postalcode">
-                    </div>
-                    <div class="form-group">
-                        <label for="customer-city">City</label>
-                        <input type="text" id="customer-city">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="customer-notes" data-i18n="customers.notes">Notes</label>
-                    <textarea id="customer-notes" rows="3"></textarea>
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()" data-i18n="common.cancel">Cancel</button>
-                    <button type="submit" class="btn btn-primary" data-i18n="common.save">Save</button>
-                </div>
-            </form>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('customer-form').requestSubmit()">Save Customer</button>
+            </div>
         </div>
     </div>
 
@@ -134,49 +166,31 @@
         });
         
         suggestions.addEventListener('mousedown', async (e) => {
-            e.preventDefault(); // Prevent blur on input
-            e.stopPropagation(); // Stop event bubbling
+            e.preventDefault();
+            e.stopPropagation();
             
             const item = e.target.closest('.autocomplete-item');
-            console.log('Mousedown event, target:', e.target, 'item found:', item);
-            
             if (item) {
                 const placeId = item.dataset.placeId;
                 const description = item.textContent;
                 
-                console.log('Selected address:', description, 'PlaceId:', placeId);
-                
-                // Fill street with first part of address
                 streetInput.value = description.split(',')[0];
                 suggestions.style.display = 'none';
                 
-                // Get details for postal code and city
                 if (placeId) {
                     try {
-                        console.log('Fetching place details for:', placeId);
                         const res = await fetch(`/api/booking/place-details?placeId=${encodeURIComponent(placeId)}`);
-                        
-                        if (!res.ok) {
-                            console.error('API returned status:', res.status, res.statusText);
-                            return;
-                        }
+                        if (!res.ok) return;
                         
                         const data = await res.json();
-                        console.log('Place details response:', data);
-                        
-                        // Get references to input elements
                         const postalCodeInput = document.getElementById('customer-postalcode');
                         const cityInput = document.getElementById('customer-city');
                         
-                        // Fill in fields from response
                         if (data.address) {
                             if (postalCodeInput) postalCodeInput.value = data.address.postalCode || '';
                             if (cityInput) cityInput.value = data.address.city || '';
-                            if (data.address.street) {
-                                streetInput.value = data.address.street;
-                            }
+                            if (data.address.street) streetInput.value = data.address.street;
                         } else if (data.street || data.postalCode || data.city) {
-                            // Direct format
                             if (postalCodeInput) postalCodeInput.value = data.postalCode || '';
                             if (cityInput) cityInput.value = data.city || '';
                             if (data.street) streetInput.value = data.street;
@@ -188,7 +202,6 @@
             }
         });
         
-        // Hide suggestions when clicking outside (use mousedown for timing)
         document.addEventListener('mousedown', (e) => {
             if (!e.target.closest('#customer-street') && !e.target.closest('#address-suggestions')) {
                 suggestions.style.display = 'none';
@@ -201,25 +214,27 @@
             top: 100%;
             left: 0;
             right: 0;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            box-shadow: var(--shadow);
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
             z-index: 1000;
             max-height: 200px;
             overflow-y: auto;
+            display: none;
         }
         .autocomplete-item {
-            padding: 0.6rem 0.75rem;
+            padding: 12px 16px;
             cursor: pointer;
-            font-size: 0.85rem;
-            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+            border-bottom: 1px solid var(--gray-100);
+            transition: background var(--transition-fast);
         }
         .autocomplete-item:last-child {
             border-bottom: none;
         }
         .autocomplete-item:hover {
-            background: var(--light-gray);
+            background: var(--gray-50);
         }
     </style>
 </body>

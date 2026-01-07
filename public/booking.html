@@ -4,32 +4,295 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Appointment - PianoPlanner</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="booking.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎹</text></svg>">
     <script src="/js/i18n.js"></script>
+    <style>
+        .booking-wizard {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .wizard-step {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-bottom: 24px;
+            border: 1px solid var(--gray-200);
+        }
+        
+        .wizard-step h2 {
+            font-size: 22px;
+            margin-bottom: 24px;
+            color: var(--gray-900);
+        }
+        
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        
+        .customer-search-box {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .search-results.active {
+            display: block;
+        }
+        
+        .search-result-item {
+            padding: 14px 18px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--gray-100);
+            transition: background var(--transition-fast);
+        }
+        
+        .search-result-item:hover {
+            background: var(--gray-50);
+        }
+        
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .search-result-name {
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+        
+        .search-result-details {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+        
+        .divider {
+            text-align: center;
+            color: var(--gray-400);
+            font-size: 14px;
+            margin: 28px 0;
+            position: relative;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: calc(50% - 60px);
+            height: 1px;
+            background: var(--gray-200);
+        }
+        
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        
+        .selected-info {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .info-card {
+            flex: 1;
+            background: var(--gray-50);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+        }
+        
+        .info-card strong {
+            color: var(--gray-900);
+        }
+        
+        .info-card .badge {
+            margin-left: 8px;
+        }
+        
+        .date-picker-section {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 24px;
+        }
+        
+        .date-picker-section .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .slot-result {
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .slot-found {
+            background: var(--green-light);
+            border: 1px solid var(--green);
+        }
+        
+        .slot-time {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 12px 0;
+        }
+        
+        .slot-date {
+            color: var(--gray-600);
+            font-size: 15px;
+        }
+        
+        .confirmation-card {
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+        }
+        
+        .confirm-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 15px;
+        }
+        
+        .confirm-row:last-of-type {
+            border-bottom: none;
+        }
+        
+        .confirm-row.highlight {
+            background: var(--blue-light);
+            margin: 16px -28px;
+            padding: 18px 28px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+        }
+        
+        .confirm-label {
+            color: var(--gray-500);
+        }
+        
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .confirm-actions .btn-large {
+            flex: 1;
+        }
+        
+        .success-message {
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .success-message h2 {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+        
+        .success-message p {
+            font-size: 16px;
+            color: var(--gray-500);
+            margin-bottom: 32px;
+        }
+        
+        .success-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+        
+        .preselected-notification {
+            background: var(--green-light);
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            margin-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(52, 199, 89, 0.3);
+        }
+        
+        @media (max-width: 640px) {
+            .selected-info {
+                flex-direction: column;
+            }
+            
+            .date-picker-section {
+                flex-direction: column;
+            }
+            
+            .confirm-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-brand">
-            <span class="piano-icon">🎹</span>
-            <span>PianoPlanner</span>
-        </div>
-        <div class="nav-user">
-            <a href="/dashboard.html" class="btn btn-small btn-secondary">← Dashboard</a>
-            <a href="/customers.html" class="btn btn-small btn-secondary">👥 Customers</a>
-            <a href="/auth/logout" class="btn btn-small">Logout</a>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="/dashboard.html" class="nav-logo">
+                <span class="nav-logo-icon">🎹</span>
+                <span>PianoPlanner</span>
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link">Dashboard</a>
+                <a href="/customers.html" class="nav-link">Customers</a>
+                <a href="/pianos.html" class="nav-link">Pianos</a>
+                <a href="/settings.html" class="nav-link">Settings</a>
+            </div>
+            <div class="nav-user">
+                <a href="/auth/logout" class="btn btn-secondary btn-small">Log out</a>
+            </div>
         </div>
     </nav>
 
-    <main class="booking-page">
-        <h1>📅 Schedule New Appointment</h1>
-        
+    <!-- Main Content -->
+    <main class="page">
+        <div class="page-header" style="justify-content: center; text-align: center;">
+            <div>
+                <h1 class="page-title">📅 Schedule Appointment</h1>
+                <p class="page-subtitle">Book a new appointment in 4 easy steps</p>
+            </div>
+        </div>
+
         <div class="booking-wizard">
             <!-- Step 1: Choose service -->
             <section class="wizard-step" id="step-service">
                 <h2>1. Choose a service</h2>
                 <div id="services-grid" class="services-grid">
-                    <div class="loading">Loading services...</div>
+                    <div class="loading"><div class="spinner"></div></div>
                 </div>
             </section>
 
@@ -38,58 +301,54 @@
                 <h2>2. Customer details</h2>
                 
                 <div class="customer-search-box">
-                    <input type="text" id="customer-search" placeholder="🔍 Search existing customer (name, email, city)...">
+                    <input type="text" id="customer-search" class="form-input" placeholder="🔍 Search existing customer (name, email, city)...">
                     <div id="search-results" class="search-results"></div>
                 </div>
                 
                 <div class="divider">or add new customer</div>
                 
-                <form id="customer-form" class="customer-form">
+                <form id="customer-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="customer-name">Name *</label>
-                            <input type="text" id="customer-name" required>
+                            <label class="form-label" for="customer-name">Name *</label>
+                            <input type="text" id="customer-name" class="form-input" required>
                         </div>
                         <div class="form-group">
-                            <label for="customer-phone">Phone</label>
-                            <input type="tel" id="customer-phone">
+                            <label class="form-label" for="customer-phone">Phone</label>
+                            <input type="tel" id="customer-phone" class="form-input">
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="customer-email">Email</label>
-                            <input type="email" id="customer-email">
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label" for="customer-email">Email</label>
+                        <input type="email" id="customer-email" class="form-input">
                     </div>
                     <div class="form-row">
-                        <div class="form-group flex-2">
-                            <label for="customer-street">Street + number</label>
-                            <input type="text" id="customer-street" placeholder="e.g. Main Street 12">
+                        <div class="form-group" style="flex: 2;">
+                            <label class="form-label" for="customer-street">Street + number</label>
+                            <input type="text" id="customer-street" class="form-input" placeholder="e.g. Main Street 12">
                         </div>
                         <div class="form-group">
-                            <label for="customer-postalcode">Postal code</label>
-                            <input type="text" id="customer-postalcode" placeholder="12345">
+                            <label class="form-label" for="customer-postalcode">Postal code</label>
+                            <input type="text" id="customer-postalcode" class="form-input" placeholder="12345">
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="customer-city">City *</label>
-                            <input type="text" id="customer-city" required placeholder="e.g. New York">
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label" for="customer-city">City *</label>
+                        <input type="text" id="customer-city" class="form-input" required placeholder="e.g. Amsterdam">
                     </div>
                     
-                    <button type="submit" class="btn btn-primary">Save customer & continue</button>
+                    <button type="submit" class="btn btn-primary">Save customer & continue →</button>
                 </form>
             </section>
 
             <!-- Step 3: Choose date and time -->
             <section class="wizard-step" id="step-datetime" style="display: none;">
-                <h2>3. Choose date</h2>
+                <h2>3. Choose date & time</h2>
                 
                 <div class="selected-info">
                     <div class="info-card">
                         <strong>Service:</strong> <span id="selected-service-name">-</span>
-                        <span class="badge" id="selected-service-duration">-</span>
+                        <span class="badge badge-primary" id="selected-service-duration">-</span>
                     </div>
                     <div class="info-card">
                         <strong>Customer:</strong> <span id="selected-customer-name">-</span>
@@ -98,9 +357,11 @@
                 </div>
                 
                 <div class="date-picker-section">
-                    <label for="appointment-date">Preferred date:</label>
-                    <input type="date" id="appointment-date">
-                    <button id="find-slot-btn" class="btn btn-primary">🔍 Find first available time</button>
+                    <div class="form-group">
+                        <label class="form-label" for="appointment-date">Preferred date</label>
+                        <input type="date" id="appointment-date" class="form-input">
+                    </div>
+                    <button id="find-slot-btn" class="btn btn-primary">🔍 Find available time</button>
                 </div>
                 
                 <div id="slot-result" class="slot-result" style="display: none;">
@@ -114,29 +375,29 @@
                 
                 <div class="confirmation-card">
                     <div class="confirm-row">
-                        <span class="confirm-label">📋 Service:</span>
+                        <span class="confirm-label">📋 Service</span>
                         <span id="confirm-service">-</span>
                     </div>
                     <div class="confirm-row">
-                        <span class="confirm-label">👤 Customer:</span>
+                        <span class="confirm-label">👤 Customer</span>
                         <span id="confirm-customer">-</span>
                     </div>
                     <div class="confirm-row">
-                        <span class="confirm-label">📍 Location:</span>
+                        <span class="confirm-label">📍 Location</span>
                         <span id="confirm-location">-</span>
                     </div>
                     <div class="confirm-row">
-                        <span class="confirm-label">🚗 Travel time:</span>
+                        <span class="confirm-label">🚗 Travel time</span>
                         <span id="confirm-travel">-</span>
                     </div>
                     <div class="confirm-row highlight">
-                        <span class="confirm-label">📅 Date & time:</span>
+                        <span class="confirm-label">📅 Date & time</span>
                         <span id="confirm-datetime">-</span>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="booking-notes">Notes (optional)</label>
-                        <textarea id="booking-notes" placeholder="Extra information for this appointment..."></textarea>
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label class="form-label" for="booking-notes">Notes (optional)</label>
+                        <textarea id="booking-notes" class="form-textarea" placeholder="Extra information for this appointment..."></textarea>
                     </div>
                     
                     <div class="confirm-actions">
@@ -151,7 +412,7 @@
                 <div class="success-message">
                     <div class="success-icon">✅</div>
                     <h2>Appointment Booked!</h2>
-                    <p>The appointment has been added to your Google Calendar.</p>
+                    <p>The appointment has been added to your calendar.</p>
                     <div class="success-actions">
                         <a href="/booking.html" class="btn btn-primary">+ New Appointment</a>
                         <a href="/dashboard.html" class="btn btn-secondary">Go to Dashboard</a>
