@@ -794,6 +794,73 @@
             </div>
         </div>
         
+        <!-- Calendar Feed / Abonnement -->
+        <div class="settings-section">
+            <h2>📅 Agenda Abonnement</h2>
+            <p style="color: #666; margin-bottom: 16px;">
+                Abonneer op je PianoPlanner agenda vanuit elke kalender app (Apple Calendar, Google Calendar, Outlook, etc.).
+                Wijzigingen worden automatisch gesynchroniseerd.
+            </p>
+            
+            <div id="calendar-feed-section">
+                <!-- Status -->
+                <div id="feed-status" class="sync-status disconnected" style="margin-bottom: 16px;">
+                    <strong id="feed-status-text">⏸️ Agenda feed is niet actief</strong>
+                </div>
+                
+                <!-- Feed URL display -->
+                <div id="feed-url-display" style="display: none; margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600;">Abonneer URL:</label>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="feed-url" readonly style="flex: 1; min-width: 200px; background: var(--light-gray); font-family: monospace; font-size: 0.85rem; padding: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="copyFeedUrl()" title="URL kopiëren">
+                            📋 Kopiëren
+                        </button>
+                    </div>
+                    <p style="color: #888; font-size: 0.85rem; margin-top: 8px;">
+                        💡 Voeg deze URL toe aan je kalender app via "Abonneren" of "Agenda toevoegen via URL"
+                    </p>
+                </div>
+                
+                <!-- Instructions -->
+                <div id="feed-instructions" style="display: none; background: var(--light-gray); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 12px 0; font-size: 0.95rem;">Zo voeg je de agenda toe:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 0.85rem;">
+                        <div>
+                            <strong>🍎 Apple Calendar:</strong><br>
+                            Archief → Nieuw agenda-abonnement → Plak URL
+                        </div>
+                        <div>
+                            <strong>📱 Google Calendar:</strong><br>
+                            Instellingen → Agenda toevoegen → Via URL
+                        </div>
+                        <div>
+                            <strong>📧 Outlook:</strong><br>
+                            Agenda → Toevoegen → Van internet abonneren
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button type="button" id="feed-enable-btn" class="btn btn-primary" onclick="enableCalendarFeed()">
+                        ✅ Feed activeren
+                    </button>
+                    <button type="button" id="feed-disable-btn" class="btn btn-secondary" style="display: none;" onclick="disableCalendarFeed()">
+                        ⏸️ Uitschakelen
+                    </button>
+                    <button type="button" id="feed-regenerate-btn" class="btn btn-secondary" style="display: none;" onclick="regenerateCalendarFeed()">
+                        🔄 Nieuwe link genereren
+                    </button>
+                </div>
+                
+                <p id="feed-security-note" style="display: none; color: #e67e22; font-size: 0.85rem; margin-top: 12px;">
+                    ⚠️ Als je een nieuwe link genereert, stoppen oude links met werken. 
+                    Je moet dan opnieuw abonneren in je kalender apps.
+                </p>
+            </div>
+        </div>
+        
         <!-- Account Settings -->
         <div class="settings-section">
             <h2>🔗 Public Booking Link</h2>

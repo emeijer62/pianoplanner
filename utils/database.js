@@ -138,6 +138,18 @@ function initDatabase() {
             }
         });
         
+        // Migratie: voeg calendar_feed_token toe voor iCal feed abonnementen
+        db.run(`ALTER TABLE users ADD COLUMN calendar_feed_token TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error calendar_feed_token:', err);
+            } else if (!err) {
+                // Maak unieke index voor snelle lookup
+                db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_calendar_feed_token ON users(calendar_feed_token)`, (idxErr) => {
+                    if (idxErr) console.error('Index error calendar_feed_token:', idxErr.message);
+                });
+            }
+        });
+        
         // Index voor snelle booking slug lookup
         db.run('CREATE INDEX IF NOT EXISTS idx_users_booking_slug ON users(booking_slug)');
 

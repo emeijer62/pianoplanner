@@ -1053,6 +1053,155 @@ function setupSmtpToggle() {
     updateSmtpProviderInstructions();
 }
 
+// ========== CALENDAR FEED / AGENDA ABONNEMENT ==========
+
+async function loadCalendarFeedSettings() {
+    try {
+        const response = await fetch('/api/calendar-feed/settings');
+        if (!response.ok) throw new Error('Could not load feed settings');
+        
+        const data = await response.json();
+        updateCalendarFeedUI(data);
+    } catch (error) {
+        console.error('Error loading calendar feed settings:', error);
+    }
+}
+
+function updateCalendarFeedUI(data) {
+    const statusEl = document.getElementById('feed-status');
+    const statusText = document.getElementById('feed-status-text');
+    const urlDisplay = document.getElementById('feed-url-display');
+    const urlInput = document.getElementById('feed-url');
+    const instructions = document.getElementById('feed-instructions');
+    const enableBtn = document.getElementById('feed-enable-btn');
+    const disableBtn = document.getElementById('feed-disable-btn');
+    const regenerateBtn = document.getElementById('feed-regenerate-btn');
+    const securityNote = document.getElementById('feed-security-note');
+    
+    if (data.enabled && data.feedUrl) {
+        // Feed is active
+        statusEl.className = 'sync-status connected';
+        statusText.textContent = '✅ Agenda feed is actief';
+        urlDisplay.style.display = 'block';
+        urlInput.value = data.feedUrl;
+        instructions.style.display = 'block';
+        enableBtn.style.display = 'none';
+        disableBtn.style.display = 'inline-flex';
+        regenerateBtn.style.display = 'inline-flex';
+        securityNote.style.display = 'block';
+    } else {
+        // Feed is inactive
+        statusEl.className = 'sync-status disconnected';
+        statusText.textContent = '⏸️ Agenda feed is niet actief';
+        urlDisplay.style.display = 'none';
+        instructions.style.display = 'none';
+        enableBtn.style.display = 'inline-flex';
+        disableBtn.style.display = 'none';
+        regenerateBtn.style.display = 'none';
+        securityNote.style.display = 'none';
+    }
+}
+
+async function enableCalendarFeed() {
+    try {
+        const btn = document.getElementById('feed-enable-btn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Activeren...';
+        
+        const response = await fetch('/api/calendar-feed/enable', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert('Agenda feed is nu actief! Kopieer de URL om te abonneren.', 'success');
+            updateCalendarFeedUI({ enabled: true, feedUrl: data.feedUrl });
+        } else {
+            throw new Error(data.error || 'Could not enable feed');
+        }
+    } catch (error) {
+        console.error('Enable feed error:', error);
+        showAlert('Kon feed niet activeren: ' + error.message, 'error');
+    } finally {
+        const btn = document.getElementById('feed-enable-btn');
+        btn.disabled = false;
+        btn.textContent = '✅ Feed activeren';
+    }
+}
+
+async function disableCalendarFeed() {
+    if (!confirm('Weet je zeker dat je de agenda feed wilt uitschakelen? Bestaande abonnementen zullen niet meer werken.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/calendar-feed/disable', {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert('Agenda feed is uitgeschakeld', 'success');
+            updateCalendarFeedUI({ enabled: false, feedUrl: null });
+        } else {
+            throw new Error(data.error || 'Could not disable feed');
+        }
+    } catch (error) {
+        console.error('Disable feed error:', error);
+        showAlert('Kon feed niet uitschakelen: ' + error.message, 'error');
+    }
+}
+
+async function regenerateCalendarFeed() {
+    if (!confirm('Weet je zeker dat je een nieuwe link wilt genereren? De huidige link zal niet meer werken en je moet opnieuw abonneren in je kalender apps.')) {
+        return;
+    }
+    
+    try {
+        const btn = document.getElementById('feed-regenerate-btn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Genereren...';
+        
+        const response = await fetch('/api/calendar-feed/regenerate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert('Nieuwe feed link gegenereerd. Vergeet niet opnieuw te abonneren!', 'success');
+            updateCalendarFeedUI({ enabled: true, feedUrl: data.feedUrl });
+        } else {
+            throw new Error(data.error || 'Could not regenerate feed');
+        }
+    } catch (error) {
+        console.error('Regenerate feed error:', error);
+        showAlert('Kon nieuwe link niet genereren: ' + error.message, 'error');
+    } finally {
+        const btn = document.getElementById('feed-regenerate-btn');
+        btn.disabled = false;
+        btn.textContent = '🔄 Nieuwe link genereren';
+    }
+}
+
+function copyFeedUrl() {
+    const urlInput = document.getElementById('feed-url');
+    urlInput.select();
+    document.execCommand('copy');
+    
+    // Visual feedback
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✅ Gekopieerd!';
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+    }, 2000);
+}
+
 // ========== INITIALIZATION ==========
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1063,6 +1212,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadBookingSettings();
         loadAppleCalendarStatus();
         loadSmtpSettings();
+        loadCalendarFeedSettings();
         
         // Event listeners
         document.getElementById('companyForm').addEventListener('submit', saveCompanySettings);
