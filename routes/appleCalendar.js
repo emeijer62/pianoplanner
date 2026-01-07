@@ -671,23 +671,23 @@ async function performAppleSync(userId, credentials, syncSettings) {
     const appointmentStore = require('../utils/appointmentStore');
     const direction = syncSettings.syncDirection || 'both';
     
-    debugLog(`🍎 Starting Apple sync for user ${userId}`);
-    debugLog(`🍎 Sync direction: ${direction}`);
-    debugLog(`🍎 Calendar URL: ${syncSettings.appleCalendarUrl}`);
+    console.log(`🍎 Starting Apple sync for user ${userId}`);
+    console.log(`🍎 Sync direction: ${direction}`);
+    console.log(`🍎 Calendar URL: ${syncSettings.appleCalendarUrl}`);
     
     let synced = 0;
     let errors = [];
     
     // Haal lokale afspraken op
     const localAppointments = await appointmentStore.getAllAppointments(userId);
-    debugLog(`🍎 Local appointments: ${localAppointments.length}`);
+    console.log(`🍎 Local appointments: ${localAppointments.length}`);
     
     // Haal Apple events op
     const appleEvents = await fetchAppleEvents(
         credentials, 
         syncSettings.appleCalendarUrl
     );
-    debugLog(`🍎 Apple events fetched: ${appleEvents.length}`);
+    console.log(`🍎 Apple events fetched: ${appleEvents.length}`);
     
     // Sync TO Apple (local → Apple)
     if (direction === 'both' || direction === 'toApple') {
