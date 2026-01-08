@@ -789,5 +789,6 @@ module.exports = {
     sendAppointmentReminder,
     sendAppointmentCancellation,
     sendNewBookingNotification,
-    sendTestEmail
+    sendTestEmail,
+    getCompanyLogo
 };
