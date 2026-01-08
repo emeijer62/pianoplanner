@@ -259,7 +259,7 @@ function openDuplicatesModal() {
         container.innerHTML = duplicatesData.map((dup, index) => `
             <div class="duplicate-group" style="background: var(--gray-50); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <strong>📧 ${escapeHtml(dup.email)}</strong>
+                    <strong>${dup.matchType === 'email' ? '📧 ' + escapeHtml(dup.email) : '👤 ' + escapeHtml(dup.name)}</strong>
                     <span style="background: var(--gray-200); padding: 4px 12px; border-radius: 20px; font-size: 12px;">${dup.count} duplicates</span>
                 </div>
                 <div class="duplicate-customers" style="display: flex; flex-direction: column; gap: 8px;">

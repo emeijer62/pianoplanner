@@ -138,8 +138,10 @@ const getCustomerByEmail = async (userId, email) => {
     return formatCustomer(customer);
 };
 
-// Vind duplicaten op basis van email
+// Vind duplicaten op basis van email OF naam
 const findDuplicates = async (userId) => {
+    const duplicates = [];
+    
     // Vind alle emails die meer dan 1x voorkomen
     const duplicateEmails = await dbAll(`
         SELECT email, COUNT(*) as count
@@ -148,8 +150,6 @@ const findDuplicates = async (userId) => {
         GROUP BY LOWER(email)
         HAVING COUNT(*) > 1
     `, [userId]);
-    
-    const duplicates = [];
     
     for (const dup of duplicateEmails) {
         const customers = await dbAll(`
@@ -163,6 +163,7 @@ const findDuplicates = async (userId) => {
         
         duplicates.push({
             email: dup.email,
+            matchType: 'email',
             count: dup.count,
             customers: customers.map(c => ({
                 ...formatCustomer(c),
@@ -170,6 +171,47 @@ const findDuplicates = async (userId) => {
                 pianoCount: c.piano_count || 0
             }))
         });
+    }
+    
+    // Vind ook duplicaten op basis van naam (voor klanten zonder email of met verschillende emails)
+    const duplicateNames = await dbAll(`
+        SELECT name, COUNT(*) as count
+        FROM customers 
+        WHERE user_id = ? AND name IS NOT NULL AND name != ''
+        GROUP BY LOWER(TRIM(name))
+        HAVING COUNT(*) > 1
+    `, [userId]);
+    
+    for (const dup of duplicateNames) {
+        // Check of deze niet al gevonden is via email
+        const customers = await dbAll(`
+            SELECT c.*, 
+                (SELECT COUNT(*) FROM appointments WHERE customer_id = c.id) as appointment_count,
+                (SELECT COUNT(*) FROM pianos WHERE customer_id = c.id) as piano_count
+            FROM customers c
+            WHERE c.user_id = ? AND LOWER(TRIM(c.name)) = LOWER(TRIM(?))
+            ORDER BY c.created_at ASC
+        `, [userId, dup.name]);
+        
+        // Skip als alle klanten in deze groep al via email zijn gevonden
+        const customerIds = customers.map(c => c.id);
+        const alreadyInEmailDuplicates = duplicates.some(d => 
+            d.matchType === 'email' && 
+            d.customers.some(c => customerIds.includes(c.id))
+        );
+        
+        if (!alreadyInEmailDuplicates) {
+            duplicates.push({
+                name: dup.name,
+                matchType: 'name',
+                count: dup.count,
+                customers: customers.map(c => ({
+                    ...formatCustomer(c),
+                    appointmentCount: c.appointment_count || 0,
+                    pianoCount: c.piano_count || 0
+                }))
+            });
+        }
     }
     
     return duplicates;
