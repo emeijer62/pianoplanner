@@ -366,7 +366,7 @@ async function syncCalendar() {
             }
             
             // Refresh the calendar to show any imported appointments
-            await loadAppointments();
+            await loadAllEvents();
             renderCalendar();
         } else {
             btn.classList.add('error');
