@@ -351,6 +351,58 @@ END:VCALENDAR`;
             }
         }
         
+        // Sync FROM Apple - Check for deleted events
+        if (direction === 'both' || direction === 'fromApple') {
+            // Get all local appointments that have apple_event_id
+            const appleLinkedAppointments = localAppointments.filter(a => a.apple_event_id);
+            
+            if (appleLinkedAppointments.length > 0) {
+                console.log(`🔍 Checking ${appleLinkedAppointments.length} Apple-linked appointments...`);
+                
+                const authHeader = Buffer.from(`${credentials.appleId}:${credentials.appPassword}`).toString('base64');
+                const fetch = require('node-fetch');
+                let deleted = 0;
+                
+                for (const appointment of appleLinkedAppointments) {
+                    try {
+                        // Check if event still exists in Apple Calendar
+                        const eventUrl = appointment.apple_event_url || 
+                            `${syncSettings.appleCalendarUrl}${appointment.apple_event_id}.ics`;
+                        
+                        const response = await fetch(eventUrl, {
+                            method: 'HEAD',
+                            headers: {
+                                'Authorization': `Basic ${authHeader}`
+                            }
+                        });
+                        
+                        // If 404 - event was deleted from Apple Calendar
+                        if (response.status === 404) {
+                            console.log(`🗑️ Apple event deleted, removing local: ${appointment.title || appointment.id}`);
+                            
+                            const { dbRun } = require('./database');
+                            await dbRun('DELETE FROM appointments WHERE id = ?', [appointment.id]);
+                            deleted++;
+                        }
+                        
+                        // Small delay to avoid rate limiting
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                        
+                    } catch (err) {
+                        // Don't count connection errors as failures
+                        if (!err.message?.includes('ECONNREFUSED')) {
+                            console.error(`Error checking Apple event ${appointment.apple_event_id}:`, err.message);
+                        }
+                    }
+                }
+                
+                if (deleted > 0) {
+                    console.log(`🗑️ Removed ${deleted} locally deleted Apple events`);
+                    synced += deleted;
+                }
+            }
+        }
+        
         // Update last sync time
         await userStore.updateAppleCalendarSync(user.id, {
             ...syncSettings,

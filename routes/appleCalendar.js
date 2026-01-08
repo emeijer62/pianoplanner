@@ -845,6 +845,32 @@ async function performAppleSync(userId, credentials, syncSettings) {
                 errors.push(`Apple event "${event.summary}": ${error.message}`);
             }
         }
+        
+        // Check for DELETED events in Apple Calendar
+        // (local appointments with apple_event_id that no longer exist in Apple)
+        const appleEventIds = new Set(appleEvents.map(e => e.id));
+        const appleLinkedAppointments = localAppointments.filter(a => a.apple_event_id);
+        let deleted = 0;
+        
+        for (const appointment of appleLinkedAppointments) {
+            if (!appleEventIds.has(appointment.apple_event_id)) {
+                // Event was deleted from Apple Calendar
+                console.log(`🗑️ Apple event deleted, removing local: ${appointment.title || appointment.id}`);
+                try {
+                    const { dbRun } = require('../utils/database');
+                    await dbRun('DELETE FROM appointments WHERE id = ?', [appointment.id]);
+                    deleted++;
+                } catch (err) {
+                    console.error(`Failed to delete appointment ${appointment.id}:`, err.message);
+                    errors.push(`Delete "${appointment.title}": ${err.message}`);
+                }
+            }
+        }
+        
+        if (deleted > 0) {
+            console.log(`🗑️ Removed ${deleted} locally deleted Apple events`);
+            synced += deleted;
+        }
     }
     
     debugLog(`🍎 Apple sync completed: ${synced} items synced, ${errors.length} errors`);
