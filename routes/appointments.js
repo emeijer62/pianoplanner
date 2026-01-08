@@ -217,8 +217,12 @@ router.post('/', async (req, res) => {
         // Stuur response DIRECT terug
         res.status(201).json(appointment);
         
+        // Debug logging
+        console.log(`📧 Email check: configured=${emailService.isEmailConfigured()}, customerId=${customerId}, sendConfirmation=${sendConfirmation}`);
+        
         // Send confirmation email ASYNC als vinkje is gezet
         if (emailService.isEmailConfigured() && customerId && sendConfirmation) {
+            console.log('📧 Starting email send process...');
             // Sla variabelen op voor async context
             const emailContext = {
                 userId,
@@ -245,6 +249,8 @@ router.post('/', async (req, res) => {
                         });
                     });
                     
+                    console.log(`📧 Customer found: ${customer?.email || 'NO EMAIL'}`);
+                    
                     if (customer?.email) {
                         const company = await new Promise((resolve, reject) => {
                             db.get('SELECT name FROM company_settings WHERE user_id = ?', [emailContext.userId], (err, row) => {
@@ -262,7 +268,8 @@ router.post('/', async (req, res) => {
                             hour12: false 
                         });
                         
-                        await emailService.sendAppointmentConfirmation({
+                        console.log(`📧 Sending to ${customer.email}...`);
+                        const result = await emailService.sendAppointmentConfirmation({
                             customerEmail: customer.email,
                             customerName: customer.name || emailContext.customerName,
                             appointmentDate,
@@ -275,12 +282,14 @@ router.post('/', async (req, res) => {
                             userId: emailContext.userId
                         });
                         
-                        console.log(`📧 Confirmation email sent to ${customer.email}`);
+                        console.log(`📧 Confirmation email result:`, JSON.stringify(result));
                     }
                 } catch (emailError) {
-                    console.error('Failed to send confirmation email:', emailError.message);
+                    console.error('❌ Failed to send confirmation email:', emailError.message);
                 }
             });
+        } else {
+            console.log('📧 Email NOT sent - conditions not met');
         }
     } catch (error) {
         console.error('Error creating appointment:', error);
