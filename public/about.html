@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Over PianoPlanner - De complete oplossing voor pianotechnici</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            color: #1a1a1a;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 24px 60px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: #666;
+            line-height: 1.6;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Features Grid */
+        .features-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 48px;
+            color: #1a1a1a;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1a1a1a;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 28px;
+            position: relative;
+            color: #444;
+            font-size: 14px;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #34C759;
+            font-weight: 600;
+        }
+
+        /* Highlights Section */
+        .highlights {
+            background: white;
+            padding: 80px 24px;
+        }
+
+        .highlights-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .highlights-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .highlights-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .highlight-item {
+            padding: 24px;
+        }
+
+        .highlight-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #007AFF;
+            margin-bottom: 8px;
+        }
+
+        .highlight-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Languages Section */
+        .languages-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            text-align: center;
+        }
+
+        .languages-grid {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        .language-badge {
+            background: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .language-flag {
+            font-size: 1.5rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+            padding: 80px 24px;
+            text-align: center;
+            color: white;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .cta-section p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-white {
+            background: white;
+            color: #007AFF;
+            padding: 14px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .btn-white:hover {
+            background: #f5f5f5;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 40px 24px;
+            text-align: center;
+        }
+
+        .footer p {
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <span class="logo-icon">🎹</span>
+                <span>PianoPlanner</span>
+            </a>
+            <div class="header-buttons">
+                <a href="/login.html" class="btn btn-secondary">Inloggen</a>
+                <a href="/login.html" class="btn btn-primary">Gratis proberen</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1>De complete oplossing voor pianotechnici</h1>
+        <p>PianoPlanner is speciaal ontwikkeld voor pianostemmers en -technici. Beheer uw klanten, piano's en afspraken op één plek. Bespaar tijd, verhoog uw productiviteit en bied uw klanten een professionele service.</p>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section">
+        <h2 class="section-title">Alles wat u nodig heeft</h2>
+        
+        <div class="features-grid">
+            <!-- Afspraken -->
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <h3>Afspraken & Planning</h3>
+                <p>Efficiënt uw werkdag plannen met slimme routeoptimalisatie.</p>
+                <ul class="feature-list">
+                    <li>Kalenderweergave (dag/week/maand)</li>
+                    <li>Reistijd berekening tussen afspraken</li>
+                    <li>Automatische herinneringen via email</li>
+                    <li>Bevestigingsmails naar klanten</li>
+                    <li>Drag & drop afspraken verplaatsen</li>
+                </ul>
+            </div>
+
+            <!-- Klanten -->
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>Klantenbeheer</h3>
+                <p>Al uw klantgegevens overzichtelijk op één plek.</p>
+                <ul class="feature-list">
+                    <li>Volledige klanthistorie</li>
+                    <li>Zoeken en filteren</li>
+                    <li>Duplicaat-detectie en samenvoegen</li>
+                    <li>Adres met Google Maps integratie</li>
+                    <li>Notities en contactgegevens</li>
+                </ul>
+            </div>
+
+            <!-- Piano's -->
+            <div class="feature-card">
+                <div class="feature-icon">🎹</div>
+                <h3>Piano Registratie</h3>
+                <p>Houd alle piano's van uw klanten bij met complete service historie.</p>
+                <ul class="feature-list">
+                    <li>Merk, model, serienummer, bouwjaar</li>
+                    <li>Type: vleugel, staand, digitaal</li>
+                    <li>Servicegeschiedenis bijhouden</li>
+                    <li>Service interval instellen</li>
+                    <li>Waarschuwing wanneer service nodig is</li>
+                </ul>
+            </div>
+
+            <!-- Email -->
+            <div class="feature-card">
+                <div class="feature-icon">📧</div>
+                <h3>Email & Communicatie</h3>
+                <p>Professionele communicatie met uw klanten.</p>
+                <ul class="feature-list">
+                    <li>Eigen SMTP server configureren</li>
+                    <li>Aanpasbare email templates</li>
+                    <li>Automatische bevestigingsmails</li>
+                    <li>Afspraak herinneringen</li>
+                    <li>Test emails versturen</li>
+                </ul>
+            </div>
+
+            <!-- Kalender Sync -->
+            <div class="feature-card">
+                <div class="feature-icon">📆</div>
+                <h3>Kalender Synchronisatie</h3>
+                <p>Naadloze integratie met uw bestaande kalenders.</p>
+                <ul class="feature-list">
+                    <li>Google Calendar (2-weg sync)</li>
+                    <li>Apple Calendar / iCloud sync</li>
+                    <li>iCal feed voor abonnement</li>
+                    <li>Reistijd automatisch in events</li>
+                    <li>Synchroniseer met elk apparaat</li>
+                </ul>
+            </div>
+
+            <!-- Online Boeken -->
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>Online Boeken</h3>
+                <p>Laat klanten zelf online een afspraak maken.</p>
+                <ul class="feature-list">
+                    <li>Eigen publieke boekingspagina</li>
+                    <li>Aangepaste URL met uw naam</li>
+                    <li>Beschikbaarheid zelf instellen</li>
+                    <li>Automatische bevestiging</li>
+                    <li>24/7 bereikbaar voor klanten</li>
+                </ul>
+            </div>
+
+            <!-- Instellingen -->
+            <div class="feature-card">
+                <div class="feature-icon">⚙️</div>
+                <h3>Flexibele Instellingen</h3>
+                <p>Pas PianoPlanner aan naar uw wensen.</p>
+                <ul class="feature-list">
+                    <li>Bedrijfsgegevens en logo</li>
+                    <li>Werkdagen en werktijden</li>
+                    <li>Tijdzone instelling</li>
+                    <li>Diensten en prijzen beheren</li>
+                    <li>Reistijd voorkeuren</li>
+                </ul>
+            </div>
+
+            <!-- Beveiliging -->
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3>Veilig & Betrouwbaar</h3>
+                <p>Uw gegevens zijn veilig bij ons.</p>
+                <ul class="feature-list">
+                    <li>Google login (OAuth)</li>
+                    <li>Email/wachtwoord login</li>
+                    <li>Versleutelde verbindingen (SSL)</li>
+                    <li>Dagelijkse backups</li>
+                    <li>AVG-compliant</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Highlights -->
+    <section class="highlights">
+        <div class="highlights-content">
+            <h2 class="section-title">PianoPlanner in cijfers</h2>
+            <div class="highlights-grid">
+                <div class="highlight-item">
+                    <div class="highlight-number">∞</div>
+                    <div class="highlight-label">Onbeperkt klanten</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">∞</div>
+                    <div class="highlight-label">Onbeperkt piano's</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">∞</div>
+                    <div class="highlight-label">Onbeperkt afspraken</div>
+                </div>
+                <div class="highlight-item">
+                    <div class="highlight-number">24/7</div>
+                    <div class="highlight-label">Online toegang</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Languages -->
+    <section class="languages-section">
+        <h2 class="section-title">Beschikbaar in meerdere talen</h2>
+        <p style="color: #666; margin-bottom: 8px;">Uw taalvoorkeur wordt opgeslagen in uw account</p>
+        <div class="languages-grid">
+            <div class="language-badge">
+                <span class="language-flag">🇳🇱</span>
+                <span>Nederlands</span>
+            </div>
+            <div class="language-badge">
+                <span class="language-flag">🇬🇧</span>
+                <span>English</span>
+            </div>
+            <div class="language-badge">
+                <span class="language-flag">🇩🇪</span>
+                <span>Deutsch</span>
+            </div>
+            <div class="language-badge">
+                <span class="language-flag">🇫🇷</span>
+                <span>Français</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <h2>Klaar om te beginnen?</h2>
+        <p>Probeer PianoPlanner gratis uit en ontdek hoe het uw werk als pianotechnicus eenvoudiger maakt.</p>
+        <a href="/login.html" class="btn btn-white">Start gratis proefperiode</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 PianoPlanner. Speciaal ontwikkeld voor pianotechnici.</p>
+    </footer>
+</body>
+</html>
