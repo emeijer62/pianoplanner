@@ -81,6 +81,74 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Cleanup duplicate appointments - MUST BE BEFORE /:id routes!
+router.delete('/cleanup-duplicates', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { dbRun, dbAll } = require('../utils/database');
+        
+        // Haal alle afspraken op
+        const appointments = await dbAll(
+            'SELECT id, title, start_time, end_time, google_event_id, created_at FROM appointments WHERE user_id = ? ORDER BY created_at ASC',
+            [userId]
+        );
+        
+        // Groepeer op titel + start + end
+        const groups = {};
+        for (const apt of appointments) {
+            const key = `${apt.title}|${apt.start_time}|${apt.end_time}`;
+            if (!groups[key]) {
+                groups[key] = [];
+            }
+            groups[key].push(apt);
+        }
+        
+        // Vind duplicaten en bepaal welke te verwijderen
+        const toDelete = [];
+        for (const [key, group] of Object.entries(groups)) {
+            if (group.length > 1) {
+                // Sorteer: behoud degene MET googleEventId, of de oudste
+                group.sort((a, b) => {
+                    // Prioriteit aan degene met google_event_id
+                    if (a.google_event_id && !b.google_event_id) return -1;
+                    if (!a.google_event_id && b.google_event_id) return 1;
+                    // Anders: oudste eerst (behouden)
+                    return new Date(a.created_at) - new Date(b.created_at);
+                });
+                
+                // Verwijder alle behalve de eerste (beste)
+                for (let i = 1; i < group.length; i++) {
+                    toDelete.push(group[i]);
+                }
+            }
+        }
+        
+        if (toDelete.length === 0) {
+            return res.json({ success: true, message: 'Geen duplicaten gevonden', deleted: 0 });
+        }
+        
+        // Verwijder duplicaten
+        const ids = toDelete.map(d => d.id);
+        const placeholders = ids.map(() => '?').join(',');
+        await dbRun(
+            `DELETE FROM appointments WHERE id IN (${placeholders})`,
+            ids
+        );
+        
+        console.log(`🧹 User ${userId} cleanup: ${toDelete.length} duplicate appointments deleted`);
+        
+        res.json({ 
+            success: true, 
+            message: `${toDelete.length} duplicaten verwijderd`,
+            deleted: toDelete.length,
+            deletedAppointments: toDelete.map(d => ({ id: d.id, title: d.title, start: d.start_time }))
+        });
+    } catch (error) {
+        console.error('Error cleaning duplicate appointments:', error);
+        res.status(500).json({ error: 'Cleanup failed: ' + error.message });
+    }
+});
+
 // Cleanup broken appointments (missing start/end time) - MUST BE BEFORE /:id routes!
 router.delete('/cleanup-broken', async (req, res) => {
     try {
