@@ -169,15 +169,23 @@ const updateUserProfile = async (id, { name, email, timezone }) => {
 
 // Get user profile with timezone
 const getUserProfile = async (id) => {
-    const user = await dbGet('SELECT id, email, name, picture, timezone FROM users WHERE id = ?', [id]);
+    const user = await dbGet('SELECT id, email, name, picture, timezone, language FROM users WHERE id = ?', [id]);
     if (!user) return null;
     return {
         id: user.id,
         email: user.email,
         name: user.name,
         picture: user.picture,
-        timezone: user.timezone || 'Europe/Amsterdam'
+        timezone: user.timezone || 'Europe/Amsterdam',
+        language: user.language || 'en'
     };
+};
+
+// Update user language
+const updateUserLanguage = async (id, language) => {
+    await dbRun('UPDATE users SET language = ?, updated_at = ? WHERE id = ?', 
+        [language, new Date().toISOString(), id]);
+    return { language };
 };
 
 // ==================== EMAIL/PASSWORD AUTH ====================
@@ -685,6 +693,7 @@ function formatUser(row) {
         appleCalendar: row.apple_calendar ? JSON.parse(row.apple_calendar) : null,
         appleCalendarSync: row.apple_calendar_sync ? JSON.parse(row.apple_calendar_sync) : null,
         bookingSlug: row.booking_slug,
+        language: row.language || 'en',
         lastLogin: row.last_login,
         createdAt: row.created_at,
         updatedAt: row.updated_at
@@ -816,6 +825,7 @@ module.exports = {
     updateUser,
     updateUserProfile,
     getUserProfile,
+    updateUserLanguage,
     saveUser,
     getAllUsers,
     deleteUser,

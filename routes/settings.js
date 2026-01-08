@@ -278,4 +278,35 @@ router.put('/travel', requireAuth, async (req, res) => {
     }
 });
 
+// ==================== TAALINSTELLINGEN ====================
+
+// Haal taalinstelling op
+router.get('/language', requireAuth, async (req, res) => {
+    try {
+        const profile = await userStore.getUserProfile(req.session.user.id);
+        res.json({ language: profile?.language || 'en' });
+    } catch (error) {
+        console.error('Error getting language:', error);
+        res.status(500).json({ error: 'Kon taalinstelling niet ophalen' });
+    }
+});
+
+// Update taalinstelling
+router.put('/language', requireAuth, async (req, res) => {
+    try {
+        const { language } = req.body;
+        const supportedLanguages = ['en', 'nl', 'de', 'fr'];
+        
+        if (!supportedLanguages.includes(language)) {
+            return res.status(400).json({ error: 'Taal niet ondersteund' });
+        }
+        
+        await userStore.updateUserLanguage(req.session.user.id, language);
+        res.json({ success: true, language });
+    } catch (error) {
+        console.error('Error updating language:', error);
+        res.status(500).json({ error: 'Kon taalinstelling niet opslaan' });
+    }
+});
+
 module.exports = router;

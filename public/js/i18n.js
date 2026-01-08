@@ -9,18 +9,35 @@ const i18n = {
     fallback: {},
     
     /**
-     * Initialize i18n - load language from localStorage or browser
+     * Initialize i18n - load language from server (if logged in) or localStorage/browser
      */
     async init() {
+        // Supported languages
+        const supported = ['en', 'nl', 'de', 'fr'];
+        
+        // Try to get language from server first (if logged in)
+        let serverLang = null;
+        try {
+            const res = await fetch('/api/settings/language');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.language && supported.includes(data.language)) {
+                    serverLang = data.language;
+                }
+            }
+        } catch (e) {
+            // Not logged in or error - use localStorage/browser
+        }
+        
         // Get saved language or detect from browser
         const savedLang = localStorage.getItem('pianoplanner-lang');
         const browserLang = navigator.language.split('-')[0];
         
-        // Supported languages
-        const supported = ['en', 'nl', 'de', 'fr'];
-        
-        // Priority: saved > browser > default (en)
-        if (savedLang && supported.includes(savedLang)) {
+        // Priority: server > saved > browser > default (en)
+        if (serverLang) {
+            this.currentLang = serverLang;
+            localStorage.setItem('pianoplanner-lang', serverLang);
+        } else if (savedLang && supported.includes(savedLang)) {
             this.currentLang = savedLang;
         } else if (supported.includes(browserLang)) {
             this.currentLang = browserLang;
@@ -117,6 +134,17 @@ const i18n = {
         await this.loadLanguage(lang);
         this.translatePage();
         this.updateSelector();
+        
+        // Save to server (if logged in)
+        try {
+            await fetch('/api/settings/language', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ language: lang })
+            });
+        } catch (e) {
+            // Not logged in or error - only saved to localStorage
+        }
         
         // Dispatch event for components that need to know
         window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));

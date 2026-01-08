@@ -164,6 +164,13 @@ function initDatabase() {
             }
         });
         
+        // Migratie: voeg language kolom toe voor taalvoorkeur
+        db.run(`ALTER TABLE users ADD COLUMN language TEXT DEFAULT 'en'`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error language:', err);
+            }
+        });
+        
         // Index voor snelle booking slug lookup
         db.run('CREATE INDEX IF NOT EXISTS idx_users_booking_slug ON users(booking_slug)');
 
