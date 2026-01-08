@@ -183,7 +183,8 @@ router.post('/', async (req, res) => {
             customerId, customerName,
             serviceId, serviceName,
             pianoId, pianoBrand, pianoModel,
-            color
+            color,
+            sendConfirmation  // Expliciet vinkje van gebruiker
         } = req.body;
         
         if (!title) {
@@ -216,8 +217,8 @@ router.post('/', async (req, res) => {
         // Stuur response DIRECT terug
         res.status(201).json(appointment);
         
-        // Send confirmation email ASYNC (fire-and-forget, na response)
-        if (emailService.isEmailConfigured() && customerId) {
+        // Send confirmation email ASYNC als vinkje is gezet
+        if (emailService.isEmailConfigured() && customerId && sendConfirmation) {
             // Sla variabelen op voor async context
             const emailContext = {
                 userId,
@@ -235,59 +236,46 @@ router.post('/', async (req, res) => {
                 try {
                     const db = getDb();
                     
-                    // Check email settings (default to enabled if not set)
-                    const emailSettings = await new Promise((resolve, reject) => {
-                        db.get('SELECT * FROM email_settings WHERE user_id = ?', [emailContext.userId], (err, row) => {
+                    // Get customer email
+                    const customer = await new Promise((resolve, reject) => {
+                        db.get('SELECT email, name FROM customers WHERE id = ? AND user_id = ?', 
+                            [emailContext.customerId, emailContext.userId], (err, row) => {
                             if (err) reject(err);
-                            else resolve(row || { 
-                                send_confirmations: 1, 
-                                notify_new_bookings: 1 
-                            }); // Default: all emails ON
+                            else resolve(row);
                         });
                     });
                     
-                    if (emailSettings.send_confirmations) {
-                        // Get customer email
-                        const customer = await new Promise((resolve, reject) => {
-                            db.get('SELECT email, name FROM customers WHERE id = ? AND user_id = ?', 
-                                [emailContext.customerId, emailContext.userId], (err, row) => {
+                    if (customer?.email) {
+                        const company = await new Promise((resolve, reject) => {
+                            db.get('SELECT name FROM company_settings WHERE user_id = ?', [emailContext.userId], (err, row) => {
                                 if (err) reject(err);
                                 else resolve(row);
                             });
                         });
                         
-                        if (customer?.email) {
-                            const company = await new Promise((resolve, reject) => {
-                                db.get('SELECT name FROM company_settings WHERE user_id = ?', [emailContext.userId], (err, row) => {
-                                    if (err) reject(err);
-                                    else resolve(row);
-                                });
-                            });
-                            
-                            // Extract date and time from start
-                            const startDate = new Date(emailContext.start);
-                            const appointmentDate = startDate.toISOString().split('T')[0];
-                            const appointmentTime = startDate.toLocaleTimeString('en-US', { 
-                                hour: '2-digit', 
-                                minute: '2-digit',
-                                hour12: false 
-                            });
-                            
-                            await emailService.sendAppointmentConfirmation({
-                                customerEmail: customer.email,
-                                customerName: customer.name || emailContext.customerName,
-                                appointmentDate,
-                                appointmentTime,
-                                serviceName: emailContext.serviceName || emailContext.title,
-                                companyName: company?.name || 'PianoPlanner',
-                                notes: emailContext.description,
-                                replyTo: emailContext.userEmail,
-                                fromName: company?.name || emailContext.userName || 'PianoPlanner',
-                                userId: emailContext.userId
-                            });
-                            
-                            console.log(`📧 Confirmation email sent to ${customer.email}`);
-                        }
+                        // Extract date and time from start
+                        const startDate = new Date(emailContext.start);
+                        const appointmentDate = startDate.toISOString().split('T')[0];
+                        const appointmentTime = startDate.toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: false 
+                        });
+                        
+                        await emailService.sendAppointmentConfirmation({
+                            customerEmail: customer.email,
+                            customerName: customer.name || emailContext.customerName,
+                            appointmentDate,
+                            appointmentTime,
+                            serviceName: emailContext.serviceName || emailContext.title,
+                            companyName: company?.name || 'PianoPlanner',
+                            notes: emailContext.description,
+                            replyTo: emailContext.userEmail,
+                            fromName: company?.name || emailContext.userName || 'PianoPlanner',
+                            userId: emailContext.userId
+                        });
+                        
+                        console.log(`📧 Confirmation email sent to ${customer.email}`);
                     }
                 } catch (emailError) {
                     console.error('Failed to send confirmation email:', emailError.message);

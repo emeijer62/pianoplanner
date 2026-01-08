@@ -733,9 +733,18 @@ function onCustomerChange() {
     const customerId = document.getElementById('event-customer').value;
     const pianoSelect = document.getElementById('event-piano');
     const locationInput = document.getElementById('event-location');
+    const confirmationWrapper = document.getElementById('send-confirmation-wrapper');
+    const confirmationLabel = document.getElementById('send-confirmation-label');
+    const confirmationCheckbox = document.getElementById('send-confirmation');
     
     // Reset piano dropdown
     pianoSelect.innerHTML = '<option value="">-- Select piano (optional) --</option>';
+    
+    // Hide confirmation checkbox by default
+    if (confirmationWrapper) {
+        confirmationWrapper.style.display = 'none';
+        confirmationCheckbox.checked = false;
+    }
     
     if (customerId) {
         // Filter pianos for this customer
@@ -756,6 +765,13 @@ function onCustomerChange() {
         const selectedOption = document.getElementById('event-customer').selectedOptions[0];
         if (selectedOption && selectedOption.dataset.address) {
             locationInput.value = selectedOption.dataset.address;
+        }
+        
+        // Show confirmation checkbox if customer has email
+        const customer = customersCache.find(c => c.id === customerId);
+        if (customer?.email && confirmationWrapper) {
+            confirmationWrapper.style.display = 'block';
+            confirmationLabel.textContent = `Bevestigingsmail sturen naar ${customer.email}`;
         }
     }
 }
@@ -1136,6 +1152,12 @@ function closeModal() {
     document.getElementById('new-customer-form').style.display = 'none';
     document.getElementById('event-piano').innerHTML = '<option value="">-- Select piano (optional) --</option>';
     
+    // Hide confirmation checkbox
+    const confirmationWrapper = document.getElementById('send-confirmation-wrapper');
+    if (confirmationWrapper) {
+        confirmationWrapper.style.display = 'none';
+    }
+    
     // Reset edit mode
     editingAppointmentId = null;
     document.querySelector('#event-modal .modal-header h2').textContent = 'New Appointment';
@@ -1153,6 +1175,7 @@ async function handleEventSubmit(e) {
     const location = document.getElementById('event-location').value;
     const start = document.getElementById('event-start').value;
     const end = document.getElementById('event-end').value;
+    const sendConfirmation = document.getElementById('send-confirmation')?.checked || false;
     
     // Get customer name from cache
     const customer = customersCache.find(c => c.id === customerId);
@@ -1171,7 +1194,8 @@ async function handleEventSubmit(e) {
         pianoBrand: piano?.brand || null,
         pianoModel: piano?.model || null,
         serviceId: serviceId || null,
-        serviceName: service?.name || null
+        serviceName: service?.name || null,
+        sendConfirmation: sendConfirmation && customer?.email ? true : false
     };
     
     try {
