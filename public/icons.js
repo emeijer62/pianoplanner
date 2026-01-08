@@ -230,21 +230,56 @@ function initIcons() {
     }
 }
 
+// Flag to prevent infinite loops
+let isProcessing = false;
+
 /**
  * Observer for dynamically added content
  */
 function observeDynamicContent() {
     const observer = new MutationObserver((mutations) => {
+        // Prevent infinite loop
+        if (isProcessing) return;
+        
+        // Check if any mutations are worth processing
+        let hasNewContent = false;
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType === Node.ELEMENT_NODE && 
+                    !node.classList?.contains('icon') &&
+                    !node.closest?.('[data-lucide]') &&
+                    node.tagName !== 'SVG' &&
+                    node.tagName !== 'svg') {
+                    hasNewContent = true;
+                    break;
+                }
+            }
+            if (hasNewContent) break;
+        }
+        
+        if (!hasNewContent) return;
+        
+        isProcessing = true;
+        
         mutations.forEach(mutation => {
             mutation.addedNodes.forEach(node => {
-                if (node.nodeType === Node.ELEMENT_NODE) {
+                if (node.nodeType === Node.ELEMENT_NODE &&
+                    !node.classList?.contains('icon') &&
+                    node.tagName !== 'SVG' &&
+                    node.tagName !== 'svg') {
                     processElement(node);
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                    }
                 }
             });
         });
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        // Reset flag after a short delay
+        setTimeout(() => {
+            isProcessing = false;
+        }, 50);
     });
     
     observer.observe(document.body, {
