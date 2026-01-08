@@ -5,16 +5,23 @@
 
 const { dbRun, dbGet, dbAll } = require('./database');
 const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
+
+// Genereer een URL-safe booking token
+const generateBookingToken = () => {
+    return crypto.randomBytes(9).toString('base64url'); // 12 karakters
+};
 
 // ==================== CUSTOMER CRUD ====================
 
 const createCustomer = async (userId, customerData) => {
     const id = uuidv4();
     const now = new Date().toISOString();
+    const bookingToken = generateBookingToken();
     
     await dbRun(`
-        INSERT INTO customers (id, user_id, name, email, phone, street, postal_code, city, notes, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO customers (id, user_id, name, email, phone, street, postal_code, city, notes, booking_token, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
         id,
         userId,
@@ -25,6 +32,7 @@ const createCustomer = async (userId, customerData) => {
         customerData.address?.postalCode || customerData.postalCode || null,
         customerData.address?.city || customerData.city || null,
         customerData.notes || null,
+        bookingToken,
         now,
         now
     ]);
@@ -241,10 +249,94 @@ function formatCustomer(row) {
             city: row.city
         },
         notes: row.notes,
+        bookingToken: row.booking_token,
         createdAt: row.created_at,
         updatedAt: row.updated_at
     };
 }
+
+// ==================== BOOKING TOKEN FUNCTIES ====================
+
+// Haal klant op via booking token (publiek - geen userId nodig)
+const getCustomerByToken = async (token) => {
+    if (!token) return null;
+    
+    const customer = await dbGet(
+        'SELECT * FROM customers WHERE booking_token = ?',
+        [token]
+    );
+    
+    if (!customer) return null;
+    return formatCustomer(customer);
+};
+
+// Haal klant + eigenaar info op via token
+const getCustomerWithOwnerByToken = async (token) => {
+    if (!token) return null;
+    
+    const result = await dbGet(`
+        SELECT 
+            c.*,
+            u.id as owner_id,
+            u.email as owner_email,
+            cs.name as business_name,
+            cs.business_slug,
+            cs.logo_url,
+            cs.phone as business_phone,
+            cs.email as business_email
+        FROM customers c
+        JOIN users u ON c.user_id = u.id
+        LEFT JOIN company_settings cs ON cs.user_id = u.id
+        WHERE c.booking_token = ?
+    `, [token]);
+    
+    if (!result) return null;
+    
+    return {
+        customer: formatCustomer(result),
+        owner: {
+            id: result.owner_id,
+            email: result.owner_email
+        },
+        business: {
+            name: result.business_name,
+            slug: result.business_slug,
+            logo: result.logo_url,
+            phone: result.business_phone,
+            email: result.business_email
+        }
+    };
+};
+
+// Genereer nieuwe token voor een klant (invalideer oude links)
+const regenerateBookingToken = async (userId, customerId) => {
+    const newToken = generateBookingToken();
+    
+    await dbRun(`
+        UPDATE customers SET booking_token = ?, updated_at = ?
+        WHERE id = ? AND user_id = ?
+    `, [newToken, new Date().toISOString(), customerId, userId]);
+    
+    return newToken;
+};
+
+// Voeg token toe aan bestaande klanten die er nog geen hebben
+const ensureBookingTokens = async (userId) => {
+    const customersWithoutToken = await dbAll(
+        'SELECT id FROM customers WHERE user_id = ? AND (booking_token IS NULL OR booking_token = "")',
+        [userId]
+    );
+    
+    for (const customer of customersWithoutToken) {
+        const token = generateBookingToken();
+        await dbRun(
+            'UPDATE customers SET booking_token = ? WHERE id = ?',
+            [token, customer.id]
+        );
+    }
+    
+    return customersWithoutToken.length;
+};
 
 module.exports = {
     createCustomer,
@@ -255,5 +347,11 @@ module.exports = {
     searchCustomers,
     getCustomerByEmail,
     findDuplicates,
-    mergeCustomers
+    mergeCustomers,
+    // Nieuwe token functies
+    getCustomerByToken,
+    getCustomerWithOwnerByToken,
+    regenerateBookingToken,
+    ensureBookingTokens,
+    generateBookingToken
 };

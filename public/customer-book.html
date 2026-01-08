@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boek je afspraak</title>
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="stylesheet" href="icons.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #b8860b;
+            --primary-light: #d4a843;
+            --primary-dark: #8b6914;
+            --bg: #0d0d0d;
+            --bg-card: #1a1a1a;
+            --bg-input: #252525;
+            --text: #f5f5f5;
+            --text-muted: #888;
+            --border: #333;
+            --success: #4ade80;
+            --error: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+        
+        .business-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            object-fit: cover;
+            margin-bottom: 16px;
+            border: 2px solid var(--primary);
+        }
+        
+        .business-logo-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 32px;
+            color: white;
+        }
+        
+        .business-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .welcome-text {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .customer-name {
+            color: var(--primary-light);
+            font-weight: 500;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title i {
+            color: var(--primary);
+        }
+        
+        /* Form elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 16px;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            padding-right: 44px;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 16px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Service cards */
+        .service-option {
+            padding: 16px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .service-option:hover {
+            border-color: var(--primary-dark);
+        }
+        
+        .service-option.selected {
+            border-color: var(--primary);
+            background: rgba(184, 134, 11, 0.1);
+        }
+        
+        .service-option input {
+            display: none;
+        }
+        
+        .service-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+        }
+        
+        .service-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .service-price {
+            color: var(--primary-light);
+            font-weight: 600;
+        }
+        
+        .service-meta {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        
+        .service-description {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        
+        /* Piano cards */
+        .piano-option {
+            padding: 14px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .piano-option:hover {
+            border-color: var(--primary-dark);
+        }
+        
+        .piano-option.selected {
+            border-color: var(--primary);
+            background: rgba(184, 134, 11, 0.1);
+        }
+        
+        .piano-option input {
+            display: none;
+        }
+        
+        .piano-brand {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .piano-details {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        
+        /* Date/time picker */
+        .datetime-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        input[type="date"], input[type="time"] {
+            cursor: pointer;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.6);
+            cursor: pointer;
+        }
+        
+        /* Submit button */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(184, 134, 11, 0.3);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Contact info */
+        .contact-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        
+        .contact-info a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+        
+        /* Success state */
+        .success-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+        
+        .success-icon i {
+            color: white;
+            width: 40px;
+            height: 40px;
+        }
+        
+        .success-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .success-text {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+        
+        .appointment-summary {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+        
+        .summary-label {
+            color: var(--text-muted);
+        }
+        
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Error state */
+        .error-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--error);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+        
+        .error-icon i {
+            color: white;
+            width: 40px;
+            height: 40px;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 500px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .datetime-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Loading state -->
+        <div id="loadingScreen" class="loading">
+            <div class="spinner"></div>
+            <p>Laden...</p>
+        </div>
+        
+        <!-- Error state -->
+        <div id="errorScreen" class="error-screen" style="display: none;">
+            <div class="error-icon">
+                <i data-lucide="x"></i>
+            </div>
+            <h2 class="success-title">Link niet gevonden</h2>
+            <p class="success-text" id="errorMessage">
+                Deze boekingslink is niet meer geldig of bestaat niet.
+            </p>
+        </div>
+        
+        <!-- Success state -->
+        <div id="successScreen" class="success-screen" style="display: none;">
+            <div class="success-icon">
+                <i data-lucide="check"></i>
+            </div>
+            <h2 class="success-title">Afspraak geboekt!</h2>
+            <p class="success-text">
+                Je ontvangt een bevestiging per e-mail.
+            </p>
+            <div class="appointment-summary" id="appointmentSummary">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+        
+        <!-- Booking form -->
+        <div id="bookingForm" style="display: none;">
+            <!-- Header -->
+            <div class="header">
+                <div id="businessLogo" class="business-logo-placeholder">
+                    <i data-lucide="music"></i>
+                </div>
+                <h1 class="business-name" id="businessName">Piano Service</h1>
+                <p class="welcome-text">
+                    Welkom <span class="customer-name" id="customerName">Klant</span>, plan hier je afspraak
+                </p>
+            </div>
+            
+            <!-- Service selection -->
+            <div class="card">
+                <h2 class="card-title">
+                    <i data-lucide="wrench"></i>
+                    Kies een dienst
+                </h2>
+                <div id="serviceList">
+                    <!-- Services worden hier geladen -->
+                </div>
+            </div>
+            
+            <!-- Piano selection (if applicable) -->
+            <div class="card" id="pianoCard" style="display: none;">
+                <h2 class="card-title">
+                    <i data-lucide="music"></i>
+                    Selecteer je piano
+                </h2>
+                <div id="pianoList">
+                    <!-- Pianos worden hier geladen -->
+                </div>
+            </div>
+            
+            <!-- Date/time selection -->
+            <div class="card">
+                <h2 class="card-title">
+                    <i data-lucide="calendar"></i>
+                    Kies datum & tijd
+                </h2>
+                <div class="datetime-row">
+                    <div class="form-group">
+                        <label>Datum</label>
+                        <input type="date" id="dateInput" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tijd</label>
+                        <input type="time" id="timeInput" required>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notes -->
+            <div class="card">
+                <h2 class="card-title">
+                    <i data-lucide="message-square"></i>
+                    Opmerkingen (optioneel)
+                </h2>
+                <textarea id="notesInput" placeholder="Bijzonderheden over je piano of afspraak..."></textarea>
+            </div>
+            
+            <!-- Submit -->
+            <button type="button" class="submit-btn" id="submitBtn" disabled>
+                <i data-lucide="check-circle"></i>
+                Afspraak boeken
+            </button>
+            
+            <!-- Contact info -->
+            <div class="contact-info" id="contactInfo" style="text-align: center; margin-top: 20px;">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="icons.js"></script>
+    <script>
+        // Get token from URL
+        const pathParts = window.location.pathname.split('/');
+        const token = pathParts[pathParts.length - 1];
+        
+        // State
+        let bookingData = null;
+        let selectedService = null;
+        let selectedPiano = null;
+        
+        // DOM elements
+        const loadingScreen = document.getElementById('loadingScreen');
+        const errorScreen = document.getElementById('errorScreen');
+        const successScreen = document.getElementById('successScreen');
+        const bookingForm = document.getElementById('bookingForm');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Initialize
+        async function init() {
+            try {
+                const response = await fetch(`/api/book/customer/${token}`);
+                
+                if (!response.ok) {
+                    throw new Error('Invalid token');
+                }
+                
+                bookingData = await response.json();
+                renderBookingForm();
+                
+            } catch (error) {
+                console.error('Load error:', error);
+                showError('Deze boekingslink is niet meer geldig of bestaat niet.');
+            }
+        }
+        
+        function showError(message) {
+            loadingScreen.style.display = 'none';
+            errorScreen.style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+            lucide.createIcons();
+        }
+        
+        function renderBookingForm() {
+            loadingScreen.style.display = 'none';
+            bookingForm.style.display = 'block';
+            
+            // Business info
+            document.getElementById('businessName').textContent = bookingData.business.name;
+            document.getElementById('customerName').textContent = bookingData.customer.name.split(' ')[0];
+            
+            // Logo
+            if (bookingData.business.logo) {
+                const logoContainer = document.getElementById('businessLogo');
+                logoContainer.outerHTML = `<img src="${bookingData.business.logo}" alt="Logo" class="business-logo" id="businessLogo">`;
+            }
+            
+            // Services
+            const serviceList = document.getElementById('serviceList');
+            serviceList.innerHTML = bookingData.services.map(service => `
+                <label class="service-option" data-id="${service.id}">
+                    <input type="radio" name="service" value="${service.id}">
+                    <div class="service-header">
+                        <span class="service-name">${service.name}</span>
+                        ${service.price ? `<span class="service-price">€${service.price}</span>` : ''}
+                    </div>
+                    <div class="service-meta">${service.duration} minuten</div>
+                    ${service.description ? `<div class="service-description">${service.description}</div>` : ''}
+                </label>
+            `).join('');
+            
+            // Service selection handlers
+            document.querySelectorAll('.service-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    document.querySelectorAll('.service-option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    opt.querySelector('input').checked = true;
+                    selectedService = opt.dataset.id;
+                    validateForm();
+                });
+            });
+            
+            // Pianos
+            if (bookingData.pianos && bookingData.pianos.length > 0) {
+                const pianoCard = document.getElementById('pianoCard');
+                pianoCard.style.display = 'block';
+                
+                const pianoList = document.getElementById('pianoList');
+                pianoList.innerHTML = bookingData.pianos.map(piano => `
+                    <label class="piano-option" data-id="${piano.id}">
+                        <input type="radio" name="piano" value="${piano.id}">
+                        <div class="piano-brand">${piano.brand} ${piano.model || ''}</div>
+                        <div class="piano-details">
+                            ${piano.type || 'Piano'}
+                            ${piano.location ? ` • ${piano.location}` : ''}
+                        </div>
+                    </label>
+                `).join('');
+                
+                // Piano selection handlers
+                document.querySelectorAll('.piano-option').forEach(opt => {
+                    opt.addEventListener('click', () => {
+                        document.querySelectorAll('.piano-option').forEach(o => o.classList.remove('selected'));
+                        opt.classList.add('selected');
+                        opt.querySelector('input').checked = true;
+                        selectedPiano = opt.dataset.id;
+                    });
+                });
+                
+                // Auto-select if only one piano
+                if (bookingData.pianos.length === 1) {
+                    const firstPiano = document.querySelector('.piano-option');
+                    firstPiano.click();
+                }
+            }
+            
+            // Set minimum date to today
+            const dateInput = document.getElementById('dateInput');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.min = today;
+            dateInput.value = today;
+            
+            // Set default time
+            const timeInput = document.getElementById('timeInput');
+            timeInput.value = '10:00';
+            
+            // Contact info
+            const contactInfo = document.getElementById('contactInfo');
+            const contactParts = [];
+            if (bookingData.business.phone) {
+                contactParts.push(`<a href="tel:${bookingData.business.phone}">${bookingData.business.phone}</a>`);
+            }
+            if (bookingData.business.email) {
+                contactParts.push(`<a href="mailto:${bookingData.business.email}">${bookingData.business.email}</a>`);
+            }
+            if (contactParts.length > 0) {
+                contactInfo.innerHTML = `Vragen? Neem contact op: ${contactParts.join(' • ')}`;
+            }
+            
+            // Form validation
+            dateInput.addEventListener('change', validateForm);
+            timeInput.addEventListener('change', validateForm);
+            
+            // Submit handler
+            submitBtn.addEventListener('click', submitBooking);
+            
+            // Initial validation
+            validateForm();
+            
+            // Initialize icons
+            lucide.createIcons();
+        }
+        
+        function validateForm() {
+            const date = document.getElementById('dateInput').value;
+            const time = document.getElementById('timeInput').value;
+            
+            const isValid = selectedService && date && time;
+            submitBtn.disabled = !isValid;
+        }
+        
+        async function submitBooking() {
+            if (submitBtn.disabled) return;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner" style="width: 20px; height: 20px; margin: 0;"></span> Bezig...';
+            
+            try {
+                const response = await fetch(`/api/book/customer/${token}/appointment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        serviceId: selectedService,
+                        pianoId: selectedPiano,
+                        date: document.getElementById('dateInput').value,
+                        time: document.getElementById('timeInput').value,
+                        notes: document.getElementById('notesInput').value
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Booking failed');
+                }
+                
+                showSuccess(result);
+                
+            } catch (error) {
+                console.error('Booking error:', error);
+                alert('Er ging iets mis: ' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="check-circle"></i> Afspraak boeken';
+                lucide.createIcons();
+            }
+        }
+        
+        function showSuccess(result) {
+            bookingForm.style.display = 'none';
+            successScreen.style.display = 'block';
+            
+            const service = bookingData.services.find(s => s.id == selectedService);
+            const piano = selectedPiano ? bookingData.pianos.find(p => p.id == selectedPiano) : null;
+            
+            const date = new Date(document.getElementById('dateInput').value);
+            const dateStr = date.toLocaleDateString('nl-NL', { 
+                weekday: 'long', 
+                day: 'numeric', 
+                month: 'long' 
+            });
+            
+            document.getElementById('appointmentSummary').innerHTML = `
+                <div class="summary-row">
+                    <span class="summary-label">Dienst</span>
+                    <span>${service.name}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Datum</span>
+                    <span>${dateStr}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Tijd</span>
+                    <span>${document.getElementById('timeInput').value}</span>
+                </div>
+                ${piano ? `
+                <div class="summary-row">
+                    <span class="summary-label">Piano</span>
+                    <span>${piano.brand} ${piano.model || ''}</span>
+                </div>
+                ` : ''}
+            `;
+            
+            lucide.createIcons();
+        }
+        
+        // Start
+        init();
+    </script>
+</body>
+</html>

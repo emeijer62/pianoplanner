@@ -10,9 +10,189 @@ const serviceStore = require('../utils/serviceStore');
 const customerStore = require('../utils/customerStore');
 const appointmentStore = require('../utils/appointmentStore');
 const companyStore = require('../utils/companyStore');
+const pianoStore = require('../utils/pianoStore');
 const { calculateTravelTime, getPlaceAutocomplete, getPlaceDetails, geocodeAddress } = require('../utils/travelTime');
 const emailService = require('../utils/emailService');
 const { getDb } = require('../utils/database');
+
+// ==================== CUSTOMER-SPECIFIC BOOKING ====================
+
+/**
+ * Haal klant booking data op via token
+ * GET /api/book/customer/:token
+ */
+router.get('/customer/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+        
+        // Haal klant + eigenaar info op
+        const data = await customerStore.getCustomerWithOwnerByToken(token);
+        
+        if (!data) {
+            return res.status(404).json({ error: 'Boekingslink niet geldig' });
+        }
+        
+        // Haal piano's van deze klant op
+        const pianos = await pianoStore.getPianosByCustomer(data.owner.id, data.customer.id);
+        
+        // Haal beschikbare diensten op
+        let services = await serviceStore.getActiveServices(data.owner.id);
+        
+        // Haal booking settings op
+        const bookingSettings = await userStore.getBookingSettings(data.owner.id);
+        
+        // Filter diensten als ingesteld
+        if (bookingSettings.allowedServices && bookingSettings.allowedServices.length > 0) {
+            services = services.filter(s => bookingSettings.allowedServices.includes(s.id));
+        }
+        
+        // Haal bedrijfslogo op
+        const logoUrl = await emailService.getCompanyLogo(data.owner.id);
+        
+        // Haal availability op
+        const company = await companyStore.getCompanySettings(data.owner.id);
+        const availability = company?.workingHours || {
+            monday: { enabled: true, start: '09:00', end: '17:00' },
+            tuesday: { enabled: true, start: '09:00', end: '17:00' },
+            wednesday: { enabled: true, start: '09:00', end: '17:00' },
+            thursday: { enabled: true, start: '09:00', end: '17:00' },
+            friday: { enabled: true, start: '09:00', end: '17:00' },
+            saturday: { enabled: false, start: '09:00', end: '17:00' },
+            sunday: { enabled: false, start: '09:00', end: '17:00' }
+        };
+        
+        res.json({
+            customer: {
+                name: data.customer.name,
+                email: data.customer.email,
+                phone: data.customer.phone,
+                address: data.customer.address
+            },
+            pianos: pianos.map(p => ({
+                id: p.id,
+                brand: p.brand,
+                model: p.model,
+                type: p.type,
+                location: p.location,
+                serialNumber: p.serialNumber
+            })),
+            business: {
+                name: data.business.name || 'Piano Service',
+                logo: logoUrl || data.business.logo,
+                phone: data.business.phone,
+                email: data.business.email
+            },
+            services: services.map(s => ({
+                id: s.id,
+                name: s.name,
+                description: s.description,
+                duration: s.duration,
+                price: s.price
+            })),
+            availability,
+            ownerId: data.owner.id
+        });
+        
+    } catch (error) {
+        console.error('Customer booking fetch error:', error);
+        res.status(500).json({ error: 'Kon boekingsgegevens niet laden' });
+    }
+});
+
+/**
+ * Maak een afspraak aan via klant token
+ * POST /api/book/customer/:token/appointment
+ */
+router.post('/customer/:token/appointment', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { serviceId, pianoId, date, time, notes } = req.body;
+        
+        // Valideer klant token
+        const data = await customerStore.getCustomerWithOwnerByToken(token);
+        
+        if (!data) {
+            return res.status(404).json({ error: 'Ongeldige boekingslink' });
+        }
+        
+        // Valideer verplichte velden
+        if (!serviceId || !date || !time) {
+            return res.status(400).json({ error: 'Service, datum en tijd zijn verplicht' });
+        }
+        
+        // Haal service op
+        const service = await serviceStore.getService(data.owner.id, serviceId);
+        if (!service) {
+            return res.status(400).json({ error: 'Ongeldige service' });
+        }
+        
+        // Als piano geselecteerd, valideer dat deze van de klant is
+        let piano = null;
+        if (pianoId) {
+            piano = await pianoStore.getPiano(data.owner.id, pianoId);
+            if (!piano || piano.customerId !== data.customer.id) {
+                return res.status(400).json({ error: 'Ongeldige piano selectie' });
+            }
+        }
+        
+        // Bereken start en eindtijd
+        const startDateTime = new Date(`${date}T${time}`);
+        const endDateTime = new Date(startDateTime.getTime() + (service.duration || 60) * 60000);
+        
+        // Maak afspraak aan
+        const appointmentData = {
+            title: `${service.name} - ${data.customer.name}`,
+            customer_id: data.customer.id,
+            customer_name: data.customer.name,
+            customer_email: data.customer.email,
+            customer_phone: data.customer.phone,
+            service_id: serviceId,
+            service_name: service.name,
+            piano_id: pianoId || null,
+            piano_info: piano ? `${piano.brand} ${piano.model || ''}`.trim() : null,
+            start: startDateTime.toISOString(),
+            end: endDateTime.toISOString(),
+            address: [
+                data.customer.address.street,
+                data.customer.address.postalCode,
+                data.customer.address.city
+            ].filter(Boolean).join(', '),
+            notes: notes || '',
+            status: 'confirmed',
+            source: 'customer_booking_link'
+        };
+        
+        const appointment = await appointmentStore.createAppointment(data.owner.id, appointmentData);
+        
+        // Stuur bevestigingsmail
+        try {
+            const company = await companyStore.getCompanySettings(data.owner.id);
+            await emailService.sendConfirmationEmail(data.owner.id, {
+                ...appointmentData,
+                businessName: company?.name || 'Piano Service',
+                businessPhone: company?.phone
+            });
+        } catch (emailErr) {
+            console.error('Email verzenden mislukt:', emailErr);
+            // Niet fataal - afspraak is wel aangemaakt
+        }
+        
+        res.json({ 
+            success: true, 
+            appointment: {
+                id: appointment.id,
+                date,
+                time,
+                service: service.name
+            },
+            message: 'Afspraak succesvol geboekt!'
+        });
+        
+    } catch (error) {
+        console.error('Customer booking create error:', error);
+        res.status(500).json({ error: 'Kon afspraak niet aanmaken' });
+    }
+});
 
 // ==================== PUBLIC ADDRESS AUTOCOMPLETE ====================
 

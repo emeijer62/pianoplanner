@@ -173,4 +173,31 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// Regenerate booking token voor klant
+router.post('/:id/regenerate-token', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const customerId = req.params.id;
+        
+        // Controleer of klant bestaat en van deze user is
+        const customer = await customerStore.getCustomer(userId, customerId);
+        if (!customer) {
+            return res.status(404).json({ error: 'Klant niet gevonden' });
+        }
+        
+        // Genereer nieuwe token
+        const newToken = await customerStore.regenerateBookingToken(userId, customerId);
+        
+        console.log(`🔄 Booking token geregenereerd voor klant ${customerId}`);
+        res.json({ 
+            success: true, 
+            token: newToken,
+            message: 'Nieuwe boekingslink gegenereerd'
+        });
+    } catch (error) {
+        console.error('Error regenerating token:', error);
+        res.status(500).json({ error: 'Kon token niet regenereren' });
+    }
+});
+
 module.exports = router;

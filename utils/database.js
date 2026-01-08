@@ -411,6 +411,32 @@ function initDatabase() {
                 console.error('Migration error travel_settings_enabled:', err.message);
             }
         });
+        
+        // Migratie: voeg business_slug toe aan company_settings voor gepersonaliseerde booking URLs
+        db.run(`ALTER TABLE company_settings ADD COLUMN business_slug TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error business_slug:', err.message);
+            } else if (!err) {
+                db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_company_settings_slug ON company_settings(business_slug)`, (idxErr) => {
+                    if (idxErr && !idxErr.message.includes('already exists')) {
+                        console.error('Index error business_slug:', idxErr.message);
+                    }
+                });
+            }
+        });
+        
+        // Migratie: voeg booking_token toe aan customers voor gepersonaliseerde booking links
+        db.run(`ALTER TABLE customers ADD COLUMN booking_token TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error booking_token:', err.message);
+            } else if (!err) {
+                db.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_booking_token ON customers(booking_token)`, (idxErr) => {
+                    if (idxErr && !idxErr.message.includes('already exists')) {
+                        console.error('Index error booking_token:', idxErr.message);
+                    }
+                });
+            }
+        });
 
         console.log('✅ Database tabellen en indexen aangemaakt');
         

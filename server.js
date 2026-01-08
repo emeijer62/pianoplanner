@@ -268,6 +268,11 @@ app.get('/book/:slug', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'book.html'));
 });
 
+// Gepersonaliseerde klant boekingslink (serve customer-book.html voor /c/:token)
+app.get('/c/:token', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'customer-book.html'));
+});
+
 // API route om ingelogde gebruiker te checken
 app.get('/api/user', async (req, res) => {
     if (req.session.user) {
@@ -607,8 +612,17 @@ app.get('/', (req, res) => {
 // Start server
 console.log('🚀 Server wordt gestart...');
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
     console.log(`🎹 PianoPlanner draait op http://localhost:${PORT}`);
+    
+    // Ensure all customers have booking tokens (migration)
+    try {
+        const customerStore = require('./utils/customerStore');
+        await customerStore.ensureBookingTokens();
+        console.log('✅ Booking tokens gecontroleerd voor alle klanten');
+    } catch (err) {
+        console.error('⚠️ Booking tokens migratie fout:', err.message);
+    }
     
     // Start background sync service
     const { startBackgroundSync } = require('./utils/backgroundSync');

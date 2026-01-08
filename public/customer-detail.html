@@ -492,6 +492,28 @@
                         <span class="info-value" id="customer-notes">-</span>
                     </div>
                 </div>
+                
+                <!-- Booking Link Section -->
+                <div class="booking-link-section" id="booking-link-section" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                    <div class="info-label" style="margin-bottom: 8px;">📨 Personal Booking Link</div>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="booking-link-input" readonly class="form-input" 
+                            style="flex: 1; min-width: 200px; font-size: 13px; padding: 8px 12px; background: var(--light-gray); cursor: text;"
+                            value="Loading...">
+                        <button class="btn btn-secondary btn-small" onclick="copyBookingLink()" id="copy-link-btn">
+                            📋 Copy
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="openBookingLink()">
+                            🔗 Open
+                        </button>
+                        <button class="btn btn-small" style="background: #fef3c7; color: #92400e;" onclick="regenerateBookingLink()" title="Generate new link (old link stops working)">
+                            🔄 Regenerate
+                        </button>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+                        Send this link to your customer so they can book appointments themselves
+                    </div>
+                </div>
             </div>
 
             <!-- Tabs -->
@@ -795,7 +817,56 @@
                     `Customer since ${date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
             }
             
+            // Set booking link
+            if (customerData.bookingToken) {
+                const bookingUrl = `${window.location.origin}/c/${customerData.bookingToken}`;
+                document.getElementById('booking-link-input').value = bookingUrl;
+            } else {
+                document.getElementById('booking-link-input').value = 'No booking link generated';
+            }
+            
             document.title = `${customerData.name} - PianoPlanner`;
+        }
+        
+        // Booking link functions
+        function copyBookingLink() {
+            const input = document.getElementById('booking-link-input');
+            input.select();
+            document.execCommand('copy');
+            
+            const btn = document.getElementById('copy-link-btn');
+            btn.textContent = '✓ Copied!';
+            setTimeout(() => btn.textContent = '📋 Copy', 2000);
+        }
+        
+        function openBookingLink() {
+            const url = document.getElementById('booking-link-input').value;
+            if (url && !url.includes('No booking')) {
+                window.open(url, '_blank');
+            }
+        }
+        
+        async function regenerateBookingLink() {
+            if (!confirm('Are you sure? The old link will stop working.')) return;
+            
+            try {
+                const response = await fetch(`/api/customers/${customerId}/regenerate-token`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) throw new Error('Failed to regenerate');
+                
+                const data = await response.json();
+                customerData.bookingToken = data.token;
+                
+                const bookingUrl = `${window.location.origin}/c/${data.token}`;
+                document.getElementById('booking-link-input').value = bookingUrl;
+                
+                alert('New booking link generated!');
+            } catch (error) {
+                console.error('Regenerate error:', error);
+                alert('Could not regenerate link. Please try again.');
+            }
         }
 
         // Load pianos

@@ -238,6 +238,98 @@ const saveTravelSettings = async (userId, travelData) => {
     return getTravelSettings(userId);
 };
 
+// ==================== BUSINESS SLUG ====================
+
+// Genereer een slug van een bedrijfsnaam
+const generateSlug = (name) => {
+    if (!name) return null;
+    return name
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove accents
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+        .replace(/\s+/g, '-') // Spaces to hyphens
+        .replace(/-+/g, '-') // Multiple hyphens to single
+        .replace(/^-|-$/g, '') // Trim hyphens
+        .substring(0, 50); // Max 50 chars
+};
+
+// Check of een slug beschikbaar is
+const isSlugAvailable = async (slug, excludeUserId = null) => {
+    if (!slug) return false;
+    
+    let query = 'SELECT user_id FROM company_settings WHERE business_slug = ?';
+    let params = [slug];
+    
+    if (excludeUserId) {
+        query += ' AND user_id != ?';
+        params.push(excludeUserId);
+    }
+    
+    const existing = await dbGet(query, params);
+    return !existing;
+};
+
+// Haal bedrijf op via slug
+const getCompanyBySlug = async (slug) => {
+    if (!slug) return null;
+    
+    const result = await dbGet(`
+        SELECT cs.*, u.id as owner_id, u.email as owner_email
+        FROM company_settings cs
+        JOIN users u ON cs.user_id = u.id
+        WHERE cs.business_slug = ?
+    `, [slug]);
+    
+    if (!result) return null;
+    
+    return {
+        settings: formatSettings(result),
+        ownerId: result.owner_id,
+        ownerEmail: result.owner_email
+    };
+};
+
+// Sla business slug op
+const saveBusinessSlug = async (userId, slug) => {
+    // Valideer slug format
+    const cleanSlug = generateSlug(slug);
+    if (!cleanSlug || cleanSlug.length < 3) {
+        return { error: 'Slug moet minimaal 3 karakters zijn' };
+    }
+    
+    // Check beschikbaarheid
+    const available = await isSlugAvailable(cleanSlug, userId);
+    if (!available) {
+        return { error: 'Deze URL is al in gebruik' };
+    }
+    
+    // Ensure company_settings row exists
+    const existing = await dbGet('SELECT id FROM company_settings WHERE user_id = ?', [userId]);
+    
+    if (existing) {
+        await dbRun(`
+            UPDATE company_settings SET business_slug = ?, updated_at = ?
+            WHERE user_id = ?
+        `, [cleanSlug, new Date().toISOString(), userId]);
+    } else {
+        await dbRun(`
+            INSERT INTO company_settings (user_id, business_slug, updated_at)
+            VALUES (?, ?, ?)
+        `, [userId, cleanSlug, new Date().toISOString()]);
+    }
+    
+    return { success: true, slug: cleanSlug };
+};
+
+// Haal business slug op
+const getBusinessSlug = async (userId) => {
+    const result = await dbGet(
+        'SELECT business_slug FROM company_settings WHERE user_id = ?',
+        [userId]
+    );
+    return result?.business_slug || null;
+};
+
 module.exports = {
     getSettings,
     getCompanySettings: getSettings,  // Alias voor duidelijkheid
@@ -245,5 +337,11 @@ module.exports = {
     getOriginAddress,
     getDefaultSettings,
     getTravelSettings,
-    saveTravelSettings
+    saveTravelSettings,
+    // Business slug functies
+    generateSlug,
+    isSlugAvailable,
+    getCompanyBySlug,
+    saveBusinessSlug,
+    getBusinessSlug
 };
