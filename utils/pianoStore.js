@@ -44,31 +44,100 @@ const createPiano = async (userId, pianoData) => {
 };
 
 const getPiano = async (userId, pianoId) => {
-    const piano = await dbGet(
-        'SELECT * FROM pianos WHERE id = ? AND user_id = ?',
-        [pianoId, userId]
-    );
+    const piano = await dbGet(`
+        SELECT p.*,
+            (
+                SELECT MAX(combined_date) FROM (
+                    SELECT MAX(sr.date) as combined_date FROM service_records sr WHERE sr.piano_id = p.id AND sr.user_id = p.user_id
+                    UNION ALL
+                    SELECT MAX(DATE(a.start_time)) as combined_date FROM appointments a WHERE a.piano_id = p.id AND a.user_id = p.user_id
+                    UNION ALL
+                    SELECT p.last_tuning_date as combined_date
+                )
+            ) as calculated_last_tuning
+        FROM pianos p
+        WHERE p.id = ? AND p.user_id = ?
+    `, [pianoId, userId]);
     
     if (!piano) return null;
-    return formatPiano(piano);
+    
+    const formatted = formatPiano(piano);
+    if (piano.calculated_last_tuning) {
+        formatted.lastTuningDate = piano.calculated_last_tuning;
+    }
+    return formatted;
 };
 
 const getAllPianos = async (userId) => {
-    const pianos = await dbAll(
-        'SELECT * FROM pianos WHERE user_id = ? ORDER BY brand, model ASC',
-        [userId]
-    );
+    // Haal piano's op met berekende laatste service datum
+    const pianos = await dbAll(`
+        SELECT p.*,
+            (
+                SELECT MAX(combined_date) FROM (
+                    SELECT MAX(sr.date) as combined_date FROM service_records sr WHERE sr.piano_id = p.id AND sr.user_id = p.user_id
+                    UNION ALL
+                    SELECT MAX(DATE(a.start_time)) as combined_date FROM appointments a WHERE a.piano_id = p.id AND a.user_id = p.user_id
+                    UNION ALL
+                    SELECT p.last_tuning_date as combined_date
+                )
+            ) as calculated_last_tuning
+        FROM pianos p
+        WHERE p.user_id = ?
+        ORDER BY p.brand, p.model ASC
+    `, [userId]);
     
-    return pianos.map(formatPiano);
+    return pianos.map(row => {
+        const piano = formatPiano(row);
+        // Gebruik de berekende datum als die nieuwer is
+        if (row.calculated_last_tuning) {
+            piano.lastTuningDate = row.calculated_last_tuning;
+        }
+        return piano;
+    });
 };
 
 const getPianosByCustomer = async (userId, customerId) => {
-    const pianos = await dbAll(
-        'SELECT * FROM pianos WHERE user_id = ? AND customer_id = ? ORDER BY brand ASC',
-        [userId, customerId]
-    );
+    // Haal piano's op met berekende laatste service datum
+    // Dit combineert de handmatig ingestelde last_tuning_date met service_records en appointments
+    const pianos = await dbAll(`
+        SELECT p.*,
+            COALESCE(
+                MAX(
+                    CASE 
+                        WHEN sr.date IS NOT NULL AND a.apt_date IS NOT NULL 
+                            THEN MAX(sr.date, a.apt_date)
+                        WHEN sr.date IS NOT NULL THEN sr.date
+                        WHEN a.apt_date IS NOT NULL THEN a.apt_date
+                        ELSE p.last_tuning_date
+                    END
+                ),
+                p.last_tuning_date
+            ) as calculated_last_tuning
+        FROM pianos p
+        LEFT JOIN service_records sr ON sr.piano_id = p.id AND sr.user_id = p.user_id
+        LEFT JOIN (
+            SELECT piano_id, MAX(DATE(start_time)) as apt_date
+            FROM appointments 
+            WHERE user_id = ? AND customer_id = ? AND piano_id IS NOT NULL
+            GROUP BY piano_id
+        ) a ON a.piano_id = p.id
+        WHERE p.user_id = ? AND p.customer_id = ?
+        GROUP BY p.id
+        ORDER BY p.brand ASC
+    `, [userId, customerId, userId, customerId]);
     
-    return pianos.map(formatPiano);
+    return pianos.map(row => {
+        const piano = formatPiano(row);
+        // Gebruik de berekende datum als die nieuwer is dan de handmatige
+        if (row.calculated_last_tuning) {
+            const calculated = new Date(row.calculated_last_tuning);
+            const manual = row.last_tuning_date ? new Date(row.last_tuning_date) : null;
+            if (!manual || calculated > manual) {
+                piano.lastTuningDate = row.calculated_last_tuning;
+            }
+        }
+        return piano;
+    });
 };
 
 const updatePiano = async (userId, pianoId, updates) => {

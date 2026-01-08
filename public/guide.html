@@ -406,6 +406,11 @@
             <div class="sidebar-title">Online boeken</div>
             <a href="#boekingslink" class="sidebar-link">Boekingslink aanmaken</a>
             <a href="#klant-link" class="sidebar-link">Persoonlijke klantlink</a>
+            <a href="#smart-suggestions" class="sidebar-link">Slimme suggesties</a>
+            <a href="#theater-availability" class="sidebar-link">Theater beschikbaarheid</a>
+
+            <div class="sidebar-title">Pianos & Service</div>
+            <a href="#piano-service" class="sidebar-link">Service historie</a>
         </nav>
 
         <!-- Main Content -->
@@ -1078,6 +1083,179 @@
                         Wanneer de klant de boekingslink opent, ziet hij alleen de geselecteerde dienst. 
                         Geen verwarring, geen verkeerde keuzes. Laat u het veld leeg, dan kan de klant 
                         uit alle beschikbare diensten kiezen.
+                    </p>
+                </div>
+            </section>
+
+            <!-- SMART SUGGESTIONS -->
+            <section id="smart-suggestions" class="section">
+                <h2><span class="icon">🧠</span> Slimme boekingssuggesties</h2>
+                <p>
+                    Wanneer klanten een afspraak boeken via hun persoonlijke link, krijgen zij automatisch 
+                    <strong>slimme tijdsuggesties</strong> te zien. Het systeem analyseert uw bestaande afspraken 
+                    en stelt de meest efficiënte tijdslots voor.
+                </p>
+
+                <h3>Hoe werkt het?</h3>
+                <p>
+                    In plaats van handmatig een datum en tijd te kiezen, ziet de klant direct een lijst 
+                    met aanbevolen momenten. Deze worden berekend op basis van:
+                </p>
+                <ul>
+                    <li><strong>Bestaande afspraken</strong> - Slots vlak voor of na andere afspraken in de buurt</li>
+                    <li><strong>Locatie</strong> - Minimale reistijd tussen afspraken</li>
+                    <li><strong>Werkuren</strong> - Alleen binnen uw beschikbare tijden</li>
+                    <li><strong>Theater-uren</strong> - Aparte uren voor theaters indien ingesteld</li>
+                </ul>
+
+                <div class="callout callout-success">
+                    <div class="callout-title">✅ Voordelen</div>
+                    <p>
+                        • Efficiëntere routeplanning - minder kilometers rijden<br>
+                        • Klanten kiezen sneller - geen twijfel over beschikbaarheid<br>
+                        • Betere dagindeling - afspraken clusteren in dezelfde regio
+                    </p>
+                </div>
+
+                <h3>Wat ziet de klant?</h3>
+                <p>Na het selecteren van een dienst verschijnen maximaal 6 optimale tijdslots:</p>
+                <ul>
+                    <li><strong>Aanbevolen</strong> - Het meest efficiënte moment (groene badge)</li>
+                    <li><strong>Alternatief</strong> - Goede opties op andere dagen (oranje badge)</li>
+                </ul>
+                <p>
+                    De klant kan ook kiezen voor "Ander tijdstip kiezen" om handmatig een datum en tijd te selecteren.
+                </p>
+            </section>
+
+            <!-- THEATER AVAILABILITY -->
+            <section id="theater-availability" class="section">
+                <h2><span class="icon">🎭</span> Theater beschikbaarheid</h2>
+                <p>
+                    Theaters, concertzalen en andere venues hebben vaak andere beschikbaarheden dan particulieren. 
+                    Ze zijn vooral 's avonds en in het weekend bereikbaar. Met <strong>Theater Beschikbaarheid</strong> 
+                    kunt u aparte werkuren instellen voor dit type klanten.
+                </p>
+
+                <h3>Theater-uren instellen</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar Settings → Bedrijf</div>
+                        <p>Scroll naar de sectie "Theater Beschikbaarheid".</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Schakel Theater-uren in</div>
+                        <p>Zet de schakelaar op "Aan" om theater-uren te activeren.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Stel de tijden in</div>
+                        <p>Geef per dag aan wanneer u beschikbaar bent voor theaters. 
+                        Bijvoorbeeld: doordeweeks 18:00-22:00, weekend 10:00-18:00.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Opslaan</div>
+                        <p>Klik op "Opslaan" om de theater-uren te bewaren.</p>
+                    </div>
+                </div>
+
+                <h3>Klant markeren als theater</h3>
+                <p>Om een klant de theater-uren te laten gebruiken:</p>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Open de klantgegevens</div>
+                        <p>Ga naar Klanten en klik op "Edit" bij de gewenste klant.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Vink "Gebruik theater beschikbaarheid" aan</div>
+                        <p>Deze optie verschijnt alleen als theater-uren zijn ingeschakeld.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Opslaan</div>
+                        <p>De klant kan nu boeken op basis van uw theater-uren.</p>
+                    </div>
+                </div>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 Voorbeeld</div>
+                    <p>
+                        <strong>Normale werkuren:</strong> Ma-Vr 09:00-17:00<br>
+                        <strong>Theater-uren:</strong> Ma-Vr 18:00-22:00, Za 10:00-18:00<br><br>
+                        Een particuliere klant ziet alleen ma-vr overdag slots. 
+                        Een theater ziet alleen avond- en weekendslots.
+                    </p>
+                </div>
+            </section>
+
+            <!-- PIANO SERVICE HISTORIE -->
+            <section id="piano-service" class="section">
+                <h2><span class="icon">🎹</span> Piano service historie</h2>
+                <p>
+                    PianoPlanner houdt automatisch de servicehistorie van elke piano bij. 
+                    Dit helpt u te bepalen wanneer een piano weer gestemd moet worden.
+                </p>
+
+                <h3>Automatische tracking</h3>
+                <p>
+                    De "Laatste stembeurt" van een piano wordt automatisch bijgewerkt op basis van:
+                </p>
+                <ul>
+                    <li><strong>Afspraken</strong> - Voltooide afspraken gekoppeld aan de piano</li>
+                    <li><strong>Service records</strong> - Handmatig toegevoegde service notities</li>
+                    <li><strong>Handmatige datum</strong> - Als u zelf een datum invult</li>
+                </ul>
+                <p>
+                    Het systeem neemt automatisch de meest recente datum van deze drie bronnen.
+                </p>
+
+                <h3>Service status indicators</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Betekenis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>✅ <strong>Last: [datum]</strong></td>
+                            <td>Piano is recent gestemd, volgende beurt nog niet nodig</td>
+                        </tr>
+                        <tr>
+                            <td>⏰ <strong>Service needed in X days</strong></td>
+                            <td>Servicebeurt komt eraan (binnen 30 dagen)</td>
+                        </tr>
+                        <tr>
+                            <td>⚠️ <strong>X days past service date</strong></td>
+                            <td>Service is achterstallig</td>
+                        </tr>
+                        <tr>
+                            <td>⚠️ <strong>Not yet tuned</strong></td>
+                            <td>Geen service historie bekend</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Service interval instellen</h3>
+                <p>
+                    Standaard gaat PianoPlanner uit van een service-interval van 6 maanden. 
+                    U kunt dit per piano aanpassen:
+                </p>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Open de piano</div>
+                        <p>Ga naar de klant en klik op de piano.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Pas het interval aan</div>
+                        <p>Bij "Service interval" kunt u het aantal maanden wijzigen (bijv. 12 voor jaarlijks).</p>
+                    </div>
+                </div>
+
+                <div class="callout callout-success">
+                    <div class="callout-title">✅ Tip</div>
+                    <p>
+                        Concertvleugels en piano's in muziekscholen hebben vaak een korter interval nodig (3-4 maanden), 
+                        terwijl hobby-piano's met 6-12 maanden toe kunnen.
                     </p>
                 </div>
             </section>
