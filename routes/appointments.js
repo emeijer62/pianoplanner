@@ -403,25 +403,32 @@ router.delete('/:id', async (req, res) => {
         // Als de afspraak een Google Calendar ID heeft, verwijder ook uit Google
         if (existing.googleEventId) {
             try {
-                const googleTokens = await userStore.getGoogleTokens(userId);
+                // Haal user op voor Google tokens
+                const user = await userStore.getUser(userId);
                 const syncSettings = await userStore.getCalendarSync(userId);
                 
-                if (googleTokens?.access_token && syncSettings?.googleCalendarId) {
-                    const oauth2Client = new google.auth.OAuth2(
-                        process.env.GOOGLE_CLIENT_ID,
-                        process.env.GOOGLE_CLIENT_SECRET,
-                        process.env.GOOGLE_REDIRECT_URI
-                    );
-                    oauth2Client.setCredentials(googleTokens);
+                if (user?.tokens && syncSettings?.googleCalendarId) {
+                    const googleTokens = typeof user.tokens === 'string' 
+                        ? JSON.parse(user.tokens) 
+                        : user.tokens;
                     
-                    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-                    
-                    await calendar.events.delete({
-                        calendarId: syncSettings.googleCalendarId || 'primary',
-                        eventId: existing.googleEventId
-                    });
-                    
-                    console.log(`🗑️ Google Calendar event verwijderd: ${existing.googleEventId}`);
+                    if (googleTokens?.access_token) {
+                        const oauth2Client = new google.auth.OAuth2(
+                            process.env.GOOGLE_CLIENT_ID,
+                            process.env.GOOGLE_CLIENT_SECRET,
+                            process.env.GOOGLE_REDIRECT_URI
+                        );
+                        oauth2Client.setCredentials(googleTokens);
+                        
+                        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+                        
+                        await calendar.events.delete({
+                            calendarId: syncSettings.googleCalendarId || 'primary',
+                            eventId: existing.googleEventId
+                        });
+                        
+                        console.log(`🗑️ Google Calendar event verwijderd: ${existing.googleEventId}`);
+                    }
                 }
             } catch (googleErr) {
                 // Log maar ga door - lokale verwijdering is belangrijker
@@ -433,27 +440,29 @@ router.delete('/:id', async (req, res) => {
         if (existing.apple_event_id || existing.apple_event_url) {
             try {
                 const appleCredentials = await userStore.getAppleCalendarCredentials(userId);
+                const appleSyncSettings = await userStore.getAppleCalendarSync(userId);
                 
-                if (appleCredentials?.caldavUrl && appleCredentials?.appleId && appleCredentials?.appPassword) {
-                    const { createDAVClient } = require('tsdav');
+                if (appleCredentials?.connected && appleCredentials?.appPassword && appleSyncSettings?.appleCalendarUrl) {
+                    const fetch = require('node-fetch');
                     
-                    const client = await createDAVClient({
-                        serverUrl: appleCredentials.caldavUrl,
-                        credentials: {
-                            username: appleCredentials.appleId,
-                            password: appleCredentials.appPassword
-                        },
-                        authMethod: 'Basic',
-                        defaultAccountType: 'caldav'
+                    // Build event URL
+                    const eventUrl = existing.apple_event_url || 
+                        `${appleSyncSettings.appleCalendarUrl}${existing.apple_event_id}.ics`;
+                    
+                    const authHeader = Buffer.from(`${appleCredentials.appleId}:${appleCredentials.appPassword}`).toString('base64');
+                    
+                    const response = await fetch(eventUrl, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Basic ${authHeader}`
+                        }
                     });
                     
-                    const eventUrl = existing.apple_event_url || `${appleCredentials.caldavUrl}/${existing.apple_event_id}.ics`;
-                    
-                    await client.deleteCalendarObject({
-                        calendarObject: { url: eventUrl }
-                    });
-                    
-                    console.log(`🗑️ Apple Calendar event verwijderd: ${eventUrl}`);
+                    if (response.ok || response.status === 204 || response.status === 404) {
+                        console.log(`🗑️ Apple Calendar event verwijderd: ${eventUrl}`);
+                    } else {
+                        console.warn(`⚠️ Apple delete response: ${response.status}`);
+                    }
                 }
             } catch (appleErr) {
                 // Log maar ga door - lokale verwijdering is belangrijker
