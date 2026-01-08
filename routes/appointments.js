@@ -176,6 +176,8 @@ router.get('/:id', async (req, res) => {
 // Maak nieuwe afspraak
 router.post('/', async (req, res) => {
     try {
+        console.log('📅 POST /appointments - Body:', JSON.stringify(req.body));
+        
         const userId = req.session.user.id;
         const { 
             title, description, location, 
