@@ -14,6 +14,41 @@ const MONTHS_NL = ['January', 'February', 'March', 'April', 'May', 'June', 'July
 // Auto-sync cooldown (5 minutes)
 const SYNC_COOLDOWN_MS = 5 * 60 * 1000;
 
+// ========== NOTIFICATION SYSTEM ==========
+
+function showNotification(message, type = 'info') {
+    // Remove existing notification if any
+    const existing = document.querySelector('.notification-toast');
+    if (existing) existing.remove();
+    
+    const notification = document.createElement('div');
+    notification.className = `notification-toast notification-${type}`;
+    notification.innerHTML = `
+        <span class="notification-icon">${getNotificationIcon(type)}</span>
+        <span class="notification-message">${message}</span>
+        <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 4 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.classList.add('notification-fade-out');
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 4000);
+}
+
+function getNotificationIcon(type) {
+    switch (type) {
+        case 'success': return '✓';
+        case 'error': return '✕';
+        case 'warning': return '⚠';
+        default: return 'ℹ';
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in
     try {
@@ -294,6 +329,70 @@ function navigateCalendar(direction) {
 function goToToday() {
     currentDate = new Date();
     renderCalendar();
+}
+
+// ========== CALENDAR SYNC ==========
+
+async function syncCalendar() {
+    const btn = document.getElementById('sync-btn');
+    if (!btn || btn.classList.contains('syncing')) return;
+    
+    // Start syncing animation
+    btn.classList.add('syncing');
+    btn.classList.remove('success', 'error');
+    
+    try {
+        const response = await fetch('/api/calendar/sync', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        btn.classList.remove('syncing');
+        
+        if (response.ok) {
+            btn.classList.add('success');
+            
+            // Show notification
+            const syncedCount = (data.exported || 0) + (data.imported || 0);
+            if (syncedCount > 0) {
+                showNotification(`Sync voltooid: ${data.exported || 0} geëxporteerd, ${data.imported || 0} geïmporteerd`, 'success');
+            } else {
+                showNotification('Kalender is up-to-date', 'success');
+            }
+            
+            // Refresh the calendar to show any imported appointments
+            await loadAppointments();
+            renderCalendar();
+        } else {
+            btn.classList.add('error');
+            
+            if (response.status === 400 && data.error === 'Google Calendar not connected') {
+                showNotification('Verbind eerst Google Calendar in Instellingen', 'warning');
+            } else {
+                showNotification(data.error || 'Sync mislukt', 'error');
+            }
+        }
+        
+        // Reset button state after 2 seconds
+        setTimeout(() => {
+            btn.classList.remove('success', 'error');
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Sync error:', error);
+        btn.classList.remove('syncing');
+        btn.classList.add('error');
+        showNotification('Sync mislukt: netwerkfout', 'error');
+        
+        setTimeout(() => {
+            btn.classList.remove('error');
+        }, 2000);
+    }
 }
 
 function updateTitle() {
