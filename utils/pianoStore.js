@@ -159,27 +159,52 @@ const getServiceRecord = async (userId, recordId) => {
 };
 
 const getServiceHistory = async (userId, pianoId) => {
+    // Haal service records op
     const records = await dbAll(`
-        SELECT * FROM service_records 
+        SELECT id, type, date, pitch, notes, 'record' as source
+        FROM service_records 
         WHERE user_id = ? AND piano_id = ?
-        ORDER BY date DESC
     `, [userId, pianoId]);
     
-    return records;
+    // Haal ook afspraken op die gekoppeld zijn aan deze piano
+    const appointments = await dbAll(`
+        SELECT id, service_name as type, DATE(start_time) as date, description as notes, 'appointment' as source
+        FROM appointments 
+        WHERE user_id = ? AND piano_id = ?
+    `, [userId, pianoId]);
+    
+    // Combineer en sorteer op datum (nieuwste eerst)
+    const combined = [...records, ...appointments];
+    combined.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    return combined;
 };
 
 const getServiceHistoryByCustomer = async (userId, customerId) => {
+    // Service records
     const records = await dbAll(`
-        SELECT sr.*, p.brand as piano_brand, p.model as piano_model
+        SELECT sr.id, sr.type, sr.date, sr.pitch, sr.notes, 'record' as source,
+               p.brand as piano_brand, p.model as piano_model, p.id as piano_id
         FROM service_records sr
         JOIN pianos p ON sr.piano_id = p.id
         WHERE sr.user_id = ? AND p.customer_id = ?
-        ORDER BY sr.date DESC
     `, [userId, customerId]);
     
-    return records.map(r => ({
+    // Afspraken met piano's van deze klant
+    const appointments = await dbAll(`
+        SELECT a.id, a.service_name as type, DATE(a.start_time) as date, a.description as notes, 'appointment' as source,
+               a.piano_brand, a.piano_model, a.piano_id
+        FROM appointments a
+        WHERE a.user_id = ? AND a.customer_id = ? AND a.piano_id IS NOT NULL
+    `, [userId, customerId]);
+    
+    // Combineer en sorteer
+    const combined = [...records, ...appointments];
+    combined.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    return combined.map(r => ({
         ...r,
-        pianoName: `${r.piano_brand} ${r.piano_model || ''}`.trim()
+        pianoName: `${r.piano_brand || ''} ${r.piano_model || ''}`.trim()
     }));
 };
 
