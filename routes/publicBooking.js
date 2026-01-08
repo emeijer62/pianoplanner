@@ -41,8 +41,15 @@ router.get('/customer/:token', async (req, res) => {
         // Haal booking settings op
         const bookingSettings = await userStore.getBookingSettings(data.owner.id);
         
-        // Filter diensten als ingesteld
-        if (bookingSettings.allowedServices && bookingSettings.allowedServices.length > 0) {
+        // Als klant een vaste dienst heeft, gebruik alleen die
+        if (data.customer.defaultServiceId) {
+            const defaultService = services.find(s => s.id === data.customer.defaultServiceId);
+            if (defaultService) {
+                services = [defaultService];
+            }
+        } 
+        // Anders: filter diensten volgens booking settings
+        else if (bookingSettings.allowedServices && bookingSettings.allowedServices.length > 0) {
             services = services.filter(s => bookingSettings.allowedServices.includes(s.id));
         }
         

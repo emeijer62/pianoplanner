@@ -510,6 +510,16 @@
                             🔄 Regenerate
                         </button>
                     </div>
+                    
+                    <!-- Default Service Selection -->
+                    <div style="margin-top: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <label style="font-size: 13px; color: var(--text-muted);">Fixed service:</label>
+                        <select id="default-service-select" onchange="updateDefaultService()" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 13px; min-width: 200px;">
+                            <option value="">-- All services available --</option>
+                        </select>
+                        <span style="font-size: 11px; color: var(--text-muted);">Customer can only book this service</span>
+                    </div>
+                    
                     <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
                         Send this link to your customer so they can book appointments themselves
                     </div>
@@ -825,7 +835,50 @@
                 document.getElementById('booking-link-input').value = 'No booking link generated';
             }
             
+            // Populate default service dropdown
+            populateDefaultServiceDropdown();
+            
             document.title = `${customerData.name} - PianoPlanner`;
+        }
+        
+        function populateDefaultServiceDropdown() {
+            const select = document.getElementById('default-service-select');
+            select.innerHTML = '<option value="">-- All services available --</option>';
+            
+            servicesData.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.id;
+                option.textContent = s.name;
+                if (customerData.defaultServiceId === s.id) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+        
+        async function updateDefaultService() {
+            const select = document.getElementById('default-service-select');
+            const serviceId = select.value || null;
+            
+            try {
+                const response = await fetch(`/api/customers/${customerId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ defaultServiceId: serviceId })
+                });
+                
+                if (response.ok) {
+                    customerData.defaultServiceId = serviceId;
+                    showToast(serviceId ? 'Fixed service set' : 'All services available');
+                } else {
+                    throw new Error('Update failed');
+                }
+            } catch (err) {
+                console.error('Error updating default service:', err);
+                showToast('Could not update service', 'error');
+                // Reset dropdown to previous value
+                select.value = customerData.defaultServiceId || '';
+            }
         }
         
         // Booking link functions

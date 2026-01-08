@@ -93,6 +93,10 @@ const updateCustomer = async (userId, customerId, updates) => {
         fields.push('notes = ?');
         values.push(updates.notes);
     }
+    if (updates.defaultServiceId !== undefined) {
+        fields.push('default_service_id = ?');
+        values.push(updates.defaultServiceId || null);
+    }
     
     if (fields.length === 0) return getCustomer(userId, customerId);
     
@@ -292,6 +296,7 @@ function formatCustomer(row) {
         },
         notes: row.notes,
         bookingToken: row.booking_token,
+        defaultServiceId: row.default_service_id,
         createdAt: row.created_at,
         updatedAt: row.updated_at
     };

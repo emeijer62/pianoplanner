@@ -137,7 +137,7 @@ router.put('/:id', async (req, res) => {
             return res.status(404).json({ error: 'Klant niet gevonden' });
         }
         
-        const { name, email, phone, street, city, postalCode, notes } = req.body;
+        const { name, email, phone, street, city, postalCode, notes, defaultServiceId } = req.body;
         
         const customer = await customerStore.updateCustomer(userId, customerId, {
             name,
@@ -146,7 +146,8 @@ router.put('/:id', async (req, res) => {
             street,
             city,
             postalCode,
-            notes
+            notes,
+            defaultServiceId
         });
         
         res.json(customer);

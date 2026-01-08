@@ -444,6 +444,13 @@ function initDatabase() {
                 });
             }
         });
+        
+        // Migratie: voeg default_service_id toe aan customers voor vaste dienst per klant
+        db.run(`ALTER TABLE customers ADD COLUMN default_service_id TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error default_service_id:', err.message);
+            }
+        });
 
         console.log('✅ Database tabellen en indexen aangemaakt');
         
