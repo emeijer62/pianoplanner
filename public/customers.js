@@ -1,6 +1,7 @@
 // Customers Page JavaScript
 
 let allCustomers = [];
+let allServices = [];
 let duplicatesData = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     await loadCustomers();
     await checkDuplicates();
+    await loadServices();
     
     // Event listeners
     document.getElementById('add-customer-btn').addEventListener('click', () => openModal());
@@ -36,6 +38,33 @@ async function loadCustomers() {
         console.error('Error loading customers:', err);
         container.innerHTML = '<div class="error-message">Could not load customers</div>';
     }
+}
+
+async function loadServices() {
+    try {
+        const res = await fetch('/api/services');
+        if (res.ok) {
+            allServices = await res.json();
+            populateServiceDropdown();
+        }
+    } catch (err) {
+        console.error('Error loading services:', err);
+    }
+}
+
+function populateServiceDropdown() {
+    const select = document.getElementById('customer-default-service');
+    if (!select) return;
+    
+    // Keep the first "None" option
+    select.innerHTML = '<option value="">None (customer chooses from all services)</option>';
+    
+    allServices.forEach(service => {
+        const option = document.createElement('option');
+        option.value = service.id;
+        option.textContent = service.name;
+        select.appendChild(option);
+    });
 }
 
 function renderCustomers(customers) {
@@ -132,6 +161,7 @@ function openModal(customerId = null) {
             document.getElementById('customer-postalcode').value = customer.address.postalCode || '';
             document.getElementById('customer-city').value = customer.address.city || '';
             document.getElementById('customer-notes').value = customer.notes || '';
+            document.getElementById('customer-default-service').value = customer.defaultServiceId || '';
             // Show delete button when editing
             if (deleteBtn) deleteBtn.style.display = 'block';
         }
@@ -170,7 +200,8 @@ async function handleSubmit(e) {
         street: document.getElementById('customer-street').value,
         postalCode: document.getElementById('customer-postalcode').value,
         city: document.getElementById('customer-city').value,
-        notes: document.getElementById('customer-notes').value
+        notes: document.getElementById('customer-notes').value,
+        defaultServiceId: document.getElementById('customer-default-service').value || null
     };
     
     try {

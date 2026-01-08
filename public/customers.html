@@ -125,6 +125,14 @@
                         <label class="form-label" for="customer-notes">Notes</label>
                         <textarea id="customer-notes" class="form-textarea" rows="3" placeholder="Additional notes about this customer..."></textarea>
                     </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="customer-default-service">Fixed service for self-booking</label>
+                        <select id="customer-default-service" class="form-input">
+                            <option value="">None (customer chooses from all services)</option>
+                        </select>
+                        <p style="font-size: 12px; color: #666; margin-top: 4px;">When set, the customer can only book this service via their personal booking link.</p>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer" style="justify-content: space-between;">
