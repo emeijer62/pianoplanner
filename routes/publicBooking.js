@@ -213,6 +213,105 @@ router.post('/customer/:token/appointment', async (req, res) => {
     }
 });
 
+/**
+ * Smart suggestions voor klant-specifieke booking
+ * GET /api/book/customer/:token/smart-suggestions
+ */
+router.get('/customer/:token/smart-suggestions', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { serviceId } = req.query;
+        
+        // Valideer klant token
+        const data = await customerStore.getCustomerWithOwnerByToken(token);
+        
+        if (!data) {
+            return res.status(404).json({ error: 'Ongeldige boekingslink' });
+        }
+        
+        if (!serviceId) {
+            return res.status(400).json({ error: 'Dienst is verplicht' });
+        }
+        
+        // Haal service op
+        const service = await serviceStore.getService(data.owner.id, serviceId);
+        if (!service) {
+            return res.status(400).json({ error: 'Ongeldige service' });
+        }
+        
+        // Haal bedrijfsinstellingen op
+        const company = await companyStore.getCompanySettings(data.owner.id);
+        const bookingSettings = await userStore.getBookingSettings(data.owner.id);
+        
+        // Bepaal welke werkuren te gebruiken (theater of normaal)
+        let workingHours;
+        const useTheaterHours = data.customer.useTheaterHours && company?.theaterHoursEnabled;
+        
+        if (useTheaterHours && company?.theaterHours) {
+            workingHours = normalizeWorkingHours(company.theaterHours);
+        } else {
+            workingHours = normalizeWorkingHours(company?.workingHours);
+        }
+        
+        // Bouw klant adres
+        const customerLocation = [
+            data.customer.address.street,
+            data.customer.address.postalCode,
+            data.customer.address.city
+        ].filter(Boolean).join(', ');
+        
+        // Bouw bedrijfs origin adres
+        const originAddress = company?.travelOrigin || 
+            [company?.address?.street, company?.address?.postalCode, company?.address?.city].filter(Boolean).join(', ');
+        
+        // Datum range
+        const now = new Date();
+        const startDate = new Date(now.getTime() + (bookingSettings.minAdvanceHours * 60 * 60 * 1000));
+        const endDate = new Date(now.getTime() + (bookingSettings.maxAdvanceDays * 24 * 60 * 60 * 1000));
+        
+        // Haal alle afspraken in deze periode op
+        const allAppointments = await appointmentStore.getAppointmentsByDateRange(
+            data.owner.id, 
+            startDate.toISOString().split('T')[0],
+            endDate.toISOString().split('T')[0]
+        );
+        
+        console.log(`🧠 Smart suggestions for customer ${data.customer.name} at ${customerLocation}`);
+        console.log(`📅 Date range: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+        console.log(`📊 Found ${allAppointments.length} existing appointments`);
+        console.log(`🎭 Using theater hours: ${useTheaterHours}`);
+        
+        // Haal travel settings op
+        const travelSettings = await companyStore.getTravelSettings(data.owner.id);
+        
+        // Genereer suggesties
+        const suggestions = await generateSmartSuggestions({
+            customerLocation,
+            service,
+            workingHours,
+            existingAppointments: allAppointments,
+            startDate,
+            endDate,
+            maxSuggestions: 6,
+            maxBetweenTravelMinutes: travelSettings.enabled ? travelSettings.maxBetweenTravelMinutes : null,
+            originAddress
+        });
+        
+        res.json({
+            success: true,
+            suggestions,
+            useTheaterHours,
+            message: suggestions.length === 0 
+                ? 'Geen beschikbare tijden gevonden in de komende periode' 
+                : `${suggestions.length} optimale tijden gevonden`
+        });
+        
+    } catch (error) {
+        console.error('Customer smart suggestions error:', error);
+        res.status(500).json({ error: 'Fout bij genereren suggesties' });
+    }
+});
+
 // ==================== PUBLIC ADDRESS AUTOCOMPLETE ====================
 
 /**

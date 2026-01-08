@@ -398,6 +398,151 @@
             color: var(--text-muted);
         }
         
+        /* Smart Suggestions */
+        .suggestions-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        
+        .suggestions-loading {
+            text-align: center;
+            padding: 30px 0;
+        }
+        
+        .suggestions-loading p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+        
+        .suggestions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .suggestion-card {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .suggestion-card:hover {
+            border-color: var(--primary);
+            background: #f8fbff;
+        }
+        
+        .suggestion-card.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #e8f2ff 0%, #f0f7ff 100%);
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15);
+        }
+        
+        .suggestion-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+        
+        .suggestion-icon i {
+            color: white;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .suggestion-icon.alt {
+            background: #FF9500;
+        }
+        
+        .suggestion-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .suggestion-date {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+        
+        .suggestion-time {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        
+        .suggestion-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 500;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+        
+        .suggestion-badge.next {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        .manual-time-btn,
+        .back-to-suggestions-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px;
+            background: transparent;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .manual-time-btn:hover,
+        .back-to-suggestions-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f8fbff;
+        }
+        
+        .manual-time-btn i,
+        .back-to-suggestions-btn i {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .no-suggestions {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-muted);
+        }
+        
+        .no-suggestions i {
+            width: 48px;
+            height: 48px;
+            color: var(--border);
+            margin-bottom: 12px;
+        }
+        
         /* Loading state */
         .loading {
             text-align: center;
@@ -453,6 +598,10 @@
             
             .datetime-row {
                 grid-template-columns: 1fr;
+            }
+            
+            .suggestion-card {
+                padding: 12px 14px;
             }
         }
     </style>
@@ -525,8 +674,28 @@
                 </div>
             </div>
             
-            <!-- Date/time selection -->
-            <div class="card">
+            <!-- Smart Suggestions -->
+            <div class="card" id="suggestionsCard" style="display: none;">
+                <h2 class="card-title">
+                    <i data-lucide="sparkles"></i>
+                    Beschikbare momenten
+                </h2>
+                <p class="suggestions-subtitle">Kies één van de voorgestelde tijdslots:</p>
+                <div id="suggestionsLoading" class="suggestions-loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Beschikbaarheid checken...</p>
+                </div>
+                <div id="suggestionsList" class="suggestions-list">
+                    <!-- Suggestions worden hier geladen -->
+                </div>
+                <button type="button" class="manual-time-btn" id="manualTimeBtn">
+                    <i data-lucide="clock"></i>
+                    Ander tijdstip kiezen
+                </button>
+            </div>
+            
+            <!-- Manual Date/time selection (hidden by default) -->
+            <div class="card" id="manualTimeCard" style="display: none;">
                 <h2 class="card-title">
                     <i data-lucide="calendar"></i>
                     Kies datum & tijd
@@ -541,6 +710,10 @@
                         <input type="time" id="timeInput" required>
                     </div>
                 </div>
+                <button type="button" class="back-to-suggestions-btn" id="backToSuggestionsBtn">
+                    <i data-lucide="arrow-left"></i>
+                    Terug naar suggesties
+                </button>
             </div>
             
             <!-- Notes -->
@@ -575,6 +748,9 @@
         let bookingData = null;
         let selectedService = null;
         let selectedPiano = null;
+        let selectedSuggestion = null;
+        let suggestions = [];
+        let useManualTime = false;
         
         // DOM elements
         const loadingScreen = document.getElementById('loadingScreen');
@@ -582,6 +758,10 @@
         const successScreen = document.getElementById('successScreen');
         const bookingForm = document.getElementById('bookingForm');
         const submitBtn = document.getElementById('submitBtn');
+        const suggestionsCard = document.getElementById('suggestionsCard');
+        const manualTimeCard = document.getElementById('manualTimeCard');
+        const suggestionsLoading = document.getElementById('suggestionsLoading');
+        const suggestionsList = document.getElementById('suggestionsList');
         
         // Initialize
         async function init() {
@@ -643,7 +823,8 @@
                     opt.classList.add('selected');
                     opt.querySelector('input').checked = true;
                     selectedService = opt.dataset.id;
-                    validateForm();
+                    // Load smart suggestions when service is selected
+                    loadSmartSuggestions();
                 });
             });
             
@@ -681,7 +862,7 @@
                 }
             }
             
-            // Set minimum date to today
+            // Set minimum date to today for manual picker
             const dateInput = document.getElementById('dateInput');
             const today = new Date().toISOString().split('T')[0];
             dateInput.min = today;
@@ -704,25 +885,150 @@
                 contactInfo.innerHTML = `Vragen? Neem contact op: ${contactParts.join(' • ')}`;
             }
             
-            // Form validation
+            // Manual time form validation
             dateInput.addEventListener('change', validateForm);
             timeInput.addEventListener('change', validateForm);
+            
+            // Manual time toggle handlers
+            document.getElementById('manualTimeBtn').addEventListener('click', showManualTime);
+            document.getElementById('backToSuggestionsBtn').addEventListener('click', showSuggestions);
             
             // Submit handler
             submitBtn.addEventListener('click', submitBooking);
             
-            // Initial validation
-            validateForm();
+            // Auto-select default service if set
+            if (bookingData.customer.defaultServiceId) {
+                const defaultOpt = document.querySelector(`.service-option[data-id="${bookingData.customer.defaultServiceId}"]`);
+                if (defaultOpt) {
+                    defaultOpt.click();
+                }
+            }
             
             // Initialize icons
             lucide.createIcons();
         }
         
-        function validateForm() {
-            const date = document.getElementById('dateInput').value;
-            const time = document.getElementById('timeInput').value;
+        async function loadSmartSuggestions() {
+            // Show suggestions card with loading state
+            suggestionsCard.style.display = 'block';
+            manualTimeCard.style.display = 'none';
+            useManualTime = false;
+            suggestionsLoading.style.display = 'block';
+            suggestionsList.style.display = 'none';
+            selectedSuggestion = null;
+            validateForm();
+            lucide.createIcons();
             
-            const isValid = selectedService && date && time;
+            try {
+                const response = await fetch(`/api/book/customer/${token}/smart-suggestions?serviceId=${selectedService}`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load suggestions');
+                }
+                
+                const data = await response.json();
+                suggestions = data.suggestions || [];
+                
+                renderSuggestions();
+                
+            } catch (error) {
+                console.error('Smart suggestions error:', error);
+                // Fallback to manual time selection
+                showManualTime();
+            }
+        }
+        
+        function renderSuggestions() {
+            suggestionsLoading.style.display = 'none';
+            suggestionsList.style.display = 'flex';
+            
+            if (suggestions.length === 0) {
+                suggestionsList.innerHTML = `
+                    <div class="no-suggestions">
+                        <i data-lucide="calendar-x"></i>
+                        <p>Geen beschikbare momenten gevonden.<br>Kies handmatig een datum en tijd.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+            
+            suggestionsList.innerHTML = suggestions.map((slot, index) => {
+                const date = new Date(slot.date);
+                const dateStr = date.toLocaleDateString('nl-NL', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long' 
+                });
+                
+                // Determine badge
+                let badge = '';
+                if (index === 0) {
+                    badge = '<span class="suggestion-badge">Aanbevolen</span>';
+                } else if (slot.isAlternativeDay) {
+                    badge = '<span class="suggestion-badge next">Alternatief</span>';
+                }
+                
+                // Determine icon color based on whether it's preferred or alternative
+                const iconClass = slot.isAlternativeDay ? 'alt' : '';
+                
+                return `
+                    <div class="suggestion-card" data-index="${index}">
+                        <div class="suggestion-icon ${iconClass}">
+                            <i data-lucide="calendar-check"></i>
+                        </div>
+                        <div class="suggestion-content">
+                            <div class="suggestion-date">${dateStr}</div>
+                            <div class="suggestion-time">${slot.time} uur</div>
+                        </div>
+                        ${badge}
+                    </div>
+                `;
+            }).join('');
+            
+            // Add click handlers
+            document.querySelectorAll('.suggestion-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.suggestion-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    selectedSuggestion = suggestions[parseInt(card.dataset.index)];
+                    validateForm();
+                });
+            });
+            
+            lucide.createIcons();
+        }
+        
+        function showManualTime() {
+            useManualTime = true;
+            suggestionsCard.style.display = 'none';
+            manualTimeCard.style.display = 'block';
+            selectedSuggestion = null;
+            validateForm();
+            lucide.createIcons();
+        }
+        
+        function showSuggestions() {
+            useManualTime = false;
+            manualTimeCard.style.display = 'none';
+            suggestionsCard.style.display = 'block';
+            validateForm();
+            lucide.createIcons();
+        }
+        
+        function validateForm() {
+            let isValid = false;
+            
+            if (selectedService) {
+                if (useManualTime) {
+                    const date = document.getElementById('dateInput').value;
+                    const time = document.getElementById('timeInput').value;
+                    isValid = date && time;
+                } else {
+                    isValid = selectedSuggestion !== null;
+                }
+            }
+            
             submitBtn.disabled = !isValid;
         }
         
@@ -732,6 +1038,16 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner" style="width: 20px; height: 20px; margin: 0;"></span> Bezig...';
             
+            // Determine date and time based on selection mode
+            let date, time;
+            if (useManualTime) {
+                date = document.getElementById('dateInput').value;
+                time = document.getElementById('timeInput').value;
+            } else {
+                date = selectedSuggestion.date;
+                time = selectedSuggestion.time;
+            }
+            
             try {
                 const response = await fetch(`/api/book/customer/${token}/appointment`, {
                     method: 'POST',
@@ -739,8 +1055,8 @@
                     body: JSON.stringify({
                         serviceId: selectedService,
                         pianoId: selectedPiano,
-                        date: document.getElementById('dateInput').value,
-                        time: document.getElementById('timeInput').value,
+                        date: date,
+                        time: time,
                         notes: document.getElementById('notesInput').value
                     })
                 });
@@ -751,7 +1067,7 @@
                     throw new Error(result.error || 'Booking failed');
                 }
                 
-                showSuccess(result);
+                showSuccess(result, date, time);
                 
             } catch (error) {
                 console.error('Booking error:', error);
@@ -762,15 +1078,15 @@
             }
         }
         
-        function showSuccess(result) {
+        function showSuccess(result, date, time) {
             bookingForm.style.display = 'none';
             successScreen.style.display = 'block';
             
             const service = bookingData.services.find(s => s.id == selectedService);
             const piano = selectedPiano ? bookingData.pianos.find(p => p.id == selectedPiano) : null;
             
-            const date = new Date(document.getElementById('dateInput').value);
-            const dateStr = date.toLocaleDateString('nl-NL', { 
+            const dateObj = new Date(date);
+            const dateStr = dateObj.toLocaleDateString('nl-NL', { 
                 weekday: 'long', 
                 day: 'numeric', 
                 month: 'long' 
@@ -787,7 +1103,7 @@
                 </div>
                 <div class="summary-row">
                     <span class="summary-label">Tijd</span>
-                    <span>${document.getElementById('timeInput').value}</span>
+                    <span>${time}</span>
                 </div>
                 ${piano ? `
                 <div class="summary-row">
