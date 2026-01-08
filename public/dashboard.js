@@ -1177,10 +1177,12 @@ async function handleEventSubmit(e) {
     const end = document.getElementById('event-end').value;
     const sendConfirmation = document.getElementById('send-confirmation')?.checked || false;
     
-    // Get customer name from cache
-    const customer = customersCache.find(c => c.id === customerId);
-    const piano = pianosCache.find(p => p.id === pianoId);
-    const service = servicesCache.find(s => s.id === serviceId);
+    // Get names from cache (use == for loose comparison since dropdown values are strings)
+    const customer = customersCache.find(c => String(c.id) === customerId);
+    const piano = pianosCache.find(p => String(p.id) === pianoId);
+    const service = servicesCache.find(s => String(s.id) === serviceId);
+    
+    console.log('📋 Service lookup:', { serviceId, service, servicesCache: servicesCache.map(s => ({id: s.id, name: s.name})) });
     
     const appointmentData = {
         title,
