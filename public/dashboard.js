@@ -1210,7 +1210,8 @@ async function handleEventSubmit(e) {
             });
             
             if (!response.ok) {
-                throw new Error('Failed to update appointment');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `HTTP ${response.status}`);
             }
         } else {
             // Create new appointment
@@ -1221,7 +1222,8 @@ async function handleEventSubmit(e) {
             });
             
             if (!response.ok) {
-                throw new Error('Failed to create appointment');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `HTTP ${response.status}`);
             }
         }
         
@@ -1231,7 +1233,7 @@ async function handleEventSubmit(e) {
         
     } catch (err) {
         console.error('Error saving appointment:', err);
-        alert('Could not save appointment. Please try again.');
+        alert('Kon afspraak niet opslaan: ' + err.message);
     }
 }
 
