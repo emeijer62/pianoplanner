@@ -8,7 +8,7 @@ const router = express.Router();
 const appointmentStore = require('../utils/appointmentStore');
 const { requireAuth } = require('../middleware/auth');
 const emailService = require('../utils/emailService');
-const { getDb } = require('../utils/database');
+const { getDb, dbGet } = require('../utils/database');
 
 // Alle routes vereisen authenticatie
 router.use(requireAuth);
@@ -243,33 +243,21 @@ router.post('/', async (req, res) => {
             setImmediate(async () => {
                 console.log('📧 setImmediate started');
                 try {
-                    const db = getDb();
-                    console.log('📧 Got database connection');
-                    
-                    // Get customer email
-                    const customer = await new Promise((resolve, reject) => {
-                        console.log(`📧 Querying customer: id=${emailContext.customerId}, userId=${emailContext.userId}`);
-                        db.get('SELECT email, name FROM customers WHERE id = ? AND user_id = ?', 
-                            [emailContext.customerId, emailContext.userId], (err, row) => {
-                            if (err) {
-                                console.log('📧 Customer query error:', err.message);
-                                reject(err);
-                            } else {
-                                console.log('📧 Customer query result:', JSON.stringify(row));
-                                resolve(row);
-                            }
-                        });
-                    });
+                    // Get customer email using promisified dbGet
+                    console.log(`📧 Querying customer: id=${emailContext.customerId}, userId=${emailContext.userId}`);
+                    const customer = await dbGet(
+                        'SELECT email, name FROM customers WHERE id = ? AND user_id = ?',
+                        [emailContext.customerId, emailContext.userId]
+                    );
+                    console.log('📧 Customer query result:', JSON.stringify(customer));
                     
                     console.log(`📧 Customer found: ${customer?.email || 'NO EMAIL'}`);
                     
                     if (customer?.email) {
-                        const company = await new Promise((resolve, reject) => {
-                            db.get('SELECT name FROM company_settings WHERE user_id = ?', [emailContext.userId], (err, row) => {
-                                if (err) reject(err);
-                                else resolve(row);
-                            });
-                        });
+                        const company = await dbGet(
+                            'SELECT name FROM company_settings WHERE user_id = ?',
+                            [emailContext.userId]
+                        );
                         
                         // Extract date and time from start
                         const startDate = new Date(emailContext.start);
@@ -298,6 +286,7 @@ router.post('/', async (req, res) => {
                     }
                 } catch (emailError) {
                     console.error('❌ Failed to send confirmation email:', emailError.message);
+                    console.error(emailError.stack);
                 }
             });
         } else {
