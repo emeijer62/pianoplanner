@@ -520,7 +520,7 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
-            padding: 1rem;
+            padding: 20px;
         }
         
         .modal.active {
@@ -531,11 +531,18 @@
             background: var(--white);
             border-radius: var(--radius-lg);
             padding: 1.5rem;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
+            width: 70%;
+            max-width: 800px;
+            max-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
             box-shadow: var(--shadow-lg);
+        }
+        
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
         }
         
         .modal-header {
@@ -545,6 +552,7 @@
             margin-bottom: 1.25rem;
             padding-bottom: 0.75rem;
             border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
         }
         
         .modal-header h3 {
@@ -572,10 +580,18 @@
         .modal-footer {
             display: flex;
             gap: 0.75rem;
-            justify-content: flex-end;
+            justify-content: space-between;
             margin-top: 1.25rem;
             padding-top: 1rem;
             border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                max-width: none;
+            }
         }
         
         /* Alert messages */
@@ -1280,12 +1296,12 @@
         
         <!-- Email Template Edit Modal -->
         <div id="template-edit-modal" class="modal" style="display: none;">
-            <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+            <div class="modal-content">
                 <div class="modal-header">
-                    <h2 id="template-edit-title">Email Sjabloon Bewerken</h2>
+                    <h3 id="template-edit-title">Email Sjabloon Bewerken</h3>
                     <button class="modal-close" onclick="closeTemplateModal()">&times;</button>
                 </div>
-                <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 20px;">
+                <div class="modal-body">
                     <div class="form-group">
                         <label for="template-subject">Onderwerp</label>
                         <input type="text" id="template-subject" placeholder="Bijv: Bevestiging: {{dienst}} op {{datum}}" style="width: 100%;">
@@ -1320,7 +1336,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer" style="display: flex; gap: 8px; justify-content: space-between; padding: 16px 20px; border-top: 1px solid #eee;">
+                <div class="modal-footer">
                     <button type="button" class="btn btn-danger" onclick="resetTemplateToDefault()" id="template-reset-btn">
                         ↩️ Reset naar standaard
                     </button>

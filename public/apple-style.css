@@ -583,6 +583,7 @@ a:hover {
     opacity: 0;
     visibility: hidden;
     transition: all var(--transition-fast);
+    padding: 20px;
 }
 
 .modal-overlay.active {
@@ -593,13 +594,15 @@ a:hover {
 .modal {
     background: var(--white);
     border-radius: var(--radius-xl);
-    width: 90%;
-    max-width: 560px;
-    max-height: 90vh;
+    width: 70%;
+    max-width: 800px;
+    max-height: calc(100vh - 40px);
     overflow: hidden;
     transform: scale(0.95) translateY(20px);
     transition: transform var(--transition-medium);
     box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-overlay.active .modal {
@@ -612,6 +615,7 @@ a:hover {
     align-items: center;
     padding: 20px 24px;
     border-bottom: 1px solid var(--gray-200);
+    flex-shrink: 0;
 }
 
 .modal-title {
@@ -641,7 +645,8 @@ a:hover {
 .modal-body {
     padding: 24px;
     overflow-y: auto;
-    max-height: calc(90vh - 140px);
+    flex: 1;
+    min-height: 0;
 }
 
 .modal-footer {
@@ -651,6 +656,7 @@ a:hover {
     padding: 16px 24px;
     border-top: 1px solid var(--gray-200);
     background: var(--gray-50);
+    flex-shrink: 0;
 }
 
 /* ========================================
@@ -1022,6 +1028,6 @@ a:hover {
     
     .modal {
         width: 95%;
-        margin: 16px;
+        max-width: none;
     }
 }

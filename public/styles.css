@@ -514,18 +514,32 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    padding: 1rem;
+    padding: 20px;
 }
 
 .modal-content {
     background: var(--white);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
-    max-width: 500px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
+    width: 70%;
+    max-width: 800px;
+    max-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
     box-shadow: var(--shadow-lg);
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-width: none;
+    }
 }
 
 .modal-header {
