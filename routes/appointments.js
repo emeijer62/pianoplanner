@@ -9,6 +9,8 @@ const appointmentStore = require('../utils/appointmentStore');
 const { requireAuth } = require('../middleware/auth');
 const emailService = require('../utils/emailService');
 const { getDb, dbGet } = require('../utils/database');
+const { google } = require('googleapis');
+const userStore = require('../utils/userStore');
 
 // Alle routes vereisen authenticatie
 router.use(requireAuth);
@@ -328,6 +330,67 @@ router.delete('/:id', async (req, res) => {
         const existing = await appointmentStore.getAppointment(userId, appointmentId);
         if (!existing) {
             return res.status(404).json({ error: 'Afspraak niet gevonden' });
+        }
+        
+        // Als de afspraak een Google Calendar ID heeft, verwijder ook uit Google
+        if (existing.googleEventId) {
+            try {
+                const googleTokens = await userStore.getGoogleTokens(userId);
+                const syncSettings = await userStore.getCalendarSync(userId);
+                
+                if (googleTokens?.access_token && syncSettings?.googleCalendarId) {
+                    const oauth2Client = new google.auth.OAuth2(
+                        process.env.GOOGLE_CLIENT_ID,
+                        process.env.GOOGLE_CLIENT_SECRET,
+                        process.env.GOOGLE_REDIRECT_URI
+                    );
+                    oauth2Client.setCredentials(googleTokens);
+                    
+                    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+                    
+                    await calendar.events.delete({
+                        calendarId: syncSettings.googleCalendarId || 'primary',
+                        eventId: existing.googleEventId
+                    });
+                    
+                    console.log(`🗑️ Google Calendar event verwijderd: ${existing.googleEventId}`);
+                }
+            } catch (googleErr) {
+                // Log maar ga door - lokale verwijdering is belangrijker
+                console.warn(`⚠️ Kon Google event niet verwijderen: ${googleErr.message}`);
+            }
+        }
+        
+        // Als de afspraak een Apple Calendar ID heeft, verwijder ook uit Apple
+        if (existing.apple_event_id || existing.apple_event_url) {
+            try {
+                const appleCredentials = await userStore.getAppleCalendarCredentials(userId);
+                
+                if (appleCredentials?.caldavUrl && appleCredentials?.appleId && appleCredentials?.appPassword) {
+                    const { createDAVClient } = require('tsdav');
+                    
+                    const client = await createDAVClient({
+                        serverUrl: appleCredentials.caldavUrl,
+                        credentials: {
+                            username: appleCredentials.appleId,
+                            password: appleCredentials.appPassword
+                        },
+                        authMethod: 'Basic',
+                        defaultAccountType: 'caldav'
+                    });
+                    
+                    const eventUrl = existing.apple_event_url || `${appleCredentials.caldavUrl}/${existing.apple_event_id}.ics`;
+                    
+                    await client.deleteCalendarObject({
+                        calendarObject: { url: eventUrl }
+                    });
+                    
+                    console.log(`🗑️ Apple Calendar event verwijderd: ${eventUrl}`);
+                }
+            } catch (appleErr) {
+                // Log maar ga door - lokale verwijdering is belangrijker
+                console.warn(`⚠️ Kon Apple event niet verwijderen: ${appleErr.message}`);
+            }
         }
         
         await appointmentStore.deleteAppointment(userId, appointmentId);
