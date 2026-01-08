@@ -341,41 +341,78 @@ async function syncCalendar() {
     btn.classList.add('syncing');
     btn.classList.remove('success', 'error');
     
+    let googleResult = null;
+    let appleResult = null;
+    let hasError = false;
+    let totalSynced = 0;
+    
     try {
-        const response = await fetch('/api/calendar/sync', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json'
+        // Probeer Google Calendar sync (als geconfigureerd)
+        try {
+            const googleResponse = await fetch('/api/calendar/sync', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (googleResponse.ok) {
+                googleResult = await googleResponse.json();
+                totalSynced += googleResult.synced || 0;
+            } else if (googleResponse.status !== 400) {
+                // 400 = niet geconfigureerd, dat is ok
+                hasError = true;
             }
-        });
+        } catch (e) {
+            console.log('Google sync niet beschikbaar');
+        }
         
-        const data = await response.json();
+        // Probeer Apple Calendar sync (als geconfigureerd)
+        try {
+            const appleResponse = await fetch('/api/apple-calendar/sync', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (appleResponse.ok) {
+                appleResult = await appleResponse.json();
+                totalSynced += appleResult.synced || 0;
+            } else if (appleResponse.status !== 400) {
+                // 400 = niet geconfigureerd, dat is ok
+                hasError = true;
+            }
+        } catch (e) {
+            console.log('Apple sync niet beschikbaar');
+        }
         
         btn.classList.remove('syncing');
         
-        if (response.ok) {
+        // Check of minstens één provider geconfigureerd is
+        if (!googleResult && !appleResult) {
+            btn.classList.add('error');
+            showNotification('Verbind eerst een kalender in Instellingen', 'warning');
+        } else if (hasError) {
+            btn.classList.add('error');
+            showNotification('Sync gedeeltelijk mislukt', 'error');
+        } else {
             btn.classList.add('success');
             
-            // Show notification
-            const syncedCount = (data.exported || 0) + (data.imported || 0);
-            if (syncedCount > 0) {
-                showNotification(`Sync voltooid: ${data.exported || 0} geëxporteerd, ${data.imported || 0} geïmporteerd`, 'success');
+            // Bouw melding op
+            const parts = [];
+            if (googleResult) parts.push(`Google: ${googleResult.synced || 0}`);
+            if (appleResult) parts.push(`iCloud: ${appleResult.synced || 0}`);
+            
+            if (totalSynced > 0) {
+                showNotification(`Sync voltooid (${parts.join(', ')})`, 'success');
             } else {
-                showNotification('Kalender is up-to-date', 'success');
+                showNotification('Kalenders zijn up-to-date ✓', 'success');
             }
             
             // Refresh the calendar to show any imported appointments
             await loadAllEvents();
             renderCalendar();
-        } else {
-            btn.classList.add('error');
-            
-            if (response.status === 400 && data.error === 'Google Calendar not connected') {
-                showNotification('Verbind eerst Google Calendar in Instellingen', 'warning');
-            } else {
-                showNotification(data.error || 'Sync mislukt', 'error');
-            }
         }
         
         // Reset button state after 2 seconds
