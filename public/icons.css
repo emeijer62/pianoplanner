@@ -1,0 +1,139 @@
+/* ========================================
+   PianoPlanner Icon System - Golden Theme
+   Uses Lucide Icons with metallic gold styling
+   ======================================== */
+
+/* Golden Icon Variables */
+:root {
+    --icon-gold: #B8860B;           /* Dark goldenrod - main */
+    --icon-gold-light: #DAA520;     /* Goldenrod - highlights */
+    --icon-gold-dark: #8B6914;      /* Darker gold - shadows */
+    --icon-gold-gradient: linear-gradient(135deg, #DAA520 0%, #B8860B 50%, #8B6914 100%);
+}
+
+/* Base Icon Styling */
+.icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25em;
+    height: 1.25em;
+    vertical-align: -0.15em;
+    flex-shrink: 0;
+}
+
+.icon svg {
+    width: 100%;
+    height: 100%;
+    stroke: var(--icon-gold);
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Icon Sizes */
+.icon-xs { width: 0.875em; height: 0.875em; }
+.icon-sm { width: 1em; height: 1em; }
+.icon-md { width: 1.25em; height: 1.25em; }
+.icon-lg { width: 1.5em; height: 1.5em; }
+.icon-xl { width: 2em; height: 2em; }
+.icon-2xl { width: 2.5em; height: 2.5em; }
+.icon-3xl { width: 3em; height: 3em; }
+
+/* Golden Metallic Effect */
+.icon-gold svg {
+    stroke: var(--icon-gold);
+    filter: drop-shadow(0 1px 1px rgba(139, 105, 20, 0.3));
+}
+
+/* Hover Effect */
+.icon-interactive {
+    cursor: pointer;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.icon-interactive:hover svg {
+    stroke: var(--icon-gold-light);
+    filter: drop-shadow(0 2px 4px rgba(218, 165, 32, 0.4));
+    transform: scale(1.1);
+}
+
+/* Status Icons with Gold Base */
+.icon-success svg { stroke: #4CAF50; }
+.icon-warning svg { stroke: var(--icon-gold); }
+.icon-error svg { stroke: #dc3545; }
+.icon-info svg { stroke: #2196F3; }
+
+/* Button Icons */
+.btn .icon {
+    margin-right: 0.5em;
+}
+
+.btn .icon:only-child {
+    margin-right: 0;
+}
+
+/* Card Header Icons */
+.card-icon,
+.settings-card-title .icon {
+    width: 1.5em;
+    height: 1.5em;
+    margin-right: 0.5em;
+}
+
+.card-icon svg,
+.settings-card-title .icon svg {
+    stroke: var(--icon-gold);
+}
+
+/* Sidebar Navigation Icons */
+.nav-item .icon,
+.sidebar-nav .icon {
+    width: 1.25em;
+    height: 1.25em;
+    margin-right: 0.75em;
+}
+
+/* Empty State Icons */
+.empty-state .icon {
+    width: 4em;
+    height: 4em;
+    margin-bottom: 1em;
+    opacity: 0.6;
+}
+
+/* Status Badge Icons */
+.status-badge .icon {
+    width: 1em;
+    height: 1em;
+    margin-right: 0.25em;
+}
+
+/* Table Action Icons */
+.action-btn .icon,
+.btn-icon .icon {
+    width: 1.125em;
+    height: 1.125em;
+}
+
+/* Form Label Icons */
+.form-group label .icon {
+    margin-right: 0.375em;
+}
+
+/* Loading Spinner Override */
+.icon-spin svg {
+    animation: icon-spin 1s linear infinite;
+}
+
+@keyframes icon-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .icon-lg { width: 1.25em; height: 1.25em; }
+    .icon-xl { width: 1.5em; height: 1.5em; }
+}
