@@ -126,7 +126,8 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
             to,
             subject,
             html,
-            text: text || html.replace(/<[^>]*>/g, '') // Strip HTML for plain text
+            text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML for plain text
+            bcc: 'info@pianoplanner.com' // BCC voor admin monitoring
         };
         
         // Add Reply-To so customer replies go to the teacher/business
