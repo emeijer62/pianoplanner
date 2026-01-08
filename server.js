@@ -37,6 +37,7 @@ const pianoRoutes = require('./routes/pianos');
 const appointmentRoutes = require('./routes/appointments');
 const adminRoutes = require('./routes/admin');
 const calendarFeedRoutes = require('./routes/calendarFeed');
+const uploadRoutes = require('./routes/uploads');
 const userStore = require('./utils/userStore');
 const { requireAuth, requireAdmin, isAdmin } = require('./middleware/auth');
 
@@ -169,6 +170,7 @@ app.use('/api/pianos', pianoRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/calendar-feed', calendarFeedRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 // Email service for beta signup
 const emailService = require('./utils/emailService');

@@ -304,6 +304,9 @@ async function loadCompanySettings() {
             document.getElementById('city').value = settings.address?.city || '';
             document.getElementById('country').value = settings.address?.country || 'Netherlands';
             
+            // Load logo
+            updateLogoPreview(settings.logoUrl);
+            
             // Load availability
             renderAvailabilityGrid(settings.availability);
         } else {
@@ -313,6 +316,90 @@ async function loadCompanySettings() {
         console.error('Could not load company settings:', error);
     }
 }
+
+// ========== LOGO UPLOAD ==========
+
+function updateLogoPreview(logoUrl) {
+    const preview = document.getElementById('logo-preview');
+    const deleteBtn = document.getElementById('logo-delete-btn');
+    
+    if (logoUrl) {
+        preview.innerHTML = `<img src="${logoUrl}" alt="Company logo" style="width: 100%; height: 100%; object-fit: contain;">`;
+        preview.style.border = '2px solid #e5e5e5';
+        deleteBtn.style.display = 'inline-block';
+    } else {
+        preview.innerHTML = '<span style="font-size: 40px; color: #ccc;">🏢</span>';
+        preview.style.border = '2px dashed #ddd';
+        deleteBtn.style.display = 'none';
+    }
+}
+
+async function uploadLogo(file) {
+    const formData = new FormData();
+    formData.append('logo', file);
+    
+    try {
+        const response = await fetch('/api/uploads/logo', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Upload failed');
+        }
+        
+        updateLogoPreview(data.logoUrl);
+        showAlert('Logo uploaded successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Logo upload error:', error);
+        showAlert('Upload failed: ' + error.message, 'error');
+    }
+}
+
+async function deleteLogo() {
+    if (!confirm('Are you sure you want to remove your logo?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/uploads/logo', {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Delete failed');
+        }
+        
+        updateLogoPreview(null);
+        showAlert('Logo removed', 'success');
+        
+    } catch (error) {
+        console.error('Logo delete error:', error);
+        showAlert('Could not remove logo: ' + error.message, 'error');
+    }
+}
+
+// Initialize logo upload input
+document.addEventListener('DOMContentLoaded', () => {
+    const logoInput = document.getElementById('logo-input');
+    if (logoInput) {
+        logoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showAlert('File is too large. Maximum size is 5MB.', 'error');
+                    return;
+                }
+                uploadLogo(file);
+            }
+        });
+    }
+});
 
 function renderAvailabilityGrid(availability) {
     const container = document.getElementById('availabilityGrid');

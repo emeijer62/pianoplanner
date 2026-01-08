@@ -1691,6 +1691,32 @@
                 </div>
                 <div class="settings-card-body">
                     <form id="companyForm">
+                        <!-- Logo Upload Section -->
+                        <div class="form-section-header">🖼️ Company Logo</div>
+                        <p class="form-section-hint">Upload your logo to personalize emails and your booking page.</p>
+                        
+                        <div class="logo-upload-section" style="margin-bottom: 24px;">
+                            <div style="display: flex; align-items: center; gap: 20px;">
+                                <div id="logo-preview" style="width: 100px; height: 100px; border-radius: 12px; background: #f5f5f7; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px dashed #ddd;">
+                                    <span style="font-size: 40px; color: #ccc;">🏢</span>
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="file" id="logo-input" accept="image/*" style="display: none;">
+                                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('logo-input').click()">
+                                        📤 Upload Logo
+                                    </button>
+                                    <button type="button" class="btn btn-danger" id="logo-delete-btn" onclick="deleteLogo()" style="display: none; margin-left: 8px;">
+                                        🗑️ Remove
+                                    </button>
+                                    <p style="color: #666; font-size: 12px; margin-top: 8px;">
+                                        PNG, JPG or GIF. Max 5MB. Will be resized to max 400x400px.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section-header">📝 Basic Information</div>
+                        
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="companyName">Company name</label>

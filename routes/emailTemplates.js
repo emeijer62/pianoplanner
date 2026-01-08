@@ -96,6 +96,7 @@ const AVAILABLE_VARIABLES = [
     { key: '{{tijd}}', description: 'Tijd van de afspraak' },
     { key: '{{dienst}}', description: 'Naam van de dienst' },
     { key: '{{bedrijfsnaam}}', description: 'Uw bedrijfsnaam' },
+    { key: '{{bedrijfslogo}}', description: 'Uw bedrijfslogo (als img tag)' },
     { key: '{{locatie}}', description: 'Locatie/adres' },
     { key: '{{notities}}', description: 'Opmerkingen/notities' }
 ];

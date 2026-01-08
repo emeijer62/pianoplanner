@@ -737,6 +737,9 @@
     
     <div class="booking-container">
         <div class="booking-header">
+            <div id="business-logo" style="margin-bottom: 16px; display: none;">
+                <img id="logo-img" src="" alt="Logo" style="max-width: 150px; max-height: 80px; border-radius: 8px;">
+            </div>
             <div class="business-name" id="business-name">Loading...</div>
             <div class="booking-title" id="booking-title"></div>
         </div>
@@ -900,6 +903,15 @@
                 document.getElementById('business-name').textContent = bookingData.business.name;
                 document.getElementById('booking-title').textContent = settings.title;
                 document.title = `${settings.title} - ${bookingData.business.name}`;
+                
+                // Show logo if available
+                if (bookingData.business.logoUrl) {
+                    const logoContainer = document.getElementById('business-logo');
+                    const logoImg = document.getElementById('logo-img');
+                    logoImg.src = bookingData.business.logoUrl;
+                    logoImg.alt = bookingData.business.name;
+                    logoContainer.style.display = 'block';
+                }
                 
                 // Load services
                 renderServices(bookingData.services);

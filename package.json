@@ -23,7 +23,9 @@
     "express-session": "^1.17.3",
     "fast-xml-parser": "^5.3.3",
     "googleapis": "^128.0.0",
+    "multer": "^2.0.2",
     "nodemailer": "^7.0.12",
+    "sharp": "^0.34.5",
     "sqlite3": "^5.1.7",
     "stripe": "^20.1.0",
     "uuid": "^9.0.0"

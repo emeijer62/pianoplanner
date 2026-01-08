@@ -139,6 +139,39 @@ async function getUserTemplate(userId, templateType) {
 }
 
 /**
+ * Get company logo URL for a user
+ * @param {string} userId - User ID
+ */
+async function getCompanyLogo(userId) {
+    const getter = getDbGet();
+    if (!getter) return null;
+    
+    try {
+        const company = await getter(
+            `SELECT logo_url FROM company_settings WHERE user_id = ?`,
+            [userId]
+        );
+        return company?.logo_url || null;
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * Generate logo HTML tag or empty string
+ * @param {string} logoUrl - Logo URL
+ * @param {string} baseUrl - Base URL for the logo (production URL)
+ */
+function generateLogoHtml(logoUrl, baseUrl = 'https://pianoplanner.com') {
+    if (!logoUrl) return '';
+    
+    // Make sure URL is absolute
+    const fullUrl = logoUrl.startsWith('http') ? logoUrl : `${baseUrl}${logoUrl}`;
+    
+    return `<img src="${fullUrl}" alt="Logo" style="max-width: 120px; max-height: 60px; margin-bottom: 16px;">`;
+}
+
+/**
  * Replace template variables with actual values
  * @param {string} text - Template text with {{variables}}
  * @param {Object} data - Data object with values
@@ -303,6 +336,10 @@ async function sendAppointmentConfirmation({ customerEmail, customerName, appoin
         day: 'numeric'
     });
 
+    // Get company logo
+    const logoUrl = await getCompanyLogo(userId);
+    const logoHtml = generateLogoHtml(logoUrl);
+
     // Prepare template variables
     const templateData = {
         klantnaam: customerName || '',
@@ -311,6 +348,7 @@ async function sendAppointmentConfirmation({ customerEmail, customerName, appoin
         tijd: appointmentTime || '',
         dienst: serviceName || '',
         bedrijfsnaam: companyName || '',
+        bedrijfslogo: logoHtml,
         notities: notes || '',
         locatie: location || ''
     };
@@ -417,6 +455,10 @@ async function sendAppointmentReminder({ customerEmail, customerName, appointmen
 
     const timeUntilText = hoursUntil === 24 ? 'morgen' : `over ${hoursUntil} uur`;
 
+    // Get company logo
+    const logoUrl = await getCompanyLogo(userId);
+    const logoHtml = generateLogoHtml(logoUrl);
+
     // Prepare template variables
     const templateData = {
         klantnaam: customerName || '',
@@ -425,6 +467,7 @@ async function sendAppointmentReminder({ customerEmail, customerName, appointmen
         tijd: appointmentTime || '',
         dienst: serviceName || '',
         bedrijfsnaam: companyName || '',
+        bedrijfslogo: logoHtml,
         locatie: location || ''
     };
 

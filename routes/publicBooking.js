@@ -131,7 +131,8 @@ router.get('/:slug', async (req, res) => {
                 name: company?.name || user.name || 'Piano Services',
                 phone: company?.phone,
                 email: company?.email,
-                city: company?.city
+                city: company?.city,
+                logoUrl: company?.logoUrl || null
             },
             settings: {
                 title: settings.title,
