@@ -86,6 +86,7 @@ function renderCustomers(customers) {
             <div class="list-item-meta" onclick="event.stopPropagation();">
                 <div style="display: flex; gap: 8px;">
                     <button class="btn btn-secondary btn-small" onclick="openModal('${customer.id}')">Edit</button>
+                    <button class="btn btn-small" style="background: #fee2e2; color: #dc2626;" onclick="deleteCustomer('${customer.id}', '${escapeHtml(customer.name).replace(/'/g, "\\'")}')">Delete</button>
                     <a href="/booking.html?customer=${customer.id}" class="btn btn-primary btn-small">+ Appointment</a>
                 </div>
             </div>
@@ -114,6 +115,7 @@ function handleSearch(e) {
 function openModal(customerId = null) {
     const modal = document.getElementById('customer-modal');
     const form = document.getElementById('customer-form');
+    const deleteBtn = document.getElementById('delete-customer-btn');
     
     form.reset();
     document.getElementById('customer-id').value = '';
@@ -130,12 +132,27 @@ function openModal(customerId = null) {
             document.getElementById('customer-postalcode').value = customer.address.postalCode || '';
             document.getElementById('customer-city').value = customer.address.city || '';
             document.getElementById('customer-notes').value = customer.notes || '';
+            // Show delete button when editing
+            if (deleteBtn) deleteBtn.style.display = 'block';
         }
     } else {
         document.getElementById('modal-title').textContent = 'New Customer';
+        // Hide delete button for new customer
+        if (deleteBtn) deleteBtn.style.display = 'none';
     }
     
     modal.classList.add('active');
+}
+
+// Delete customer from within the modal
+async function deleteCurrentCustomer() {
+    const id = document.getElementById('customer-id').value;
+    const name = document.getElementById('customer-name').value;
+    
+    if (!id) return;
+    
+    await deleteCustomer(id, name);
+    closeModal();
 }
 
 function closeModal() {

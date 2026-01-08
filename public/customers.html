@@ -127,9 +127,12 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="document.getElementById('customer-form').requestSubmit()">Save Customer</button>
+            <div class="modal-footer" style="justify-content: space-between;">
+                <button type="button" id="delete-customer-btn" class="btn" style="background: #fee2e2; color: #dc2626; display: none;" onclick="deleteCurrentCustomer()">Delete Customer</button>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('customer-form').requestSubmit()">Save Customer</button>
+                </div>
             </div>
         </div>
     </div>
