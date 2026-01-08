@@ -1211,7 +1211,8 @@ async function loadEmailTemplates() {
         if (!response.ok) throw new Error('Kon templates niet laden');
         
         const data = await response.json();
-        availableVariables = data.availableVariables || [];
+        // API returns 'variables' array with {key, description} objects
+        availableVariables = (data.variables || []).map(v => v.key || v);
         const templates = data.templates || [];
         
         // Template labels in Dutch
@@ -1224,8 +1225,10 @@ async function loadEmailTemplates() {
         let html = '<div class="template-list" style="display: flex; flex-direction: column; gap: 12px;">';
         
         templates.forEach(template => {
-            const info = templateLabels[template.template_type] || { name: template.template_type, icon: '📧', desc: '' };
-            const isCustom = !template.is_default;
+            // API returns 'type' not 'template_type'
+            const templateType = template.type || template.template_type;
+            const info = templateLabels[templateType] || { name: templateType, icon: '📧', desc: '' };
+            const isCustom = template.is_custom;
             
             html += `
                 <div class="template-item" style="background: white; border: 1px solid #e5e5e5; border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
@@ -1234,12 +1237,12 @@ async function loadEmailTemplates() {
                             <span style="font-size: 20px;">${info.icon}</span>
                             <strong>${info.name}</strong>
                             ${isCustom ? '<span style="background: #d4edda; color: #155724; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Aangepast</span>' : '<span style="background: #e9ecef; color: #6c757d; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Standaard</span>'}
-                            ${!template.is_active ? '<span style="background: #f8d7da; color: #721c24; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Uitgeschakeld</span>' : ''}
+                            ${template.is_active === 0 ? '<span style="background: #f8d7da; color: #721c24; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Uitgeschakeld</span>' : ''}
                         </div>
                         <div style="color: #666; font-size: 13px; margin-top: 4px;">${info.desc}</div>
                         <div style="color: #999; font-size: 12px; margin-top: 4px;">Onderwerp: ${template.subject}</div>
                     </div>
-                    <button class="btn btn-secondary" onclick="editTemplate('${template.template_type}')" style="white-space: nowrap;">
+                    <button class="btn btn-secondary" onclick="editTemplate('${templateType}')" style="white-space: nowrap;">
                         ✏️ Bewerken
                     </button>
                 </div>
@@ -1275,10 +1278,10 @@ async function editTemplate(templateType) {
         
         document.getElementById('template-subject').value = template.subject || '';
         document.getElementById('template-body').value = template.body_html || '';
-        document.getElementById('template-active').checked = template.is_active !== false;
+        document.getElementById('template-active').checked = template.is_active !== 0;
         
         // Show/hide reset button based on whether it's custom
-        document.getElementById('template-reset-btn').style.display = template.is_default ? 'none' : 'block';
+        document.getElementById('template-reset-btn').style.display = template.is_custom ? 'block' : 'none';
         
     } catch (error) {
         console.error('Error loading template:', error);
