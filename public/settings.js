@@ -592,6 +592,11 @@ function openServiceModal(service = null) {
     }
     
     modal.classList.add('active');
+    
+    // Focus op eerste veld na korte delay
+    setTimeout(() => {
+        document.getElementById('serviceName').focus();
+    }, 100);
 }
 
 function closeServiceModal() {
@@ -1828,6 +1833,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (e.target.classList.contains('modal')) {
                 closeServiceModal();
             }
+        });
+        
+        // ESC key sluit modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const serviceModal = document.getElementById('serviceModal');
+                if (serviceModal.classList.contains('active')) {
+                    closeServiceModal();
+                }
+            }
+        });
+        
+        // Prevent form inputs from losing value on blur
+        document.getElementById('serviceForm').addEventListener('focusout', (e) => {
+            // Don't do anything special, just prevent any weird behavior
+            e.stopPropagation();
         });
     }
 });
