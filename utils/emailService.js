@@ -22,6 +22,151 @@ let emailConfigured = false;
 // Lazy-load user SMTP module to avoid circular dependency
 let getUserTransporter = null;
 
+// Lazy-load database module to avoid circular dependency
+let dbGet = null;
+
+/**
+ * Initialize database getter lazily
+ */
+function getDbGet() {
+    if (!dbGet) {
+        try {
+            dbGet = require('./database').dbGet;
+        } catch (e) {
+            console.log('⚠️ Database module not available for email templates');
+        }
+    }
+    return dbGet;
+}
+
+/**
+ * Default email templates (fallback when no custom template exists)
+ */
+const DEFAULT_TEMPLATES = {
+    appointment_confirmation: {
+        subject: 'Bevestiging: {{dienst}} op {{datum}}',
+        body_html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+<div style="background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+<div style="font-size: 48px; margin-bottom: 16px;">🎹</div>
+<h1 style="margin: 0; font-size: 24px;">Afspraak Bevestigd</h1>
+</div>
+<div style="background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px;">
+<p>Beste {{klantnaam}},</p>
+<p>Uw afspraak is gepland. Hier zijn de details:</p>
+<div style="background: white; border-radius: 12px; padding: 24px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+<p><strong>Datum:</strong> {{datum}}</p>
+<p><strong>Tijd:</strong> {{tijd}}</p>
+<p><strong>Dienst:</strong> {{dienst}}</p>
+{{#notities}}<p><strong>Notities:</strong> {{notities}}</p>{{/notities}}
+</div>
+<p>Als u de afspraak wilt verzetten of annuleren, neem dan zo snel mogelijk contact met ons op.</p>
+<p>Met vriendelijke groet,<br><strong>{{bedrijfsnaam}}</strong></p>
+</div>
+</div>`
+    },
+    booking_notification: {
+        subject: 'Nieuwe boeking: {{klantnaam}} - {{dienst}}',
+        body_html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+<div style="background: linear-gradient(135deg, #34c759 0%, #30d158 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+<div style="font-size: 48px; margin-bottom: 16px;">📥</div>
+<h1 style="margin: 0; font-size: 24px;">Nieuwe Boeking</h1>
+</div>
+<div style="background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px;">
+<p>Er is een nieuwe boeking ontvangen:</p>
+<div style="background: white; border-radius: 12px; padding: 24px; margin: 20px 0;">
+<p><strong>Klant:</strong> {{klantnaam}}</p>
+<p><strong>Email:</strong> {{klantemail}}</p>
+<p><strong>Telefoon:</strong> {{klanttelefoon}}</p>
+<p><strong>Datum:</strong> {{datum}}</p>
+<p><strong>Tijd:</strong> {{tijd}}</p>
+<p><strong>Dienst:</strong> {{dienst}}</p>
+{{#notities}}<p><strong>Notities:</strong> {{notities}}</p>{{/notities}}
+</div>
+</div>
+</div>`
+    },
+    appointment_reminder: {
+        subject: 'Herinnering: {{dienst}} op {{datum}}',
+        body_html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
+<div style="background: linear-gradient(135deg, #007aff 0%, #5856d6 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+<div style="font-size: 48px; margin-bottom: 16px;">⏰</div>
+<h1 style="margin: 0; font-size: 24px;">Herinnering</h1>
+</div>
+<div style="background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px;">
+<p>Beste {{klantnaam}},</p>
+<p>Dit is een herinnering voor uw afspraak:</p>
+<div style="background: white; border-radius: 12px; padding: 24px; margin: 20px 0;">
+<p><strong>Datum:</strong> {{datum}}</p>
+<p><strong>Tijd:</strong> {{tijd}}</p>
+<p><strong>Dienst:</strong> {{dienst}}</p>
+{{#locatie}}<p><strong>Locatie:</strong> {{locatie}}</p>{{/locatie}}
+</div>
+<p>Wij kijken ernaar uit u te zien!</p>
+<p>Met vriendelijke groet,<br><strong>{{bedrijfsnaam}}</strong></p>
+</div>
+</div>`
+    }
+};
+
+/**
+ * Get email template for a user (custom or default)
+ * @param {string} userId - User ID
+ * @param {string} templateType - Type of template (appointment_confirmation, booking_notification, etc.)
+ */
+async function getUserTemplate(userId, templateType) {
+    const getter = getDbGet();
+    if (!getter) {
+        return DEFAULT_TEMPLATES[templateType] || null;
+    }
+    
+    try {
+        const customTemplate = await getter(
+            `SELECT subject, body_html, is_active FROM email_templates WHERE user_id = ? AND template_type = ?`,
+            [userId, templateType]
+        );
+        
+        if (customTemplate && customTemplate.is_active) {
+            return {
+                subject: customTemplate.subject,
+                body_html: customTemplate.body_html
+            };
+        }
+    } catch (e) {
+        console.log('⚠️ Could not load custom template:', e.message);
+    }
+    
+    return DEFAULT_TEMPLATES[templateType] || null;
+}
+
+/**
+ * Replace template variables with actual values
+ * @param {string} text - Template text with {{variables}}
+ * @param {Object} data - Data object with values
+ */
+function replaceTemplateVariables(text, data) {
+    let result = text;
+    
+    // Replace simple variables: {{klantnaam}}
+    for (const [key, value] of Object.entries(data)) {
+        const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+        result = result.replace(regex, value || '');
+    }
+    
+    // Handle conditional blocks: {{#notities}}...{{/notities}}
+    for (const [key, value] of Object.entries(data)) {
+        const condRegex = new RegExp(`\\{\\{#${key}\\}\\}([\\s\\S]*?)\\{\\{/${key}\\}\\}`, 'g');
+        if (value && value.toString().trim()) {
+            // Value exists - keep content, remove tags
+            result = result.replace(condRegex, '$1');
+        } else {
+            // No value - remove entire block including content
+            result = result.replace(condRegex, '');
+        }
+    }
+    
+    return result;
+}
+
 /**
  * Initialize email transporter
  */
@@ -148,9 +293,9 @@ async function sendEmail({ to, subject, html, text, from, replyTo, fromName, ski
  * Send appointment confirmation email to customer
  * @param {string} replyTo - Email address for customer replies (teacher's email)
  * @param {string} fromName - Display name for sender (teacher/company name)
- * @param {string} userId - User ID to check for custom SMTP settings
+ * @param {string} userId - User ID to check for custom SMTP settings and templates
  */
-async function sendAppointmentConfirmation({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, notes, replyTo, fromName, userId }) {
+async function sendAppointmentConfirmation({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, notes, replyTo, fromName, userId, location }) {
     const formattedDate = new Date(appointmentDate).toLocaleDateString('nl-NL', {
         weekday: 'long',
         year: 'numeric',
@@ -158,77 +303,100 @@ async function sendAppointmentConfirmation({ customerEmail, customerName, appoin
         day: 'numeric'
     });
 
-    const html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
-                .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
-                .content { background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px; }
-                .appointment-card { background: white; border-radius: 12px; padding: 24px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-                .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e5e5; }
-                .detail-row:last-child { border-bottom: none; }
-                .detail-label { color: #86868b; font-size: 14px; }
-                .detail-value { font-weight: 500; color: #1d1d1f; }
-                .footer { text-align: center; padding: 20px; color: #86868b; font-size: 12px; }
-                .icon { font-size: 48px; margin-bottom: 16px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <div class="icon">🎹</div>
-                    <h1>Appointment Confirmed</h1>
-                </div>
-                <div class="content">
-                    <p>Dear ${customerName},</p>
-                    <p>Your appointment has been scheduled. Here are the details:</p>
-                    
-                    <div class="appointment-card">
-                        <div class="detail-row">
-                            <span class="detail-label">Date</span>
-                            <span class="detail-value">${formattedDate}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Time</span>
-                            <span class="detail-value">${appointmentTime}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Service</span>
-                            <span class="detail-value">${serviceName}</span>
-                        </div>
-                        ${technicianName ? `
-                        <div class="detail-row">
-                            <span class="detail-label">Technician</span>
-                            <span class="detail-value">${technicianName}</span>
-                        </div>
-                        ` : ''}
-                        ${notes ? `
-                        <div class="detail-row">
-                            <span class="detail-label">Notes</span>
-                            <span class="detail-value">${notes}</span>
-                        </div>
-                        ` : ''}
+    // Prepare template variables
+    const templateData = {
+        klantnaam: customerName || '',
+        klantemail: customerEmail || '',
+        datum: formattedDate,
+        tijd: appointmentTime || '',
+        dienst: serviceName || '',
+        bedrijfsnaam: companyName || '',
+        notities: notes || '',
+        locatie: location || ''
+    };
+
+    // Try to get custom template
+    let subject, html;
+    const template = await getUserTemplate(userId, 'appointment_confirmation');
+    
+    if (template) {
+        subject = replaceTemplateVariables(template.subject, templateData);
+        html = replaceTemplateVariables(template.body_html, templateData);
+    } else {
+        // Fallback to hardcoded template
+        subject = `Afspraak Bevestigd - ${formattedDate}`;
+        html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
+                    .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+                    .content { background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px; }
+                    .appointment-card { background: white; border-radius: 12px; padding: 24px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+                    .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e5e5; }
+                    .detail-row:last-child { border-bottom: none; }
+                    .detail-label { color: #86868b; font-size: 14px; }
+                    .detail-value { font-weight: 500; color: #1d1d1f; }
+                    .footer { text-align: center; padding: 20px; color: #86868b; font-size: 12px; }
+                    .icon { font-size: 48px; margin-bottom: 16px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="icon">🎹</div>
+                        <h1>Afspraak Bevestigd</h1>
                     </div>
-                    
-                    <p>If you need to reschedule or cancel, please contact us as soon as possible.</p>
-                    <p>Best regards,<br><strong>${companyName}</strong></p>
+                    <div class="content">
+                        <p>Beste ${customerName},</p>
+                        <p>Uw afspraak is gepland. Hier zijn de details:</p>
+                        
+                        <div class="appointment-card">
+                            <div class="detail-row">
+                                <span class="detail-label">Datum</span>
+                                <span class="detail-value">${formattedDate}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Tijd</span>
+                                <span class="detail-value">${appointmentTime}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Dienst</span>
+                                <span class="detail-value">${serviceName}</span>
+                            </div>
+                            ${technicianName ? `
+                            <div class="detail-row">
+                                <span class="detail-label">Technician</span>
+                                <span class="detail-value">${technicianName}</span>
+                            </div>
+                            ` : ''}
+                            ${notes ? `
+                            <div class="detail-row">
+                                <span class="detail-label">Notities</span>
+                                <span class="detail-value">${notes}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <p>Als u de afspraak wilt verzetten of annuleren, neem dan zo snel mogelijk contact met ons op.</p>
+                        <p>Met vriendelijke groet,<br><strong>${companyName}</strong></p>
+                    </div>
+                    <div class="footer">
+                        <p>Deze email is verzonden door ${companyName} via PianoPlanner</p>
+                    </div>
                 </div>
-                <div class="footer">
-                    <p>This email was sent by ${companyName} via PianoPlanner</p>
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
+            </body>
+            </html>
+        `;
+    }
 
     return sendEmail({
         to: customerEmail,
-        subject: `Appointment Confirmed - ${formattedDate}`,
+        subject,
         html,
         replyTo: replyTo,
         fromName: fromName || companyName,
@@ -239,7 +407,7 @@ async function sendAppointmentConfirmation({ customerEmail, customerName, appoin
 /**
  * Send appointment reminder email to customer
  */
-async function sendAppointmentReminder({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, hoursUntil, replyTo, fromName, userId }) {
+async function sendAppointmentReminder({ customerEmail, customerName, appointmentDate, appointmentTime, serviceName, technicianName, companyName, hoursUntil, replyTo, fromName, userId, location }) {
     const formattedDate = new Date(appointmentDate).toLocaleDateString('nl-NL', {
         weekday: 'long',
         year: 'numeric',
@@ -247,75 +415,97 @@ async function sendAppointmentReminder({ customerEmail, customerName, appointmen
         day: 'numeric'
     });
 
-    const timeUntilText = hoursUntil === 24 ? 'tomorrow' : `in ${hoursUntil} hours`;
+    const timeUntilText = hoursUntil === 24 ? 'morgen' : `over ${hoursUntil} uur`;
 
-    const html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #007aff 0%, #5856d6 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
-                .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
-                .content { background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px; }
-                .appointment-card { background: white; border-radius: 12px; padding: 24px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-                .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e5e5; }
-                .detail-row:last-child { border-bottom: none; }
-                .detail-label { color: #86868b; font-size: 14px; }
-                .detail-value { font-weight: 500; color: #1d1d1f; }
-                .reminder-badge { background: #ff9500; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; margin-bottom: 16px; }
-                .footer { text-align: center; padding: 20px; color: #86868b; font-size: 12px; }
-                .icon { font-size: 48px; margin-bottom: 16px; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <div class="icon">⏰</div>
-                    <h1>Appointment Reminder</h1>
-                </div>
-                <div class="content">
-                    <p>Dear ${customerName},</p>
-                    <span class="reminder-badge">Coming up ${timeUntilText}</span>
-                    <p>This is a friendly reminder about your upcoming appointment:</p>
-                    
-                    <div class="appointment-card">
-                        <div class="detail-row">
-                            <span class="detail-label">Date</span>
-                            <span class="detail-value">${formattedDate}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Time</span>
-                            <span class="detail-value">${appointmentTime}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Service</span>
-                            <span class="detail-value">${serviceName}</span>
-                        </div>
-                        ${technicianName ? `
-                        <div class="detail-row">
-                            <span class="detail-label">Technician</span>
-                            <span class="detail-value">${technicianName}</span>
-                        </div>
-                        ` : ''}
+    // Prepare template variables
+    const templateData = {
+        klantnaam: customerName || '',
+        klantemail: customerEmail || '',
+        datum: formattedDate,
+        tijd: appointmentTime || '',
+        dienst: serviceName || '',
+        bedrijfsnaam: companyName || '',
+        locatie: location || ''
+    };
+
+    // Try to get custom template
+    let subject, html;
+    const template = await getUserTemplate(userId, 'appointment_reminder');
+    
+    if (template) {
+        subject = replaceTemplateVariables(template.subject, templateData);
+        html = replaceTemplateVariables(template.body_html, templateData);
+    } else {
+        // Fallback to hardcoded template
+        subject = `Herinnering: Uw afspraak is ${timeUntilText} - ${formattedDate}`;
+        html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, #007aff 0%, #5856d6 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
+                    .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+                    .content { background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px; }
+                    .appointment-card { background: white; border-radius: 12px; padding: 24px; margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+                    .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e5e5; }
+                    .detail-row:last-child { border-bottom: none; }
+                    .detail-label { color: #86868b; font-size: 14px; }
+                    .detail-value { font-weight: 500; color: #1d1d1f; }
+                    .reminder-badge { background: #ff9500; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; margin-bottom: 16px; }
+                    .footer { text-align: center; padding: 20px; color: #86868b; font-size: 12px; }
+                    .icon { font-size: 48px; margin-bottom: 16px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="icon">⏰</div>
+                        <h1>Herinnering</h1>
                     </div>
-                    
-                    <p>We look forward to seeing you!</p>
-                    <p>Best regards,<br><strong>${companyName}</strong></p>
+                    <div class="content">
+                        <p>Beste ${customerName},</p>
+                        <span class="reminder-badge">${timeUntilText}</span>
+                        <p>Dit is een herinnering voor uw afspraak:</p>
+                        
+                        <div class="appointment-card">
+                            <div class="detail-row">
+                                <span class="detail-label">Datum</span>
+                                <span class="detail-value">${formattedDate}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Tijd</span>
+                                <span class="detail-value">${appointmentTime}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Dienst</span>
+                                <span class="detail-value">${serviceName}</span>
+                            </div>
+                            ${technicianName ? `
+                            <div class="detail-row">
+                                <span class="detail-label">Technician</span>
+                                <span class="detail-value">${technicianName}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <p>Wij kijken ernaar uit u te zien!</p>
+                        <p>Met vriendelijke groet,<br><strong>${companyName}</strong></p>
+                    </div>
+                    <div class="footer">
+                        <p>Deze email is verzonden door ${companyName} via PianoPlanner</p>
+                    </div>
                 </div>
-                <div class="footer">
-                    <p>This email was sent by ${companyName} via PianoPlanner</p>
-                </div>
-            </div>
-        </body>
-        </html>
-    `;
+            </body>
+            </html>
+        `;
+    }
 
     return sendEmail({
         to: customerEmail,
-        subject: `Reminder: Your appointment is ${timeUntilText} - ${formattedDate}`,
+        subject,
         html,
         replyTo: replyTo,
         fromName: fromName || companyName,

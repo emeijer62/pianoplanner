@@ -1248,6 +1248,88 @@
                 </div>
             </div>
             
+            <!-- Email Templates Card -->
+            <div class="settings-card" id="email-templates-card">
+                <div class="settings-card-header" onclick="toggleCard('email-templates-card')">
+                    <div class="settings-card-title">
+                        <span class="card-icon">✉️</span>
+                        Email Sjablonen
+                    </div>
+                    <div class="settings-card-status">
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Pas de inhoud van automatische emails aan met uw eigen tekst en stijl.
+                    </p>
+                    
+                    <div id="email-templates-list">
+                        <!-- Templates worden via JS geladen -->
+                        <div style="text-align: center; padding: 20px; color: #666;">
+                            <span class="spinner" style="display: inline-block; width: 20px; height: 20px; border: 2px solid #ddd; border-top-color: #333; border-radius: 50%; animation: spin 1s linear infinite;"></span>
+                            Laden...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Email Template Edit Modal -->
+        <div id="template-edit-modal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+                <div class="modal-header">
+                    <h2 id="template-edit-title">Email Sjabloon Bewerken</h2>
+                    <button class="modal-close" onclick="closeTemplateModal()">&times;</button>
+                </div>
+                <div class="modal-body" style="flex: 1; overflow-y: auto; padding: 20px;">
+                    <div class="form-group">
+                        <label for="template-subject">Onderwerp</label>
+                        <input type="text" id="template-subject" placeholder="Bijv: Bevestiging: {{dienst}} op {{datum}}" style="width: 100%;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Beschikbare variabelen</label>
+                        <div id="template-variables" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+                            <!-- Variables worden via JS geladen -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="template-body">Inhoud (HTML)</label>
+                        <textarea id="template-body" rows="12" style="width: 100%; font-family: monospace; font-size: 13px;" placeholder="<div>...</div>"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="template-active" checked>
+                            Template actief
+                        </label>
+                    </div>
+                    
+                    <div style="background: #f5f5f7; border-radius: 8px; padding: 16px; margin-top: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <strong>Preview</strong>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="refreshTemplatePreview()">🔄 Ververs</button>
+                        </div>
+                        <div id="template-preview" style="background: white; border-radius: 8px; padding: 16px; min-height: 150px;">
+                            <em style="color: #999;">Klik "Ververs" om een preview te zien</em>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="display: flex; gap: 8px; justify-content: space-between; padding: 16px 20px; border-top: 1px solid #eee;">
+                    <button type="button" class="btn btn-danger" onclick="resetTemplateToDefault()" id="template-reset-btn">
+                        ↩️ Reset naar standaard
+                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeTemplateModal()">Annuleren</button>
+                        <button type="button" class="btn btn-primary" onclick="saveTemplate()">💾 Opslaan</button>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- ==================== ACCOUNT TAB ==================== -->

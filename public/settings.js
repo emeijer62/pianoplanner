@@ -1197,6 +1197,212 @@ function setupSmtpToggle() {
     updateSmtpProviderInstructions();
 }
 
+// ========== EMAIL TEMPLATES ==========
+
+let availableVariables = [];
+let currentTemplateType = null;
+
+async function loadEmailTemplates() {
+    const container = document.getElementById('email-templates-list');
+    if (!container) return;
+    
+    try {
+        const response = await fetch('/api/email-templates');
+        if (!response.ok) throw new Error('Kon templates niet laden');
+        
+        const data = await response.json();
+        availableVariables = data.availableVariables || [];
+        const templates = data.templates || [];
+        
+        // Template labels in Dutch
+        const templateLabels = {
+            'appointment_confirmation': { name: 'Afspraak Bevestiging', icon: '✅', desc: 'Email naar klant na het maken van een afspraak' },
+            'booking_notification': { name: 'Nieuwe Boeking Melding', icon: '📥', desc: 'Email naar jou wanneer iemand online boekt' },
+            'appointment_reminder': { name: 'Herinnering', icon: '⏰', desc: 'Email naar klant als herinnering voor afspraak' }
+        };
+        
+        let html = '<div class="template-list" style="display: flex; flex-direction: column; gap: 12px;">';
+        
+        templates.forEach(template => {
+            const info = templateLabels[template.template_type] || { name: template.template_type, icon: '📧', desc: '' };
+            const isCustom = !template.is_default;
+            
+            html += `
+                <div class="template-item" style="background: white; border: 1px solid #e5e5e5; border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 20px;">${info.icon}</span>
+                            <strong>${info.name}</strong>
+                            ${isCustom ? '<span style="background: #d4edda; color: #155724; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Aangepast</span>' : '<span style="background: #e9ecef; color: #6c757d; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Standaard</span>'}
+                            ${!template.is_active ? '<span style="background: #f8d7da; color: #721c24; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Uitgeschakeld</span>' : ''}
+                        </div>
+                        <div style="color: #666; font-size: 13px; margin-top: 4px;">${info.desc}</div>
+                        <div style="color: #999; font-size: 12px; margin-top: 4px;">Onderwerp: ${template.subject}</div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="editTemplate('${template.template_type}')" style="white-space: nowrap;">
+                        ✏️ Bewerken
+                    </button>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error loading templates:', error);
+        container.innerHTML = '<div style="color: #dc3545; padding: 20px; text-align: center;">❌ Kon templates niet laden</div>';
+    }
+}
+
+async function editTemplate(templateType) {
+    currentTemplateType = templateType;
+    
+    const templateLabels = {
+        'appointment_confirmation': 'Afspraak Bevestiging',
+        'booking_notification': 'Nieuwe Boeking Melding',
+        'appointment_reminder': 'Herinnering'
+    };
+    
+    document.getElementById('template-edit-title').textContent = `${templateLabels[templateType] || templateType} Bewerken`;
+    
+    // Load template data
+    try {
+        const response = await fetch(`/api/email-templates/${templateType}`);
+        if (!response.ok) throw new Error('Kon template niet laden');
+        
+        const template = await response.json();
+        
+        document.getElementById('template-subject').value = template.subject || '';
+        document.getElementById('template-body').value = template.body_html || '';
+        document.getElementById('template-active').checked = template.is_active !== false;
+        
+        // Show/hide reset button based on whether it's custom
+        document.getElementById('template-reset-btn').style.display = template.is_default ? 'none' : 'block';
+        
+    } catch (error) {
+        console.error('Error loading template:', error);
+        showAlert('Kon template niet laden', 'error');
+        return;
+    }
+    
+    // Render available variables
+    const varsContainer = document.getElementById('template-variables');
+    varsContainer.innerHTML = availableVariables.map(v => 
+        `<button type="button" class="btn btn-sm" style="background: #f0f0f5; border: 1px solid #ddd; font-family: monospace; font-size: 12px;" onclick="insertVariable('${v}')">${v}</button>`
+    ).join('');
+    
+    // Clear preview
+    document.getElementById('template-preview').innerHTML = '<em style="color: #999;">Klik "Ververs" om een preview te zien</em>';
+    
+    // Show modal
+    document.getElementById('template-edit-modal').style.display = 'flex';
+}
+
+function insertVariable(variable) {
+    const bodyField = document.getElementById('template-body');
+    const cursorPos = bodyField.selectionStart;
+    const textBefore = bodyField.value.substring(0, cursorPos);
+    const textAfter = bodyField.value.substring(cursorPos);
+    bodyField.value = textBefore + variable + textAfter;
+    bodyField.focus();
+    bodyField.setSelectionRange(cursorPos + variable.length, cursorPos + variable.length);
+}
+
+async function refreshTemplatePreview() {
+    const subject = document.getElementById('template-subject').value;
+    const body = document.getElementById('template-body').value;
+    
+    try {
+        const response = await fetch(`/api/email-templates/${currentTemplateType}/preview`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subject, body_html: body })
+        });
+        
+        if (!response.ok) throw new Error('Preview mislukt');
+        
+        const preview = await response.json();
+        
+        document.getElementById('template-preview').innerHTML = `
+            <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee;">
+                <strong>Onderwerp:</strong> ${preview.subject}
+            </div>
+            <div>${preview.body_html}</div>
+        `;
+        
+    } catch (error) {
+        console.error('Preview error:', error);
+        document.getElementById('template-preview').innerHTML = '<span style="color: #dc3545;">❌ Preview kon niet worden geladen</span>';
+    }
+}
+
+async function saveTemplate() {
+    const subject = document.getElementById('template-subject').value.trim();
+    const body = document.getElementById('template-body').value.trim();
+    const isActive = document.getElementById('template-active').checked;
+    
+    if (!subject || !body) {
+        showAlert('Vul onderwerp en inhoud in', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/email-templates/${currentTemplateType}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                subject,
+                body_html: body,
+                is_active: isActive
+            })
+        });
+        
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || 'Opslaan mislukt');
+        }
+        
+        showAlert('Template opgeslagen!', 'success');
+        closeTemplateModal();
+        loadEmailTemplates();
+        
+    } catch (error) {
+        console.error('Save error:', error);
+        showAlert('Opslaan mislukt: ' + error.message, 'error');
+    }
+}
+
+async function resetTemplateToDefault() {
+    if (!confirm('Weet je zeker dat je dit template wilt resetten naar de standaard versie? Je aanpassingen worden verwijderd.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/email-templates/${currentTemplateType}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || 'Reset mislukt');
+        }
+        
+        showAlert('Template gereset naar standaard', 'success');
+        closeTemplateModal();
+        loadEmailTemplates();
+        
+    } catch (error) {
+        console.error('Reset error:', error);
+        showAlert('Reset mislukt: ' + error.message, 'error');
+    }
+}
+
+function closeTemplateModal() {
+    document.getElementById('template-edit-modal').style.display = 'none';
+    currentTemplateType = null;
+}
+
 // ========== CALENDAR FEED / AGENDA ABONNEMENT ==========
 
 async function loadCalendarFeedSettings() {
@@ -1507,6 +1713,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadAppleCalendarStatus();
         loadSmtpSettings();
         loadCalendarFeedSettings();
+        loadEmailTemplates();
         initExportDates();
         
         // Event listeners

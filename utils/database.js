@@ -365,6 +365,22 @@ function initDatabase() {
             }
         });
 
+        // Email templates tabel (voor aanpasbare email sjablonen)
+        db.run(`
+            CREATE TABLE IF NOT EXISTS email_templates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                template_type TEXT NOT NULL,
+                subject TEXT NOT NULL,
+                body_html TEXT NOT NULL,
+                is_active INTEGER DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, template_type),
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `, logTableCreation('email_templates'));
+
         // Maak indexen voor betere performance
         db.run('CREATE INDEX IF NOT EXISTS idx_customers_user ON customers(user_id)');
         db.run('CREATE INDEX IF NOT EXISTS idx_pianos_user ON pianos(user_id)');
