@@ -466,7 +466,6 @@ router.get('/stats/overview', async (req, res) => {
 // ==================== ROUTE OPTIMALISATIE ====================
 
 const { optimizeRoute, planDayRoute, calculateDistanceMatrix } = require('../utils/travelTime');
-const userStore = require('../utils/userStore');
 
 // Optimaliseer route voor een specifieke dag
 router.post('/optimize-route', async (req, res) => {
