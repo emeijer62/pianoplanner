@@ -427,11 +427,16 @@
             flex: 1;
             overflow-y: auto;
             min-height: 0;
-            max-height: 100%;
         }
 
         .modal-footer {
             flex-shrink: 0;
+            padding: 16px 24px;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: white;
         }
 
         @media (max-width: 768px) {
@@ -483,14 +488,6 @@
         .form-group textarea:focus {
             outline: none;
             border-color: #1a1a1a;
-        }
-
-        .modal-footer {
-            padding: 16px 24px;
-            border-top: 1px solid #e8e8e8;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
         }
 
         /* Service History Panel */
