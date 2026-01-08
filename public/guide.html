@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gebruiksaanwijzing - PianoPlanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            color: #1a1a1a;
+            line-height: 1.7;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+
+        /* Layout */
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e5e5e5;
+            padding: 24px 0;
+            position: sticky;
+            top: 64px;
+            height: calc(100vh - 64px);
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+            padding: 0 24px;
+            margin-bottom: 12px;
+            margin-top: 24px;
+        }
+
+        .sidebar-title:first-child {
+            margin-top: 0;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 10px 24px;
+            color: #444;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link:hover {
+            background: #f5f7fa;
+            color: #007AFF;
+        }
+
+        .sidebar-link.active {
+            background: #e8f4ff;
+            color: #007AFF;
+            border-left-color: #007AFF;
+            font-weight: 500;
+        }
+
+        /* Content */
+        .content {
+            flex: 1;
+            padding: 40px 60px;
+            max-width: 900px;
+        }
+
+        .content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .content .intro {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 48px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .section {
+            margin-bottom: 64px;
+            scroll-margin-top: 100px;
+        }
+
+        .section h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section h2 .icon {
+            font-size: 1.5rem;
+        }
+
+        .section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 32px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .section p {
+            color: #444;
+            margin-bottom: 16px;
+        }
+
+        .section ul, .section ol {
+            margin-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        .section li {
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        /* Callout boxes */
+        .callout {
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin: 24px 0;
+        }
+
+        .callout-info {
+            background: #e8f4ff;
+            border-left: 4px solid #007AFF;
+        }
+
+        .callout-warning {
+            background: #fff8e6;
+            border-left: 4px solid #FF9500;
+        }
+
+        .callout-success {
+            background: #e8f8ef;
+            border-left: 4px solid #34C759;
+        }
+
+        .callout-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .callout p {
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        /* Steps */
+        .steps {
+            counter-reset: step;
+            margin: 24px 0;
+        }
+
+        .step {
+            position: relative;
+            padding-left: 48px;
+            padding-bottom: 24px;
+            border-left: 2px solid #e5e5e5;
+            margin-left: 16px;
+        }
+
+        .step:last-child {
+            border-left-color: transparent;
+            padding-bottom: 0;
+        }
+
+        .step::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: -17px;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: #007AFF;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .step p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Code/path styling */
+        code {
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            color: #e83e8c;
+        }
+
+        .path {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            margin: 16px 0;
+            overflow-x: auto;
+        }
+
+        /* Image placeholder */
+        .screenshot {
+            background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            color: #999;
+            margin: 24px 0;
+            border: 1px solid #e5e5e5;
+        }
+
+        /* Table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 14px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .comparison-table th {
+            background: #f5f7fa;
+            font-weight: 600;
+        }
+
+        .comparison-table tr:hover {
+            background: #fafafa;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 40px 24px;
+            text-align: center;
+        }
+
+        .footer p {
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+
+            .content {
+                padding: 24px;
+            }
+        }
+
+        /* Print */
+        @media print {
+            .sidebar, .header {
+                display: none;
+            }
+
+            .content {
+                max-width: 100%;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <span>🎹</span>
+                <span>PianoPlanner</span>
+            </a>
+            <div class="header-buttons">
+                <a href="/about.html" class="btn btn-secondary">Over PianoPlanner</a>
+                <a href="/dashboard.html" class="btn btn-primary">Naar Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-title">Aan de slag</div>
+            <a href="#start" class="sidebar-link active">Eerste stappen</a>
+            <a href="#bedrijfsgegevens" class="sidebar-link">Bedrijfsgegevens invullen</a>
+            <a href="#werkuren" class="sidebar-link">Werkdagen & buffers</a>
+            <a href="#rayon" class="sidebar-link">Rayon instellen</a>
+
+            <div class="sidebar-title">Kalender koppelen</div>
+            <a href="#google-calendar" class="sidebar-link">Google Agenda koppelen</a>
+            <a href="#apple-calendar" class="sidebar-link">iCloud Agenda koppelen</a>
+            <a href="#sync-methodes" class="sidebar-link">Sync methodes uitgelegd</a>
+
+            <div class="sidebar-title">Email instellen</div>
+            <a href="#eigen-domein" class="sidebar-link">Mailen via eigen domein</a>
+            <a href="#email-sjablonen" class="sidebar-link">Email sjablonen</a>
+
+            <div class="sidebar-title">Online boeken</div>
+            <a href="#boekingslink" class="sidebar-link">Boekingslink aanmaken</a>
+            <a href="#klant-link" class="sidebar-link">Persoonlijke klantlink</a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <h1>📖 Gebruiksaanwijzing</h1>
+            <p class="intro">
+                Welkom bij de PianoPlanner handleiding! Deze gids helpt u om optimaal gebruik te maken van alle mogelijkheden. 
+                Volg de stappen in volgorde voor de beste ervaring, of spring direct naar het onderwerp dat u zoekt.
+            </p>
+
+            <!-- EERSTE STAPPEN -->
+            <section id="start" class="section">
+                <h2><span class="icon">🚀</span> Eerste stappen</h2>
+                <p>
+                    Voordat u kunt beginnen met plannen, is het belangrijk om uw account goed in te richten. 
+                    De volgorde hieronder zorgt ervoor dat alle functies optimaal werken.
+                </p>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 Aanbevolen volgorde</div>
+                    <p>
+                        1. Bedrijfsgegevens → 2. Werkuren → 3. Rayon → 4. Kalender → 5. Email → 6. Boekingslink
+                    </p>
+                </div>
+
+                <p>
+                    Neem even de tijd om alles goed in te stellen. Dit bespaart u later veel werk en zorgt ervoor dat:
+                </p>
+                <ul>
+                    <li>Reistijden correct berekend worden</li>
+                    <li>Klanten alleen kunnen boeken wanneer u beschikbaar bent</li>
+                    <li>Emails professioneel overkomen met uw eigen gegevens</li>
+                    <li>Afspraken automatisch in uw agenda verschijnen</li>
+                </ul>
+            </section>
+
+            <!-- BEDRIJFSGEGEVENS -->
+            <section id="bedrijfsgegevens" class="section">
+                <h2><span class="icon">🏢</span> Bedrijfsgegevens invullen</h2>
+                <p>
+                    Uw bedrijfsgegevens zijn essentieel voor de werking van PianoPlanner. Het adres wordt gebruikt als 
+                    <strong>startpunt voor reistijdberekeningen</strong> en verschijnt op emails naar klanten.
+                </p>
+
+                <div class="callout callout-warning">
+                    <div class="callout-title">⚠️ Belangrijk</div>
+                    <p>
+                        Zonder correct adres kunnen reistijden niet berekend worden. Vul dit als eerste in!
+                    </p>
+                </div>
+
+                <h3>Zo stelt u uw bedrijfsgegevens in:</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar Instellingen</div>
+                        <p>Klik op <code>Settings</code> in het menu, of ga direct naar het tabblad "Bedrijf".</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Vul uw gegevens in</div>
+                        <p>Bedrijfsnaam, uw naam, email, telefoon en volledig adres. Gebruik de Google Maps suggesties voor een exact adres.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Upload uw logo (optioneel)</div>
+                        <p>Uw logo verschijnt op de boekingspagina en in emails.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Stel uw tijdzone in</div>
+                        <p>Standaard staat dit op Europe/Amsterdam. Pas aan indien nodig.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Klik op Opslaan</div>
+                        <p>Uw gegevens worden direct opgeslagen en toegepast.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WERKUREN EN BUFFERS -->
+            <section id="werkuren" class="section">
+                <h2><span class="icon">⏰</span> Werkdagen, tijden & buffers</h2>
+                <p>
+                    Stel in wanneer u beschikbaar bent voor afspraken. Dit bepaalt wanneer klanten online kunnen boeken 
+                    en helpt bij het plannen van uw dag.
+                </p>
+
+                <h3>Werkdagen en tijden</h3>
+                <p>
+                    Ga naar <code>Settings → Bedrijf</code> en scroll naar "Werkuren". Hier kunt u per dag aangeven:
+                </p>
+                <ul>
+                    <li>Of u die dag werkt (aan/uit per dag)</li>
+                    <li>Start- en eindtijd van uw werkdag</li>
+                    <li>Pauzetijden (optioneel)</li>
+                </ul>
+
+                <h3>Buffers instellen</h3>
+                <p>
+                    Buffers zorgen voor ademruimte tussen afspraken. U vindt deze instellingen bij <code>Settings → Beschikbaarheid</code>.
+                </p>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Buffer type</th>
+                            <th>Wat doet het?</th>
+                            <th>Aanbevolen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Buffer voor afspraak</strong></td>
+                            <td>Extra tijd vóór een afspraak (bijv. voor voorbereiding)</td>
+                            <td>0-15 minuten</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Buffer na afspraak</strong></td>
+                            <td>Extra tijd ná een afspraak (bijv. voor notities)</td>
+                            <td>15-30 minuten</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Minimale boekingstijd</strong></td>
+                            <td>Hoe ver van tevoren moet geboekt worden?</td>
+                            <td>24-48 uur</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="callout callout-success">
+                    <div class="callout-title">✅ Tip</div>
+                    <p>
+                        Stel een buffer van minimaal 15 minuten in tussen afspraken. Dit geeft ruimte voor uitloop en reistijd.
+                    </p>
+                </div>
+            </section>
+
+            <!-- RAYON -->
+            <section id="rayon" class="section">
+                <h2><span class="icon">🗺️</span> Rayon instellen (maximale rijtijd)</h2>
+                <p>
+                    Wilt u niet te ver rijden voor een afspraak? Stel een maximale rijtijd in. Klanten buiten uw rayon 
+                    krijgen dan een melding bij het boeken.
+                </p>
+
+                <h3>Zo stelt u uw rayon in:</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar Settings → Reistijd</div>
+                        <p>Hier vindt u alle instellingen voor reistijden en rayon.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Schakel rayon-controle in</div>
+                        <p>Zet de optie "Controleer maximale reistijd" aan.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Stel maximale rijtijd in</div>
+                        <p>Bijvoorbeeld: 45 minuten. Afspraken verder weg krijgen een waarschuwing.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Pas de melding aan (optioneel)</div>
+                        <p>Schrijf een eigen bericht voor klanten buiten uw rayon, bijvoorbeeld met alternatieve opties.</p>
+                    </div>
+                </div>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 Extra optie: rijtijd tussen afspraken</div>
+                    <p>
+                        U kunt ook een maximale rijtijd instellen tussen twee opeenvolgende afspraken. 
+                        Dit voorkomt dat u na een afspraak in Groningen meteen naar Maastricht moet.
+                    </p>
+                </div>
+            </section>
+
+            <!-- GOOGLE CALENDAR -->
+            <section id="google-calendar" class="section">
+                <h2><span class="icon">📅</span> Google Agenda koppelen</h2>
+                <p>
+                    Koppel uw Google Agenda voor <strong>twee-weg synchronisatie</strong>. Afspraken verschijnen automatisch 
+                    in uw agenda, en wijzigingen in Google komen terug in PianoPlanner.
+                </p>
+
+                <h3>Koppeling maken</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar Settings → Kalender</div>
+                        <p>Open het tabblad "Kalender synchronisatie".</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Klik op "Koppel Google Agenda"</div>
+                        <p>U wordt doorgestuurd naar Google om toestemming te geven.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Geef toestemming</div>
+                        <p>Log in met uw Google account en sta toegang toe tot uw agenda.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Kies uw agenda</div>
+                        <p>Selecteer de agenda waarin afspraken moeten verschijnen.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Stel sync-richting in</div>
+                        <p>Kies voor twee-weg sync, of alleen van PianoPlanner naar Google.</p>
+                    </div>
+                </div>
+
+                <h3>Sync opties</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Optie</th>
+                            <th>Beschrijving</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Twee-weg sync</strong></td>
+                            <td>Wijzigingen in beide systemen worden gesynchroniseerd</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Alleen naar Google</strong></td>
+                            <td>Afspraken gaan naar Google, maar wijzigingen in Google worden niet teruggehaald</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Inclusief reistijd</strong></td>
+                            <td>Voeg reistijd toe als apart agenda-item vóór de afspraak</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- APPLE CALENDAR -->
+            <section id="apple-calendar" class="section">
+                <h2><span class="icon">🍎</span> iCloud / Apple Agenda koppelen</h2>
+                <p>
+                    Gebruik u liever Apple Agenda of iCloud? Ook dat kan! De koppeling werkt via CalDAV en 
+                    vereist een <strong>app-specifiek wachtwoord</strong>.
+                </p>
+
+                <div class="callout callout-warning">
+                    <div class="callout-title">⚠️ Vereist: App-specifiek wachtwoord</div>
+                    <p>
+                        Apple staat niet toe dat apps uw normale wachtwoord gebruiken. U moet eerst een 
+                        speciaal wachtwoord aanmaken op appleid.apple.com.
+                    </p>
+                </div>
+
+                <h3>App-specifiek wachtwoord aanmaken</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar appleid.apple.com</div>
+                        <p>Log in met uw Apple ID.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Klik op "App-specifieke wachtwoorden"</div>
+                        <p>U vindt dit onder "Aanmelden en beveiliging".</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Klik op "Genereer wachtwoord"</div>
+                        <p>Geef het een naam zoals "PianoPlanner".</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Kopieer het wachtwoord</div>
+                        <p>Het wachtwoord wordt maar één keer getoond! Kopieer het direct.</p>
+                    </div>
+                </div>
+
+                <h3>Koppeling in PianoPlanner</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar Settings → Kalender → Apple</div>
+                        <p>Open het Apple Calendar tabblad.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Vul uw Apple ID email in</div>
+                        <p>Het emailadres waarmee u inlogt bij Apple.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Plak het app-specifieke wachtwoord</div>
+                        <p>Het wachtwoord dat u zojuist heeft aangemaakt.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Klik op "Verbinden"</div>
+                        <p>PianoPlanner test de verbinding en toont uw agenda's.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Selecteer de juiste agenda</div>
+                        <p>Kies de agenda waarin afspraken moeten verschijnen.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SYNC METHODES -->
+            <section id="sync-methodes" class="section">
+                <h2><span class="icon">🔄</span> Sync methodes uitgelegd</h2>
+                <p>
+                    PianoPlanner biedt meerdere manieren om uw agenda te synchroniseren. Hier vindt u een overzicht 
+                    van de verschillen.
+                </p>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Methode</th>
+                            <th>Richting</th>
+                            <th>Real-time?</th>
+                            <th>Beste voor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Google Calendar API</strong></td>
+                            <td>↔️ Twee-weg</td>
+                            <td>✅ Ja</td>
+                            <td>Volledige integratie met Google</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Apple CalDAV</strong></td>
+                            <td>↔️ Twee-weg</td>
+                            <td>✅ Ja</td>
+                            <td>Apple/iCloud gebruikers</td>
+                        </tr>
+                        <tr>
+                            <td><strong>iCal Feed (abonnement)</strong></td>
+                            <td>→ Alleen lezen</td>
+                            <td>⏱️ Elke 15-60 min</td>
+                            <td>Outlook, andere apps</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>iCal Feed gebruiken</h3>
+                <p>
+                    Wilt u uw afspraken bekijken in een app die geen directe koppeling ondersteunt? 
+                    Gebruik dan de iCal feed URL.
+                </p>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar Settings → Kalender → iCal Feed</div>
+                        <p>Hier vindt u uw persoonlijke feed URL.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Kopieer de URL</div>
+                        <p>Deze URL is uniek voor uw account. Deel deze niet!</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Abonneer in uw agenda-app</div>
+                        <p>Voeg de URL toe als "agenda-abonnement" in Outlook, Thunderbird, etc.</p>
+                    </div>
+                </div>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 Wanneer welke methode?</div>
+                    <p>
+                        <strong>Google gebruiker?</strong> Gebruik Google Calendar koppeling.<br>
+                        <strong>iPhone/Mac gebruiker?</strong> Gebruik Apple Calendar koppeling.<br>
+                        <strong>Outlook/andere app?</strong> Gebruik iCal feed.
+                    </p>
+                </div>
+            </section>
+
+            <!-- EMAIL EIGEN DOMEIN -->
+            <section id="eigen-domein" class="section">
+                <h2><span class="icon">📧</span> Mailen via uw eigen domein</h2>
+                <p>
+                    Standaard verstuurt PianoPlanner emails via onze servers. Wilt u emails versturen vanaf uw eigen 
+                    emailadres (bijv. info@uwbedrijf.nl)? Configureer dan uw eigen SMTP-server.
+                </p>
+
+                <h3>Waarom eigen SMTP?</h3>
+                <ul>
+                    <li>Emails komen van uw eigen emailadres</li>
+                    <li>Klanten kunnen direct antwoorden naar uw inbox</li>
+                    <li>Betere afleverbaarheid (minder kans op spam)</li>
+                    <li>Professionelere uitstraling</li>
+                </ul>
+
+                <h3>SMTP instellen</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar Settings → Email → SMTP</div>
+                        <p>Open de SMTP configuratie.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Vul uw SMTP-gegevens in</div>
+                        <p>Deze krijgt u van uw emailprovider of webhoster:</p>
+                    </div>
+                </div>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Veld</th>
+                            <th>Voorbeeld</th>
+                            <th>Uitleg</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>SMTP Host</strong></td>
+                            <td>smtp.mijndomein.nl</td>
+                            <td>Serveradres van uw emailprovider</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Poort</strong></td>
+                            <td>587 of 465</td>
+                            <td>587 voor TLS, 465 voor SSL</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gebruikersnaam</strong></td>
+                            <td>info@mijndomein.nl</td>
+                            <td>Vaak uw volledige emailadres</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Wachtwoord</strong></td>
+                            <td>••••••••</td>
+                            <td>Wachtwoord van uw emailaccount</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Van adres</strong></td>
+                            <td>info@mijndomein.nl</td>
+                            <td>Afzender in uitgaande emails</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="callout callout-success">
+                    <div class="callout-title">✅ Test uw instellingen</div>
+                    <p>
+                        Na het invullen kunt u een test-email versturen. Controleer of deze aankomt en niet in de spam belandt.
+                    </p>
+                </div>
+
+                <h3>Veelgebruikte SMTP-instellingen</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Host</th>
+                            <th>Poort</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Gmail</td>
+                            <td>smtp.gmail.com</td>
+                            <td>587</td>
+                        </tr>
+                        <tr>
+                            <td>Outlook/Microsoft 365</td>
+                            <td>smtp.office365.com</td>
+                            <td>587</td>
+                        </tr>
+                        <tr>
+                            <td>TransIP</td>
+                            <td>smtp.transip.email</td>
+                            <td>587</td>
+                        </tr>
+                        <tr>
+                            <td>Strato</td>
+                            <td>smtp.strato.nl</td>
+                            <td>587</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- EMAIL SJABLONEN -->
+            <section id="email-sjablonen" class="section">
+                <h2><span class="icon">✉️</span> Email sjablonen personaliseren</h2>
+                <p>
+                    Pas de automatische emails aan met uw eigen teksten en stijl. U kunt variabelen gebruiken die 
+                    automatisch worden ingevuld.
+                </p>
+
+                <h3>Beschikbare sjablonen</h3>
+                <ul>
+                    <li><strong>Bevestigingsmail</strong> - Wordt verstuurd na het boeken van een afspraak</li>
+                    <li><strong>Herinneringsmail</strong> - Wordt verstuurd 24/48 uur voor de afspraak</li>
+                    <li><strong>Annuleringsmail</strong> - Wordt verstuurd bij annulering</li>
+                    <li><strong>Wijzigingsmail</strong> - Wordt verstuurd bij wijziging van datum/tijd</li>
+                </ul>
+
+                <h3>Sjabloon bewerken</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar Settings → Email → Sjablonen</div>
+                        <p>Hier ziet u alle beschikbare sjablonen.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Klik op een sjabloon om te bewerken</div>
+                        <p>U kunt het onderwerp en de inhoud aanpassen.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Gebruik variabelen</div>
+                        <p>Voeg dynamische content toe met de variabelen hieronder.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Preview en opslaan</div>
+                        <p>Bekijk een voorbeeld en sla uw wijzigingen op.</p>
+                    </div>
+                </div>
+
+                <h3>Beschikbare variabelen</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Variabele</th>
+                            <th>Wordt vervangen door</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>{{klant_naam}}</code></td>
+                            <td>Naam van de klant</td>
+                        </tr>
+                        <tr>
+                            <td><code>{{datum}}</code></td>
+                            <td>Datum van de afspraak</td>
+                        </tr>
+                        <tr>
+                            <td><code>{{tijd}}</code></td>
+                            <td>Starttijd van de afspraak</td>
+                        </tr>
+                        <tr>
+                            <td><code>{{dienst}}</code></td>
+                            <td>Type dienst (bijv. Stembeurt)</td>
+                        </tr>
+                        <tr>
+                            <td><code>{{bedrijf_naam}}</code></td>
+                            <td>Uw bedrijfsnaam</td>
+                        </tr>
+                        <tr>
+                            <td><code>{{bedrijf_telefoon}}</code></td>
+                            <td>Uw telefoonnummer</td>
+                        </tr>
+                        <tr>
+                            <td><code>{{bedrijf_email}}</code></td>
+                            <td>Uw emailadres</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- BOEKINGSLINK -->
+            <section id="boekingslink" class="section">
+                <h2><span class="icon">🔗</span> Boekingslink voor uw website</h2>
+                <p>
+                    Laat klanten zelf online een afspraak maken via uw eigen boekingspagina. 
+                    U krijgt een unieke URL die u kunt plaatsen op uw website.
+                </p>
+
+                <h3>Boekingslink activeren</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar Settings → Online boeken</div>
+                        <p>Open de instellingen voor online boeken.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Schakel online boeken in</div>
+                        <p>Zet de schakelaar op "Aan".</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Kies uw URL-slug</div>
+                        <p>Dit wordt uw unieke adres, bijv: <code>pianoplanner.app/book/jansenpiano</code></p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Selecteer beschikbare diensten</div>
+                        <p>Kies welke diensten klanten online kunnen boeken.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Kopieer en deel uw link</div>
+                        <p>Plaats de link op uw website, visitekaartje of in uw email-handtekening.</p>
+                    </div>
+                </div>
+
+                <h3>Op uw website plaatsen</h3>
+                <p>U kunt de link op verschillende manieren integreren:</p>
+
+                <p><strong>Als simpele link:</strong></p>
+                <div class="path">&lt;a href="https://pianoplanner.app/book/jansenpiano"&gt;Maak een afspraak&lt;/a&gt;</div>
+
+                <p><strong>Als knop:</strong></p>
+                <div class="path">&lt;a href="https://pianoplanner.app/book/jansenpiano" class="button"&gt;Online boeken&lt;/a&gt;</div>
+
+                <div class="callout callout-success">
+                    <div class="callout-title">✅ Tip: QR-code</div>
+                    <p>
+                        Genereer een QR-code van uw boekingslink. Handig voor flyers, visitekaartjes of posters!
+                    </p>
+                </div>
+            </section>
+
+            <!-- PERSOONLIJKE KLANTLINK -->
+            <section id="klant-link" class="section">
+                <h2><span class="icon">🎭</span> Persoonlijke link voor vaste klanten</h2>
+                <p>
+                    Heeft u klanten met terugkerende opdrachten, zoals theaters, muziekscholen of conservatoria? 
+                    Maak een <strong>persoonlijke boekingslink</strong> zodat zij snel kunnen boeken met vooringevulde gegevens.
+                </p>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 Perfect voor</div>
+                    <p>
+                        • Theaters en concertzalen<br>
+                        • Muziekscholen<br>
+                        • Conservatoria<br>
+                        • Kerken met regelmatige stembeurten<br>
+                        • Vaste particuliere klanten
+                    </p>
+                </div>
+
+                <h3>Zo maakt u een persoonlijke link</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Ga naar de klantpagina</div>
+                        <p>Open de detailpagina van de klant.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Klik op "Boekingslink genereren"</div>
+                        <p>U vindt dit onder de klantgegevens of bij de acties.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Kopieer de unieke link</div>
+                        <p>Deze link bevat een unieke code voor deze klant.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Deel met de klant</div>
+                        <p>Stuur de link per email of voeg toe aan hun contactpersoon.</p>
+                    </div>
+                </div>
+
+                <h3>Wat gebeurt er?</h3>
+                <p>Wanneer de klant de link opent:</p>
+                <ul>
+                    <li>Naam en contactgegevens zijn al ingevuld</li>
+                    <li>Adres is bekend (geen reistijd-verrassing)</li>
+                    <li>Piano's van deze klant worden getoond</li>
+                    <li>De klant hoeft alleen nog datum/tijd te kiezen</li>
+                </ul>
+
+                <div class="callout callout-success">
+                    <div class="callout-title">✅ Voorbeeld gebruik: Theater</div>
+                    <p>
+                        Een theater moet 4x per jaar de vleugel laten stemmen. Met hun persoonlijke link kunnen zij 
+                        zelf de datum kiezen wanneer het hen uitkomt, zonder steeds opnieuw gegevens in te vullen. 
+                        U krijgt direct een notificatie en de afspraak staat in uw agenda.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Hulp nodig -->
+            <section class="section" style="text-align: center; padding: 48px; background: white; border-radius: 16px; margin-top: 64px;">
+                <h2 style="margin-bottom: 16px;">Hulp nodig?</h2>
+                <p style="color: #666; margin-bottom: 24px;">
+                    Komt u er niet uit? Neem gerust contact met ons op.
+                </p>
+                <a href="mailto:support@pianoplanner.app" class="btn btn-primary" style="display: inline-block;">
+                    📧 Contact opnemen
+                </a>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2026 PianoPlanner. Speciaal ontwikkeld voor pianotechnici.</p>
+    </footer>
+
+    <script>
+        // Highlight active sidebar link on scroll
+        const sections = document.querySelectorAll('.section[id]');
+        const navLinks = document.querySelectorAll('.sidebar-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 150) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll for sidebar links
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    </script>
+</body>
+</html>
