@@ -52,7 +52,11 @@
     "fair": "Befriedigend",
     "poor": "Schlecht",
     "lastTuning": "Letzte Stimmung",
-    "noPianos": "Noch keine Klaviere"
+    "noPianos": "Noch keine Klaviere",
+    "serviceHistory": "Servicehistorie",
+    "addService": "+ Service",
+    "noServiceHistory": "Noch keine Servicehistorie",
+    "confirmDelete": "Möchten Sie dieses Klavier wirklich löschen?"
   },
   "appointments": {
     "title": "Termine",

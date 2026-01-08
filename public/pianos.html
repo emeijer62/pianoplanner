@@ -454,6 +454,7 @@
                 <div class="search-box">
                     <input type="text" id="search-input" placeholder="🔍 Search pianos...">
                 </div>
+                <button class="btn btn-secondary" onclick="refreshPianos()" title="Refresh">↻</button>
                 <button class="btn btn-primary" onclick="openPianoModal()">+ <span data-i18n="pianos.addPiano">New Piano</span></button>
             </div>
         </div>
@@ -568,17 +569,19 @@
                     <!-- Service Panel (only when editing) -->
                     <div id="service-panel" class="service-panel" style="display: none;">
                         <h3>
-                            Service History
-                            <button type="button" class="btn btn-small btn-secondary" onclick="openServiceModal()">+ Service</button>
+                            <span data-i18n="pianos.serviceHistory">Service History</span>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="openServiceModal()" data-i18n="pianos.addService">+ Service</button>
                         </h3>
                         <div id="service-list" class="service-list">
-                            <p style="color: #666; text-align: center;">No service history yet</p>
+                            <p style="color: #666; text-align: center;" data-i18n="pianos.noServiceHistory">No service history yet</p>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="submit-btn">Save</button>
+                    <button type="button" class="btn btn-danger" id="delete-btn" onclick="deletePiano()" style="display: none;" data-i18n="pianos.deletePiano">Delete</button>
+                    <div style="flex: 1;"></div>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()" data-i18n="common.cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submit-btn" data-i18n="common.save">Save</button>
                 </div>
             </form>
         </div>
@@ -775,7 +778,38 @@
             document.getElementById('piano-form').reset();
             document.getElementById('piano-id').value = '';
             document.getElementById('service-panel').style.display = 'none';
+            document.getElementById('delete-btn').style.display = 'none';
             document.getElementById('piano-modal').classList.add('active');
+        }
+
+        // Refresh pianos
+        async function refreshPianos() {
+            await loadPianos();
+        }
+
+        // Delete piano
+        async function deletePiano() {
+            if (!currentPianoId) return;
+            
+            const confirmMsg = window.i18n ? window.i18n.t('pianos.confirmDelete') : 'Are you sure you want to delete this piano?';
+            if (!confirm(confirmMsg)) return;
+            
+            try {
+                const response = await fetch(`/api/pianos/${currentPianoId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    closeModal();
+                    loadPianos();
+                } else {
+                    const result = await response.json();
+                    alert(result.error || 'Could not delete piano');
+                }
+            } catch (error) {
+                console.error('Error deleting piano:', error);
+                alert('Something went wrong while deleting');
+            }
         }
 
         // Edit piano
@@ -799,8 +833,9 @@
                 document.getElementById('piano-interval').value = piano.serviceInterval || 6;
                 document.getElementById('piano-notes').value = piano.notes || '';
                 
-                // Show service panel
+                // Show service panel and delete button
                 document.getElementById('service-panel').style.display = 'block';
+                document.getElementById('delete-btn').style.display = 'inline-flex';
                 renderServiceHistory(piano.serviceHistory || []);
                 
                 document.getElementById('piano-modal').classList.add('active');
@@ -815,7 +850,8 @@
             const list = document.getElementById('service-list');
             
             if (services.length === 0) {
-                list.innerHTML = '<p style="color: #666; text-align: center;">No service history yet</p>';
+                const noHistoryText = window.i18n ? window.i18n.t('pianos.noServiceHistory') : 'No service history yet';
+                list.innerHTML = `<p style="color: #666; text-align: center;">${noHistoryText}</p>`;
                 return;
             }
 

@@ -52,7 +52,11 @@
     "fair": "Redelijk",
     "poor": "Slecht",
     "lastTuning": "Laatste stembeurt",
-    "noPianos": "Nog geen piano's"
+    "noPianos": "Nog geen piano's",
+    "serviceHistory": "Servicegeschiedenis",
+    "addService": "+ Service",
+    "noServiceHistory": "Nog geen servicegeschiedenis",
+    "confirmDelete": "Weet je zeker dat je deze piano wilt verwijderen?"
   },
   "appointments": {
     "title": "Afspraken",

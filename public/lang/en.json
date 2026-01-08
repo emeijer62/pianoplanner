@@ -52,7 +52,11 @@
     "fair": "Fair",
     "poor": "Poor",
     "lastTuning": "Last tuning",
-    "noPianos": "No pianos yet"
+    "noPianos": "No pianos yet",
+    "serviceHistory": "Service History",
+    "addService": "+ Service",
+    "noServiceHistory": "No service history yet",
+    "confirmDelete": "Are you sure you want to delete this piano?"
   },
   "appointments": {
     "title": "Appointments",

@@ -52,7 +52,11 @@
     "fair": "Moyen",
     "poor": "Mauvais",
     "lastTuning": "Dernier accordage",
-    "noPianos": "Aucun piano"
+    "noPianos": "Aucun piano",
+    "serviceHistory": "Historique de service",
+    "addService": "+ Service",
+    "noServiceHistory": "Aucun historique de service",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce piano ?"
   },
   "appointments": {
     "title": "Rendez-vous",
