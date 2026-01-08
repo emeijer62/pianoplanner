@@ -79,6 +79,54 @@ const getActiveServices = async (userId) => {
 };
 
 const updateService = async (userId, serviceId, updates) => {
+    // Controleer of het een user-specifieke of globale service is
+    let service = await dbGet(
+        'SELECT * FROM services WHERE id = ? AND user_id = ?',
+        [serviceId, userId]
+    );
+    
+    const isGlobalService = !service;
+    
+    if (isGlobalService) {
+        // Check of globale service bestaat
+        const globalService = await dbGet(
+            'SELECT * FROM services WHERE id = ? AND user_id IS NULL',
+            [serviceId]
+        );
+        
+        if (!globalService) {
+            return null; // Service bestaat niet
+        }
+        
+        // Maak een kopie van de globale service voor deze gebruiker
+        const newId = require('uuid').v4();
+        await dbRun(`
+            INSERT INTO services (id, user_id, name, duration, buffer_before, buffer_after, description, price, active, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+            newId,
+            userId,
+            updates.name !== undefined ? updates.name : globalService.name,
+            updates.duration !== undefined ? updates.duration : globalService.duration,
+            updates.bufferBefore !== undefined ? updates.bufferBefore : globalService.buffer_before,
+            updates.bufferAfter !== undefined ? updates.bufferAfter : globalService.buffer_after,
+            updates.description !== undefined ? updates.description : globalService.description,
+            updates.price !== undefined ? updates.price : globalService.price,
+            updates.active !== undefined ? (updates.active ? 1 : 0) : globalService.active,
+            new Date().toISOString()
+        ]);
+        
+        // Verberg de originele globale service voor deze gebruiker
+        await dbRun(
+            'INSERT OR REPLACE INTO service_visibility (user_id, service_id, hidden) VALUES (?, ?, 1)',
+            [userId, serviceId]
+        );
+        
+        console.log(`📋 Globale service ${serviceId} gekopieerd naar ${newId} voor user ${userId}`);
+        return getService(userId, newId);
+    }
+    
+    // User-specifieke service: gewoon updaten
     const fields = [];
     const values = [];
     
