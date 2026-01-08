@@ -130,6 +130,104 @@ const getCustomerByEmail = async (userId, email) => {
     return formatCustomer(customer);
 };
 
+// Vind duplicaten op basis van email
+const findDuplicates = async (userId) => {
+    // Vind alle emails die meer dan 1x voorkomen
+    const duplicateEmails = await dbAll(`
+        SELECT email, COUNT(*) as count
+        FROM customers 
+        WHERE user_id = ? AND email IS NOT NULL AND email != ''
+        GROUP BY LOWER(email)
+        HAVING COUNT(*) > 1
+    `, [userId]);
+    
+    const duplicates = [];
+    
+    for (const dup of duplicateEmails) {
+        const customers = await dbAll(`
+            SELECT c.*, 
+                (SELECT COUNT(*) FROM appointments WHERE customer_id = c.id) as appointment_count,
+                (SELECT COUNT(*) FROM pianos WHERE customer_id = c.id) as piano_count
+            FROM customers c
+            WHERE c.user_id = ? AND LOWER(c.email) = LOWER(?)
+            ORDER BY c.created_at ASC
+        `, [userId, dup.email]);
+        
+        duplicates.push({
+            email: dup.email,
+            count: dup.count,
+            customers: customers.map(c => ({
+                ...formatCustomer(c),
+                appointmentCount: c.appointment_count || 0,
+                pianoCount: c.piano_count || 0
+            }))
+        });
+    }
+    
+    return duplicates;
+};
+
+// Merge twee klanten (source wordt samengevoegd in target)
+const mergeCustomers = async (userId, targetId, sourceId) => {
+    // Haal beide klanten op
+    const target = await dbGet('SELECT * FROM customers WHERE id = ? AND user_id = ?', [targetId, userId]);
+    const source = await dbGet('SELECT * FROM customers WHERE id = ? AND user_id = ?', [sourceId, userId]);
+    
+    if (!target || !source) {
+        throw new Error('Klant niet gevonden');
+    }
+    
+    if (targetId === sourceId) {
+        throw new Error('Kan klant niet met zichzelf mergen');
+    }
+    
+    // Begin transactie-achtige operaties
+    const now = new Date().toISOString();
+    
+    // 1. Verplaats alle afspraken van source naar target
+    await dbRun(`
+        UPDATE appointments 
+        SET customer_id = ?, updated_at = ?
+        WHERE customer_id = ? AND user_id = ?
+    `, [targetId, now, sourceId, userId]);
+    
+    // 2. Verplaats alle piano's van source naar target
+    await dbRun(`
+        UPDATE pianos 
+        SET customer_id = ?, updated_at = ?
+        WHERE customer_id = ? AND user_id = ?
+    `, [targetId, now, sourceId, userId]);
+    
+    // 3. Combineer notities (als source notities heeft)
+    if (source.notes) {
+        const combinedNotes = target.notes 
+            ? `${target.notes}\n\n--- Samengevoegd van ${source.name} (${now}) ---\n${source.notes}`
+            : `--- Samengevoegd van ${source.name} (${now}) ---\n${source.notes}`;
+        
+        await dbRun(`
+            UPDATE customers SET notes = ?, updated_at = ?
+            WHERE id = ? AND user_id = ?
+        `, [combinedNotes, now, targetId, userId]);
+    }
+    
+    // 4. Vul lege velden in target aan met source data
+    const fieldsToMerge = ['phone', 'street', 'postal_code', 'city'];
+    for (const field of fieldsToMerge) {
+        if (!target[field] && source[field]) {
+            await dbRun(`
+                UPDATE customers SET ${field} = ?, updated_at = ?
+                WHERE id = ? AND user_id = ?
+            `, [source[field], now, targetId, userId]);
+        }
+    }
+    
+    // 5. Verwijder de source klant
+    await dbRun('DELETE FROM customers WHERE id = ? AND user_id = ?', [sourceId, userId]);
+    
+    // Return de bijgewerkte target klant
+    return getCustomer(userId, targetId);
+};
+
 // Format database row naar legacy structuur
 function formatCustomer(row) {
     return {
@@ -155,5 +253,7 @@ module.exports = {
     updateCustomer,
     deleteCustomer,
     searchCustomers,
-    getCustomerByEmail
+    getCustomerByEmail,
+    findDuplicates,
+    mergeCustomers
 };

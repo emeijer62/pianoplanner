@@ -45,6 +45,42 @@ router.get('/search', async (req, res) => {
     }
 });
 
+// Vind duplicaten op basis van email
+router.get('/duplicates', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const duplicates = await customerStore.findDuplicates(userId);
+        res.json({ duplicates });
+    } catch (error) {
+        console.error('Error finding duplicates:', error);
+        res.status(500).json({ error: 'Kon duplicaten niet ophalen' });
+    }
+});
+
+// Merge twee klanten
+router.post('/merge', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { targetId, sourceId } = req.body;
+        
+        if (!targetId || !sourceId) {
+            return res.status(400).json({ error: 'Target en source ID zijn verplicht' });
+        }
+        
+        const merged = await customerStore.mergeCustomers(userId, targetId, sourceId);
+        console.log(`🔄 Klanten samengevoegd: ${sourceId} -> ${targetId}`);
+        
+        res.json({ 
+            success: true, 
+            customer: merged,
+            message: 'Klanten succesvol samengevoegd'
+        });
+    } catch (error) {
+        console.error('Error merging customers:', error);
+        res.status(500).json({ error: error.message || 'Samenvoegen mislukt' });
+    }
+});
+
 // Haal specifieke klant op
 router.get('/:id', async (req, res) => {
     try {

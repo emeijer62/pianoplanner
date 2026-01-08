@@ -40,6 +40,7 @@
                 <p class="page-subtitle">Manage your customer database</p>
             </div>
             <div class="page-actions">
+                <button id="duplicates-btn" class="btn btn-secondary" style="display: none;">🔄 Duplicates (<span id="duplicate-count">0</span>)</button>
                 <button id="add-customer-btn" class="btn btn-primary">+ New Customer</button>
             </div>
         </div>
@@ -126,6 +127,22 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="document.getElementById('customer-form').requestSubmit()">Save Customer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for duplicate customers -->
+    <div id="duplicates-modal" class="modal-overlay">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 class="modal-title">🔄 Duplicate Customers</h2>
+                <button class="modal-close" onclick="closeDuplicatesModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="duplicates-list" style="max-height: 60vh; overflow-y: auto;">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDuplicatesModal()">Close</button>
             </div>
         </div>
     </div>

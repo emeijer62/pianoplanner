@@ -1,6 +1,7 @@
 // Customers Page JavaScript
 
 let allCustomers = [];
+let duplicatesData = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Check login
@@ -12,11 +13,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     await loadCustomers();
+    await checkDuplicates();
     
     // Event listeners
     document.getElementById('add-customer-btn').addEventListener('click', () => openModal());
     document.getElementById('customer-form').addEventListener('submit', handleSubmit);
     document.getElementById('search-input').addEventListener('input', handleSearch);
+    document.getElementById('duplicates-btn').addEventListener('click', openDuplicatesModal);
 });
 
 async function loadCustomers() {
@@ -205,11 +208,126 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ==================== DUPLICATES ====================
+
+async function checkDuplicates() {
+    try {
+        const response = await fetch('/api/customers/duplicates');
+        const data = await response.json();
+        
+        duplicatesData = data.duplicates || [];
+        const count = duplicatesData.length;
+        
+        const btn = document.getElementById('duplicates-btn');
+        const countSpan = document.getElementById('duplicate-count');
+        
+        if (count > 0) {
+            btn.style.display = 'inline-flex';
+            countSpan.textContent = count;
+        } else {
+            btn.style.display = 'none';
+        }
+    } catch (err) {
+        console.error('Error checking duplicates:', err);
+    }
+}
+
+function openDuplicatesModal() {
+    const modal = document.getElementById('duplicates-modal');
+    const container = document.getElementById('duplicates-list');
+    
+    if (duplicatesData.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No duplicates found!</p></div>';
+    } else {
+        container.innerHTML = duplicatesData.map((dup, index) => `
+            <div class="duplicate-group" style="background: var(--gray-50); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <strong>📧 ${escapeHtml(dup.email)}</strong>
+                    <span style="background: var(--gray-200); padding: 4px 12px; border-radius: 20px; font-size: 12px;">${dup.count} duplicates</span>
+                </div>
+                <div class="duplicate-customers" style="display: flex; flex-direction: column; gap: 8px;">
+                    ${dup.customers.map((c, i) => `
+                        <div class="duplicate-customer" style="background: white; border-radius: 8px; padding: 12px; border: 2px solid ${i === 0 ? 'var(--accent)' : 'transparent'};">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <strong>${escapeHtml(c.name)}</strong>
+                                    ${i === 0 ? '<span style="background: var(--accent); color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: 8px;">KEEP</span>' : ''}
+                                    <div style="color: var(--text-secondary); font-size: 13px; margin-top: 4px;">
+                                        ${c.phone || 'No phone'} • ${c.address?.city || 'No city'}
+                                    </div>
+                                    <div style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">
+                                        📅 ${c.appointmentCount} appointments • 🎹 ${c.pianoCount} pianos
+                                        • Created: ${new Date(c.createdAt).toLocaleDateString('nl-NL')}
+                                    </div>
+                                </div>
+                                ${i > 0 ? `
+                                    <button class="btn btn-small" style="background: #ff9500; color: white;" onclick="mergeCustomer('${dup.customers[0].id}', '${c.id}', '${escapeHtml(c.name)}')">
+                                        ↗️ Merge into first
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    modal.classList.add('active');
+}
+
+function closeDuplicatesModal() {
+    document.getElementById('duplicates-modal').classList.remove('active');
+}
+
+async function mergeCustomer(targetId, sourceId, sourceName) {
+    if (!confirm(`Are you sure you want to merge "${sourceName}" into the first customer?\n\nAll appointments, pianos and notes will be transferred. This cannot be undone.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/customers/merge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetId, sourceId })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Merge failed');
+        }
+        
+        alert('Customers merged successfully!');
+        
+        // Refresh data
+        closeDuplicatesModal();
+        await loadCustomers();
+        await checkDuplicates();
+        
+        // Reopen modal if there are more duplicates
+        if (duplicatesData.length > 0) {
+            openDuplicatesModal();
+        }
+        
+    } catch (err) {
+        console.error('Error merging customers:', err);
+        alert('Could not merge customers: ' + err.message);
+    }
+}
+
 // Close modal when clicking outside
 document.getElementById('customer-modal').addEventListener('click', (e) => {
     if (e.target.id === 'customer-modal') closeModal();
 });
 
+document.getElementById('duplicates-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'duplicates-modal') closeDuplicatesModal();
+});
+
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
+    if (e.key === 'Escape') {
+        closeModal();
+        closeDuplicatesModal();
+    }
 });
