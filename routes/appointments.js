@@ -238,16 +238,26 @@ router.post('/', async (req, res) => {
                 userName: req.session.user.name
             };
             
+            console.log('📧 Email context:', JSON.stringify(emailContext));
+            
             setImmediate(async () => {
+                console.log('📧 setImmediate started');
                 try {
                     const db = getDb();
+                    console.log('📧 Got database connection');
                     
                     // Get customer email
                     const customer = await new Promise((resolve, reject) => {
+                        console.log(`📧 Querying customer: id=${emailContext.customerId}, userId=${emailContext.userId}`);
                         db.get('SELECT email, name FROM customers WHERE id = ? AND user_id = ?', 
                             [emailContext.customerId, emailContext.userId], (err, row) => {
-                            if (err) reject(err);
-                            else resolve(row);
+                            if (err) {
+                                console.log('📧 Customer query error:', err.message);
+                                reject(err);
+                            } else {
+                                console.log('📧 Customer query result:', JSON.stringify(row));
+                                resolve(row);
+                            }
                         });
                     });
                     
