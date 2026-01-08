@@ -44,7 +44,8 @@ async function loadServices() {
     try {
         const res = await fetch('/api/services');
         if (res.ok) {
-            allServices = await res.json();
+            const data = await res.json();
+            allServices = Array.isArray(data) ? data : (data.services || []);
             populateServiceDropdown();
         }
     } catch (err) {
