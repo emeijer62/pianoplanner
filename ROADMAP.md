@@ -4,6 +4,48 @@
 
 ---
 
+## 🏆 Concurrentie Analyse: Gazelle vs PianoPlanner
+
+*Laatst bijgewerkt: 8 januari 2026*
+
+### Feature Vergelijking
+
+| Feature | Gazelle | PianoPlanner | Prioriteit |
+|---------|---------|--------------|------------|
+| **Mobiele app** | ✅ iOS + Android | ❌ Web only | 🔴 Hoog |
+| **Online booking** | ✅ Self-scheduler | ✅ Public booking page | ✅ Done |
+| **Route optimalisatie** | ✅ Maps + traffic | ✅ Google Maps integration | ✅ Done |
+| **Facturatie** | ✅ Ingebouwd | ❌ Nog niet | 🟠 Medium |
+| **Automated reminders** | ✅ | ✅ Email reminders | ✅ Done |
+| **Client database** | ✅ | ✅ Customers + Pianos | ✅ Done |
+| **Piano records** | ✅ Service history | ✅ Pianos met service logs | ✅ Done |
+| **Calendar sync** | ❓ Onbekend | ✅ Google + Apple Calendar | ✅ Done |
+| **Condition reports** | ✅ | ❌ | 🟠 Medium |
+| **Pre-booking** | ✅ | ❌ | 🟡 Laag |
+| **Business analytics** | ✅ | ❌ | 🟠 Medium |
+
+### Gazelle Unique Selling Points
+1. **Native mobile apps** - iOS App Store + Google Play
+2. **Condition reports** - Piano status rapportages voor klanten
+3. **Pre-booking** - Volgende afspraak direct inplannen na service
+4. **Business analytics** - Omzet, klantretentie dashboards
+
+### PianoPlanner Voordelen
+1. **NL/BE markt focus** - Nederlandse taal, Europese betalingen
+2. **Apple Calendar sync** - Gazelle onbekend of dit werkt
+3. **Lagere prijs** - €30/maand vs Gazelle ~$40/maand
+4. **Email templates** - Aanpasbare email sjablonen
+5. **Gouden design** - Premium uitstraling
+
+### Te Bouwen Features (Prioriteit)
+1. 📱 **PWA / Mobile app** - Grootste gemis
+2. 💰 **Facturatie module** - Invoices + payments (Mollie?)
+3. 📊 **Condition reports** - Piano status rapportages
+4. 🔄 **Pre-booking** - Volgende afspraak direct inplannen
+5. 📈 **Business analytics** - Omzet, klantretentie, etc.
+
+---
+
 ## ✅ Huidige Status (Januari 2026)
 
 ### Wat al werkt:
