@@ -30,7 +30,8 @@ router.put('/company', requireAuth, async (req, res) => {
             formattedAddress, placeId, lat, lng,
             timezone,
             workHours, workDays,
-            availability, workingHours // Nieuwe veldnamen van frontend
+            availability, workingHours, // Nieuwe veldnamen van frontend
+            theaterHours, theaterHoursEnabled // Theater beschikbaarheid
         } = req.body;
         
         // Ondersteun beide formaten (direct fields of address object)
@@ -67,7 +68,9 @@ router.put('/company', requireAuth, async (req, res) => {
             phone,
             address: addressData,
             timezone: timezone || 'Europe/Amsterdam',
-            workingHours: finalWorkingHours
+            workingHours: finalWorkingHours,
+            theaterHours: theaterHours || null,
+            theaterHoursEnabled: theaterHoursEnabled || false
         });
         
         res.json(settings);

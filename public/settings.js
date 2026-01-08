@@ -309,6 +309,17 @@ async function loadCompanySettings() {
             
             // Load availability
             renderAvailabilityGrid(settings.availability);
+            
+            // Load theater availability
+            const theaterEnabled = settings.theaterHoursEnabled || false;
+            document.getElementById('theaterHoursEnabled').checked = theaterEnabled;
+            document.getElementById('theaterAvailabilitySection').style.display = theaterEnabled ? 'block' : 'none';
+            renderTheaterAvailabilityGrid(settings.theaterHours);
+            
+            // Toggle theater section on checkbox change
+            document.getElementById('theaterHoursEnabled').addEventListener('change', (e) => {
+                document.getElementById('theaterAvailabilitySection').style.display = e.target.checked ? 'block' : 'none';
+            });
         } else {
             console.error('🏢 Failed to load company settings:', await response.text());
         }
@@ -467,6 +478,94 @@ function toggleDayAvailability(day, isAvailable) {
     }
 }
 
+// Theater availability grid
+function renderTheaterAvailabilityGrid(availability) {
+    const container = document.getElementById('theaterAvailabilityGrid');
+    if (!container) return;
+    
+    // Default theater availability - more flexible hours
+    const defaultAvailability = {
+        0: { available: true, start: '08:00', end: '22:00' },
+        1: { available: true, start: '08:00', end: '22:00' },
+        2: { available: true, start: '08:00', end: '22:00' },
+        3: { available: true, start: '08:00', end: '22:00' },
+        4: { available: true, start: '08:00', end: '22:00' },
+        5: { available: true, start: '08:00', end: '22:00' },
+        6: { available: true, start: '08:00', end: '22:00' }
+    };
+    
+    const avail = availability || defaultAvailability;
+    
+    container.innerHTML = DAY_NAMES.map((day, index) => {
+        const dayAvail = avail[index] || defaultAvailability[index];
+        const isAvailable = dayAvail.available;
+        
+        return `
+            <div class="availability-row ${!isAvailable ? 'disabled' : ''}" data-theater-day="${index}">
+                <span class="day-name">${day}</span>
+                <div class="toggle-container">
+                    <label class="toggle-switch">
+                        <input type="checkbox" 
+                               id="theater-avail-${index}" 
+                               ${isAvailable ? 'checked' : ''} 
+                               onchange="toggleTheaterDayAvailability(${index}, this.checked)">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label">${isAvailable ? 'Available' : 'Not available'}</span>
+                </div>
+                <input type="time" 
+                       id="theater-avail-start-${index}" 
+                       value="${dayAvail.start || '08:00'}" 
+                       ${!isAvailable ? 'disabled' : ''}>
+                <span>tot</span>
+                <input type="time" 
+                       id="theater-avail-end-${index}" 
+                       value="${dayAvail.end || '22:00'}" 
+                       ${!isAvailable ? 'disabled' : ''}>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleTheaterDayAvailability(day, isAvailable) {
+    const row = document.querySelector(`.availability-row[data-theater-day="${day}"]`);
+    const label = row.querySelector('.toggle-label');
+    const startInput = document.getElementById(`theater-avail-start-${day}`);
+    const endInput = document.getElementById(`theater-avail-end-${day}`);
+    
+    if (isAvailable) {
+        row.classList.remove('disabled');
+        label.textContent = 'Available';
+        startInput.disabled = false;
+        endInput.disabled = false;
+    } else {
+        row.classList.add('disabled');
+        label.textContent = 'Not available';
+        startInput.disabled = true;
+        endInput.disabled = true;
+    }
+}
+
+function getTheaterAvailabilityFromForm() {
+    const availability = {};
+    
+    for (let i = 0; i < 7; i++) {
+        const checkbox = document.getElementById(`theater-avail-${i}`);
+        const startInput = document.getElementById(`theater-avail-start-${i}`);
+        const endInput = document.getElementById(`theater-avail-end-${i}`);
+        
+        if (checkbox && startInput && endInput) {
+            availability[i] = {
+                available: checkbox.checked,
+                start: startInput.value,
+                end: endInput.value
+            };
+        }
+    }
+    
+    return availability;
+}
+
 function getAvailabilityFromForm() {
     const availability = {};
     
@@ -484,6 +583,8 @@ function getAvailabilityFromForm() {
 async function saveCompanySettings(e) {
     e.preventDefault();
     
+    const theaterHoursEnabled = document.getElementById('theaterHoursEnabled').checked;
+    
     const settings = {
         name: document.getElementById('companyName').value,
         ownerName: document.getElementById('ownerName').value,
@@ -495,7 +596,9 @@ async function saveCompanySettings(e) {
             city: document.getElementById('city').value,
             country: document.getElementById('country').value
         },
-        availability: getAvailabilityFromForm()
+        availability: getAvailabilityFromForm(),
+        theaterHoursEnabled: theaterHoursEnabled,
+        theaterHours: theaterHoursEnabled ? getTheaterAvailabilityFromForm() : null
     };
     
     try {

@@ -1793,6 +1793,22 @@
                             <!-- Loaded dynamically -->
                         </div>
                         
+                        <div class="form-section-header" style="margin-top: 32px;">🎭 Theater Availability</div>
+                        <p class="form-section-hint">Optional separate availability for theaters/venues. Enable this to allow certain customers to book outside normal hours.</p>
+                        
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="theaterHoursEnabled" style="width: 18px; height: 18px;">
+                                <span>Enable theater availability</span>
+                            </label>
+                        </div>
+                        
+                        <div id="theaterAvailabilitySection" style="display: none;">
+                            <div class="availability-grid" id="theaterAvailabilityGrid">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+                        
                         <button type="submit" class="btn btn-primary">💾 Save Company</button>
                     </form>
                 </div>

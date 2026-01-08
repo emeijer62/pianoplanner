@@ -56,17 +56,28 @@ router.get('/customer/:token', async (req, res) => {
         // Haal bedrijfslogo op
         const logoUrl = await emailService.getCompanyLogo(data.owner.id);
         
-        // Haal availability op
+        // Haal availability op - gebruik theater hours als klant dat heeft ingesteld
         const company = await companyStore.getCompanySettings(data.owner.id);
-        const availability = company?.workingHours || {
-            monday: { enabled: true, start: '09:00', end: '17:00' },
-            tuesday: { enabled: true, start: '09:00', end: '17:00' },
-            wednesday: { enabled: true, start: '09:00', end: '17:00' },
-            thursday: { enabled: true, start: '09:00', end: '17:00' },
-            friday: { enabled: true, start: '09:00', end: '17:00' },
-            saturday: { enabled: false, start: '09:00', end: '17:00' },
-            sunday: { enabled: false, start: '09:00', end: '17:00' }
-        };
+        
+        // Bepaal welke beschikbaarheid te gebruiken
+        let availability;
+        const useTheaterHours = data.customer.useTheaterHours && company?.theaterHoursEnabled;
+        
+        if (useTheaterHours && company?.theaterHours) {
+            // Gebruik theater beschikbaarheid voor deze klant
+            availability = company.theaterHours;
+        } else {
+            // Normale beschikbaarheid
+            availability = company?.workingHours || {
+                monday: { enabled: true, start: '09:00', end: '17:00' },
+                tuesday: { enabled: true, start: '09:00', end: '17:00' },
+                wednesday: { enabled: true, start: '09:00', end: '17:00' },
+                thursday: { enabled: true, start: '09:00', end: '17:00' },
+                friday: { enabled: true, start: '09:00', end: '17:00' },
+                saturday: { enabled: false, start: '09:00', end: '17:00' },
+                sunday: { enabled: false, start: '09:00', end: '17:00' }
+            };
+        }
         
         res.json({
             customer: {
@@ -97,6 +108,7 @@ router.get('/customer/:token', async (req, res) => {
                 price: s.price
             })),
             availability,
+            useTheaterHours,
             ownerId: data.owner.id
         });
         

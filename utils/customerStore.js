@@ -97,6 +97,10 @@ const updateCustomer = async (userId, customerId, updates) => {
         fields.push('default_service_id = ?');
         values.push(updates.defaultServiceId || null);
     }
+    if (updates.useTheaterHours !== undefined) {
+        fields.push('use_theater_hours = ?');
+        values.push(updates.useTheaterHours ? 1 : 0);
+    }
     
     if (fields.length === 0) return getCustomer(userId, customerId);
     
@@ -297,6 +301,7 @@ function formatCustomer(row) {
         notes: row.notes,
         bookingToken: row.booking_token,
         defaultServiceId: row.default_service_id,
+        useTheaterHours: Boolean(row.use_theater_hours),
         createdAt: row.created_at,
         updatedAt: row.updated_at
     };

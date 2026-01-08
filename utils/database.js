@@ -451,6 +451,25 @@ function initDatabase() {
                 console.error('Migration error default_service_id:', err.message);
             }
         });
+        
+        // Migratie: voeg theater_hours toe aan company_settings voor aparte theater beschikbaarheid
+        db.run(`ALTER TABLE company_settings ADD COLUMN theater_hours TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error theater_hours:', err.message);
+            }
+        });
+        db.run(`ALTER TABLE company_settings ADD COLUMN theater_hours_enabled INTEGER DEFAULT 0`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error theater_hours_enabled:', err.message);
+            }
+        });
+        
+        // Migratie: voeg use_theater_hours toe aan customers
+        db.run(`ALTER TABLE customers ADD COLUMN use_theater_hours INTEGER DEFAULT 0`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error use_theater_hours:', err.message);
+            }
+        });
 
         console.log('✅ Database tabellen en indexen aangemaakt');
         

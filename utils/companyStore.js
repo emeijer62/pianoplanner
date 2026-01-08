@@ -31,7 +31,8 @@ const saveSettings = async (userId, settingsData) => {
                 street = ?, postal_code = ?, city = ?, country = ?,
                 kvk_number = ?, btw_number = ?, iban = ?,
                 website = ?, logo_url = ?, travel_origin = ?,
-                working_hours = ?, updated_at = ?
+                working_hours = ?, theater_hours = ?, theater_hours_enabled = ?,
+                updated_at = ?
             WHERE user_id = ?
         `, [
             settingsData.name || null,
@@ -49,6 +50,8 @@ const saveSettings = async (userId, settingsData) => {
             settingsData.logoUrl || null,
             settingsData.travelOrigin || null,
             settingsData.workingHours ? JSON.stringify(settingsData.workingHours) : null,
+            settingsData.theaterHours ? JSON.stringify(settingsData.theaterHours) : null,
+            settingsData.theaterHoursEnabled ? 1 : 0,
             new Date().toISOString(),
             userId
         ]);
@@ -59,9 +62,10 @@ const saveSettings = async (userId, settingsData) => {
                 user_id, name, owner_name, email, phone,
                 street, postal_code, city, country,
                 kvk_number, btw_number, iban,
-                website, logo_url, travel_origin, working_hours, updated_at
+                website, logo_url, travel_origin, working_hours,
+                theater_hours, theater_hours_enabled, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             userId,
             settingsData.name || null,
@@ -79,6 +83,8 @@ const saveSettings = async (userId, settingsData) => {
             settingsData.logoUrl || null,
             settingsData.travelOrigin || null,
             settingsData.workingHours ? JSON.stringify(settingsData.workingHours) : null,
+            settingsData.theaterHours ? JSON.stringify(settingsData.theaterHours) : null,
+            settingsData.theaterHoursEnabled ? 1 : 0,
             new Date().toISOString()
         ]);
     }
@@ -144,6 +150,17 @@ function formatSettings(row) {
         workingHours = getDefaultSettings().workingHours;
     }
     
+    let theaterHours = null;
+    if (row.theater_hours) {
+        try {
+            theaterHours = JSON.parse(row.theater_hours);
+        } catch (e) {
+            theaterHours = getDefaultTheaterHours();
+        }
+    } else {
+        theaterHours = getDefaultTheaterHours();
+    }
+    
     return {
         name: row.name || '',
         ownerName: row.owner_name || '',
@@ -162,7 +179,22 @@ function formatSettings(row) {
         logoUrl: row.logo_url || '',
         travelOrigin: row.travel_origin || '',
         workingHours: workingHours,
+        theaterHours: theaterHours,
+        theaterHoursEnabled: Boolean(row.theater_hours_enabled),
         updatedAt: row.updated_at
+    };
+}
+
+// Default theater uren (flexibeler, ook weekenden en avonden)
+function getDefaultTheaterHours() {
+    return {
+        monday: { start: '08:00', end: '22:00', enabled: true },
+        tuesday: { start: '08:00', end: '22:00', enabled: true },
+        wednesday: { start: '08:00', end: '22:00', enabled: true },
+        thursday: { start: '08:00', end: '22:00', enabled: true },
+        friday: { start: '08:00', end: '22:00', enabled: true },
+        saturday: { start: '08:00', end: '22:00', enabled: true },
+        sunday: { start: '08:00', end: '22:00', enabled: true }
     };
 }
 

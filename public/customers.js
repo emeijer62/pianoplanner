@@ -3,6 +3,7 @@
 let allCustomers = [];
 let allServices = [];
 let duplicatesData = [];
+let theaterHoursEnabled = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Check login
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadCustomers();
     await checkDuplicates();
     await loadServices();
+    await checkTheaterHoursEnabled();
     
     // Event listeners
     document.getElementById('add-customer-btn').addEventListener('click', () => openModal());
@@ -50,6 +52,23 @@ async function loadServices() {
         }
     } catch (err) {
         console.error('Error loading services:', err);
+    }
+}
+
+async function checkTheaterHoursEnabled() {
+    try {
+        const res = await fetch('/api/settings/company');
+        if (res.ok) {
+            const data = await res.json();
+            theaterHoursEnabled = data.theaterHoursEnabled || false;
+            // Show/hide theater hours checkbox based on whether it's enabled in settings
+            const theaterGroup = document.getElementById('theater-hours-group');
+            if (theaterGroup) {
+                theaterGroup.style.display = theaterHoursEnabled ? 'block' : 'none';
+            }
+        }
+    } catch (err) {
+        console.error('Error checking theater hours:', err);
     }
 }
 
@@ -146,9 +165,15 @@ function openModal(customerId = null) {
     const modal = document.getElementById('customer-modal');
     const form = document.getElementById('customer-form');
     const deleteBtn = document.getElementById('delete-customer-btn');
+    const theaterGroup = document.getElementById('theater-hours-group');
     
     form.reset();
     document.getElementById('customer-id').value = '';
+    
+    // Show/hide theater hours based on whether it's enabled in settings
+    if (theaterGroup) {
+        theaterGroup.style.display = theaterHoursEnabled ? 'block' : 'none';
+    }
     
     if (customerId) {
         const customer = allCustomers.find(c => c.id === customerId);
@@ -163,11 +188,13 @@ function openModal(customerId = null) {
             document.getElementById('customer-city').value = customer.address.city || '';
             document.getElementById('customer-notes').value = customer.notes || '';
             document.getElementById('customer-default-service').value = customer.defaultServiceId || '';
+            document.getElementById('customer-theater-hours').checked = customer.useTheaterHours || false;
             // Show delete button when editing
             if (deleteBtn) deleteBtn.style.display = 'block';
         }
     } else {
         document.getElementById('modal-title').textContent = 'New Customer';
+        document.getElementById('customer-theater-hours').checked = false;
         // Hide delete button for new customer
         if (deleteBtn) deleteBtn.style.display = 'none';
     }
@@ -202,7 +229,8 @@ async function handleSubmit(e) {
         postalCode: document.getElementById('customer-postalcode').value,
         city: document.getElementById('customer-city').value,
         notes: document.getElementById('customer-notes').value,
-        defaultServiceId: document.getElementById('customer-default-service').value || null
+        defaultServiceId: document.getElementById('customer-default-service').value || null,
+        useTheaterHours: document.getElementById('customer-theater-hours').checked
     };
     
     try {
