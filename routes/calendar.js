@@ -276,7 +276,12 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
         }
         
         // Sync FROM Google (Google → local)
+        // BELANGRIJK: Herlaad localAppointments om race condition te voorkomen
+        // Dit zorgt ervoor dat we net-gepushte events met hun googleEventId zien
         if (direction === 'both' || direction === 'fromGoogle') {
+            // Herlaad lokale afspraken om net-gesynchroniseerde googleEventIds te krijgen
+            const refreshedLocalAppointments = await appointmentStore.getAllAppointments(req.session.user.id);
+            
             // 1 week terug en 6 maanden vooruit
             const timeMin = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
             const timeMax = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
@@ -295,9 +300,9 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
             console.log(`🔄 Found ${googleEvents.length} events in Google Calendar`);
             
             for (const event of googleEvents) {
-                // Skip if already have this event locally
-                const existingLocal = localAppointments.find(a => a.googleEventId === event.id);
-                if (existingLocal) {
+                // Skip if already have this event locally (by googleEventId)
+                const existingByGoogleId = refreshedLocalAppointments.find(a => a.googleEventId === event.id);
+                if (existingByGoogleId) {
                     console.log(`⏭️ Skipping already synced event: ${event.summary}`);
                     continue;
                 }
@@ -305,6 +310,25 @@ router.post('/sync', requireGoogleAuth, async (req, res) => {
                 // Skip all-day events or events without proper dateTime
                 if (!event.start?.dateTime || !event.end?.dateTime) {
                     console.log(`⏭️ Skipping event without dateTime: ${event.summary}`);
+                    continue;
+                }
+                
+                // Extra check: ook zoeken op titel + start + end als fallback tegen duplicaten
+                const existingByContent = refreshedLocalAppointments.find(a => 
+                    a.title === event.summary && 
+                    a.start === event.start.dateTime && 
+                    a.end === event.end.dateTime
+                );
+                
+                if (existingByContent) {
+                    // Als we een match vinden zonder googleEventId, update deze met de googleEventId
+                    if (!existingByContent.googleEventId) {
+                        await appointmentStore.updateAppointment(req.session.user.id, existingByContent.id, {
+                            googleEventId: event.id,
+                            lastSynced: new Date().toISOString()
+                        });
+                        console.log(`🔗 Linked existing appointment to Google event: ${event.summary}`);
+                    }
                     continue;
                 }
                 

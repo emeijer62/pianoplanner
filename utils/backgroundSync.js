@@ -143,7 +143,11 @@ const syncUserCalendar = async (user) => {
         }
         
         // Sync FROM Google (Google → local)
+        // BELANGRIJK: Herlaad localAppointments om race condition te voorkomen
+        // Dit zorgt ervoor dat we net-gepushte events met hun googleEventId zien
         if (direction === 'both' || direction === 'fromGoogle') {
+            // Herlaad lokale afspraken om net-gesynchroniseerde googleEventIds te krijgen
+            const refreshedLocalAppointments = await appointmentStore.getAllAppointments(user.id);
             try {
                 const now = new Date();
                 const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -176,29 +180,46 @@ const syncUserCalendar = async (user) => {
                     }
                     
                     // Check of dit event al bestaat in lokale database (via googleEventId)
-                    const existingAppointments = localAppointments.filter(a => a.googleEventId === event.id);
+                    const existingByGoogleId = refreshedLocalAppointments.filter(a => a.googleEventId === event.id);
                     
-                    if (existingAppointments.length === 0) {
-                        try {
-                            await appointmentStore.createAppointment(user.id, {
-                                title: event.summary || 'Google Agenda Event',
-                                description: event.description || '',
-                                start: startDateTime,
-                                end: endDateTime,
-                                location: event.location || '',
+                    // Extra check: ook zoeken op titel + start + end als fallback tegen duplicaten
+                    const existingByContent = refreshedLocalAppointments.find(a => 
+                        a.title === event.summary && 
+                        a.start === startDateTime && 
+                        a.end === endDateTime
+                    );
+                    
+                    if (existingByGoogleId.length > 0 || existingByContent) {
+                        // Als we een match vinden zonder googleEventId, update deze met de googleEventId
+                        if (existingByContent && !existingByContent.googleEventId) {
+                            await appointmentStore.updateAppointment(user.id, existingByContent.id, {
                                 googleEventId: event.id,
-                                source: 'google',
                                 lastSynced: new Date().toISOString()
                             });
-                            synced++;
-                            
-                            // Rate limiting
-                            await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
-                            
-                        } catch (err) {
-                            errors++;
-                            console.error(`❌ Error importing Google event:`, err.message, 'Event:', event.summary || event.id);
+                            console.log(`🔗 Linked existing appointment to Google event: ${event.summary}`);
                         }
+                        continue;
+                    }
+                    
+                    try {
+                        await appointmentStore.createAppointment(user.id, {
+                            title: event.summary || 'Google Agenda Event',
+                            description: event.description || '',
+                            start: startDateTime,
+                            end: endDateTime,
+                            location: event.location || '',
+                            googleEventId: event.id,
+                            source: 'google',
+                            lastSynced: new Date().toISOString()
+                        });
+                        synced++;
+                        
+                        // Rate limiting
+                        await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
+                        
+                    } catch (err) {
+                        errors++;
+                        console.error(`❌ Error importing Google event:`, err.message, 'Event:', event.summary || event.id);
                     }
                 }
             } catch (err) {
