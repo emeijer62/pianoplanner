@@ -197,45 +197,76 @@ const getPlaceAutocomplete = async (input, sessionToken = null, userCountry = nu
         return [];
     }
     
-    let url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=address&key=${apiKey}`;
+    // Google Places Autocomplete ondersteunt slechts 1 land per request
+    // Voor meerdere landen doen we parallel requests
+    const countries = userCountry ? getSearchCountries(userCountry.toUpperCase(), includeNeighbors) : [null];
     
-    if (sessionToken) {
-        url += `&sessiontoken=${sessionToken}`;
-    }
-    
-    // Voeg landenfilter toe als userCountry is opgegeven
-    if (userCountry) {
-        const countries = getSearchCountries(userCountry.toUpperCase(), includeNeighbors);
-        // Google Places API accepteert meerdere landen met pipe separator in components
-        // Format: components=country:nl|country:be|country:de
-        const countryFilter = countries.map(c => `country:${c.toLowerCase()}`).join('|');
-        url += `&components=${countryFilter}`;
-    }
-    
-    return new Promise((resolve, reject) => {
-        https.get(url, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
-                try {
-                    const result = JSON.parse(data);
-                    
-                    if (result.status === 'OK') {
-                        resolve(result.predictions.map(p => ({
-                            description: p.description,
-                            placeId: p.place_id,
-                            mainText: p.structured_formatting?.main_text,
-                            secondaryText: p.structured_formatting?.secondary_text
-                        })));
-                    } else {
+    const fetchPredictions = async (country) => {
+        let url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=address&key=${apiKey}`;
+        
+        if (sessionToken) {
+            url += `&sessiontoken=${sessionToken}`;
+        }
+        
+        if (country) {
+            url += `&components=country:${country.toLowerCase()}`;
+        }
+        
+        return new Promise((resolve) => {
+            https.get(url, (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => {
+                    try {
+                        const result = JSON.parse(data);
+                        if (result.status === 'OK') {
+                            resolve(result.predictions.map(p => ({
+                                description: p.description,
+                                placeId: p.place_id,
+                                mainText: p.structured_formatting?.main_text,
+                                secondaryText: p.structured_formatting?.secondary_text
+                            })));
+                        } else {
+                            resolve([]);
+                        }
+                    } catch (err) {
                         resolve([]);
                     }
-                } catch (err) {
-                    reject(err);
+                });
+            }).on('error', () => resolve([]));
+        });
+    };
+    
+    try {
+        // Parallel requests voor alle landen
+        const results = await Promise.all(countries.map(c => fetchPredictions(c)));
+        
+        // Combineer en deduplicate op placeId
+        const seen = new Set();
+        const combined = [];
+        for (const predictions of results) {
+            for (const p of predictions) {
+                if (!seen.has(p.placeId)) {
+                    seen.add(p.placeId);
+                    combined.push(p);
                 }
+            }
+        }
+        
+        // Sorteer zodat resultaten van eigen land eerst komen
+        if (userCountry) {
+            combined.sort((a, b) => {
+                const aIsHome = a.description.toLowerCase().includes(userCountry.toLowerCase()) ? 0 : 1;
+                const bIsHome = b.description.toLowerCase().includes(userCountry.toLowerCase()) ? 0 : 1;
+                return aIsHome - bIsHome;
             });
-        }).on('error', reject);
-    });
+        }
+        
+        return combined.slice(0, 5); // Max 5 resultaten
+    } catch (err) {
+        console.error('Autocomplete error:', err);
+        return [];
+    }
 };
 
 /**
