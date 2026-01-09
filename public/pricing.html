@@ -7,252 +7,442 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="apple-style.css">
     <link rel="stylesheet" href="icons.css?v=20260109b">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="/js/i18n.js"></script>
     <script src="icons.js?v=20260109" defer></script>
     <style>
+        :root {
+            --white: #ffffff;
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f7;
+            --gray-200: #e8e8ed;
+            --gray-300: #d2d2d7;
+            --gray-400: #86868b;
+            --gray-500: #6e6e73;
+            --gray-900: #1d1d1f;
+            --blue: #0071e3;
+            --blue-hover: #0077ed;
+            --green: #34c759;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--white);
+            color: var(--gray-900);
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--gray-200);
+            z-index: 100;
+            padding: 0 24px;
+            height: 52px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 17px;
+            color: var(--gray-900);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .nav-link {
+            font-size: 14px;
+            color: var(--gray-900);
+            text-decoration: none;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--blue);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 980px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--blue-hover);
+        }
+
+        /* Hero */
         .pricing-hero {
             text-align: center;
-            padding: 60px 20px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+            padding: 120px 24px 60px;
+            background: linear-gradient(180deg, var(--gray-100) 0%, var(--white) 100%);
         }
 
         .pricing-hero h1 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            color: #1a1a1a;
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 700;
             margin-bottom: 16px;
+            letter-spacing: -0.02em;
         }
 
         .pricing-hero p {
-            font-size: 1.125rem;
-            color: #666;
-            max-width: 600px;
+            font-size: 18px;
+            color: var(--gray-500);
+            max-width: 500px;
             margin: 0 auto;
         }
 
+        /* Pricing Grid */
         .pricing-container {
-            max-width: 500px;
-            margin: -40px auto 80px;
-            padding: 0 20px;
+            max-width: 1100px;
+            margin: -20px auto 80px;
+            padding: 0 24px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            align-items: start;
         }
 
         .pricing-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 48px 40px;
-            text-align: center;
-            border: 2px solid #e8e8e8;
+            background: var(--white);
+            border-radius: 20px;
+            padding: 32px;
+            border: 1px solid var(--gray-200);
             position: relative;
-            overflow: hidden;
+            transition: all 0.3s;
         }
 
-        .pricing-card.popular::before {
-            content: 'Most popular';
+        .pricing-card:hover {
+            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+            transform: translateY(-4px);
+        }
+
+        .pricing-card.popular {
+            border: 2px solid var(--blue);
+            transform: scale(1.02);
+        }
+
+        .pricing-card.popular:hover {
+            transform: scale(1.02) translateY(-4px);
+        }
+
+        .popular-badge {
             position: absolute;
-            top: 20px;
-            right: -35px;
-            background: #1a1a1a;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--blue);
             color: white;
-            padding: 6px 40px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            transform: rotate(45deg);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .plan-name {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #1a1a1a;
+            font-size: 24px;
+            font-weight: 700;
             margin-bottom: 8px;
         }
 
         .plan-description {
-            color: #666;
-            font-size: 0.9375rem;
-            margin-bottom: 32px;
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: 24px;
+            min-height: 40px;
         }
 
         .price-container {
-            margin-bottom: 32px;
+            margin-bottom: 24px;
         }
 
         .price {
-            font-size: 4rem;
-            font-weight: 600;
-            color: #1a1a1a;
+            font-size: 48px;
+            font-weight: 700;
             line-height: 1;
         }
 
         .price-currency {
-            font-size: 1.5rem;
+            font-size: 24px;
             vertical-align: super;
-            margin-right: 4px;
         }
 
         .price-period {
-            font-size: 1rem;
-            color: #666;
+            font-size: 16px;
+            color: var(--gray-500);
             font-weight: 400;
         }
 
         .price-note {
-            font-size: 0.875rem;
-            color: #888;
-            margin-top: 8px;
+            font-size: 13px;
+            color: var(--gray-400);
+            margin-top: 4px;
         }
 
         .features-list {
             list-style: none;
-            padding: 0;
-            margin: 0 0 32px;
-            text-align: left;
+            margin-bottom: 32px;
         }
 
         .features-list li {
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
-            color: #333;
+            padding: 10px 0;
+            font-size: 14px;
+            color: var(--gray-900);
+            border-bottom: 1px solid var(--gray-100);
         }
 
         .features-list li:last-child {
             border-bottom: none;
         }
 
-        .features-list li .check-icon {
+        .features-list li.disabled {
+            color: var(--gray-400);
+        }
+
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 24px;
-            height: 24px;
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 50%;
             flex-shrink: 0;
+            margin-top: 2px;
         }
-        
-        .features-list li .check-icon svg {
-            width: 14px;
-            height: 14px;
+
+        .check-icon.green {
+            background: #e8f5e9;
+            color: var(--green);
+        }
+
+        .check-icon.gray {
+            background: var(--gray-100);
+            color: var(--gray-400);
+        }
+
+        .check-icon svg {
+            width: 12px;
+            height: 12px;
         }
 
         .cta-button {
             width: 100%;
-            padding: 16px 32px;
-            font-size: 1rem;
-            font-weight: 500;
-            background: #1a1a1a;
-            color: white;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 600;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
         }
 
-        .cta-button:hover {
+        .cta-button.primary {
+            background: var(--blue);
+            color: white;
+        }
+
+        .cta-button.primary:hover {
+            background: var(--blue-hover);
+        }
+
+        .cta-button.secondary {
+            background: var(--gray-900);
+            color: white;
+        }
+
+        .cta-button.secondary:hover {
             background: #333;
-            transform: translateY(-1px);
         }
 
-        .cta-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
+        .cta-button.outline {
+            background: transparent;
+            color: var(--gray-900);
+            border: 1px solid var(--gray-300);
         }
 
-        .trial-badge {
-            display: inline-block;
-            background: #e3f2fd;
-            color: #1565c0;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 24px;
+        .cta-button.outline:hover {
+            background: var(--gray-50);
         }
 
-        .guarantee {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 24px;
-            color: #666;
-            font-size: 0.875rem;
+        /* Comparison */
+        .comparison-section {
+            max-width: 900px;
+            margin: 0 auto 80px;
+            padding: 0 24px;
         }
 
-        .guarantee svg {
-            width: 18px;
-            height: 18px;
+        .comparison-section h2 {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 40px;
         }
 
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 16px;
+            text-align: center;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .comparison-table th:first-child,
+        .comparison-table td:first-child {
+            text-align: left;
+        }
+
+        .comparison-table th {
+            font-weight: 600;
+            background: var(--gray-50);
+        }
+
+        .comparison-table .check {
+            color: var(--green);
+        }
+
+        .comparison-table .cross {
+            color: var(--gray-400);
+        }
+
+        /* FAQ */
         .faq-section {
             max-width: 700px;
             margin: 0 auto 80px;
-            padding: 0 20px;
+            padding: 0 24px;
         }
 
         .faq-section h2 {
             text-align: center;
-            font-size: 1.75rem;
-            font-weight: 600;
+            font-size: 28px;
+            font-weight: 700;
             margin-bottom: 40px;
         }
 
         .faq-item {
-            border-bottom: 1px solid #e8e8e8;
+            border-bottom: 1px solid var(--gray-200);
             padding: 24px 0;
         }
 
         .faq-question {
-            font-weight: 500;
-            color: #1a1a1a;
+            font-weight: 600;
             margin-bottom: 12px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .faq-answer {
-            color: #666;
+            color: var(--gray-500);
             line-height: 1.6;
         }
 
-        .payment-methods {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 32px;
-            flex-wrap: wrap;
+        /* Footer */
+        .footer {
+            background: var(--gray-100);
+            padding: 40px 24px;
+            text-align: center;
         }
 
-        .payment-method {
-            background: #f8f9fa;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            color: #666;
+        .footer p {
+            color: var(--gray-500);
+            font-size: 14px;
         }
 
-        @media (max-width: 480px) {
+        .footer a {
+            color: var(--gray-500);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: var(--gray-900);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+
+            .pricing-card.popular {
+                transform: none;
+                order: -1;
+            }
+
+            .pricing-card.popular:hover {
+                transform: translateY(-4px);
+            }
+
+            .comparison-table {
+                font-size: 12px;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 12px 8px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            html, body {
+                overflow-x: hidden;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
             .pricing-hero h1 {
-                font-size: 1.75rem;
+                font-size: 28px;
             }
 
             .price {
-                font-size: 3rem;
-            }
-
-            .pricing-card {
-                padding: 32px 24px;
+                font-size: 40px;
             }
         }
     </style>
@@ -262,13 +452,14 @@
     <header class="header">
         <div class="header-content">
             <a href="/" class="logo">
-                <i data-lucide="piano" class="logo-icon" style="width: 24px; height: 24px;"></i>
+                <i data-lucide="piano" style="width: 24px; height: 24px;"></i>
                 <span>PianoPlanner</span>
             </a>
             <nav class="nav-links">
                 <a href="/" class="nav-link">Home</a>
-                <a href="/pricing.html" class="nav-link active" data-i18n="pricing.title">Pricing</a>
-                <a href="/auth/google" class="btn btn-primary" id="loginBtn" data-i18n="login.title">Login</a>
+                <a href="/guide.html" class="nav-link">Guide</a>
+                <a href="/pricing.html" class="nav-link active">Pricing</a>
+                <a href="/login.html" class="btn btn-primary" id="loginBtn">Login</a>
             </nav>
         </div>
     </header>
@@ -276,89 +467,277 @@
     <main>
         <!-- Hero -->
         <section class="pricing-hero">
-            <h1 data-i18n="pricing.subtitle">Simple, transparent pricing</h1>
-            <p>One subscription, all features. Start today with a 14-day free trial.</p>
+            <h1>Simple, transparent pricing</h1>
+            <p>Choose the plan that fits your business. Upgrade anytime.</p>
         </section>
 
-        <!-- Pricing Card -->
+        <!-- Pricing Cards -->
         <div class="pricing-container">
-            <div class="pricing-card popular">
-                <div class="trial-badge">14-day free trial</div>
-                
-                <h2 class="plan-name">PianoPlanner Pro</h2>
-                <p class="plan-description">Everything you need as a piano technician</p>
-                
-                <div class="price-container">
-                    <div class="price">
-                        <span class="price-currency">$</span>30
-                        <span class="price-period" data-i18n="pricing.monthly">/month</span>
+            <div class="pricing-grid">
+                <!-- Free Plan -->
+                <div class="pricing-card">
+                    <h2 class="plan-name">Free</h2>
+                    <p class="plan-description">Perfect for getting started</p>
+                    
+                    <div class="price-container">
+                        <div class="price">
+                            <span class="price-currency">€</span>0
+                        </div>
+                        <p class="price-note">Forever free</p>
                     </div>
-                    <p class="price-note">billed monthly</p>
+
+                    <ul class="features-list">
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Up to 25 customers
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            50 appointments/year
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Piano & service tracking
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            1 calendar sync
+                        </li>
+                        <li class="disabled">
+                            <span class="check-icon gray"><i data-lucide="x"></i></span>
+                            Online booking page
+                        </li>
+                        <li class="disabled">
+                            <span class="check-icon gray"><i data-lucide="x"></i></span>
+                            Smart Suggestions
+                        </li>
+                        <li class="disabled">
+                            <span class="check-icon gray"><i data-lucide="x"></i></span>
+                            Theater booking
+                        </li>
+                    </ul>
+
+                    <a href="/login.html" class="cta-button outline">Get started free</a>
                 </div>
 
-                <ul class="features-list">
-                    <li><span class="check-icon"><i data-lucide="check"></i></span>Unlimited appointment scheduling</li>
-                    <li><span class="check-icon"><i data-lucide="check"></i></span>Google Calendar synchronization</li>
-                    <li><span class="check-icon"><i data-lucide="check"></i></span>Online booking page for customers</li>
-                    <li><span class="check-icon"><i data-lucide="check"></i></span>Customer management with history</li>
-                    <li><span class="check-icon"><i data-lucide="check"></i></span>Customizable services & prices</li>
-                    <li><span class="check-icon"><i data-lucide="check"></i></span>Automatic travel time buffers</li>
-                    <li><span class="check-icon"><i data-lucide="check"></i></span>Email reminders</li>
-                    <li><span class="check-icon"><i data-lucide="check"></i></span>No setup fees</li>
-                </ul>
+                <!-- Standard Plan -->
+                <div class="pricing-card popular">
+                    <span class="popular-badge">Most Popular</span>
+                    <h2 class="plan-name">Standard</h2>
+                    <p class="plan-description">For professional piano technicians</p>
+                    
+                    <div class="price-container">
+                        <div class="price">
+                            <span class="price-currency">€</span>20
+                            <span class="price-period">/month</span>
+                        </div>
+                        <p class="price-note">or €200/year (save €40)</p>
+                    </div>
 
-                <button class="cta-button" id="startTrialBtn" onclick="startTrial()" data-i18n="pricing.startTrial">
-                    Start free trial
-                </button>
+                    <ul class="features-list">
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            <strong>Unlimited</strong> customers
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            <strong>Unlimited</strong> appointments
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Piano & service tracking
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            All calendar syncs (Google, Microsoft, Apple)
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Online booking page
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Email reminders
+                        </li>
+                        <li class="disabled">
+                            <span class="check-icon gray"><i data-lucide="x"></i></span>
+                            Smart Suggestions
+                        </li>
+                        <li class="disabled">
+                            <span class="check-icon gray"><i data-lucide="x"></i></span>
+                            Theater booking
+                        </li>
+                    </ul>
 
-                <div class="guarantee">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                    </svg>
-                    No credit card required for trial
+                    <a href="/login.html" class="cta-button primary">Start 14-day free trial</a>
                 </div>
 
-                <div class="payment-methods">
-                    <span class="payment-method"><i data-lucide="credit-card" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;"></i> Credit card</span>
-                    <span class="payment-method"><i data-lucide="landmark" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;"></i> Bank transfer</span>
+                <!-- Pro Plan -->
+                <div class="pricing-card">
+                    <h2 class="plan-name">Pro</h2>
+                    <p class="plan-description">Full power for busy technicians</p>
+                    
+                    <div class="price-container">
+                        <div class="price">
+                            <span class="price-currency">€</span>30
+                            <span class="price-period">/month</span>
+                        </div>
+                        <p class="price-note">or €300/year (save €60)</p>
+                    </div>
+
+                    <ul class="features-list">
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Everything in Standard
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            <strong>Smart Suggestions</strong> – AI route optimization
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            <strong>Theater booking</strong> – Extended hours for venues
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Custom email templates
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Own SMTP / email domain
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Priority support
+                        </li>
+                    </ul>
+
+                    <a href="/login.html" class="cta-button secondary">Start 14-day free trial</a>
                 </div>
             </div>
         </div>
+
+        <!-- Feature Comparison -->
+        <section class="comparison-section">
+            <h2>Compare plans</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Free</th>
+                        <th>Standard</th>
+                        <th>Pro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Customers</td>
+                        <td>25</td>
+                        <td>Unlimited</td>
+                        <td>Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td>Appointments</td>
+                        <td>50/year</td>
+                        <td>Unlimited</td>
+                        <td>Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td>Piano tracking</td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                    </tr>
+                    <tr>
+                        <td>Calendar sync</td>
+                        <td>1</td>
+                        <td>All</td>
+                        <td>All</td>
+                    </tr>
+                    <tr>
+                        <td>Online booking</td>
+                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                    </tr>
+                    <tr>
+                        <td>Email reminders</td>
+                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Smart Suggestions</strong></td>
+                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
+                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Theater booking</strong></td>
+                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
+                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                    </tr>
+                    <tr>
+                        <td>Custom email templates</td>
+                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
+                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                    </tr>
+                    <tr>
+                        <td>Own email domain (SMTP)</td>
+                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
+                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
+                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
 
         <!-- FAQ -->
         <section class="faq-section">
             <h2>Frequently Asked Questions</h2>
             
             <div class="faq-item">
+                <div class="faq-question">Can I switch plans anytime?</div>
+                <div class="faq-answer">Yes! You can upgrade or downgrade at any time. When upgrading, you only pay the difference. When downgrading, the new price applies from your next billing cycle.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What happens after the free trial?</div>
+                <div class="faq-answer">After 14 days, you can choose to subscribe or continue with the Free plan. We never charge without your permission. Your data is always safe.</div>
+            </div>
+
+            <div class="faq-item">
                 <div class="faq-question">Can I cancel anytime?</div>
-                <div class="faq-answer">Yes, you can cancel at any time. You will retain access until the end of the billing period.</div>
+                <div class="faq-answer">Absolutely. No long-term contracts. Cancel anytime and keep access until the end of your billing period.</div>
             </div>
 
             <div class="faq-item">
-                <div class="faq-question">What happens after the trial?</div>
-                <div class="faq-answer">After 14 days, you'll get the option to start a paid subscription. We never charge automatically without your permission.</div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">Which payment methods do you accept?</div>
-                <div class="faq-answer">We accept credit card and other payment methods through our payment partner Stripe.</div>
+                <div class="faq-question">What payment methods do you accept?</div>
+                <div class="faq-answer">We accept all major credit cards, iDEAL, Bancontact, and SEPA bank transfer through our payment partner Stripe.</div>
             </div>
 
             <div class="faq-item">
                 <div class="faq-question">Is my data safe?</div>
-                <div class="faq-answer">Yes, we use encrypted connections and store your data securely. Your information is never shared with third parties.</div>
+                <div class="faq-answer">Yes. We use encrypted connections (HTTPS), secure European servers, and never share your data with third parties. You can export or delete your data at any time.</div>
             </div>
 
             <div class="faq-item">
-                <div class="faq-question">Can I export my data?</div>
-                <div class="faq-answer">Yes, you can export all your customer and appointment data to CSV.</div>
+                <div class="faq-question">What is Smart Suggestions?</div>
+                <div class="faq-answer">Smart Suggestions uses AI to find the optimal appointment time based on your existing schedule, customer location, and travel time. It automatically suggests times that minimize driving and maximize efficiency.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">What is Theater booking?</div>
+                <div class="faq-answer">Theater booking allows venues (theaters, concert halls, schools) to book appointments outside your normal working hours – evenings, weekends, or custom hours you define specifically for these customers.</div>
             </div>
         </section>
     </main>
 
     <!-- Footer -->
-    <footer style="background: #f8f9fa; padding: 40px 20px; text-align: center; color: #666;">
-        <p>&copy; 2025 PianoPlanner. All rights reserved.</p>
+    <footer class="footer">
+        <p>&copy; 2024-2026 <a href="https://pianoinfo.com" target="_blank">PianoInfo.com</a> · PianoPlanner</p>
     </footer>
 
     <script>
@@ -372,45 +751,9 @@
                     const loginBtn = document.getElementById('loginBtn');
                     loginBtn.textContent = 'Dashboard';
                     loginBtn.href = '/dashboard.html';
-                    
-                    const startBtn = document.getElementById('startTrialBtn');
-                    
-                    if (data.subscription?.hasAccess) {
-                        startBtn.textContent = 'Go to Dashboard';
-                        startBtn.onclick = () => window.location.href = '/dashboard.html';
-                    } else if (data.subscription?.status === 'trial_expired') {
-                        startBtn.textContent = 'Start subscription';
-                        startBtn.onclick = startSubscription;
-                    }
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
-            }
-        }
-
-        // Start trial (login first if needed)
-        function startTrial() {
-            window.location.href = '/auth/google';
-        }
-
-        // Start paid subscription
-        async function startSubscription() {
-            try {
-                const response = await fetch('/api/stripe/create-checkout-session', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const data = await response.json();
-                
-                if (data.url) {
-                    window.location.href = data.url;
-                } else {
-                    alert('Could not start checkout. Please try again.');
-                }
-            } catch (error) {
-                console.error('Checkout error:', error);
-                alert('Something went wrong. Please try again.');
             }
         }
 
