@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
-const { getDb } = require('../utils/database');
+const { dbRun, dbGet, dbAll } = require('../utils/database');
 const { requireAuth } = require('../middleware/auth');
 const appointmentStore = require('../utils/appointmentStore');
 
@@ -148,19 +148,12 @@ function generateICalContent(appointments, calendarName) {
 router.get('/:token.ics', async (req, res) => {
     try {
         const { token } = req.params;
-        const db = getDb();
 
         // Find user by feed token
-        const user = await new Promise((resolve, reject) => {
-            db.get(
-                'SELECT id, name, email FROM users WHERE calendar_feed_token = ?',
-                [token],
-                (err, row) => {
-                    if (err) reject(err);
-                    else resolve(row);
-                }
-            );
-        });
+        const user = await dbGet(
+            'SELECT id, name, email FROM users WHERE calendar_feed_token = ?',
+            [token]
+        );
 
         if (!user) {
             return res.status(404).send('Calendar feed not found');
@@ -209,24 +202,15 @@ router.get('/:token.ics', async (req, res) => {
  */
 router.get('/settings', requireAuth, async (req, res) => {
     try {
-        const db = getDb();
         const userId = req.session.user.id;
 
         // First check if the column exists
-        const columnExists = await new Promise((resolve) => {
-            db.get(
-                "SELECT COUNT(*) as count FROM pragma_table_info('users') WHERE name='calendar_feed_token'",
-                [],
-                (err, row) => {
-                    if (err) {
-                        console.error('Column check error:', err);
-                        resolve(false);
-                    } else {
-                        resolve(row && row.count > 0);
-                    }
-                }
-            );
-        });
+        const columnCheck = await dbGet(
+            "SELECT COUNT(*) as count FROM pragma_table_info('users') WHERE name='calendar_feed_token'",
+            []
+        );
+        
+        const columnExists = columnCheck && columnCheck.count > 0;
 
         if (!columnExists) {
             // Column doesn't exist yet, return disabled state
@@ -237,16 +221,10 @@ router.get('/settings', requireAuth, async (req, res) => {
             });
         }
 
-        const user = await new Promise((resolve, reject) => {
-            db.get(
-                'SELECT calendar_feed_token FROM users WHERE id = ?',
-                [userId],
-                (err, row) => {
-                    if (err) reject(err);
-                    else resolve(row);
-                }
-            );
-        });
+        const user = await dbGet(
+            'SELECT calendar_feed_token FROM users WHERE id = ?',
+            [userId]
+        );
 
         if (!user) {
             return res.json({
@@ -281,22 +259,15 @@ router.get('/settings', requireAuth, async (req, res) => {
  */
 router.post('/enable', requireAuth, async (req, res) => {
     try {
-        const db = getDb();
         const userId = req.session.user.id;
 
         // Generate new token
         const token = generateFeedToken();
 
-        await new Promise((resolve, reject) => {
-            db.run(
-                'UPDATE users SET calendar_feed_token = ? WHERE id = ?',
-                [token, userId],
-                (err) => {
-                    if (err) reject(err);
-                    else resolve();
-                }
-            );
-        });
+        await dbRun(
+            'UPDATE users SET calendar_feed_token = ? WHERE id = ?',
+            [token, userId]
+        );
 
         const feedUrl = `${getBaseUrl(req)}/api/calendar-feed/${token}.ics`;
 
@@ -319,22 +290,15 @@ router.post('/enable', requireAuth, async (req, res) => {
  */
 router.post('/regenerate', requireAuth, async (req, res) => {
     try {
-        const db = getDb();
         const userId = req.session.user.id;
 
         // Generate new token
         const token = generateFeedToken();
 
-        await new Promise((resolve, reject) => {
-            db.run(
-                'UPDATE users SET calendar_feed_token = ? WHERE id = ?',
-                [token, userId],
-                (err) => {
-                    if (err) reject(err);
-                    else resolve();
-                }
-            );
-        });
+        await dbRun(
+            'UPDATE users SET calendar_feed_token = ? WHERE id = ?',
+            [token, userId]
+        );
 
         const feedUrl = `${getBaseUrl(req)}/api/calendar-feed/${token}.ics`;
 
@@ -357,19 +321,12 @@ router.post('/regenerate', requireAuth, async (req, res) => {
  */
 router.delete('/disable', requireAuth, async (req, res) => {
     try {
-        const db = getDb();
         const userId = req.session.user.id;
 
-        await new Promise((resolve, reject) => {
-            db.run(
-                'UPDATE users SET calendar_feed_token = NULL WHERE id = ?',
-                [userId],
-                (err) => {
-                    if (err) reject(err);
-                    else resolve();
-                }
-            );
-        });
+        await dbRun(
+            'UPDATE users SET calendar_feed_token = NULL WHERE id = ?',
+            [userId]
+        );
 
         console.log(`📅 Calendar feed disabled for user ${req.session.user.email}`);
 
