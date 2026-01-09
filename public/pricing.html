@@ -125,14 +125,14 @@
 
         /* Pricing Grid */
         .pricing-container {
-            max-width: 1100px;
+            max-width: 900px;
             margin: -20px auto 80px;
             padding: 0 24px;
         }
 
         .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 24px;
             align-items: start;
         }
@@ -140,7 +140,7 @@
         .pricing-card {
             background: var(--white);
             border-radius: 20px;
-            padding: 32px;
+            padding: 40px;
             border: 1px solid var(--gray-200);
             position: relative;
             transition: all 0.3s;
@@ -153,11 +153,6 @@
 
         .pricing-card.popular {
             border: 2px solid var(--blue);
-            transform: scale(1.02);
-        }
-
-        .pricing-card.popular:hover {
-            transform: scale(1.02) translateY(-4px);
         }
 
         .popular-badge {
@@ -176,24 +171,23 @@
         }
 
         .plan-name {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
             margin-bottom: 8px;
         }
 
         .plan-description {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--gray-500);
             margin-bottom: 24px;
-            min-height: 40px;
         }
 
         .price-container {
-            margin-bottom: 24px;
+            margin-bottom: 32px;
         }
 
         .price {
-            font-size: 48px;
+            font-size: 56px;
             font-weight: 700;
             line-height: 1;
         }
@@ -212,7 +206,7 @@
         .price-note {
             font-size: 13px;
             color: var(--gray-400);
-            margin-top: 4px;
+            margin-top: 8px;
         }
 
         .features-list {
@@ -224,8 +218,8 @@
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            padding: 10px 0;
-            font-size: 14px;
+            padding: 12px 0;
+            font-size: 15px;
             color: var(--gray-900);
             border-bottom: 1px solid var(--gray-100);
         }
@@ -239,14 +233,14 @@
         }
 
         .check-icon {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         .check-icon.green {
@@ -266,8 +260,8 @@
 
         .cta-button {
             width: 100%;
-            padding: 14px 24px;
-            font-size: 15px;
+            padding: 16px 24px;
+            font-size: 16px;
             font-weight: 600;
             border: none;
             border-radius: 12px;
@@ -285,15 +279,7 @@
 
         .cta-button.primary:hover {
             background: var(--blue-hover);
-        }
-
-        .cta-button.secondary {
-            background: var(--gray-900);
-            color: white;
-        }
-
-        .cta-button.secondary:hover {
-            background: #333;
+            transform: scale(1.02);
         }
 
         .cta-button.outline {
@@ -304,51 +290,6 @@
 
         .cta-button.outline:hover {
             background: var(--gray-50);
-        }
-
-        /* Comparison */
-        .comparison-section {
-            max-width: 900px;
-            margin: 0 auto 80px;
-            padding: 0 24px;
-        }
-
-        .comparison-section h2 {
-            text-align: center;
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 40px;
-        }
-
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        .comparison-table th,
-        .comparison-table td {
-            padding: 16px;
-            text-align: center;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .comparison-table th:first-child,
-        .comparison-table td:first-child {
-            text-align: left;
-        }
-
-        .comparison-table th {
-            font-weight: 600;
-            background: var(--gray-50);
-        }
-
-        .comparison-table .check {
-            color: var(--green);
-        }
-
-        .comparison-table .cross {
-            color: var(--gray-400);
         }
 
         /* FAQ */
@@ -402,35 +343,19 @@
         }
 
         /* Responsive */
-        @media (max-width: 900px) {
+        @media (max-width: 768px) {
+            html, body {
+                overflow-x: hidden;
+            }
+
             .pricing-grid {
                 grid-template-columns: 1fr;
-                max-width: 400px;
+                max-width: 450px;
                 margin: 0 auto;
             }
 
             .pricing-card.popular {
-                transform: none;
                 order: -1;
-            }
-
-            .pricing-card.popular:hover {
-                transform: translateY(-4px);
-            }
-
-            .comparison-table {
-                font-size: 12px;
-            }
-
-            .comparison-table th,
-            .comparison-table td {
-                padding: 12px 8px;
-            }
-        }
-
-        @media (max-width: 640px) {
-            html, body {
-                overflow-x: hidden;
             }
 
             .nav-links {
@@ -442,7 +367,11 @@
             }
 
             .price {
-                font-size: 40px;
+                font-size: 44px;
+            }
+
+            .pricing-card {
+                padding: 32px 24px;
             }
         }
     </style>
@@ -467,8 +396,8 @@
     <main>
         <!-- Hero -->
         <section class="pricing-hero">
-            <h1>Simple, transparent pricing</h1>
-            <p>Choose the plan that fits your business. Upgrade anytime.</p>
+            <h1>Simple, fair pricing</h1>
+            <p>Start free. Upgrade when you're ready.</p>
         </section>
 
         <!-- Pricing Cards -->
@@ -489,11 +418,11 @@
                     <ul class="features-list">
                         <li>
                             <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Up to 25 customers
+                            Up to <strong>25 customers</strong>
                         </li>
                         <li>
                             <span class="check-icon green"><i data-lucide="check"></i></span>
-                            50 appointments/year
+                            Up to <strong>50 appointments</strong>/year
                         </li>
                         <li>
                             <span class="check-icon green"><i data-lucide="check"></i></span>
@@ -501,7 +430,11 @@
                         </li>
                         <li>
                             <span class="check-icon green"><i data-lucide="check"></i></span>
-                            1 calendar sync
+                            Basic calendar view
+                        </li>
+                        <li class="disabled">
+                            <span class="check-icon gray"><i data-lucide="x"></i></span>
+                            Calendar sync (Google, Microsoft, Apple)
                         </li>
                         <li class="disabled">
                             <span class="check-icon gray"><i data-lucide="x"></i></span>
@@ -511,27 +444,23 @@
                             <span class="check-icon gray"><i data-lucide="x"></i></span>
                             Smart Suggestions
                         </li>
-                        <li class="disabled">
-                            <span class="check-icon gray"><i data-lucide="x"></i></span>
-                            Theater booking
-                        </li>
                     </ul>
 
                     <a href="/login.html" class="cta-button outline">Get started free</a>
                 </div>
 
-                <!-- Standard Plan -->
+                <!-- Go Plan -->
                 <div class="pricing-card popular">
-                    <span class="popular-badge">Most Popular</span>
-                    <h2 class="plan-name">Standard</h2>
-                    <p class="plan-description">For professional piano technicians</p>
+                    <span class="popular-badge">Recommended</span>
+                    <h2 class="plan-name">Go</h2>
+                    <p class="plan-description">Everything you need to grow</p>
                     
                     <div class="price-container">
                         <div class="price">
-                            <span class="price-currency">€</span>20
+                            <span class="price-currency">€</span>29<span style="font-size: 32px;">,90</span>
                             <span class="price-period">/month</span>
                         </div>
-                        <p class="price-note">or €200/year (save €40)</p>
+                        <p class="price-note">Including 21% VAT · Cancel anytime</p>
                     </div>
 
                     <ul class="features-list">
@@ -549,163 +478,42 @@
                         </li>
                         <li>
                             <span class="check-icon green"><i data-lucide="check"></i></span>
-                            All calendar syncs (Google, Microsoft, Apple)
+                            Calendar sync (Google, Microsoft, Apple)
                         </li>
                         <li>
                             <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Online booking page
+                            Online booking page for customers
                         </li>
                         <li>
                             <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Email reminders
+                            Smart Suggestions (AI route optimization)
                         </li>
-                        <li class="disabled">
-                            <span class="check-icon gray"><i data-lucide="x"></i></span>
-                            Smart Suggestions
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Theater booking (extended hours)
                         </li>
-                        <li class="disabled">
-                            <span class="check-icon gray"><i data-lucide="x"></i></span>
-                            Theater booking
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Email reminders & templates
+                        </li>
+                        <li>
+                            <span class="check-icon green"><i data-lucide="check"></i></span>
+                            Own email domain (SMTP)
                         </li>
                     </ul>
 
                     <a href="/login.html" class="cta-button primary">Start 14-day free trial</a>
                 </div>
-
-                <!-- Pro Plan -->
-                <div class="pricing-card">
-                    <h2 class="plan-name">Pro</h2>
-                    <p class="plan-description">Full power for busy technicians</p>
-                    
-                    <div class="price-container">
-                        <div class="price">
-                            <span class="price-currency">€</span>30
-                            <span class="price-period">/month</span>
-                        </div>
-                        <p class="price-note">or €300/year (save €60)</p>
-                    </div>
-
-                    <ul class="features-list">
-                        <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Everything in Standard
-                        </li>
-                        <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            <strong>Smart Suggestions</strong> – AI route optimization
-                        </li>
-                        <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            <strong>Theater booking</strong> – Extended hours for venues
-                        </li>
-                        <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Custom email templates
-                        </li>
-                        <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Own SMTP / email domain
-                        </li>
-                        <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Priority support
-                        </li>
-                    </ul>
-
-                    <a href="/login.html" class="cta-button secondary">Start 14-day free trial</a>
-                </div>
             </div>
         </div>
-
-        <!-- Feature Comparison -->
-        <section class="comparison-section">
-            <h2>Compare plans</h2>
-            <table class="comparison-table">
-                <thead>
-                    <tr>
-                        <th>Feature</th>
-                        <th>Free</th>
-                        <th>Standard</th>
-                        <th>Pro</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Customers</td>
-                        <td>25</td>
-                        <td>Unlimited</td>
-                        <td>Unlimited</td>
-                    </tr>
-                    <tr>
-                        <td>Appointments</td>
-                        <td>50/year</td>
-                        <td>Unlimited</td>
-                        <td>Unlimited</td>
-                    </tr>
-                    <tr>
-                        <td>Piano tracking</td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                    </tr>
-                    <tr>
-                        <td>Calendar sync</td>
-                        <td>1</td>
-                        <td>All</td>
-                        <td>All</td>
-                    </tr>
-                    <tr>
-                        <td>Online booking</td>
-                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                    </tr>
-                    <tr>
-                        <td>Email reminders</td>
-                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Smart Suggestions</strong></td>
-                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
-                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Theater booking</strong></td>
-                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
-                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                    </tr>
-                    <tr>
-                        <td>Custom email templates</td>
-                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
-                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                    </tr>
-                    <tr>
-                        <td>Own email domain (SMTP)</td>
-                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
-                        <td class="cross"><i data-lucide="x" style="width:18px;height:18px"></i></td>
-                        <td class="check"><i data-lucide="check" style="width:18px;height:18px"></i></td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
 
         <!-- FAQ -->
         <section class="faq-section">
             <h2>Frequently Asked Questions</h2>
             
             <div class="faq-item">
-                <div class="faq-question">Can I switch plans anytime?</div>
-                <div class="faq-answer">Yes! You can upgrade or downgrade at any time. When upgrading, you only pay the difference. When downgrading, the new price applies from your next billing cycle.</div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">What happens after the free trial?</div>
-                <div class="faq-answer">After 14 days, you can choose to subscribe or continue with the Free plan. We never charge without your permission. Your data is always safe.</div>
+                <div class="faq-question">Can I try Go for free?</div>
+                <div class="faq-answer">Yes! Every new account starts with a 14-day free trial of all Go features. No credit card required. After the trial, you can choose to subscribe or continue with the Free plan.</div>
             </div>
 
             <div class="faq-item">
@@ -719,18 +527,18 @@
             </div>
 
             <div class="faq-item">
+                <div class="faq-question">What happens to my data if I downgrade to Free?</div>
+                <div class="faq-answer">Your data is always safe. If you have more than 25 customers, you'll keep all data but won't be able to add new customers until you're under the limit or upgrade again.</div>
+            </div>
+
+            <div class="faq-item">
                 <div class="faq-question">Is my data safe?</div>
                 <div class="faq-answer">Yes. We use encrypted connections (HTTPS), secure European servers, and never share your data with third parties. You can export or delete your data at any time.</div>
             </div>
 
             <div class="faq-item">
-                <div class="faq-question">What is Smart Suggestions?</div>
-                <div class="faq-answer">Smart Suggestions uses AI to find the optimal appointment time based on your existing schedule, customer location, and travel time. It automatically suggests times that minimize driving and maximize efficiency.</div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">What is Theater booking?</div>
-                <div class="faq-answer">Theater booking allows venues (theaters, concert halls, schools) to book appointments outside your normal working hours – evenings, weekends, or custom hours you define specifically for these customers.</div>
+                <div class="faq-question">Do you offer annual billing?</div>
+                <div class="faq-answer">Not yet, but it's coming soon! Annual billing will give you 2 months free (€299/year instead of €358.80).</div>
             </div>
         </section>
     </main>
