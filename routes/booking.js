@@ -256,6 +256,10 @@ router.post('/find-slot', async (req, res) => {
             
             const existingEvents = eventsResponse.data.items || [];
             
+            console.log(`[SMART] Day ${dayOffset}: ${dayName}, workHours:`, workHours);
+            console.log(`[SMART] Events on ${searchDate.toISOString().split('T')[0]}:`, existingEvents.length);
+            console.log(`[SMART] Travel: ${travelInfo.duration}min, Service: ${service.duration}min, Buffer: ${service.bufferBefore || 0}/${service.bufferAfter || 0}`);
+            
             // Vind eerste beschikbare slot (met buffertijden)
             const slot = findFirstAvailableSlot(
                 existingEvents,
@@ -266,6 +270,8 @@ router.post('/find-slot', async (req, res) => {
                 service.bufferBefore || 0,
                 service.bufferAfter || 0
             );
+            
+            console.log(`[SMART] Slot found:`, slot ? 'YES' : 'NO', slot?.appointmentStart);
             
             if (slot) {
                 return res.json({
