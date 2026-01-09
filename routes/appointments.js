@@ -11,6 +11,7 @@ const emailService = require('../utils/emailService');
 const { getDb, dbGet, dbRun, dbAll } = require('../utils/database');
 const { google } = require('googleapis');
 const userStore = require('../utils/userStore');
+const { checkAppointmentLimit, addSubscriptionInfo } = require('../middleware/subscription');
 
 // Alle routes vereisen authenticatie
 router.use(requireAuth);
@@ -241,8 +242,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Maak nieuwe afspraak
-router.post('/', async (req, res) => {
+// Maak nieuwe afspraak (met tier limit check)
+router.post('/', checkAppointmentLimit, async (req, res) => {
     try {
         const userId = req.session.user.id;
         const { 
@@ -279,6 +280,8 @@ router.post('/', async (req, res) => {
             pianoModel,
             color
         });
+        
+        console.log(`📅 Nieuwe afspraak: ${title} (tier: ${req.appointmentLimit?.tier || 'unknown'}, ${req.appointmentLimit?.current || '?'}/${req.appointmentLimit?.limit || '?'} dit jaar)`);
         
         // Stuur response DIRECT terug
         res.status(201).json(appointment);

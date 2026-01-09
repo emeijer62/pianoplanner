@@ -7,19 +7,23 @@ const express = require('express');
 const router = express.Router();
 const customerStore = require('../utils/customerStore');
 const { requireAuth } = require('../middleware/auth');
+const { checkCustomerLimit, addSubscriptionInfo } = require('../middleware/subscription');
 
 // Alle routes vereisen authenticatie
 router.use(requireAuth);
 
-// Haal alle klanten op
-router.get('/', async (req, res) => {
+// Haal alle klanten op (met subscription info voor UI)
+router.get('/', addSubscriptionInfo, async (req, res) => {
     try {
         const userId = req.session.user.id;
         const customers = await customerStore.getAllCustomers(userId);
         
         res.json({
             total: customers.length,
-            customers: customers
+            customers: customers,
+            // Tier info voor UI
+            tier: req.subscription?.tier || 'free',
+            limits: req.subscription?.limits || { maxCustomers: 25 }
         });
     } catch (error) {
         console.error('Error getting customers:', error);
@@ -98,8 +102,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Maak nieuwe klant aan
-router.post('/', async (req, res) => {
+// Maak nieuwe klant aan (met tier limit check)
+router.post('/', checkCustomerLimit, async (req, res) => {
     try {
         const userId = req.session.user.id;
         const { name, email, phone, street, city, postalCode, notes } = req.body;
@@ -118,7 +122,7 @@ router.post('/', async (req, res) => {
             notes
         });
         
-        console.log(`👤 Nieuwe klant aangemaakt: ${name}`);
+        console.log(`👤 Nieuwe klant aangemaakt: ${name} (tier: ${req.customerLimit?.tier || 'unknown'})`);
         res.status(201).json(customer);
     } catch (error) {
         console.error('Error creating customer:', error);

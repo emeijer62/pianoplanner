@@ -93,33 +93,39 @@ async function handleSubscriptionUpdate(subscription) {
 
     console.log('Subscription update voor gebruiker:', user.id, 'Status:', subscription.status);
 
-    // Map Stripe status naar onze status
+    // Map Stripe status naar onze status en tier
     let status;
+    let tier = 'free'; // Default to free
+    
     switch (subscription.status) {
         case 'active':
         case 'trialing':
             status = 'active';
+            tier = 'go'; // Active subscription = Go tier
             break;
         case 'past_due':
             status = 'past_due';
+            tier = 'go'; // Still Go while past due (grace period)
             break;
         case 'canceled':
         case 'unpaid':
             status = 'canceled';
+            tier = 'free'; // Canceled = back to free
             break;
         default:
             status = subscription.status;
+            tier = 'free';
     }
 
-    // Update subscription in database
+    // Update subscription in database with tier
     await userStore.updateSubscription(user.id, {
         status: status,
-        stripeSubscriptionId: subscription.id,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        cancelAtPeriodEnd: subscription.cancel_at_period_end
+        subscriptionId: subscription.id,
+        endsAt: new Date(subscription.current_period_end * 1000).toISOString(),
+        tier: tier
     });
 
-    console.log('Subscription bijgewerkt voor gebruiker:', user.id);
+    console.log(`Subscription bijgewerkt voor gebruiker: ${user.id} - Status: ${status}, Tier: ${tier}`);
 }
 
 // Subscription geannuleerd
@@ -134,10 +140,15 @@ async function handleSubscriptionCanceled(subscription) {
 
     console.log('Subscription geannuleerd voor gebruiker:', user.id);
 
+    // Set tier back to free when canceled
     await userStore.updateSubscription(user.id, {
         status: 'canceled',
-        canceledAt: new Date()
+        subscriptionId: subscription.id,
+        endsAt: new Date().toISOString(),
+        tier: 'free'
     });
+    
+    console.log(`Gebruiker ${user.id} teruggezet naar Free tier`);
 }
 
 // Factuur betaald

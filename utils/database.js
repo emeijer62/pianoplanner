@@ -178,6 +178,13 @@ function initDatabase() {
             }
         });
         
+        // Migratie: voeg subscription_tier toe (free/go)
+        db.run(`ALTER TABLE users ADD COLUMN subscription_tier TEXT DEFAULT 'free'`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error subscription_tier:', err);
+            }
+        });
+        
         // Index voor snelle booking slug lookup
         db.run('CREATE INDEX IF NOT EXISTS idx_users_booking_slug ON users(booking_slug)');
 

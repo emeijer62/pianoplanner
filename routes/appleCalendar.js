@@ -15,9 +15,13 @@ const { dbRun } = require('../utils/database');
 const fetch = require('node-fetch');
 const { XMLParser, XMLBuilder } = require('fast-xml-parser');
 const { requireAuth } = require('../middleware/auth');
+const { requireTierFeature } = require('../middleware/subscription');
 
 // Debug logging (set to true for troubleshooting CalDAV issues)
 const DEBUG_CALDAV = process.env.DEBUG_CALDAV === 'true';
+
+// Middleware: calendar sync requires Go tier
+const requireCalendarSync = requireTierFeature('calendarSync');
 
 // CalDAV endpoints voor iCloud
 const ICLOUD_CALDAV_URL = 'https://caldav.icloud.com';
@@ -94,10 +98,10 @@ const xmlBuilder = new XMLBuilder({
 // ==================== CONNECTION & VALIDATION ====================
 
 /**
- * Test Apple Calendar verbinding
+ * Test Apple Calendar verbinding (Go tier required)
  * POST /api/apple-calendar/connect
  */
-router.post('/connect', requireAuth, async (req, res) => {
+router.post('/connect', requireAuth, requireCalendarSync, async (req, res) => {
     try {
         const { appleId, appPassword } = req.body;
         

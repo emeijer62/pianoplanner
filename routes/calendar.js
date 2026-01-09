@@ -4,6 +4,7 @@ const router = express.Router();
 const userStore = require('../utils/userStore');
 const path = require('path');
 const { requireAuth } = require('../middleware/auth');
+const { requireTierFeature } = require('../middleware/subscription');
 
 // Middleware: check of gebruiker Google tokens heeft
 const requireGoogleAuth = (req, res, next) => {
@@ -15,6 +16,9 @@ const requireGoogleAuth = (req, res, next) => {
     }
     next();
 };
+
+// Middleware: calendar sync requires Go tier
+const requireCalendarSync = requireTierFeature('calendarSync');
 
 // Helper: maak OAuth2 client met user tokens (met auto-refresh)
 const getAuthClient = (req) => {
@@ -49,8 +53,8 @@ const getAuthClient = (req) => {
     return oauth2Client;
 };
 
-// Haal agenda's op
-router.get('/calendars', requireGoogleAuth, async (req, res) => {
+// Haal agenda's op (Go tier required for calendar sync)
+router.get('/calendars', requireGoogleAuth, requireCalendarSync, async (req, res) => {
     try {
         const auth = getAuthClient(req);
         const calendar = google.calendar({ version: 'v3', auth });
@@ -63,8 +67,8 @@ router.get('/calendars', requireGoogleAuth, async (req, res) => {
     }
 });
 
-// Haal events op van komende week
-router.get('/events', requireGoogleAuth, async (req, res) => {
+// Haal events op van komende week (Go tier required)
+router.get('/events', requireGoogleAuth, requireCalendarSync, async (req, res) => {
     try {
         const auth = getAuthClient(req);
         const calendar = google.calendar({ version: 'v3', auth });
@@ -88,8 +92,8 @@ router.get('/events', requireGoogleAuth, async (req, res) => {
     }
 });
 
-// Maak nieuw event aan
-router.post('/events', requireGoogleAuth, async (req, res) => {
+// Maak nieuw event aan (Go tier required)
+router.post('/events', requireGoogleAuth, requireCalendarSync, async (req, res) => {
     try {
         const { summary, description, start, end, location } = req.body;
         

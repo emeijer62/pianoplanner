@@ -10,6 +10,10 @@ const router = express.Router();
 const fetch = require('node-fetch');
 const userStore = require('../utils/userStore');
 const { requireAuth } = require('../middleware/auth');
+const { requireTierFeature } = require('../middleware/subscription');
+
+// Middleware: calendar sync requires Go tier
+const requireCalendarSync = requireTierFeature('calendarSync');
 
 // Microsoft OAuth endpoints
 const MICROSOFT_AUTH_URL = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize';
@@ -36,10 +40,10 @@ const getCredentials = () => ({
 // ==================== OAUTH FLOW ====================
 
 /**
- * Start Microsoft OAuth flow
+ * Start Microsoft OAuth flow (Go tier required)
  * GET /api/microsoft/auth
  */
-router.get('/auth', requireAuth, (req, res) => {
+router.get('/auth', requireAuth, requireCalendarSync, (req, res) => {
     const { clientId, redirectUri } = getCredentials();
     
     if (!clientId) {

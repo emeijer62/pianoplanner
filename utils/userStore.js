@@ -330,25 +330,51 @@ const loginWithEmail = async (email, password) => {
     return { user };
 };
 
-// ==================== SUBSCRIPTION ====================
+// ==================== SUBSCRIPTION & TIERS ====================
 
-// Owner emails hebben altijd toegang
+// Owner emails hebben altijd toegang (Go tier)
 const OWNER_EMAILS = ['info@edwardmeijer.nl', 'edward@pianoplanner.com'];
+
+// Tier limieten
+const TIER_LIMITS = {
+    free: {
+        maxCustomers: 25,
+        maxAppointmentsPerYear: 50,
+        calendarSync: false,
+        emailReminders: false,
+        customSmtp: false,
+        theaterBooking: false
+    },
+    go: {
+        maxCustomers: Infinity,
+        maxAppointmentsPerYear: Infinity,
+        calendarSync: true,
+        emailReminders: true,
+        customSmtp: true,
+        theaterBooking: true
+    }
+};
+
+const getTierLimits = (tier) => {
+    return TIER_LIMITS[tier] || TIER_LIMITS.free;
+};
 
 const getSubscriptionStatus = async (userId) => {
     const user = await dbGet(`
-        SELECT email, subscription_status, subscription_id, subscription_ends_at, created_at 
+        SELECT email, subscription_status, subscription_id, subscription_ends_at, subscription_tier, created_at 
         FROM users WHERE id = ?
     `, [userId]);
     
-    if (!user) return { status: 'none', hasAccess: false };
+    if (!user) return { status: 'none', hasAccess: false, tier: 'free', limits: TIER_LIMITS.free };
     
-    // Owner heeft altijd toegang
+    // Owner heeft altijd Go tier toegang
     if (OWNER_EMAILS.includes(user.email?.toLowerCase())) {
         return {
             status: 'active',
             hasAccess: true,
             isOwner: true,
+            tier: 'go',
+            limits: TIER_LIMITS.go,
             subscriptionId: 'owner',
             endsAt: null,
             createdAt: user.created_at
@@ -356,20 +382,29 @@ const getSubscriptionStatus = async (userId) => {
     }
     
     const status = user.subscription_status || 'trial';
+    const tier = user.subscription_tier || 'free';
     const endsAt = user.subscription_ends_at ? new Date(user.subscription_ends_at) : null;
     const now = new Date();
     
     // Check of subscription nog actief is
     let hasAccess = false;
+    let effectiveTier = tier;
+    
     if (status === 'active') {
         hasAccess = !endsAt || endsAt > now;
-    } else if (status === 'trial') {
+        effectiveTier = hasAccess ? 'go' : 'free';
+    } else if (status === 'trial' || status === 'trialing') {
         hasAccess = !endsAt || endsAt > now;
+        effectiveTier = hasAccess ? 'go' : 'free'; // Trial gets Go features
+    } else {
+        effectiveTier = 'free';
     }
     
     return {
         status,
         hasAccess,
+        tier: effectiveTier,
+        limits: TIER_LIMITS[effectiveTier] || TIER_LIMITS.free,
         subscriptionId: user.subscription_id,
         endsAt: user.subscription_ends_at,
         createdAt: user.created_at,
@@ -377,18 +412,68 @@ const getSubscriptionStatus = async (userId) => {
     };
 };
 
+// Check specifieke tier feature
+const checkTierFeature = async (userId, feature) => {
+    const status = await getSubscriptionStatus(userId);
+    return status.limits[feature] || false;
+};
+
+// Check tier limieten voor customers
+const checkCustomerLimit = async (userId) => {
+    const status = await getSubscriptionStatus(userId);
+    const customerCount = await dbGet(
+        'SELECT COUNT(*) as count FROM customers WHERE user_id = ?',
+        [userId]
+    );
+    
+    return {
+        allowed: customerCount.count < status.limits.maxCustomers,
+        current: customerCount.count,
+        limit: status.limits.maxCustomers,
+        tier: status.tier
+    };
+};
+
+// Check tier limieten voor appointments (per jaar)
+const checkAppointmentLimit = async (userId) => {
+    const status = await getSubscriptionStatus(userId);
+    const startOfYear = new Date();
+    startOfYear.setMonth(0, 1);
+    startOfYear.setHours(0, 0, 0, 0);
+    
+    const appointmentCount = await dbGet(
+        'SELECT COUNT(*) as count FROM appointments WHERE user_id = ? AND created_at >= ?',
+        [userId, startOfYear.toISOString()]
+    );
+    
+    return {
+        allowed: appointmentCount.count < status.limits.maxAppointmentsPerYear,
+        current: appointmentCount.count,
+        limit: status.limits.maxAppointmentsPerYear,
+        tier: status.tier
+    };
+};
+
 const updateSubscription = async (userId, subscriptionData) => {
     await dbRun(`
         UPDATE users 
-        SET subscription_status = ?, subscription_id = ?, subscription_ends_at = ?, updated_at = ?
+        SET subscription_status = ?, subscription_id = ?, subscription_ends_at = ?, subscription_tier = ?, updated_at = ?
         WHERE id = ?
     `, [
         subscriptionData.status,
         subscriptionData.subscriptionId,
         subscriptionData.endsAt,
+        subscriptionData.tier || 'free',
         new Date().toISOString(),
         userId
     ]);
+};
+
+// Set user tier directly (for admin or Stripe webhook)
+const setUserTier = async (userId, tier) => {
+    await dbRun(`
+        UPDATE users SET subscription_tier = ?, updated_at = ? WHERE id = ?
+    `, [tier, new Date().toISOString(), userId]);
 };
 
 const startTrial = async (userId) => {
@@ -941,10 +1026,16 @@ module.exports = {
     // Sanitize
     sanitizeUser,
     sanitizeUsers,
-    // Subscription
+    // Subscription & Tiers
     getSubscriptionStatus,
     updateSubscription,
     startTrial,
+    getTierLimits,
+    checkTierFeature,
+    checkCustomerLimit,
+    checkAppointmentLimit,
+    setUserTier,
+    TIER_LIMITS,
     // Approval
     approveUser,
     rejectUser,
