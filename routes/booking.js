@@ -217,8 +217,10 @@ router.post('/find-slot', async (req, res) => {
         
         // Zoek op de opgegeven dag en eventueel de volgende 14 dagen
         const maxDaysToSearch = searchMultipleDays ? 14 : 1;
+        const maxSlotsToFind = 5; // Maximaal 5 opties tonen
+        const foundSlots = [];
         
-        for (let dayOffset = 0; dayOffset < maxDaysToSearch; dayOffset++) {
+        for (let dayOffset = 0; dayOffset < maxDaysToSearch && foundSlots.length < maxSlotsToFind; dayOffset++) {
             const searchDate = new Date(date);
             searchDate.setDate(searchDate.getDate() + dayOffset);
             const dayOfWeek = searchDate.getDay();
@@ -274,8 +276,7 @@ router.post('/find-slot', async (req, res) => {
             console.log(`[SMART] Slot found:`, slot ? 'YES' : 'NO', slot?.appointmentStart);
             
             if (slot) {
-                return res.json({
-                    available: true,
+                foundSlots.push({
                     slot: {
                         travelStart: slot.travelStart,
                         bufferBeforeStart: slot.bufferBeforeStart,
@@ -283,14 +284,25 @@ router.post('/find-slot', async (req, res) => {
                         appointmentEnd: slot.appointmentEnd,
                         slotEnd: slot.slotEnd
                     },
-                    service,
-                    travelInfo,
-                    totalDuration: travelInfo.duration + totalServiceTime,
-                    searchedDate: date,
                     foundDate: searchDate.toISOString().split('T')[0],
-                    daysSearched: dayOffset + 1
+                    dayOffset: dayOffset
                 });
             }
+        }
+        
+        // Als we slots hebben gevonden, return ze allemaal
+        if (foundSlots.length > 0) {
+            return res.json({
+                available: true,
+                slots: foundSlots, // Meerdere opties
+                slot: foundSlots[0].slot, // Eerste optie voor backward compatibility
+                service,
+                travelInfo,
+                totalDuration: travelInfo.duration + totalServiceTime,
+                searchedDate: date,
+                foundDate: foundSlots[0].foundDate,
+                daysSearched: maxDaysToSearch
+            });
         }
         
         // Geen slot gevonden in de komende 14 dagen

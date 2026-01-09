@@ -1043,7 +1043,7 @@ async function findSmartSlot() {
     
     // Show loading
     resultDiv.style.display = 'block';
-    resultDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: var(--gray-500);">🔍 Searching for available time...</div>';
+    resultDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: var(--gray-500);">🔍 Searching for available times...</div>';
     btn.disabled = true;
     
     try {
@@ -1055,22 +1055,58 @@ async function findSmartSlot() {
         
         const data = await response.json();
         
-        if (data.available) {
+        if (data.available && data.slots && data.slots.length > 0) {
+            // Meerdere opties tonen
+            const slotsHtml = data.slots.map((slotData, index) => {
+                const startTime = new Date(slotData.slot.appointmentStart);
+                const endTime = new Date(slotData.slot.appointmentEnd);
+                const isFirstChoice = index === 0;
+                
+                return `
+                    <div class="smart-slot-option" style="background: ${isFirstChoice ? 'var(--success-bg, #dcfce7)' : '#f8f9fa'}; 
+                         border: 1px solid ${isFirstChoice ? 'var(--success-color, #22c55e)' : '#e5e5e5'}; 
+                         border-radius: 8px; padding: 10px; margin-bottom: 8px; cursor: pointer;
+                         transition: all 0.2s ease;"
+                         onmouseover="this.style.transform='scale(1.01)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
+                         onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'"
+                         onclick="applySmartSlot('${slotData.slot.appointmentStart}', '${slotData.slot.appointmentEnd}')">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; color: ${isFirstChoice ? 'var(--success-color, #22c55e)' : '#333'};">
+                                    ${isFirstChoice ? '⭐ ' : ''}${startTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
+                                </div>
+                                <div style="font-size: 14px; color: #666;">
+                                    ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} - 
+                                    ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                            </div>
+                            <div style="color: var(--primary-color, #007AFF); font-size: 20px;">→</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            resultDiv.innerHTML = `
+                <div style="padding: 8px 0;">
+                    <div style="font-weight: 600; margin-bottom: 10px; color: #333;">
+                        ✓ ${data.slots.length} ${data.slots.length === 1 ? 'option' : 'options'} found
+                        <span style="font-weight: normal; font-size: 12px; color: #666; margin-left: 8px;">
+                            🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min
+                        </span>
+                    </div>
+                    ${slotsHtml}
+                    <div style="font-size: 11px; color: #999; text-align: center; margin-top: 4px;">
+                        Click an option to select it
+                    </div>
+                </div>
+            `;
+        } else if (data.available && data.slot) {
+            // Fallback: enkele slot (oude formaat)
             const startTime = new Date(data.slot.appointmentStart);
             const endTime = new Date(data.slot.appointmentEnd);
             
-            // Check of een andere dag is gevonden
-            const differentDay = data.foundDate && data.foundDate !== date;
-            const dayNote = differentDay 
-                ? `<div style="background: #fef3c7; color: #92400e; padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 12px;">
-                     📅 ${window.i18n?.t('booking.notAvailableOn') || 'Not available on'} ${new Date(date).toLocaleDateString(undefined, {weekday: 'long'})}. 
-                     Found on <strong>${startTime.toLocaleDateString(undefined, {weekday: 'long', day: 'numeric', month: 'short'})}</strong>
-                   </div>` 
-                : '';
-            
             resultDiv.innerHTML = `
                 <div style="background: var(--success-bg, #dcfce7); border: 1px solid var(--success-color, #22c55e); border-radius: 8px; padding: 12px;">
-                    ${dayNote}
                     <div style="font-weight: 600; color: var(--success-color, #22c55e); margin-bottom: 8px;">
                         ✓ Available: ${startTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} 
                         ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} - 

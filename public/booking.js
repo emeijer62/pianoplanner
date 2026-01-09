@@ -254,27 +254,67 @@ async function findAvailableSlot() {
         
         const data = await response.json();
         
-        if (data.available) {
+        if (data.available && data.slots && data.slots.length > 0) {
+            // Meerdere opties tonen
+            const slotsHtml = data.slots.map((slotData, index) => {
+                const startTime = new Date(slotData.slot.appointmentStart);
+                const endTime = new Date(slotData.slot.appointmentEnd);
+                const isFirstChoice = index === 0;
+                
+                return `
+                    <div class="slot-option ${isFirstChoice ? 'recommended' : ''}" 
+                         onclick="selectSlotOption(${index})"
+                         data-slot-index="${index}"
+                         style="background: ${isFirstChoice ? '#dcfce7' : '#f8f9fa'}; 
+                                border: 2px solid ${isFirstChoice ? '#22c55e' : '#e5e5e5'}; 
+                                border-radius: 10px; padding: 12px; margin-bottom: 10px; 
+                                cursor: pointer; transition: all 0.2s ease;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; color: ${isFirstChoice ? '#22c55e' : '#333'}; font-size: 15px;">
+                                    ${isFirstChoice ? '⭐ ' : ''}${startTime.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
+                                </div>
+                                <div style="font-size: 18px; font-weight: 500; color: #333; margin-top: 4px;">
+                                    ${formatTime(startTime)} - ${formatTime(endTime)}
+                                </div>
+                            </div>
+                            <div style="color: #007AFF; font-size: 24px;">→</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Store all slots for selection
+            window.availableSlots = data.slots;
+            foundSlot = data; // Keep first slot as default
+            
+            resultDiv.className = 'slot-result slot-found';
+            resultDiv.innerHTML = `
+                <div style="margin-bottom: 12px;">
+                    <div style="font-weight: 600; font-size: 16px; color: #333; margin-bottom: 4px;">
+                        ✓ ${data.slots.length} ${data.slots.length === 1 ? 'time' : 'times'} available
+                    </div>
+                    <div style="font-size: 13px; color: #666;">
+                        🚗 ${data.travelInfo.durationText} travel • ⏱️ ${data.service.duration} min service
+                    </div>
+                </div>
+                <div id="slot-options">${slotsHtml}</div>
+                <div style="font-size: 12px; color: #888; text-align: center; margin-top: 8px;">
+                    Click a time to select it
+                </div>
+            `;
+        } else if (data.available && data.slot) {
+            // Fallback: enkele slot (oude formaat)
             foundSlot = data;
             const startTime = new Date(data.slot.appointmentStart);
             const endTime = new Date(data.slot.appointmentEnd);
             
-            // Check of een andere dag is gevonden
-            const differentDay = data.foundDate && data.foundDate !== date;
-            const dayNote = differentDay 
-                ? `<div style="background: #fef3c7; color: #92400e; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 13px;">
-                     📅 Geen tijd op ${new Date(date).toLocaleDateString('nl-NL', {weekday: 'long', day: 'numeric', month: 'long'})}. 
-                     Eerst beschikbaar op <strong>${startTime.toLocaleDateString('nl-NL', {weekday: 'long', day: 'numeric', month: 'long'})}</strong>
-                   </div>` 
-                : '';
-            
             resultDiv.className = 'slot-result slot-found';
             resultDiv.innerHTML = `
-                ${dayNote}
                 <div class="slot-time">
                     ${formatTime(startTime)} - ${formatTime(endTime)}
                 </div>
-                <div>${differentDay ? 'Found available time' : 'First available time'} on ${formatDate(startTime)}</div>
+                <div>First available time on ${formatDate(startTime)}</div>
                 <div class="slot-details">
                     <div class="slot-detail">
                         <span>🚗</span>
@@ -283,10 +323,6 @@ async function findAvailableSlot() {
                     <div class="slot-detail">
                         <span>⏱️</span>
                         <span>Service: ${data.service.duration} min</span>
-                    </div>
-                    <div class="slot-detail">
-                        <span>📊</span>
-                        <span>Total: ${data.totalDuration} min</span>
                     </div>
                 </div>
                 <button class="btn btn-primary" style="margin-top: 1rem;" onclick="proceedToConfirm()">
@@ -318,6 +354,34 @@ async function findAvailableSlot() {
         resultDiv.className = 'slot-result slot-not-found';
         resultDiv.innerHTML = '<div>Something went wrong. Please try again.</div>';
     }
+}
+
+// Selecteer een slot optie
+function selectSlotOption(index) {
+    const slotData = window.availableSlots[index];
+    if (!slotData) return;
+    
+    // Update foundSlot met de geselecteerde slot
+    foundSlot.slot = slotData.slot;
+    foundSlot.foundDate = slotData.foundDate;
+    
+    // Visual feedback
+    document.querySelectorAll('.slot-option').forEach((el, i) => {
+        if (i === index) {
+            el.style.background = '#dcfce7';
+            el.style.borderColor = '#22c55e';
+            el.style.transform = 'scale(1.02)';
+        } else {
+            el.style.background = '#f8f9fa';
+            el.style.borderColor = '#e5e5e5';
+            el.style.transform = 'scale(1)';
+        }
+    });
+    
+    // Ga door naar bevestiging
+    setTimeout(() => {
+        proceedToConfirm();
+    }, 300);
 }
 
 function proceedToConfirm() {
