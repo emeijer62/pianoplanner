@@ -23,11 +23,52 @@ const verifyPassword = (password, storedHash) => {
     return hash === testHash;
 };
 
+// ==================== SANITIZE USER DATA ====================
+
+/**
+ * Verwijder gevoelige data uit user object voordat het naar frontend gaat
+ * @param {Object} user - User object met mogelijk gevoelige data
+ * @returns {Object} - Veilig user object zonder credentials
+ */
+const sanitizeUser = (user) => {
+    if (!user) return null;
+    
+    // Maak een kopie om origineel niet te wijzigen
+    const safe = { ...user };
+    
+    // Verwijder gevoelige velden
+    delete safe.passwordHash;
+    delete safe.tokens;           // OAuth tokens
+    delete safe.appleCalendar;    // Apple Calendar credentials
+    delete safe.stripeCustomerId; // Stripe ID (alleen intern)
+    
+    // Als appleCalendar info moet worden teruggegeven, alleen status
+    if (user.appleCalendar) {
+        safe.appleCalendarConnected = !!user.appleCalendar.connected;
+    }
+    
+    return safe;
+};
+
+/**
+ * Sanitize een array van users
+ */
+const sanitizeUsers = (users) => {
+    if (!Array.isArray(users)) return [];
+    return users.map(sanitizeUser);
+};
+
 // ==================== USER CRUD ====================
 
 const createUser = async (userData) => {
     const id = userData.id || uuidv4();
     const now = new Date().toISOString();
+    
+    // Encrypt tokens if present
+    let encryptedTokens = null;
+    if (userData.tokens) {
+        encryptedTokens = encrypt(JSON.stringify(userData.tokens));
+    }
     
     await dbRun(`
         INSERT INTO users (
@@ -42,7 +83,7 @@ const createUser = async (userData) => {
         userData.name || '',
         userData.picture || '',
         userData.googleId || null,
-        userData.tokens ? JSON.stringify(userData.tokens) : null,
+        encryptedTokens,
         userData.passwordHash || null,
         userData.authType || 'google',
         userData.approvalStatus || 'approved',
@@ -94,7 +135,9 @@ const updateUser = async (id, updates) => {
         if (updates[jsField] !== undefined) {
             fields.push(`${dbField} = ?`);
             if (jsField === 'tokens') {
-                values.push(JSON.stringify(updates[jsField]));
+                // Encrypt tokens before storing
+                const tokenJson = JSON.stringify(updates[jsField]);
+                values.push(encrypt(tokenJson));
             } else {
                 values.push(updates[jsField]);
             }
@@ -660,9 +703,21 @@ function formatUser(row) {
     let tokens = null;
     if (row.tokens) {
         try {
-            tokens = JSON.parse(row.tokens);
+            // Probeer eerst te decrypten (nieuwe methode)
+            const decrypted = decrypt(row.tokens);
+            if (decrypted) {
+                tokens = JSON.parse(decrypted);
+            } else {
+                // Fallback: oude onversleutelde JSON
+                tokens = JSON.parse(row.tokens);
+            }
         } catch (e) {
-            tokens = null;
+            // Als JSON parse faalt na decrypt, probeer direct
+            try {
+                tokens = JSON.parse(row.tokens);
+            } catch (e2) {
+                tokens = null;
+            }
         }
     }
     
@@ -835,6 +890,9 @@ module.exports = {
     changePassword,
     hashPassword,
     verifyPassword,
+    // Sanitize
+    sanitizeUser,
+    sanitizeUsers,
     // Subscription
     getSubscriptionStatus,
     updateSubscription,
