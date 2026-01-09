@@ -211,25 +211,30 @@ router.post('/find-slot', async (req, res) => {
         // Haal company settings op
         const companySettings = await companyStore.getSettings(req.session.user.id);
         
+        // Map day of week number naar dagnaam
+        const dayNameMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const dayNamesNL = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
+        
         // Zoek op de opgegeven dag en eventueel de volgende 14 dagen
         const maxDaysToSearch = searchMultipleDays ? 14 : 1;
-        const dayNames = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
         
         for (let dayOffset = 0; dayOffset < maxDaysToSearch; dayOffset++) {
             const searchDate = new Date(date);
             searchDate.setDate(searchDate.getDate() + dayOffset);
             const dayOfWeek = searchDate.getDay();
+            const dayName = dayNameMap[dayOfWeek];
             
-            const dayAvailability = companySettings.availability?.[dayOfWeek];
+            // Haal werkuren op via dagnaam (workingHours.monday, etc.)
+            const dayAvailability = companySettings.workingHours?.[dayName];
             
             // Skip als deze dag niet beschikbaar is
-            if (!dayAvailability || !dayAvailability.available) {
+            if (!dayAvailability || !dayAvailability.enabled) {
                 continue;
             }
             
             const workHours = {
                 start: dayAvailability.start || '09:00',
-                end: dayAvailability.end || '18:00'
+                end: dayAvailability.end || '17:00'
             };
             
             // Haal events van die dag op
@@ -285,12 +290,13 @@ router.post('/find-slot', async (req, res) => {
         // Geen slot gevonden in de komende 14 dagen
         const requestedDate = new Date(date);
         const dayOfWeek = requestedDate.getDay();
-        const dayAvailability = companySettings.availability?.[dayOfWeek];
+        const dayName = dayNameMap[dayOfWeek];
+        const dayAvailability = companySettings.workingHours?.[dayName];
         
-        if (!dayAvailability || !dayAvailability.available) {
+        if (!dayAvailability || !dayAvailability.enabled) {
             return res.json({
                 available: false,
-                message: `Niet beschikbaar op ${dayNames[dayOfWeek]}. Geen tijd gevonden in de komende 14 dagen.`,
+                message: `Niet beschikbaar op ${dayNamesNL[dayOfWeek]}. Geen tijd gevonden in de komende 14 dagen.`,
                 service,
                 travelInfo
             });
