@@ -345,40 +345,50 @@
             }
         }
         
-        /* Availability Grid */
+        /* Availability Grid - Apple Style */
         .availability-grid {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-            margin-bottom: 1.25rem;
+            gap: 1px;
+            margin-bottom: 1.5rem;
+            background: #e5e5ea;
+            border-radius: 12px;
+            overflow: hidden;
         }
         
         .availability-row {
             display: grid;
-            grid-template-columns: 100px auto 90px 20px 90px;
-            gap: 0.75rem;
+            grid-template-columns: 110px 1fr 100px 30px 100px;
+            gap: 1rem;
             align-items: center;
-            padding: 0.875rem 1rem;
-            background: var(--light-gray);
-            border-radius: var(--radius);
-            transition: var(--transition);
+            padding: 14px 16px;
+            background: #ffffff;
+            transition: background 0.2s ease;
+        }
+        
+        .availability-row:hover {
+            background: #fafafa;
         }
         
         .availability-row.disabled {
-            background: var(--off-white);
-            opacity: 0.6;
+            background: #f5f5f7;
+        }
+        
+        .availability-row.disabled .day-name {
+            color: #86868b;
         }
         
         .availability-row .day-name {
             font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.9rem;
+            color: #1d1d1f;
+            font-size: 15px;
+            letter-spacing: -0.01em;
         }
         
         .availability-row .toggle-container {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 10px;
         }
         
         .availability-row .time-range {
@@ -388,35 +398,42 @@
         }
         
         .availability-row .time-range span {
-            color: var(--text-muted);
-            font-size: 0.85rem;
+            color: #86868b;
+            font-size: 14px;
         }
         
         .availability-row input[type="time"] {
-            padding: 0.4rem 0.5rem;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            font-size: 0.85rem;
-            background: var(--white);
-            color: var(--text-primary);
+            padding: 8px 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            background: #ffffff;
+            color: #1d1d1f;
+            transition: all 0.2s ease;
+        }
+        
+        .availability-row input[type="time"]:hover {
+            border-color: #86868b;
         }
         
         .availability-row input[type="time"]:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent-light);
+            border-color: #0071e3;
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
         }
         
         .availability-row.disabled input[type="time"] {
-            background: var(--border-color);
-            color: var(--text-muted);
+            background: #f5f5f7;
+            color: #86868b;
+            border-color: #e5e5ea;
         }
         
-        /* Toggle Switch */
+        /* Toggle Switch - Apple Style */
         .toggle-switch {
             position: relative;
-            width: 44px;
-            height: 24px;
+            width: 51px;
+            height: 31px;
         }
         
         .toggle-switch input {
@@ -432,26 +449,26 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: var(--border-color);
-            transition: var(--transition);
-            border-radius: 24px;
+            background-color: #e5e5ea;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 31px;
         }
         
         .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
+            height: 27px;
+            width: 27px;
+            left: 2px;
+            bottom: 2px;
             background-color: white;
-            transition: var(--transition);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 50%;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.16);
         }
         
         .toggle-switch input:checked + .toggle-slider {
-            background-color: var(--accent);
+            background-color: #34c759;
         }
         
         .toggle-switch input:checked + .toggle-slider:before {
@@ -459,8 +476,86 @@
         }
         
         .toggle-label {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
+            font-size: 14px;
+            color: #86868b;
+            font-weight: 500;
+        }
+        
+        .toggle-label.active {
+            color: #34c759;
+        }
+        
+        /* Availability Save Button */
+        .availability-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e5ea;
+        }
+        
+        .btn-save-availability {
+            background: #0071e3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-save-availability:hover {
+            background: #0077ed;
+            transform: scale(1.02);
+        }
+        
+        .btn-save-availability:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-save-availability.success {
+            background: #34c759;
+        }
+        
+        /* Success Toast */
+        .availability-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1d1d1f;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 9999;
+        }
+        
+        .availability-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        /* Spinner animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .spin {
+            animation: spin 1s linear infinite;
         }
         
         /* Services list */
@@ -1809,6 +1904,13 @@
                             <!-- Loaded dynamically -->
                         </div>
                         
+                        <div class="availability-actions">
+                            <button type="button" class="btn-save-availability" id="saveAvailabilityBtn" onclick="saveAvailability()">
+                                <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                                Save Availability
+                            </button>
+                        </div>
+                        
                         <div class="form-section-header" style="margin-top: 32px;"><i data-lucide="theater" style="width: 18px; height: 18px;"></i> Theater Availability</div>
                         <p class="form-section-hint">Optional separate availability for theaters/venues. Enable this to allow certain customers to book outside normal hours.</p>
                         
@@ -1822,6 +1924,13 @@
                         <div id="theaterAvailabilitySection" style="display: none;">
                             <div class="availability-grid" id="theaterAvailabilityGrid">
                                 <!-- Loaded dynamically -->
+                            </div>
+                            
+                            <div class="availability-actions">
+                                <button type="button" class="btn-save-availability" onclick="saveTheaterAvailability()">
+                                    <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                                    Save Theater Availability
+                                </button>
                             </div>
                         </div>
                         
@@ -1941,7 +2050,7 @@
         </div>
     </div>
     
-    <script src="settings.js?v=2026010910"></script>
+    <script src="settings.js?v=2026010911"></script>
     <script>
         // ========== TAB NAVIGATION ==========
         function switchTab(tabName) {
@@ -2650,5 +2759,11 @@
             <span class="ios-tab-label">Help</span>
         </a>
     </nav>
+    
+    <!-- Toast notification -->
+    <div class="availability-toast" id="availabilityToast">
+        <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+        <span id="toastMessage">Availability saved</span>
+    </div>
 </body>
 </html>

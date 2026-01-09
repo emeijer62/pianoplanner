@@ -462,7 +462,7 @@ function renderAvailabilityGrid(availability) {
                                onchange="toggleDayAvailability(${index}, this.checked)">
                         <span class="toggle-slider"></span>
                     </label>
-                    <span class="toggle-label">${isAvailable ? 'Available' : 'Not available'}</span>
+                    <span class="toggle-label ${isAvailable ? 'active' : ''}">${isAvailable ? 'Available' : 'Not available'}</span>
                 </div>
                 <input type="time" 
                        id="avail-start-${index}" 
@@ -487,13 +487,109 @@ function toggleDayAvailability(day, isAvailable) {
     if (isAvailable) {
         row.classList.remove('disabled');
         label.textContent = 'Available';
+        label.classList.add('active');
         startInput.disabled = false;
         endInput.disabled = false;
     } else {
         row.classList.add('disabled');
         label.textContent = 'Not available';
+        label.classList.remove('active');
         startInput.disabled = true;
         endInput.disabled = true;
+    }
+}
+
+// Show toast notification
+function showAvailabilityToast(message) {
+    const toast = document.getElementById('availabilityToast');
+    const messageEl = document.getElementById('toastMessage');
+    
+    if (messageEl) messageEl.textContent = message;
+    if (toast) {
+        toast.classList.add('show');
+        
+        // Initialize icons in toast
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+}
+
+// Save weekly availability
+async function saveAvailability() {
+    const btn = document.getElementById('saveAvailabilityBtn');
+    const originalText = btn.innerHTML;
+    
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader" style="width: 16px; height: 16px;" class="spin"></i> Saving...';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        
+        const availability = getAvailabilityFromForm();
+        
+        // Get current company settings
+        const response = await fetch('/api/settings');
+        const currentSettings = await response.json();
+        
+        // Update with new availability
+        const updateResponse = await fetch('/api/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...currentSettings,
+                availability: availability
+            })
+        });
+        
+        if (!updateResponse.ok) {
+            throw new Error('Failed to save availability');
+        }
+        
+        showAvailabilityToast('Weekly availability saved');
+        
+    } catch (error) {
+        console.error('Error saving availability:', error);
+        showAvailabilityToast('Failed to save availability');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+}
+
+// Save theater availability
+async function saveTheaterAvailability() {
+    try {
+        const availability = getTheaterAvailabilityFromForm();
+        
+        // Get current company settings
+        const response = await fetch('/api/settings');
+        const currentSettings = await response.json();
+        
+        // Update with new theater availability
+        const updateResponse = await fetch('/api/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...currentSettings,
+                theaterHoursEnabled: document.getElementById('theaterHoursEnabled').checked,
+                theaterAvailability: availability
+            })
+        });
+        
+        if (!updateResponse.ok) {
+            throw new Error('Failed to save theater availability');
+        }
+        
+        showAvailabilityToast('Theater availability saved');
+        
+    } catch (error) {
+        console.error('Error saving theater availability:', error);
+        showAvailabilityToast('Failed to save theater availability');
     }
 }
 
