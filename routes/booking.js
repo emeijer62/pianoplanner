@@ -1,6 +1,8 @@
 const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
+const fetch = require('node-fetch');
+const { XMLParser } = require('fast-xml-parser');
 const { calculateTravelTime, findFirstAvailableSlot, getPlaceAutocomplete, getPlaceDetails, geocodeAddress } = require('../utils/travelTime');
 const serviceStore = require('../utils/serviceStore');
 const customerStore = require('../utils/customerStore');
@@ -11,8 +13,15 @@ const { requireAuth } = require('../middleware/auth');
 // Alle routes vereisen authenticatie
 router.use(requireAuth);
 
-// Helper: maak OAuth2 client met tokens uit database of sessie
-const getAuthClient = async (req) => {
+// XML Parser voor Apple Calendar
+const xmlParser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '@_',
+    removeNSPrefix: true
+});
+
+// Helper: maak OAuth2 client met tokens uit database of sessie (voor Google)
+const getGoogleAuthClient = async (req) => {
     const oauth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
@@ -37,14 +46,14 @@ const getAuthClient = async (req) => {
     }
     
     if (!tokens || !tokens.access_token) {
-        throw new Error('No Google tokens available - user needs to connect Google Calendar');
+        return null; // Return null instead of throwing - we might have Apple Calendar
     }
     
     oauth2Client.setCredentials(tokens);
     
     // Auto-refresh tokens
     oauth2Client.on('tokens', async (newTokens) => {
-        console.log(`🔄 Tokens refreshed voor ${req.session.user.email}`);
+        console.log(`🔄 Google tokens refreshed voor ${req.session.user.email}`);
         req.session.tokens = { ...tokens, ...newTokens };
         
         try {
@@ -61,6 +70,190 @@ const getAuthClient = async (req) => {
     });
     
     return oauth2Client;
+};
+
+// Helper: haal events op van Google Calendar
+const getGoogleCalendarEvents = async (auth, dayStart, dayEnd) => {
+    const calendar = google.calendar({ version: 'v3', auth });
+    
+    const eventsResponse = await calendar.events.list({
+        calendarId: 'primary',
+        timeMin: dayStart.toISOString(),
+        timeMax: dayEnd.toISOString(),
+        singleEvents: true,
+        orderBy: 'startTime'
+    });
+    
+    return (eventsResponse.data.items || []).map(event => ({
+        id: event.id,
+        summary: event.summary,
+        start: event.start?.dateTime || event.start?.date,
+        end: event.end?.dateTime || event.end?.date
+    }));
+};
+
+// Helper: haal events op van Apple Calendar
+const getAppleCalendarEvents = async (credentials, calendarUrl, dayStart, dayEnd) => {
+    const authHeader = Buffer.from(`${credentials.appleId}:${credentials.appPassword}`).toString('base64');
+    
+    const formatICalDate = (date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+    
+    const reportBody = `<?xml version="1.0" encoding="UTF-8"?>
+<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+    <D:prop>
+        <D:getetag/>
+        <C:calendar-data/>
+    </D:prop>
+    <C:filter>
+        <C:comp-filter name="VCALENDAR">
+            <C:comp-filter name="VEVENT">
+                <C:time-range start="${formatICalDate(dayStart)}" end="${formatICalDate(dayEnd)}"/>
+            </C:comp-filter>
+        </C:comp-filter>
+    </C:filter>
+</C:calendar-query>`;
+    
+    const response = await fetch(calendarUrl, {
+        method: 'REPORT',
+        headers: {
+            'Authorization': `Basic ${authHeader}`,
+            'Content-Type': 'application/xml; charset=utf-8',
+            'Depth': '1'
+        },
+        body: reportBody
+    });
+    
+    if (!response.ok) {
+        console.error(`🍎 CalDAV REPORT error: ${response.status}`);
+        return [];
+    }
+    
+    const xmlText = await response.text();
+    const parsed = xmlParser.parse(xmlText);
+    
+    const events = [];
+    const multistatus = parsed.multistatus || parsed['D:multistatus'] || parsed['d:multistatus'];
+    const responses = multistatus?.response || multistatus?.['D:response'] || multistatus?.['d:response'];
+    const responseArray = Array.isArray(responses) ? responses : [responses].filter(Boolean);
+    
+    for (const resp of responseArray) {
+        const propstat = resp.propstat || resp['D:propstat'] || resp['d:propstat'];
+        const propstatArray = Array.isArray(propstat) ? propstat : [propstat].filter(Boolean);
+        
+        for (const ps of propstatArray) {
+            const prop = ps?.prop || ps?.['D:prop'] || ps?.['d:prop'];
+            const calendarData = prop?.['calendar-data'] || prop?.['C:calendar-data'] || prop?.['cal:calendar-data'];
+            
+            if (calendarData && typeof calendarData === 'string') {
+                // Parse iCal data
+                const summaryMatch = calendarData.match(/SUMMARY:(.+)/);
+                const dtStartMatch = calendarData.match(/DTSTART[^:]*:(\d{8}T?\d{0,6}Z?)/);
+                const dtEndMatch = calendarData.match(/DTEND[^:]*:(\d{8}T?\d{0,6}Z?)/);
+                const uidMatch = calendarData.match(/UID:(.+)/);
+                
+                if (dtStartMatch) {
+                    const parseICalDate = (icalDate) => {
+                        if (!icalDate) return null;
+                        // Format: 20260109T090000Z or 20260109
+                        if (icalDate.length === 8) {
+                            return new Date(icalDate.slice(0,4) + '-' + icalDate.slice(4,6) + '-' + icalDate.slice(6,8));
+                        }
+                        const year = icalDate.slice(0,4);
+                        const month = icalDate.slice(4,6);
+                        const day = icalDate.slice(6,8);
+                        const hour = icalDate.slice(9,11) || '00';
+                        const min = icalDate.slice(11,13) || '00';
+                        const sec = icalDate.slice(13,15) || '00';
+                        return new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}Z`);
+                    };
+                    
+                    events.push({
+                        id: uidMatch ? uidMatch[1].trim() : 'unknown',
+                        summary: summaryMatch ? summaryMatch[1].trim() : 'Untitled',
+                        start: parseICalDate(dtStartMatch[1])?.toISOString(),
+                        end: parseICalDate(dtEndMatch?.[1])?.toISOString()
+                    });
+                }
+            }
+        }
+    }
+    
+    return events;
+};
+
+// Helper: bepaal kalender type en haal events op
+const getCalendarEvents = async (req, dayStart, dayEnd) => {
+    const userId = req.session.user.id;
+    
+    // Check Google Calendar first
+    const googleAuth = await getGoogleAuthClient(req);
+    if (googleAuth) {
+        console.log('[SMART] Using Google Calendar');
+        return await getGoogleCalendarEvents(googleAuth, dayStart, dayEnd);
+    }
+    
+    // Check Apple Calendar
+    const appleCredentials = await userStore.getAppleCalendarCredentials(userId);
+    const appleSync = await userStore.getAppleCalendarSync(userId);
+    
+    if (appleCredentials && appleSync?.enabled && appleSync?.appleCalendarUrl) {
+        console.log('[SMART] Using Apple Calendar');
+        return await getAppleCalendarEvents(appleCredentials, appleSync.appleCalendarUrl, dayStart, dayEnd);
+    }
+    
+    // No calendar connected
+    console.log('[SMART] No calendar connected - returning empty events');
+    return [];
+};
+
+// Helper: maak event aan in Apple Calendar
+const createAppleCalendarEvent = async (credentials, calendarUrl, eventData) => {
+    const authHeader = Buffer.from(`${credentials.appleId}:${credentials.appPassword}`).toString('base64');
+    
+    const uid = `pianoplanner-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const eventUrl = `${calendarUrl}${uid}.ics`;
+    
+    const formatICalDateTime = (date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+    
+    const icalData = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//PianoPlanner//EN
+BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${formatICalDateTime(new Date())}
+DTSTART:${formatICalDateTime(eventData.start)}
+DTEND:${formatICalDateTime(eventData.end)}
+SUMMARY:${eventData.summary}
+DESCRIPTION:${(eventData.description || '').replace(/\n/g, '\\n')}
+LOCATION:${eventData.location || ''}
+END:VEVENT
+END:VCALENDAR`;
+    
+    const response = await fetch(eventUrl, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Basic ${authHeader}`,
+            'Content-Type': 'text/calendar; charset=utf-8'
+        },
+        body: icalData
+    });
+    
+    if (!response.ok && response.status !== 201 && response.status !== 204) {
+        console.error(`🍎 Apple Calendar create event error: ${response.status}`);
+        throw new Error(`Failed to create Apple Calendar event: ${response.status}`);
+    }
+    
+    return {
+        id: uid,
+        summary: eventData.summary,
+        start: eventData.start.toISOString(),
+        end: eventData.end.toISOString(),
+        location: eventData.location
+    };
 };
 
 /**
@@ -319,24 +512,13 @@ router.post('/find-slot', async (req, res) => {
                 end: dayAvailability.end || '17:00'
             };
             
-            // Haal events van die dag op
-            const auth = await getAuthClient(req);
-            const calendar = google.calendar({ version: 'v3', auth });
-            
+            // Haal events van die dag op (werkt met Google én Apple Calendar)
             const dayStart = new Date(searchDate);
             dayStart.setHours(0, 0, 0, 0);
             const dayEnd = new Date(searchDate);
             dayEnd.setHours(23, 59, 59, 999);
             
-            const eventsResponse = await calendar.events.list({
-                calendarId: 'primary',
-                timeMin: dayStart.toISOString(),
-                timeMax: dayEnd.toISOString(),
-                singleEvents: true,
-                orderBy: 'startTime'
-            });
-            
-            const existingEvents = eventsResponse.data.items || [];
+            const existingEvents = await getCalendarEvents(req, dayStart, dayEnd);
             
             console.log(`[SMART] Day ${dayOffset}: ${dayName}, workHours:`, workHours);
             console.log(`[SMART] Events on ${searchDate.toISOString().split('T')[0]}:`, existingEvents.length);
@@ -456,15 +638,11 @@ router.post('/create', async (req, res) => {
         const start = new Date(appointmentStart);
         const end = new Date(start.getTime() + service.duration * 60 * 1000);
         
-        // Maak Google Calendar event
-        const auth = await getAuthClient(req);
-        const calendar = google.calendar({ version: 'v3', auth });
-        
         const location = customer.address.street 
             ? `${customer.address.street}, ${customer.address.postalCode} ${customer.address.city}`
             : customer.address.city;
         
-        const event = {
+        const eventData = {
             summary: `${service.name} - ${customer.name}`,
             description: `Klant: ${customer.name}
 Email: ${customer.email || '-'}
@@ -474,27 +652,61 @@ ${customer.pianos?.length ? `Piano: ${customer.pianos[0].brand} ${customer.piano
 
 ${notes || ''}`.trim(),
             location,
-            start: {
-                dateTime: start.toISOString(),
-                timeZone: 'Europe/Amsterdam'
-            },
-            end: {
-                dateTime: end.toISOString(),
-                timeZone: 'Europe/Amsterdam'
-            },
-            colorId: getCalendarColorId(service.color)
+            start: start,
+            end: end
         };
         
-        const response = await calendar.events.insert({
-            calendarId: 'primary',
-            resource: event
-        });
+        // Probeer event aan te maken in de juiste kalender
+        let createdEvent = null;
         
-        console.log(`✅ Afspraak geboekt: ${service.name} bij ${customer.name}`);
+        // Check Google Calendar first
+        const googleAuth = await getGoogleAuthClient(req);
+        if (googleAuth) {
+            const calendar = google.calendar({ version: 'v3', auth: googleAuth });
+            
+            const googleEvent = {
+                ...eventData,
+                start: {
+                    dateTime: start.toISOString(),
+                    timeZone: 'Europe/Amsterdam'
+                },
+                end: {
+                    dateTime: end.toISOString(),
+                    timeZone: 'Europe/Amsterdam'
+                },
+                colorId: getCalendarColorId(service.color)
+            };
+            
+            const response = await calendar.events.insert({
+                calendarId: 'primary',
+                resource: googleEvent
+            });
+            
+            createdEvent = response.data;
+            console.log(`✅ Afspraak geboekt via Google Calendar: ${service.name} bij ${customer.name}`);
+        } else {
+            // Check Apple Calendar
+            const appleCredentials = await userStore.getAppleCalendarCredentials(req.session.user.id);
+            const appleSync = await userStore.getAppleCalendarSync(req.session.user.id);
+            
+            if (appleCredentials && appleSync?.enabled && appleSync?.appleCalendarUrl) {
+                // Create event via Apple Calendar
+                createdEvent = await createAppleCalendarEvent(appleCredentials, appleSync.appleCalendarUrl, eventData);
+                console.log(`✅ Afspraak geboekt via Apple Calendar: ${service.name} bij ${customer.name}`);
+            } else {
+                console.log(`⚠️ Geen kalender verbonden - afspraak niet toegevoegd aan kalender`);
+                createdEvent = { 
+                    id: `local-${Date.now()}`,
+                    summary: eventData.summary,
+                    start: start.toISOString(),
+                    end: end.toISOString()
+                };
+            }
+        }
         
         res.json({
             success: true,
-            event: response.data,
+            event: createdEvent,
             customer,
             service
         });
