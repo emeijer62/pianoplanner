@@ -1603,15 +1603,26 @@ async function handleDrop(event, dateStr, hour) {
     const newStart = new Date(year, month - 1, day, hour, 0, 0);
     const newEnd = new Date(newStart.getTime() + duration);
     
-    // Update the appointment
+    // Update the appointment - use flat start/end format that backend expects
     try {
         const res = await fetch(`/api/appointments/${eventId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                ...eventData,
-                start: { dateTime: newStart.toISOString() },
-                end: { dateTime: newEnd.toISOString() }
+                title: eventData.summary || eventData.title,
+                description: eventData.description,
+                location: eventData.location,
+                start: newStart.toISOString(),
+                end: newEnd.toISOString(),
+                customerId: eventData.customerId,
+                customerName: eventData.customerName,
+                serviceId: eventData.serviceId,
+                serviceName: eventData.serviceName,
+                pianoId: eventData.pianoId,
+                pianoBrand: eventData.pianoBrand,
+                pianoModel: eventData.pianoModel,
+                status: eventData.status,
+                color: eventData.color
             })
         });
         
