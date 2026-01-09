@@ -42,8 +42,11 @@
 .icon-3xl { width: 3em; height: 3em; }
 
 /* Golden Metallic Effect */
-.icon-gold svg {
-    stroke: var(--icon-gold);
+/* Target both: SVG inside .icon-gold AND SVG that IS .icon-gold */
+.icon-gold svg,
+svg.icon-gold,
+svg.icon {
+    stroke: var(--icon-gold) !important;
     filter: drop-shadow(0 1px 1px rgba(139, 105, 20, 0.3));
 }
 
@@ -53,8 +56,9 @@
     transition: transform 0.2s ease, filter 0.2s ease;
 }
 
-.icon-interactive:hover svg {
-    stroke: var(--icon-gold-light);
+.icon-interactive:hover svg,
+svg.icon-interactive:hover {
+    stroke: var(--icon-gold-light) !important;
     filter: drop-shadow(0 2px 4px rgba(218, 165, 32, 0.4));
     transform: scale(1.1);
 }
