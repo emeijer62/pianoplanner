@@ -382,9 +382,25 @@
             </div>
         </div>
 
+        <!-- Uitnodigingslink -->
+        <div class="invite-link-section" style="background: var(--blue-light, rgba(0, 113, 227, 0.1)); border: 1px solid var(--blue, #0071e3); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem;">
+            <h2 style="margin: 0 0 0.5rem 0; color: var(--blue, #0071e3); font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="link" style="width: 20px; height: 20px;"></i> Uitnodigingslink
+            </h2>
+            <p style="margin: 0 0 1rem 0; font-size: 0.9rem; color: var(--gray-600, #424245);">
+                Deel deze link met mensen die je wilt uitnodigen. Na registratie moet je hun account hieronder goedkeuren.
+            </p>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="text" id="invite-link" readonly value="" style="flex: 1; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.9rem; background: white;">
+                <button onclick="copyInviteLink()" class="btn-approve" style="white-space: nowrap;">
+                    <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Kopiëren
+                </button>
+            </div>
+        </div>
+
         <!-- Wachtende Goedkeuringen -->
         <div class="pending-section" id="pending-section" style="display: none;">
-            <h2><i data-lucide="clock" style="width: 20px; height: 20px;"></i> Awaiting Approval</h2>
+            <h2><i data-lucide="clock" style="width: 20px; height: 20px;"></i> Wachtend op goedkeuring</h2>
             <div class="pending-list" id="pending-list">
                 <!-- Pending users komen hier -->
             </div>
@@ -585,13 +601,13 @@
                     pendingList.innerHTML = pendingUsers.map(user => `
                         <div class="pending-user">
                             <div class="pending-user-info">
-                                <div class="name">${user.name || 'No name'}</div>
+                                <div class="name">${user.name || 'Geen naam'}</div>
                                 <div class="email">${user.email}</div>
-                                <div class="date">Registered: ${formatDate(user.createdAt)}</div>
+                                <div class="date">Geregistreerd: ${formatDate(user.createdAt)}</div>
                             </div>
                             <div class="pending-actions">
-                                <button class="btn-approve" onclick="approveUser('${user.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Approve</button>
-                                <button class="btn-reject" onclick="showRejectModal('${user.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Reject</button>
+                                <button class="btn-approve" onclick="approveUser('${user.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Goedkeuren</button>
+                                <button class="btn-reject" onclick="showRejectModal('${user.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Afwijzen</button>
                             </div>
                         </div>
                     `).join('');
@@ -932,11 +948,30 @@
             }
         }
 
+        // Copy invite link function
+        function copyInviteLink() {
+            const input = document.getElementById('invite-link');
+            input.select();
+            document.execCommand('copy');
+            
+            // Show feedback
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="check" style="width: 14px; height: 14px;"></i> Gekopieerd!';
+            lucide.createIcons();
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                lucide.createIcons();
+            }, 2000);
+        }
+
         // Init
         (async () => {
             const isAdmin = await checkAdminStatus();
             if (isAdmin) {
                 loadUsers();
+                // Set invite link
+                document.getElementById('invite-link').value = window.location.origin + '/invite.html';
             }
         })();
 
