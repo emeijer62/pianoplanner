@@ -77,7 +77,6 @@ const getAllAppointments = async (userId) => {
 };
 
 const getAppointmentsByDateRange = async (userId, startDate, endDate) => {
-    console.log(`📅 DB Query: user=${userId}, start=${startDate}, end=${endDate}`);
     
     const appointments = await dbAll(`
         SELECT * FROM appointments 

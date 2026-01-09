@@ -10,9 +10,7 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 // Haal bedrijfsinstellingen op
 router.get('/company', requireAuth, async (req, res) => {
     try {
-        console.log('🏢 GET /company for user:', req.session.user.id, req.session.user.email);
         const settings = await companyStore.getSettings(req.session.user.id);
-        console.log('🏢 Company settings found:', settings?.name || 'empty');
         res.json(settings);
     } catch (error) {
         console.error('Error getting company settings:', error);
@@ -169,10 +167,8 @@ router.put('/services/:id', requireAuth, async (req, res) => {
 
 // Verwijder dienst (hard delete)
 router.delete('/services/:id', requireAuth, async (req, res) => {
-    console.log('🗑️ DELETE /services/:id called with:', req.params.id, 'for user:', req.session.user.id);
     try {
         const deleted = await serviceStore.deleteService(req.session.user.id, req.params.id);
-        console.log('🗑️ Delete result:', deleted);
         
         if (!deleted) {
             return res.status(404).json({ error: 'Service not found' });

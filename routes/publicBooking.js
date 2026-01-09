@@ -288,11 +288,6 @@ router.get('/customer/:token/smart-suggestions', async (req, res) => {
             endDate.toISOString().split('T')[0]
         );
         
-        console.log(`🧠 Smart suggestions for customer ${data.customer.name} at ${customerLocation}`);
-        console.log(`📅 Date range: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
-        console.log(`📊 Found ${allAppointments.length} existing appointments`);
-        console.log(`🎭 Using theater hours: ${useTheaterHours}`);
-        
         // Haal travel settings op
         const travelSettings = await companyStore.getTravelSettings(data.owner.id);
         
@@ -514,9 +509,6 @@ router.get('/:slug/slots', async (req, res) => {
         const company = await companyStore.getCompanySettings(user.id);
         const rawWorkingHours = company?.workingHours;
         
-        // Debug logging
-        console.log('📅 Slots request - date:', date, 'rawWorkingHours:', JSON.stringify(rawWorkingHours));
-        
         // Normaliseer werkuren naar { monday: {enabled, start, end}, ... } formaat
         const workingHours = normalizeWorkingHours(rawWorkingHours);
         
@@ -524,8 +516,6 @@ router.get('/:slug/slots', async (req, res) => {
         const dayIndex = requestedDate.getDay();
         const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayName = dayNames[dayIndex];
-        
-        console.log('📅 Day:', dayName, 'dayIndex:', dayIndex, 'dayHours:', workingHours[dayName]);
         
         const dayHours = workingHours[dayName];
         if (!dayHours || !dayHours.enabled) {
@@ -728,13 +718,10 @@ router.post('/:slug', async (req, res) => {
         if (emailService.isEmailConfigured()) {
             // Use process.nextTick instead of setImmediate for more reliable execution
             process.nextTick(async () => {
-                console.log('📧 Starting email process for booking');
-                
                 // Send confirmation to customer
                 if (emailData.customerEmail) {
-                    console.log('📧 Sending confirmation to:', emailData.customerEmail);
                     try {
-                        const result = await emailService.sendAppointmentConfirmation({
+                        await emailService.sendAppointmentConfirmation({
                             customerEmail: emailData.customerEmail,
                             customerName: emailData.customerName,
                             appointmentDate: emailData.date,
@@ -745,18 +732,16 @@ router.post('/:slug', async (req, res) => {
                             fromName: emailData.companyName,
                             userId: emailData.userId
                         });
-                        console.log('📧 ✅ Confirmation sent to', emailData.customerEmail, '- messageId:', result?.messageId || 'OK');
+                        console.log('📧 Confirmation sent to', emailData.customerEmail);
                     } catch (confErr) {
                         console.error('❌ Failed to send confirmation:', confErr.message);
-                        console.error('❌ Stack:', confErr.stack);
                     }
                 }
                 
                 // Send notification to technician
                 if (emailData.userEmail) {
-                    console.log('📧 Sending notification to:', emailData.userEmail);
                     try {
-                        const result2 = await emailService.sendNewBookingNotification({
+                        await emailService.sendNewBookingNotification({
                             technicianEmail: emailData.userEmail,
                             customerName: emailData.customerName,
                             customerEmail: emailData.customerEmail,
@@ -767,17 +752,12 @@ router.post('/:slug', async (req, res) => {
                             notes: emailData.customerNotes,
                             companyName: emailData.companyName
                         });
-                        console.log('📧 ✅ Notification sent to', emailData.userEmail, '- messageId:', result2?.messageId || 'OK');
+                        console.log('📧 Notification sent to', emailData.userEmail);
                     } catch (notifErr) {
                         console.error('❌ Failed to send notification:', notifErr.message);
-                        console.error('❌ Stack:', notifErr.stack);
                     }
                 }
-                
-                console.log('📧 Email process completed');
             });
-        } else {
-            console.log('📧 Email not configured, skipping notifications');
         }
         
     } catch (error) {
@@ -1015,10 +995,6 @@ router.get('/:slug/smart-suggestions', async (req, res) => {
             startDate.toISOString().split('T')[0],
             endDate.toISOString().split('T')[0]
         );
-        
-        console.log(`🧠 Smart suggestions for ${customerLocation || 'unknown location'}`);
-        console.log(`📅 Date range: ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
-        console.log(`📊 Found ${allAppointments.length} existing appointments`);
         
         // Genereer suggesties met travel settings
         const suggestions = await generateSmartSuggestions({

@@ -15,11 +15,10 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-// Database initialisatie (moet eerst!)
-// Version: 2026-01-07 - Security hardening: rate limiting, session regeneration
+// Database initialisatie
 const { DATABASE_PATH, DATA_DIR } = require('./utils/database');
 
-// Routes (nu met database versies)
+// Routes
 const authRoutes = require('./routes/auth');
 const calendarRoutes = require('./routes/calendar');
 const appleCalendarRoutes = require('./routes/appleCalendar');
@@ -587,44 +586,12 @@ app.post('/api/admin/users/:userId/set-plan', requireAdmin, async (req, res) => 
     }
 });
 
-// Health check endpoint voor Railway (moet snel antwoorden!)
+// Health check endpoint voor Railway
 app.get('/health', (req, res) => {
     res.status(200).json({ 
         status: 'ok', 
         timestamp: new Date().toISOString()
     });
-});
-
-// Tijdelijke cleanup route voor kapotte appointments
-app.get('/cleanup-broken', async (req, res) => {
-    try {
-        const { dbAll, dbRun } = require('./utils/database');
-        
-        // Vind kapotte records
-        const broken = await dbAll(
-            'SELECT id, title FROM appointments WHERE start_time IS NULL OR end_time IS NULL'
-        );
-        
-        if (broken.length === 0) {
-            return res.json({ success: true, message: 'Geen kapotte appointments gevonden', deleted: 0 });
-        }
-        
-        // Verwijder ze
-        const result = await dbRun(
-            'DELETE FROM appointments WHERE start_time IS NULL OR end_time IS NULL'
-        );
-        
-        console.log(`🧹 Cleanup: ${result.changes} kapotte appointments verwijderd`);
-        
-        res.json({ 
-            success: true, 
-            deleted: result.changes,
-            ids: broken.map(b => b.id)
-        });
-    } catch (error) {
-        console.error('Cleanup error:', error);
-        res.status(500).json({ error: error.message });
-    }
 });
 
 // Hoofdpagina

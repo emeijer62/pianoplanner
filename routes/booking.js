@@ -59,15 +59,11 @@ router.get('/place-details/:placeId?', async (req, res) => {
         // Transformeer naar address formaat voor frontend compatibiliteit
         let address = details.components || {};
         
-        console.log('📍 Initial components:', address);
-        
         // If postal code is missing, try geocoding the formatted address
         if (!address.postalCode && details.formattedAddress) {
-            console.log('📍 Postal code missing, trying geocode fallback for:', details.formattedAddress);
             try {
                 const geocodeResult = await geocodeAddress(details.formattedAddress);
                 if (geocodeResult && geocodeResult.components) {
-                    console.log('📍 Geocode fallback components:', geocodeResult.components);
                     // Merge geocode results - prioritize original but fill in missing
                     if (geocodeResult.components.postalCode && !address.postalCode) {
                         address.postalCode = geocodeResult.components.postalCode;
@@ -105,8 +101,6 @@ router.get('/place-details/:placeId?', async (req, res) => {
             },
             components: address // Updated components with fallback data
         };
-        
-        console.log('📍 Final response:', response);
         
         res.json(response);
     } catch (error) {

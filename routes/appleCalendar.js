@@ -11,6 +11,7 @@
 const express = require('express');
 const router = express.Router();
 const userStore = require('../utils/userStore');
+const { dbRun } = require('../utils/database');
 const fetch = require('node-fetch');
 const { XMLParser, XMLBuilder } = require('fast-xml-parser');
 const { requireAuth } = require('../middleware/auth');
@@ -857,7 +858,6 @@ async function performAppleSync(userId, credentials, syncSettings) {
                 // Event was deleted from Apple Calendar
                 console.log(`🗑️ Apple event deleted, removing local: ${appointment.title || appointment.id}`);
                 try {
-                    const { dbRun } = require('../utils/database');
                     await dbRun('DELETE FROM appointments WHERE id = ?', [appointment.id]);
                     deleted++;
                 } catch (err) {

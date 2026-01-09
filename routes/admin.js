@@ -363,10 +363,7 @@ router.get('/users/:userId', requireAdminAuth, async (req, res) => {
 
 // Cleanup broken appointments (missing start/end time)
 router.post('/cleanup-appointments', requireAdminAuth, async (req, res) => {
-    try {
-        const { dbRun, dbAll } = require('../utils/database');
-        
-        // First count broken records
+    try {\n        // First count broken records
         const broken = await dbAll(
             'SELECT id, title FROM appointments WHERE start_time IS NULL OR end_time IS NULL'
         );
@@ -398,8 +395,8 @@ router.post('/cleanup-appointments', requireAdminAuth, async (req, res) => {
 
 const emailService = require('../utils/emailService');
 
-// Test email endpoint (geen auth nodig voor debugging)
-router.post('/test-email', async (req, res) => {
+// Test email endpoint (admin auth vereist)
+router.post('/test-email', requireAdminAuth, async (req, res) => {
     const { email } = req.body;
     
     if (!email) {

@@ -8,7 +8,7 @@ const router = express.Router();
 const appointmentStore = require('../utils/appointmentStore');
 const { requireAuth } = require('../middleware/auth');
 const emailService = require('../utils/emailService');
-const { getDb, dbGet } = require('../utils/database');
+const { getDb, dbGet, dbRun, dbAll } = require('../utils/database');
 const { google } = require('googleapis');
 const userStore = require('../utils/userStore');
 
@@ -85,7 +85,6 @@ router.get('/', async (req, res) => {
 router.delete('/cleanup-duplicates', async (req, res) => {
     try {
         const userId = req.session.user.id;
-        const { dbRun, dbAll } = require('../utils/database');
         
         // Haal alle afspraken op
         const appointments = await dbAll(
@@ -153,7 +152,6 @@ router.delete('/cleanup-duplicates', async (req, res) => {
 router.delete('/cleanup-broken', async (req, res) => {
     try {
         const userId = req.session.user.id;
-        const { dbRun, dbAll } = require('../utils/database');
         
         // Find broken records for this user
         const broken = await dbAll(
@@ -246,8 +244,6 @@ router.get('/:id', async (req, res) => {
 // Maak nieuwe afspraak
 router.post('/', async (req, res) => {
     try {
-        console.log('📅 POST /appointments - Body:', JSON.stringify(req.body));
-        
         const userId = req.session.user.id;
         const { 
             title, description, location, 
@@ -284,18 +280,11 @@ router.post('/', async (req, res) => {
             color
         });
         
-        console.log(`📅 Nieuwe afspraak aangemaakt: ${title}`);
-        
         // Stuur response DIRECT terug
         res.status(201).json(appointment);
         
-        // Debug logging
-        console.log(`📧 Email check: configured=${emailService.isEmailConfigured()}, customerId=${customerId}, sendConfirmation=${sendConfirmation}`);
-        
         // Send confirmation email ASYNC als vinkje is gezet
         if (emailService.isEmailConfigured() && customerId && sendConfirmation) {
-            console.log('📧 Starting email send process...');
-            // Sla variabelen op voor async context
             const emailContext = {
                 userId,
                 customerId,
@@ -308,20 +297,12 @@ router.post('/', async (req, res) => {
                 userName: req.session.user.name
             };
             
-            console.log('📧 Email context:', JSON.stringify(emailContext));
-            
             setImmediate(async () => {
-                console.log('📧 setImmediate started');
                 try {
-                    // Get customer email using promisified dbGet
-                    console.log(`📧 Querying customer: id=${emailContext.customerId}, userId=${emailContext.userId}`);
                     const customer = await dbGet(
                         'SELECT email, name FROM customers WHERE id = ? AND user_id = ?',
                         [emailContext.customerId, emailContext.userId]
                     );
-                    console.log('📧 Customer query result:', JSON.stringify(customer));
-                    
-                    console.log(`📧 Customer found: ${customer?.email || 'NO EMAIL'}`);
                     
                     if (customer?.email) {
                         const company = await dbGet(
@@ -329,7 +310,6 @@ router.post('/', async (req, res) => {
                             [emailContext.userId]
                         );
                         
-                        // Extract date and time from start
                         const startDate = new Date(emailContext.start);
                         const appointmentDate = startDate.toISOString().split('T')[0];
                         const appointmentTime = startDate.toLocaleTimeString('en-US', { 
@@ -338,8 +318,7 @@ router.post('/', async (req, res) => {
                             hour12: false 
                         });
                         
-                        console.log(`📧 Sending to ${customer.email}...`);
-                        const result = await emailService.sendAppointmentConfirmation({
+                        await emailService.sendAppointmentConfirmation({
                             customerEmail: customer.email,
                             customerName: customer.name || emailContext.customerName,
                             appointmentDate,
@@ -352,15 +331,12 @@ router.post('/', async (req, res) => {
                             userId: emailContext.userId
                         });
                         
-                        console.log(`📧 Confirmation email result:`, JSON.stringify(result));
+                        console.log(`📧 Confirmation sent to ${customer.email}`);
                     }
                 } catch (emailError) {
                     console.error('❌ Failed to send confirmation email:', emailError.message);
-                    console.error(emailError.stack);
                 }
             });
-        } else {
-            console.log('📧 Email NOT sent - conditions not met');
         }
     } catch (error) {
         console.error('Error creating appointment:', error);
