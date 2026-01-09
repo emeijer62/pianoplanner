@@ -157,6 +157,7 @@
     "today": "Aujourd'hui",
     "week": "Semaine",
     "month": "Mois",
+    "day": "Jour",
     "syncNow": "Synchroniser maintenant",
     "lastSync": "Dernière synchronisation",
     "syncDirection": "Direction de synchronisation",
@@ -164,7 +165,11 @@
     "toGoogle": "Vers Google uniquement",
     "fromGoogle": "Depuis Google uniquement",
     "toApple": "Vers Apple uniquement",
-    "fromApple": "Depuis Apple uniquement"
+    "fromApple": "Depuis Apple uniquement",
+    "months": ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+    "monthsShort": ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"],
+    "days": ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
+    "daysShort": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
   },
   "common": {
     "save": "Enregistrer",

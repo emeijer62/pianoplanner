@@ -1068,11 +1068,11 @@
                         <div class="mini-title" id="miniCalendarTitle">Month</div>
                         <div class="mini-nav">
                             <button type="button" onclick="changeMiniMonth(-1)">‹</button>
-                            <button type="button" onclick="goToToday()">Today</button>
+                            <button type="button" onclick="goToToday()" data-i18n="calendar.today">Today</button>
                             <button type="button" onclick="changeMiniMonth(1)">›</button>
                         </div>
                     </div>
-                    <div class="mini-daynames">
+                    <div class="mini-daynames" id="miniDayNames">
                         <div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div><div>Su</div>
                     </div>
                     <div class="mini-grid" id="miniCalendarGrid"></div>
@@ -1264,7 +1264,7 @@
         </div>
     </div>
 
-    <script src="dashboard.js?v=2026010902"></script>
+    <script src="dashboard.js?v=2026010903"></script>
     <script>
         // Update cockpit stats
         function updateCockpitStats() {

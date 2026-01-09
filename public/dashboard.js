@@ -8,9 +8,12 @@ let currentDate = new Date();
 let miniMonthDate = new Date();
 let slotDuration = parseInt(localStorage.getItem('calendarSlotDuration') || '60'); // 60 or 90 minutes
 
-const DAYS_NL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS_NL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+// Dynamic i18n calendar arrays - will be populated from i18n
+const getMonths = () => i18n?.translations?.calendar?.months || ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const getMonthsShort = () => i18n?.translations?.calendar?.monthsShort || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const getDays = () => i18n?.translations?.calendar?.days || ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const getDaysShort = () => i18n?.translations?.calendar?.daysShort || ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const getToday = () => i18n?.translations?.calendar?.today || 'Today';
 
 // Auto-sync cooldown (5 minutes)
 const SYNC_COOLDOWN_MS = 5 * 60 * 1000;
@@ -50,6 +53,17 @@ function getNotificationIcon(type) {
     }
 }
 
+// Update mini calendar day names based on language
+function updateMiniDayNames() {
+    const container = document.getElementById('miniDayNames');
+    if (!container) return;
+    
+    const daysShort = getDaysShort();
+    // Start from Monday (index 1), wrap Sunday (index 0) to end
+    const orderedDays = [daysShort[1], daysShort[2], daysShort[3], daysShort[4], daysShort[5], daysShort[6], daysShort[0]];
+    container.innerHTML = orderedDays.map(d => `<div>${d}</div>`).join('');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Check if user is logged in
     try {
@@ -73,6 +87,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         updateNavbar(currentUser);
         showTrialBanner();
+        
+        // Update mini calendar day names based on language
+        updateMiniDayNames();
         
         // Load data
         await Promise.all([
@@ -441,10 +458,13 @@ async function syncCalendar() {
 
 function updateTitle() {
     const titleEl = document.getElementById('calendarTitle');
+    const months = getMonths();
+    const monthsShort = getMonthsShort();
+    const days = getDays();
     
     switch (currentView) {
         case 'day':
-            titleEl.textContent = `${DAYS_NL[currentDate.getDay()]} ${currentDate.getDate()} ${MONTHS_NL[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            titleEl.textContent = `${days[currentDate.getDay()]} ${currentDate.getDate()} ${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
             break;
         case 'week':
             const weekStart = getWeekStart(currentDate);
@@ -452,13 +472,13 @@ function updateTitle() {
             weekEnd.setDate(weekEnd.getDate() + 6);
             
             if (weekStart.getMonth() === weekEnd.getMonth()) {
-                titleEl.textContent = `${weekStart.getDate()} - ${weekEnd.getDate()} ${MONTHS_NL[weekStart.getMonth()]} ${weekStart.getFullYear()}`;
+                titleEl.textContent = `${weekStart.getDate()} - ${weekEnd.getDate()} ${months[weekStart.getMonth()]} ${weekStart.getFullYear()}`;
             } else {
-                titleEl.textContent = `${weekStart.getDate()} ${MONTHS_NL[weekStart.getMonth()].substring(0,3)} - ${weekEnd.getDate()} ${MONTHS_NL[weekEnd.getMonth()].substring(0,3)} ${weekEnd.getFullYear()}`;
+                titleEl.textContent = `${weekStart.getDate()} ${monthsShort[weekStart.getMonth()]} - ${weekEnd.getDate()} ${monthsShort[weekEnd.getMonth()]} ${weekEnd.getFullYear()}`;
             }
             break;
         case 'month':
-            titleEl.textContent = `${MONTHS_NL[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            titleEl.textContent = `${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
             break;
     }
 }
@@ -562,6 +582,7 @@ function renderWeekView(container) {
     html += `<div class="week-header">`;
     html += `<div class="week-header-cell"></div>`; // Empty corner
     
+    const daysShort = getDaysShort();
     for (let i = 0; i < 7; i++) {
         const day = new Date(weekStart);
         day.setDate(day.getDate() + i);
@@ -569,7 +590,7 @@ function renderWeekView(container) {
         
         html += `
             <div class="week-header-cell ${isToday ? 'today' : ''}">
-                <div class="week-header-day">${DAYS_SHORT[day.getDay()]}</div>
+                <div class="week-header-day">${daysShort[day.getDay()]}</div>
                 <div class="week-header-date">${day.getDate()}</div>
             </div>
         `;
@@ -695,7 +716,8 @@ function renderMiniCalendar() {
     // Sync mini month with current date
     miniMonthDate = new Date(currentDate);
 
-    title.textContent = `${MONTHS_NL[miniMonthDate.getMonth()]} ${miniMonthDate.getFullYear()}`;
+    const months = getMonths();
+    title.textContent = `${months[miniMonthDate.getMonth()]} ${miniMonthDate.getFullYear()}`;
     grid.innerHTML = '';
 
     const today = new Date();

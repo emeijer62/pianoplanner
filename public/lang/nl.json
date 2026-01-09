@@ -157,6 +157,7 @@
     "today": "Vandaag",
     "week": "Week",
     "month": "Maand",
+    "day": "Dag",
     "syncNow": "Nu synchroniseren",
     "lastSync": "Laatste sync",
     "syncDirection": "Synchronisatie richting",
@@ -164,7 +165,11 @@
     "toGoogle": "Alleen naar Google",
     "fromGoogle": "Alleen van Google",
     "toApple": "Alleen naar Apple",
-    "fromApple": "Alleen van Apple"
+    "fromApple": "Alleen van Apple",
+    "months": ["Januari", "Februari", "Maart", "April", "Mei", "Juni", "Juli", "Augustus", "September", "Oktober", "November", "December"],
+    "monthsShort": ["Jan", "Feb", "Mrt", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"],
+    "days": ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"],
+    "daysShort": ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"]
   },
   "common": {
     "save": "Opslaan",
