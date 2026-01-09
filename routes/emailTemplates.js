@@ -12,28 +12,56 @@ const { requireAuth } = require('../middleware/auth');
 router.use(requireAuth);
 
 // Standaard templates (fallback als gebruiker geen custom heeft)
+// Elegant grayscale Apple-style design
 const DEFAULT_TEMPLATES = {
     appointment_confirmation: {
         subject: 'Bevestiging: {{dienst}} op {{datum}}',
         body_html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-                    <h1 style="margin: 0; font-size: 24px;">Afspraak Bevestigd</h1>
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff;">
+                <!-- Header -->
+                <div style="background: #1d1d1f; padding: 40px 32px; text-align: center;">
+                    {{#if bedrijfslogo}}<div style="margin-bottom: 16px;">{{bedrijfslogo}}</div>{{/if}}
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #ffffff; letter-spacing: -0.5px;">Afspraak Bevestigd</h1>
                 </div>
-                <div style="background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px;">
-                    <p>Beste {{klantnaam}},</p>
-                    <p>Uw afspraak is bevestigd. Hieronder vindt u de details:</p>
+                
+                <!-- Content -->
+                <div style="padding: 40px 32px; background: #f5f5f7;">
+                    <p style="margin: 0 0 24px; font-size: 17px; color: #1d1d1f; line-height: 1.5;">Beste {{klantnaam}},</p>
+                    <p style="margin: 0 0 32px; font-size: 15px; color: #424245; line-height: 1.6;">Uw afspraak is bevestigd. Hieronder vindt u de details:</p>
                     
-                    <div style="background: white; border-radius: 12px; padding: 24px; margin: 20px 0;">
-                        <p><strong>Datum:</strong> {{datum}}</p>
-                        <p><strong>Tijd:</strong> {{tijd}}</p>
-                        <p><strong>Dienst:</strong> {{dienst}}</p>
-                        {{#if locatie}}<p><strong>Locatie:</strong> {{locatie}}</p>{{/if}}
-                        {{#if notities}}<p><strong>Opmerkingen:</strong> {{notities}}</p>{{/if}}
+                    <!-- Details Card -->
+                    <div style="background: #ffffff; border-radius: 16px; padding: 28px; margin: 0 0 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px;">Datum</td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{datum}}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px;">Tijd</td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{tijd}}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px;">Dienst</td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{dienst}}</td>
+                            </tr>
+                            {{#if locatie}}<tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px;">Locatie</td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 15px; color: #1d1d1f; text-align: right;">{{locatie}}</td>
+                            </tr>{{/if}}
+                            {{#if notities}}<tr>
+                                <td style="padding: 12px 0; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px;">Notities</td>
+                                <td style="padding: 12px 0; font-size: 15px; color: #636366; text-align: right;">{{notities}}</td>
+                            </tr>{{/if}}
+                        </table>
                     </div>
                     
-                    <p>Heeft u vragen? Neem gerust contact met ons op.</p>
-                    <p>Met vriendelijke groet,<br>{{bedrijfsnaam}}</p>
+                    <p style="margin: 0 0 8px; font-size: 15px; color: #424245; line-height: 1.6;">Heeft u vragen? Neem gerust contact met ons op.</p>
+                    <p style="margin: 24px 0 0; font-size: 15px; color: #1d1d1f; line-height: 1.6;">Met vriendelijke groet,<br><strong>{{bedrijfsnaam}}</strong></p>
+                </div>
+                
+                <!-- Footer -->
+                <div style="padding: 24px 32px; background: #e8e8ed; text-align: center;">
+                    <p style="margin: 0; font-size: 13px; color: #8e8e93;">{{bedrijfsnaam}}</p>
                 </div>
             </div>
         `
@@ -41,22 +69,52 @@ const DEFAULT_TEMPLATES = {
     booking_notification: {
         subject: 'Nieuwe boeking: {{dienst}} - {{klantnaam}}',
         body_html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-                    <h1 style="margin: 0; font-size: 24px;">📅 Nieuwe Boeking</h1>
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff;">
+                <!-- Header -->
+                <div style="background: #1d1d1f; padding: 40px 32px; text-align: center;">
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #ffffff; letter-spacing: -0.5px;">Nieuwe Boeking</h1>
+                    <p style="margin: 12px 0 0; font-size: 15px; color: #aeaeb2;">Er is een nieuwe afspraak geboekt</p>
                 </div>
-                <div style="background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px;">
-                    <p>Er is een nieuwe afspraak geboekt:</p>
-                    
-                    <div style="background: white; border-radius: 12px; padding: 24px; margin: 20px 0;">
-                        <p><strong>Klant:</strong> {{klantnaam}}</p>
-                        <p><strong>Email:</strong> {{klantemail}}</p>
-                        {{#if klanttelefoon}}<p><strong>Telefoon:</strong> {{klanttelefoon}}</p>{{/if}}
-                        <p><strong>Dienst:</strong> {{dienst}}</p>
-                        <p><strong>Datum:</strong> {{datum}}</p>
-                        <p><strong>Tijd:</strong> {{tijd}}</p>
-                        {{#if notities}}<p><strong>Opmerkingen:</strong> {{notities}}</p>{{/if}}
+                
+                <!-- Content -->
+                <div style="padding: 40px 32px; background: #f5f5f7;">
+                    <!-- Customer Card -->
+                    <div style="background: #ffffff; border-radius: 16px; padding: 28px; margin: 0 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                        <h2 style="margin: 0 0 20px; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Klantgegevens</h2>
+                        <p style="margin: 0 0 8px; font-size: 20px; font-weight: 600; color: #1d1d1f;">{{klantnaam}}</p>
+                        <p style="margin: 0 0 4px; font-size: 15px; color: #636366;">{{klantemail}}</p>
+                        {{#if klanttelefoon}}<p style="margin: 0; font-size: 15px; color: #636366;">{{klanttelefoon}}</p>{{/if}}
                     </div>
+                    
+                    <!-- Appointment Card -->
+                    <div style="background: #ffffff; border-radius: 16px; padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                        <h2 style="margin: 0 0 20px; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Afspraakdetails</h2>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 15px; color: #636366;">Dienst</td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{dienst}}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 15px; color: #636366;">Datum</td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{datum}}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px 0; font-size: 15px; color: #636366;">Tijd</td>
+                                <td style="padding: 12px 0; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{tijd}}</td>
+                            </tr>
+                            {{#if notities}}<tr>
+                                <td colspan="2" style="padding: 16px 0 0;">
+                                    <p style="margin: 0 0 8px; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px;">Opmerkingen</p>
+                                    <p style="margin: 0; font-size: 15px; color: #424245; background: #f5f5f7; padding: 12px 16px; border-radius: 8px;">{{notities}}</p>
+                                </td>
+                            </tr>{{/if}}
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div style="padding: 24px 32px; background: #e8e8ed; text-align: center;">
+                    <p style="margin: 0; font-size: 13px; color: #8e8e93;">{{bedrijfsnaam}}</p>
                 </div>
             </div>
         `
@@ -64,23 +122,36 @@ const DEFAULT_TEMPLATES = {
     appointment_reminder: {
         subject: 'Herinnering: {{dienst}} morgen om {{tijd}}',
         body_html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-                    <h1 style="margin: 0; font-size: 24px;">⏰ Herinnering</h1>
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff;">
+                <!-- Header -->
+                <div style="background: #1d1d1f; padding: 40px 32px; text-align: center;">
+                    {{#if bedrijfslogo}}<div style="margin-bottom: 16px;">{{bedrijfslogo}}</div>{{/if}}
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #ffffff; letter-spacing: -0.5px;">Herinnering</h1>
+                    <p style="margin: 12px 0 0; font-size: 15px; color: #aeaeb2;">Uw afspraak is morgen</p>
                 </div>
-                <div style="background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px;">
-                    <p>Beste {{klantnaam}},</p>
-                    <p>Dit is een herinnering voor uw afspraak morgen:</p>
+                
+                <!-- Content -->
+                <div style="padding: 40px 32px; background: #f5f5f7;">
+                    <p style="margin: 0 0 24px; font-size: 17px; color: #1d1d1f; line-height: 1.5;">Beste {{klantnaam}},</p>
+                    <p style="margin: 0 0 32px; font-size: 15px; color: #424245; line-height: 1.6;">Dit is een herinnering voor uw afspraak morgen:</p>
                     
-                    <div style="background: white; border-radius: 12px; padding: 24px; margin: 20px 0;">
-                        <p><strong>Datum:</strong> {{datum}}</p>
-                        <p><strong>Tijd:</strong> {{tijd}}</p>
-                        <p><strong>Dienst:</strong> {{dienst}}</p>
-                        {{#if locatie}}<p><strong>Locatie:</strong> {{locatie}}</p>{{/if}}
+                    <!-- Highlight Card -->
+                    <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin: 0 0 32px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                        <p style="margin: 0 0 8px; font-size: 44px; font-weight: 600; color: #1d1d1f; letter-spacing: -1px;">{{tijd}}</p>
+                        <p style="margin: 0 0 16px; font-size: 17px; color: #636366;">{{datum}}</p>
+                        <div style="display: inline-block; background: #f5f5f7; padding: 8px 16px; border-radius: 20px;">
+                            <span style="font-size: 15px; color: #1d1d1f; font-weight: 500;">{{dienst}}</span>
+                        </div>
+                        {{#if locatie}}<p style="margin: 20px 0 0; font-size: 15px; color: #8e8e93;">📍 {{locatie}}</p>{{/if}}
                     </div>
                     
-                    <p>Tot morgen!</p>
-                    <p>Met vriendelijke groet,<br>{{bedrijfsnaam}}</p>
+                    <p style="margin: 0 0 8px; font-size: 15px; color: #424245; line-height: 1.6;">Tot morgen!</p>
+                    <p style="margin: 24px 0 0; font-size: 15px; color: #1d1d1f; line-height: 1.6;">Met vriendelijke groet,<br><strong>{{bedrijfsnaam}}</strong></p>
+                </div>
+                
+                <!-- Footer -->
+                <div style="padding: 24px 32px; background: #e8e8ed; text-align: center;">
+                    <p style="margin: 0; font-size: 13px; color: #8e8e93;">{{bedrijfsnaam}}</p>
                 </div>
             </div>
         `
