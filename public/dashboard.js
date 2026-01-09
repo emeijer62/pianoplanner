@@ -1059,12 +1059,22 @@ async function findSmartSlot() {
             const startTime = new Date(data.slot.appointmentStart);
             const endTime = new Date(data.slot.appointmentEnd);
             
+            // Check of een andere dag is gevonden
+            const differentDay = data.foundDate && data.foundDate !== date;
+            const dayNote = differentDay 
+                ? `<div style="background: #fef3c7; color: #92400e; padding: 8px; border-radius: 6px; margin-bottom: 8px; font-size: 12px;">
+                     📅 ${window.i18n?.t('booking.notAvailableOn') || 'Not available on'} ${new Date(date).toLocaleDateString(undefined, {weekday: 'long'})}. 
+                     Found on <strong>${startTime.toLocaleDateString(undefined, {weekday: 'long', day: 'numeric', month: 'short'})}</strong>
+                   </div>` 
+                : '';
+            
             resultDiv.innerHTML = `
                 <div style="background: var(--success-bg, #dcfce7); border: 1px solid var(--success-color, #22c55e); border-radius: 8px; padding: 12px;">
+                    ${dayNote}
                     <div style="font-weight: 600; color: var(--success-color, #22c55e); margin-bottom: 8px;">
-                        ✓ Available: ${startTime.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })} 
-                        ${startTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })} - 
-                        ${endTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+                        ✓ Available: ${startTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} 
+                        ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} - 
+                        ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                     </div>
                     <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 10px;">
                         🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min service
@@ -1075,10 +1085,20 @@ async function findSmartSlot() {
                 </div>
             `;
         } else {
+            // Format error message with i18n support
+            let errorMessage = data.message || 'No availability';
+            if (data.message === 'not_available_on_day' && typeof data.dayIndex !== 'undefined') {
+                const days = window.i18n?.t('calendar.days') || ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const dayName = Array.isArray(days) ? days[data.dayIndex] : days;
+                errorMessage = `${window.i18n?.t('booking.notAvailableOn') || 'Not available on'} ${dayName}. ${window.i18n?.t('booking.noSlotsIn14Days') || 'No time found in the next 14 days.'}`;
+            } else if (data.message === 'no_slots_found') {
+                errorMessage = window.i18n?.t('booking.noSlotsIn14Days') || 'No available time found in the next 14 days';
+            }
+            
             resultDiv.innerHTML = `
                 <div style="background: var(--warning-bg, #fef3c7); border: 1px solid var(--warning-color, #f59e0b); border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="color: var(--warning-color, #f59e0b);">❌ ${data.message || 'No availability on this day'}</div>
-                    <div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">Try another date</div>
+                    <div style="color: var(--warning-color, #f59e0b);">❌ ${errorMessage}</div>
+                    <div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">${window.i18n?.t('booking.tryDifferentDate') || 'Try another date'}</div>
                 </div>
             `;
         }
