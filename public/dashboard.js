@@ -1159,7 +1159,11 @@ function setupNewCustomerAutocomplete() {
                 suggestions.querySelectorAll('.suggestion-item').forEach(item => {
                     item.addEventListener('mousedown', async (e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         const placeId = item.dataset.placeId;
+                        const streetInput = document.getElementById('new-customer-street');
+                        const postalcodeInput = document.getElementById('new-customer-postalcode');
+                        const cityInput = document.getElementById('new-customer-city');
                         
                         // Get place details to fill in all fields
                         try {
@@ -1168,18 +1172,18 @@ function setupNewCustomerAutocomplete() {
                                 const details = await detailsResponse.json();
                                 // API returns { address: { street, postalCode, city } }
                                 const addr = details.address || details;
-                                document.getElementById('new-customer-street').value = addr.street || item.textContent.trim().split(',')[0];
-                                document.getElementById('new-customer-postalcode').value = addr.postalCode || '';
-                                document.getElementById('new-customer-city').value = addr.city || '';
+                                streetInput.value = addr.street || item.dataset.description.split(',')[0].trim();
+                                postalcodeInput.value = addr.postalCode || '';
+                                cityInput.value = addr.city || '';
                             } else {
                                 // Fallback: just use the description
-                                const parts = item.textContent.trim().split(',').map(p => p.trim());
-                                document.getElementById('new-customer-street').value = parts[0] || '';
-                                document.getElementById('new-customer-city').value = parts[1] || '';
+                                const parts = item.dataset.description.split(',').map(p => p.trim());
+                                streetInput.value = parts[0] || '';
+                                cityInput.value = parts[1] || '';
                             }
                         } catch (err) {
                             // Fallback
-                            document.getElementById('new-customer-street').value = item.textContent.trim().split(',')[0];
+                            streetInput.value = item.dataset.description.split(',')[0].trim();
                         }
                         
                         suggestions.style.display = 'none';
