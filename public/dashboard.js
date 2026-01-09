@@ -582,41 +582,41 @@ function renderWeekView(container) {
     // Generate time slots based on duration setting
     const slots = generateTimeSlots();
     
-    // Time column
-    html += `<div class="week-time-col">`;
-    for (const slot of slots) {
-        html += `<div class="week-time-slot">${slot.label}</div>`;
-    }
-    html += `</div>`;
-    
-    // Day columns
+    // Pre-calculate events for each day
+    const weekDays = [];
     for (let i = 0; i < 7; i++) {
         const day = new Date(weekStart);
         day.setDate(day.getDate() + i);
-        const dayEvents = getEventsForDay(day);
-        const dateStr = formatDateForInput(day);
+        weekDays.push({
+            date: day,
+            dateStr: formatDateForInput(day),
+            events: getEventsForDay(day)
+        });
+    }
+    
+    // Render row by row (time slot by time slot)
+    for (const slot of slots) {
+        // Time cell first
+        html += `<div class="week-time-slot">${slot.label}</div>`;
         
-        html += `<div class="week-day-col">`;
-        
-        for (const slot of slots) {
-            const slotEvents = dayEvents.filter(e => {
+        // Then each day's slot for this time
+        for (const dayData of weekDays) {
+            const slotEvents = dayData.events.filter(e => {
                 const start = new Date(e.start.dateTime || e.start.date);
                 const eventMinutes = start.getHours() * 60 + start.getMinutes();
                 return eventMinutes >= slot.startMinutes && eventMinutes < slot.endMinutes;
             });
             
             html += `
-                <div class="week-day-slot" data-date="${dateStr}" data-hour="${slot.hour}" data-minute="${slot.minute}"
+                <div class="week-day-slot" data-date="${dayData.dateStr}" data-hour="${slot.hour}" data-minute="${slot.minute}"
                      onclick="openModalWithTime(this)"
                      ondragover="handleDragOver(event)"
                      ondragleave="handleDragLeave(event)"
-                     ondrop="handleDrop(event, '${dateStr}', ${slot.hour})">
+                     ondrop="handleDrop(event, '${dayData.dateStr}', ${slot.hour})">
                     ${slotEvents.map(e => createEventElement(e, true)).join('')}
                 </div>
             `;
         }
-        
-        html += `</div>`;
     }
     
     html += `</div></div>`;
