@@ -1995,6 +1995,7 @@ a:hover {
 
 @media (prefers-color-scheme: dark) {
     :root {
+        /* Inverted gray scale */
         --apple-white: #1c1c1e;
         --apple-gray-50: #2c2c2e;
         --apple-gray-100: #3a3a3c;
@@ -2008,9 +2009,11 @@ a:hover {
         --apple-gray-900: #ffffff;
         --apple-black: #ffffff;
         
+        /* Vibrant dark mode colors */
         --apple-blue: #0a84ff;
         --apple-blue-hover: #409cff;
         --apple-blue-light: rgba(10, 132, 255, 0.2);
+        --apple-blue-subtle: rgba(10, 132, 255, 0.12);
         
         --apple-green: #30d158;
         --apple-green-light: rgba(48, 209, 88, 0.2);
@@ -2020,15 +2023,291 @@ a:hover {
         --apple-red-light: rgba(255, 69, 58, 0.2);
         --apple-purple: #bf5af2;
         --apple-purple-light: rgba(191, 90, 242, 0.2);
+        --apple-teal: #64d2ff;
+        --apple-teal-light: rgba(100, 210, 255, 0.2);
+        
+        /* Dark mode shadows (subtle) */
+        --apple-shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.3);
+        --apple-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.4);
+        --apple-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+        --apple-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+        
+        /* Dark mode glow (for focus states) */
+        --apple-glow-blue: 0 0 0 4px rgba(10, 132, 255, 0.35);
     }
     
     body {
         background: #000000;
+        color: #ffffff;
     }
     
+    /* Navigation */
     .nav {
         background: rgba(28, 28, 30, 0.72);
         border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav-link {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .nav-link:hover,
+    .nav-link.active {
+        color: #ffffff;
+    }
+    
+    .nav-brand,
+    .nav-logo {
+        color: #ffffff;
+    }
+    
+    /* Cards */
+    .card {
+        background: #1c1c1e;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Forms */
+    .form-input,
+    .form-select,
+    .form-textarea {
+        background: #2c2c2e;
+        border-color: #48484a;
+        color: #ffffff;
+    }
+    
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        background: #3a3a3c;
+        border-color: var(--apple-blue);
+    }
+    
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+        color: #8e8e93;
+    }
+    
+    /* Buttons */
+    .btn-secondary {
+        background: #2c2c2e;
+        border-color: #48484a;
+        color: #ffffff;
+    }
+    
+    .btn-secondary:hover {
+        background: #3a3a3c;
+    }
+    
+    /* Tables */
+    table th,
+    table td {
+        border-color: #48484a;
+    }
+    
+    table thead th {
+        background: #2c2c2e;
+        color: #8e8e93;
+    }
+    
+    table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Modals */
+    .modal-overlay {
+        background: rgba(0, 0, 0, 0.7);
+    }
+    
+    .modal {
+        background: #1c1c1e;
+    }
+    
+    .modal-header {
+        border-bottom-color: #48484a;
+    }
+    
+    .modal-footer {
+        background: #2c2c2e;
+        border-top-color: #48484a;
+    }
+    
+    .modal-close {
+        background: #48484a;
+        color: #ffffff;
+    }
+    
+    /* Alerts */
+    .alert {
+        background: #2c2c2e;
+        border-color: #48484a;
+    }
+    
+    /* Settings tabs */
+    .settings-tabs {
+        background: #2c2c2e;
+    }
+    
+    .settings-tab.active {
+        background: #48484a;
+    }
+    
+    /* Settings cards */
+    .settings-card {
+        background: #1c1c1e;
+        border-color: #48484a;
+    }
+    
+    .settings-card-header {
+        border-bottom-color: #48484a;
+    }
+    
+    /* Calendar */
+    .calendar-event {
+        background: var(--apple-blue);
+    }
+    
+    .week-header,
+    .month-header,
+    .day-header {
+        background: #2c2c2e;
+        border-color: #48484a;
+    }
+    
+    .week-day-slot,
+    .month-day {
+        background: #1c1c1e;
+        border-color: #3a3a3c;
+    }
+    
+    .week-day-slot:hover,
+    .month-day:hover {
+        background: #2c2c2e;
+    }
+    
+    .week-time-slot,
+    .time-label {
+        background: #2c2c2e;
+    }
+    
+    .month-day.today .month-day-number,
+    .week-header-cell.today .week-header-date {
+        background: var(--apple-blue);
+    }
+    
+    /* Right panel */
+    .today-card,
+    .upcoming-card {
+        background: #1c1c1e;
+        border-color: #48484a;
+    }
+    
+    .panel-header {
+        background: #2c2c2e;
+        border-color: #48484a;
+    }
+    
+    .event-item {
+        background: #2c2c2e;
+    }
+    
+    .event-item:hover {
+        background: #3a3a3c;
+    }
+    
+    /* Toast */
+    .toast {
+        background: #2c2c2e;
+        color: #ffffff;
+    }
+    
+    /* Search bar */
+    .search-bar input {
+        background: #2c2c2e;
+        color: #ffffff;
+    }
+    
+    .search-bar input:focus {
+        background: #3a3a3c;
+    }
+    
+    /* Dropdown */
+    .dropdown-menu {
+        background: #2c2c2e;
+        border-color: #48484a;
+    }
+    
+    .dropdown-item:hover {
+        background: #3a3a3c;
+    }
+    
+    /* Action sheet */
+    .action-sheet {
+        background: #2c2c2e;
+    }
+    
+    .action-sheet-group {
+        background: #3a3a3c;
+    }
+    
+    .action-sheet-btn:hover {
+        background: #48484a;
+    }
+    
+    /* Alert dialog */
+    .alert-dialog {
+        background: #2c2c2e;
+    }
+    
+    .alert-dialog-actions {
+        border-top-color: #48484a;
+    }
+    
+    .alert-dialog-btn:not(:last-child) {
+        border-right-color: #48484a;
+    }
+    
+    /* Drawer */
+    .drawer {
+        background: #1c1c1e;
+    }
+    
+    .drawer-header,
+    .drawer-footer {
+        background: #2c2c2e;
+        border-color: #48484a;
+    }
+    
+    /* List items */
+    .list-item {
+        border-bottom-color: #3a3a3c;
+    }
+    
+    .list-item:hover {
+        background: #2c2c2e;
+    }
+    
+    /* Quick actions */
+    .quick-action {
+        background: #2c2c2e;
+        border-color: #48484a;
+    }
+    
+    .quick-action:hover {
+        background: #3a3a3c;
+    }
+    
+    /* Scrollbar dark mode */
+    ::-webkit-scrollbar-track {
+        background: #1c1c1e;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #48484a;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #636366;
     }
 }
 
