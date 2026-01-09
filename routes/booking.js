@@ -183,6 +183,37 @@ const getAppleCalendarEvents = async (credentials, calendarUrl, dayStart, dayEnd
     return events;
 };
 
+// Helper: haal events op van Microsoft Calendar
+const getMicrosoftCalendarEvents = async (accessToken, dayStart, dayEnd) => {
+    const GRAPH_API_URL = 'https://graph.microsoft.com/v1.0';
+    
+    const url = new URL(`${GRAPH_API_URL}/me/calendar/events`);
+    url.searchParams.set('$filter', `start/dateTime ge '${dayStart.toISOString()}' and end/dateTime le '${dayEnd.toISOString()}'`);
+    url.searchParams.set('$orderby', 'start/dateTime');
+    url.searchParams.set('$top', '50');
+    
+    const response = await fetch(url.toString(), {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Prefer': 'outlook.timezone="Europe/Amsterdam"'
+        }
+    });
+    
+    const data = await response.json();
+    
+    if (data.error) {
+        console.error('[SMART] Microsoft events error:', data.error);
+        return [];
+    }
+    
+    return (data.value || []).map(event => ({
+        id: event.id,
+        summary: event.subject,
+        start: event.start?.dateTime,
+        end: event.end?.dateTime
+    }));
+};
+
 // Helper: bepaal kalender type en haal events op
 const getCalendarEvents = async (req, dayStart, dayEnd) => {
     const userId = req.session.user.id;
@@ -192,6 +223,18 @@ const getCalendarEvents = async (req, dayStart, dayEnd) => {
     if (googleAuth) {
         console.log('[SMART] Using Google Calendar');
         return await getGoogleCalendarEvents(googleAuth, dayStart, dayEnd);
+    }
+    
+    // Check Microsoft Calendar
+    const microsoftCredentials = await userStore.getMicrosoftCalendarCredentials(userId);
+    if (microsoftCredentials && microsoftCredentials.connected && microsoftCredentials.accessToken) {
+        console.log('[SMART] Using Microsoft Calendar');
+        // Check if token needs refresh
+        if (microsoftCredentials.expiresAt && microsoftCredentials.expiresAt < Date.now() + 300000) {
+            console.log('[SMART] Microsoft token expired, skipping (needs refresh via route)');
+        } else {
+            return await getMicrosoftCalendarEvents(microsoftCredentials.accessToken, dayStart, dayEnd);
+        }
     }
     
     // Check Apple Calendar
@@ -253,6 +296,55 @@ END:VCALENDAR`;
         start: eventData.start.toISOString(),
         end: eventData.end.toISOString(),
         location: eventData.location
+    };
+};
+
+// Helper: maak event aan in Microsoft Calendar
+const createMicrosoftCalendarEvent = async (accessToken, eventData) => {
+    const GRAPH_API_URL = 'https://graph.microsoft.com/v1.0';
+    
+    const event = {
+        subject: eventData.summary,
+        body: {
+            contentType: 'text',
+            content: eventData.description || ''
+        },
+        start: {
+            dateTime: eventData.start.toISOString(),
+            timeZone: 'Europe/Amsterdam'
+        },
+        end: {
+            dateTime: eventData.end.toISOString(),
+            timeZone: 'Europe/Amsterdam'
+        }
+    };
+    
+    if (eventData.location) {
+        event.location = { displayName: eventData.location };
+    }
+    
+    const response = await fetch(`${GRAPH_API_URL}/me/calendar/events`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(event)
+    });
+    
+    const data = await response.json();
+    
+    if (data.error) {
+        console.error('🔵 Microsoft create event error:', data.error);
+        throw new Error(`Failed to create Microsoft Calendar event: ${data.error.message}`);
+    }
+    
+    return {
+        id: data.id,
+        summary: data.subject,
+        start: data.start?.dateTime,
+        end: data.end?.dateTime,
+        location: data.location?.displayName
     };
 };
 
@@ -685,22 +777,31 @@ ${notes || ''}`.trim(),
             createdEvent = response.data;
             console.log(`✅ Afspraak geboekt via Google Calendar: ${service.name} bij ${customer.name}`);
         } else {
-            // Check Apple Calendar
-            const appleCredentials = await userStore.getAppleCalendarCredentials(req.session.user.id);
-            const appleSync = await userStore.getAppleCalendarSync(req.session.user.id);
+            // Check Microsoft Calendar
+            const microsoftCredentials = await userStore.getMicrosoftCalendarCredentials(req.session.user.id);
             
-            if (appleCredentials && appleSync?.enabled && appleSync?.appleCalendarUrl) {
-                // Create event via Apple Calendar
-                createdEvent = await createAppleCalendarEvent(appleCredentials, appleSync.appleCalendarUrl, eventData);
-                console.log(`✅ Afspraak geboekt via Apple Calendar: ${service.name} bij ${customer.name}`);
+            if (microsoftCredentials && microsoftCredentials.connected && microsoftCredentials.accessToken) {
+                // Create event via Microsoft Calendar
+                createdEvent = await createMicrosoftCalendarEvent(microsoftCredentials.accessToken, eventData);
+                console.log(`✅ Afspraak geboekt via Microsoft Calendar: ${service.name} bij ${customer.name}`);
             } else {
-                console.log(`⚠️ Geen kalender verbonden - afspraak niet toegevoegd aan kalender`);
-                createdEvent = { 
-                    id: `local-${Date.now()}`,
-                    summary: eventData.summary,
-                    start: start.toISOString(),
-                    end: end.toISOString()
-                };
+                // Check Apple Calendar
+                const appleCredentials = await userStore.getAppleCalendarCredentials(req.session.user.id);
+                const appleSync = await userStore.getAppleCalendarSync(req.session.user.id);
+                
+                if (appleCredentials && appleSync?.enabled && appleSync?.appleCalendarUrl) {
+                    // Create event via Apple Calendar
+                    createdEvent = await createAppleCalendarEvent(appleCredentials, appleSync.appleCalendarUrl, eventData);
+                    console.log(`✅ Afspraak geboekt via Apple Calendar: ${service.name} bij ${customer.name}`);
+                } else {
+                    console.log(`⚠️ Geen kalender verbonden - afspraak niet toegevoegd aan kalender`);
+                    createdEvent = { 
+                        id: `local-${Date.now()}`,
+                        summary: eventData.summary,
+                        start: start.toISOString(),
+                        end: end.toISOString()
+                    };
+                }
             }
         }
         

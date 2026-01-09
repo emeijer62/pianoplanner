@@ -126,6 +126,13 @@ function initDatabase() {
             }
         });
         
+        // Migratie: voeg Microsoft Calendar kolom toe aan users
+        db.run(`ALTER TABLE users ADD COLUMN microsoft_calendar TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error microsoft_calendar:', err);
+            }
+        });
+        
         // Migratie: voeg Apple event tracking toe aan appointments
         db.run(`ALTER TABLE appointments ADD COLUMN apple_event_id TEXT`, (err) => {
             if (err && !err.message.includes('duplicate column')) {

@@ -855,6 +855,54 @@ const updateAppleCalendarSync = async (userId, settings) => {
     return { success: true };
 };
 
+// ==================== MICROSOFT CALENDAR ====================
+
+/**
+ * Save Microsoft Calendar credentials
+ */
+const saveMicrosoftCalendarCredentials = async (userId, credentials) => {
+    const microsoftCalendar = JSON.stringify({
+        accessToken: credentials.accessToken,
+        refreshToken: credentials.refreshToken,
+        expiresAt: credentials.expiresAt,
+        email: credentials.email,
+        displayName: credentials.displayName,
+        connected: credentials.connected || true,
+        updatedAt: new Date().toISOString()
+    });
+    
+    await dbRun(`
+        UPDATE users SET microsoft_calendar = ?, updated_at = ? WHERE id = ?
+    `, [microsoftCalendar, new Date().toISOString(), userId]);
+    
+    return { success: true };
+};
+
+/**
+ * Get Microsoft Calendar credentials
+ */
+const getMicrosoftCalendarCredentials = async (userId) => {
+    const user = await dbGet('SELECT microsoft_calendar FROM users WHERE id = ?', [userId]);
+    if (!user || !user.microsoft_calendar) return null;
+    
+    try {
+        return JSON.parse(user.microsoft_calendar);
+    } catch (e) {
+        return null;
+    }
+};
+
+/**
+ * Remove Microsoft Calendar credentials
+ */
+const removeMicrosoftCalendarCredentials = async (userId) => {
+    await dbRun(`
+        UPDATE users SET microsoft_calendar = NULL, updated_at = ? WHERE id = ?
+    `, [new Date().toISOString(), userId]);
+    
+    return { success: true };
+};
+
 // ==================== LAST LOGIN TRACKING ====================
 
 const updateLastLogin = async (userId) => {
@@ -917,6 +965,10 @@ module.exports = {
     removeAppleCalendarCredentials,
     getAppleCalendarSync,
     updateAppleCalendarSync,
+    // Microsoft Calendar
+    saveMicrosoftCalendarCredentials,
+    getMicrosoftCalendarCredentials,
+    removeMicrosoftCalendarCredentials,
     // Public Booking
     getUserByBookingSlug,
     getBookingSettings,
