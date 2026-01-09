@@ -711,93 +711,57 @@ router.post('/:slug', async (req, res) => {
         };
         
         // Send email notifications ASYNC (fire-and-forget, na response)
+        // For public bookings, always send confirmations - no need to check settings
         if (emailService.isEmailConfigured()) {
-            setImmediate(async () => {
-                try {
-                    console.log('📧 Starting email process for booking');
-                    console.log('📧 Email data prepared:', JSON.stringify({
-                        customerEmail: emailData.customerEmail,
-                        customerName: emailData.customerName,
-                        userEmail: emailData.userEmail,
-                        userId: emailData.userId
-                    }));
-                    
-                    // Default email settings (always enabled for public bookings)
-                    let sendConfirmation = true;
-                    let sendNotification = true;
-                    
-                    // Try to get user-specific settings but don't fail if we can't
+            // Use process.nextTick instead of setImmediate for more reliable execution
+            process.nextTick(async () => {
+                console.log('📧 Starting email process for booking');
+                
+                // Send confirmation to customer
+                if (emailData.customerEmail) {
+                    console.log('📧 Sending confirmation to:', emailData.customerEmail);
                     try {
-                        const db = getDb();
-                        const row = await new Promise((resolve) => {
-                            db.get('SELECT send_confirmations, notify_new_bookings FROM email_settings WHERE user_id = ?', 
-                                [emailData.userId], 
-                                (err, row) => {
-                                    if (err) {
-                                        console.log('📧 Could not fetch email settings, using defaults');
-                                    }
-                                    resolve(row);
-                                }
-                            );
+                        const result = await emailService.sendAppointmentConfirmation({
+                            customerEmail: emailData.customerEmail,
+                            customerName: emailData.customerName,
+                            appointmentDate: emailData.date,
+                            appointmentTime: emailData.time,
+                            serviceName: emailData.serviceName,
+                            companyName: emailData.companyName,
+                            replyTo: emailData.userEmail,
+                            fromName: emailData.companyName,
+                            userId: emailData.userId
                         });
-                        if (row) {
-                            sendConfirmation = row.send_confirmations !== 0;
-                            sendNotification = row.notify_new_bookings !== 0;
-                        }
-                    } catch (settingsErr) {
-                        console.log('📧 Email settings error, using defaults:', settingsErr.message);
+                        console.log('📧 ✅ Confirmation sent to', emailData.customerEmail, '- messageId:', result?.messageId || 'OK');
+                    } catch (confErr) {
+                        console.error('❌ Failed to send confirmation:', confErr.message);
+                        console.error('❌ Stack:', confErr.stack);
                     }
-                    
-                    console.log('📧 Will send confirmation:', sendConfirmation, '| notification:', sendNotification);
-                    
-                    // Send confirmation to customer if enabled
-                    if (sendConfirmation && emailData.customerEmail) {
-                        console.log('📧 Sending confirmation to:', emailData.customerEmail);
-                        try {
-                            const result = await emailService.sendAppointmentConfirmation({
-                                customerEmail: emailData.customerEmail,
-                                customerName: emailData.customerName,
-                                appointmentDate: emailData.date,
-                                appointmentTime: emailData.time,
-                                serviceName: emailData.serviceName,
-                                companyName: emailData.companyName,
-                                replyTo: emailData.userEmail,
-                                fromName: emailData.companyName,
-                                userId: emailData.userId
-                            });
-                            console.log('📧 Confirmation sent successfully:', result?.messageId || 'OK');
-                        } catch (confErr) {
-                            console.error('❌ Failed to send confirmation:', confErr.message);
-                        }
-                    } else {
-                        console.log('📧 Skipping confirmation - enabled:', sendConfirmation, 'email:', emailData.customerEmail);
-                    }
-                    
-                    // Send notification to technician if enabled
-                    if (sendNotification && emailData.userEmail) {
-                        console.log('📧 Sending notification to:', emailData.userEmail);
-                        try {
-                            const result2 = await emailService.sendNewBookingNotification({
-                                technicianEmail: emailData.userEmail,
-                                customerName: emailData.customerName,
-                                customerEmail: emailData.customerEmail,
-                                customerPhone: emailData.customerPhone,
-                                appointmentDate: emailData.date,
-                                appointmentTime: emailData.time,
-                                serviceName: emailData.serviceName,
-                                notes: emailData.customerNotes,
-                                companyName: emailData.companyName
-                            });
-                            console.log('📧 Notification sent successfully:', result2?.messageId || 'OK');
-                        } catch (notifErr) {
-                            console.error('❌ Failed to send notification:', notifErr.message);
-                        }
-                    }
-                    
-                    console.log('📧 Email process completed');
-                } catch (emailError) {
-                    console.error('❌ Email process failed:', emailError.message);
                 }
+                
+                // Send notification to technician
+                if (emailData.userEmail) {
+                    console.log('📧 Sending notification to:', emailData.userEmail);
+                    try {
+                        const result2 = await emailService.sendNewBookingNotification({
+                            technicianEmail: emailData.userEmail,
+                            customerName: emailData.customerName,
+                            customerEmail: emailData.customerEmail,
+                            customerPhone: emailData.customerPhone,
+                            appointmentDate: emailData.date,
+                            appointmentTime: emailData.time,
+                            serviceName: emailData.serviceName,
+                            notes: emailData.customerNotes,
+                            companyName: emailData.companyName
+                        });
+                        console.log('📧 ✅ Notification sent to', emailData.userEmail, '- messageId:', result2?.messageId || 'OK');
+                    } catch (notifErr) {
+                        console.error('❌ Failed to send notification:', notifErr.message);
+                        console.error('❌ Stack:', notifErr.stack);
+                    }
+                }
+                
+                console.log('📧 Email process completed');
             });
         } else {
             console.log('📧 Email not configured, skipping notifications');
