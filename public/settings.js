@@ -1204,6 +1204,65 @@ async function disconnectAppleCalendar() {
     }
 }
 
+// ========== MICROSOFT CALENDAR SYNC ==========
+
+async function loadMicrosoftCalendarStatus() {
+    try {
+        const response = await fetch('/api/microsoft/status');
+        const data = await response.json();
+        
+        const statusDiv = document.getElementById('microsoft-calendar-status');
+        const syncOptions = document.getElementById('microsoft-sync-options');
+        const notConnected = document.getElementById('microsoft-not-connected');
+        const statusBadge = document.getElementById('microsoft-status-badge');
+        
+        if (data.connected) {
+            statusDiv.innerHTML = `<strong>✅ Connected to Microsoft Calendar</strong><br>
+                <small>Account: ${data.email || 'Microsoft Account'}</small>`;
+            
+            syncOptions.style.display = 'block';
+            notConnected.style.display = 'none';
+            statusBadge.textContent = 'Connected';
+            statusBadge.className = 'status-badge connected';
+        } else {
+            statusDiv.innerHTML = '<strong>⚪ Not connected to Microsoft Calendar</strong>';
+            
+            syncOptions.style.display = 'none';
+            notConnected.style.display = 'block';
+            statusBadge.textContent = 'Not connected';
+            statusBadge.className = 'status-badge disconnected';
+        }
+    } catch (error) {
+        console.error('Error loading Microsoft Calendar status:', error);
+    }
+}
+
+async function disconnectMicrosoftCalendar() {
+    if (!confirm('Are you sure you want to disconnect Microsoft Calendar?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/microsoft/disconnect', {
+            method: 'POST'
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            showAlert(data.error, 'error');
+            return;
+        }
+        
+        showAlert('Microsoft Calendar disconnected', 'success');
+        loadMicrosoftCalendarStatus();
+        
+    } catch (error) {
+        console.error('Error disconnecting Microsoft Calendar:', error);
+        showAlert('Failed to disconnect: ' + error.message, 'error');
+    }
+}
+
 async function loadAppleCalendars() {
     const selectGroup = document.getElementById('apple-calendar-select-group');
     const select = document.getElementById('appleCalendarSelect');
@@ -2093,6 +2152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadBookingSettings();
         loadTravelSettings();
         loadAppleCalendarStatus();
+        loadMicrosoftCalendarStatus();
         loadSmtpSettings();
         loadCalendarFeedSettings();
         loadEmailTemplates();

@@ -386,6 +386,7 @@
 
             <div class="sidebar-title">Calendar Integration</div>
             <a href="#google-calendar" class="sidebar-link">Connect Google Calendar</a>
+            <a href="#microsoft-calendar" class="sidebar-link">Connect Microsoft 365</a>
             <a href="#apple-calendar" class="sidebar-link">Connect iCloud Calendar</a>
             <a href="#sync-methods" class="sidebar-link">Sync Methods Explained</a>
 
@@ -630,6 +631,57 @@
                 </table>
             </section>
 
+            <!-- MICROSOFT CALENDAR -->
+            <section id="microsoft-calendar" class="section">
+                <h2><span class="icon"><i data-lucide="calendar" style="width: 24px; height: 24px;"></i></span> Connect Microsoft 365 / Outlook</h2>
+                <p>
+                    Use Outlook or Microsoft 365? Connect your calendar directly with PianoPlanner! 
+                    This enables <strong>two-way sync</strong>: appointments appear in Outlook, and 
+                    your existing events are checked for availability.
+                </p>
+
+                <h3>What you need</h3>
+                <ul>
+                    <li>A Microsoft account (personal Outlook.com or Office 365 work account)</li>
+                    <li>Access to your calendar in Outlook or Microsoft 365</li>
+                </ul>
+
+                <h3>Connecting Microsoft Calendar</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Go to Settings → Calendar</div>
+                        <p>Navigate to the Calendar settings section.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Click "Connect Microsoft"</div>
+                        <p>You'll be redirected to Microsoft's login page.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Log in and grant permission</div>
+                        <p>Microsoft asks permission to access your calendar. Click "Accept".</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Done!</div>
+                        <p>You'll be redirected back. Your Microsoft Calendar is now connected.</p>
+                    </div>
+                </div>
+
+                <h3>What gets synced?</h3>
+                <ul>
+                    <li><strong>Appointments created in PianoPlanner</strong> are automatically added to your Outlook calendar</li>
+                    <li><strong>Existing events in Outlook</strong> are used to check your availability (Smart Appointments)</li>
+                    <li><strong>Deleted appointments</strong> are also removed from your calendar</li>
+                </ul>
+
+                <div class="callout callout-success">
+                    <div class="callout-title"><i data-lucide="check-circle" style="width: 18px; height: 18px;"></i> Works with both account types</div>
+                    <p>
+                        Microsoft Calendar integration works with both personal Microsoft accounts (Outlook.com, Hotmail) 
+                        and organizational Office 365/Microsoft 365 work accounts.
+                    </p>
+                </div>
+            </section>
+
             <!-- APPLE CALENDAR -->
             <section id="apple-calendar" class="section">
                 <h2><span class="icon"><i data-lucide="calendar" style="width: 24px; height: 24px;"></i></span> Connect iCloud / Apple Calendar</h2>
@@ -716,6 +768,12 @@
                             <td>Full integration with Google</td>
                         </tr>
                         <tr>
+                            <td><strong>Microsoft 365 / Outlook</strong></td>
+                            <td><i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Two-way</td>
+                            <td><i data-lucide="check" style="width: 16px; height: 16px;"></i> Yes</td>
+                            <td>Office 365, Outlook.com users</td>
+                        </tr>
+                        <tr>
                             <td><strong>Apple CalDAV</strong></td>
                             <td><i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Two-way</td>
                             <td><i data-lucide="check" style="width: 16px; height: 16px;"></i> Yes</td>
@@ -725,7 +783,7 @@
                             <td><strong>iCal Feed (subscription)</strong></td>
                             <td><i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i> Read only</td>
                             <td><i data-lucide="clock" style="width: 14px; height: 14px;"></i> Every 15-60 min</td>
-                            <td>Outlook, other apps</td>
+                            <td>Other calendar apps</td>
                         </tr>
                     </tbody>
                 </table>
@@ -754,8 +812,9 @@
                     <div class="callout-title"><i data-lucide="lightbulb" style="width: 18px; height: 18px;"></i> Which method to use?</div>
                     <p>
                         <strong>Google user?</strong> Use Google Calendar connection.<br>
+                        <strong>Microsoft 365 / Outlook user?</strong> Use Microsoft Calendar connection.<br>
                         <strong>iPhone/Mac user?</strong> Use Apple Calendar connection.<br>
-                        <strong>Outlook/other app?</strong> Use iCal feed.
+                        <strong>Other app?</strong> Use iCal feed.
                     </p>
                 </div>
             </section>
