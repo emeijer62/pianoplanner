@@ -972,6 +972,9 @@ function onCustomerChange() {
             confirmationLabel.textContent = `Bevestigingsmail sturen naar ${customer.email}`;
         }
     }
+    
+    // Update smart appointment visibility
+    updateSmartAppointmentVisibility();
 }
 
 function onServiceChange() {
@@ -994,6 +997,122 @@ function onServiceChange() {
             const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
             endInput.value = formatDateTimeLocal(endDate);
         }
+    }
+    
+    // Update smart appointment visibility
+    updateSmartAppointmentVisibility();
+}
+
+// Show/hide smart appointment section based on customer and service selection
+function updateSmartAppointmentVisibility() {
+    const customerId = document.getElementById('event-customer').value;
+    const serviceId = document.getElementById('event-service').value;
+    const smartSection = document.getElementById('smart-appointment-section');
+    const smartResult = document.getElementById('smart-result');
+    
+    if (smartSection) {
+        if (customerId && serviceId) {
+            smartSection.style.display = 'block';
+            // Set default date to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('smart-date').value = tomorrow.toISOString().split('T')[0];
+        } else {
+            smartSection.style.display = 'none';
+        }
+        // Reset result
+        if (smartResult) {
+            smartResult.style.display = 'none';
+            smartResult.innerHTML = '';
+        }
+    }
+}
+
+// Find smart slot based on customer, service and date
+async function findSmartSlot() {
+    const customerId = document.getElementById('event-customer').value;
+    const serviceId = document.getElementById('event-service').value;
+    const date = document.getElementById('smart-date').value;
+    const resultDiv = document.getElementById('smart-result');
+    const btn = document.getElementById('find-smart-slot-btn');
+    
+    if (!customerId || !serviceId || !date) {
+        alert('Please select customer, service and date');
+        return;
+    }
+    
+    // Show loading
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: var(--gray-500);">🔍 Searching for available time...</div>';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/booking/find-slot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ serviceId, customerId, date })
+        });
+        
+        const data = await response.json();
+        
+        if (data.available) {
+            const startTime = new Date(data.slot.appointmentStart);
+            const endTime = new Date(data.slot.appointmentEnd);
+            
+            resultDiv.innerHTML = `
+                <div style="background: var(--success-bg, #dcfce7); border: 1px solid var(--success-color, #22c55e); border-radius: 8px; padding: 12px;">
+                    <div style="font-weight: 600; color: var(--success-color, #22c55e); margin-bottom: 8px;">
+                        ✓ Available: ${startTime.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })} 
+                        ${startTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })} - 
+                        ${endTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                    <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 10px;">
+                        🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min service
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="applySmartSlot('${data.slot.appointmentStart}', '${data.slot.appointmentEnd}')" style="width: 100%;">
+                        Use this time
+                    </button>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div style="background: var(--warning-bg, #fef3c7); border: 1px solid var(--warning-color, #f59e0b); border-radius: 8px; padding: 12px; text-align: center;">
+                    <div style="color: var(--warning-color, #f59e0b);">❌ ${data.message || 'No availability on this day'}</div>
+                    <div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">Try another date</div>
+                </div>
+            `;
+        }
+    } catch (err) {
+        console.error('Smart slot error:', err);
+        resultDiv.innerHTML = `
+            <div style="background: var(--danger-bg, #fee2e2); border: 1px solid var(--danger-color, #ef4444); border-radius: 8px; padding: 12px; text-align: center; color: var(--danger-color, #ef4444);">
+                Error finding slot. Please try again.
+            </div>
+        `;
+    }
+    
+    btn.disabled = false;
+}
+
+// Apply the found smart slot to the form
+function applySmartSlot(startStr, endStr) {
+    const startDate = new Date(startStr);
+    const endDate = new Date(endStr);
+    
+    document.getElementById('event-start').value = formatDateTimeLocal(startDate);
+    document.getElementById('event-end').value = formatDateTimeLocal(endDate);
+    
+    // Hide the result
+    document.getElementById('smart-result').style.display = 'none';
+    
+    // Highlight the datetime fields briefly
+    const datetimeRow = document.getElementById('datetime-row');
+    if (datetimeRow) {
+        datetimeRow.style.transition = 'background 0.3s';
+        datetimeRow.style.background = 'var(--success-bg, #dcfce7)';
+        setTimeout(() => {
+            datetimeRow.style.background = '';
+        }, 1500);
     }
 }
 

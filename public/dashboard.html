@@ -1279,7 +1279,26 @@
                     <input type="text" id="event-location" placeholder="Address" autocomplete="off">
                     <div id="location-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
                 </div>
-                <div class="form-row">
+                
+                <!-- Smart Appointment Section -->
+                <div id="smart-appointment-section" class="form-group" style="display: none;">
+                    <label>Find available time</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-end;">
+                        <div style="flex: 1;">
+                            <input type="date" id="smart-date" style="width: 100%;">
+                        </div>
+                        <button type="button" id="find-smart-slot-btn" class="btn btn-primary" onclick="findSmartSlot()" style="white-space: nowrap;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                            Find time
+                        </button>
+                    </div>
+                    <div id="smart-result" style="margin-top: 10px; display: none;"></div>
+                </div>
+                
+                <div class="form-row" id="datetime-row">
                     <div class="form-group">
                         <label for="event-start">Start *</label>
                         <input type="datetime-local" id="event-start" required>
