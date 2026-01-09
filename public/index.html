@@ -430,14 +430,17 @@
                     <input type="text" id="betaName" placeholder="Your name" required class="signup-input">
                     <input type="email" id="betaEmail" placeholder="Email" required class="signup-input">
                 </div>
+                <div class="signup-row">
+                    <input type="password" id="betaPassword" placeholder="Password (min. 8 characters)" required minlength="8" class="signup-input">
+                </div>
                 <button type="submit" class="btn btn-primary signup-btn" id="betaBtn">
                     Create Free Account →
                 </button>
             </form>
             
             <div id="betaSuccess" class="signup-success" style="display: none;">
-                <h3>✓ Account requested!</h3>
-                <p>We'll send you login details shortly.</p>
+                <h3>✓ Account created!</h3>
+                <p>Your account is awaiting approval. You'll receive an email when activated.</p>
             </div>
         </div>
     </section>
@@ -481,7 +484,15 @@
             e.preventDefault();
             const btn = document.getElementById('betaBtn');
             btn.disabled = true;
-            btn.textContent = 'Sending...';
+            btn.textContent = 'Creating account...';
+            
+            const password = document.getElementById('betaPassword').value;
+            if (password.length < 8) {
+                alert('Password must be at least 8 characters');
+                btn.disabled = false;
+                btn.textContent = 'Create Free Account →';
+                return;
+            }
             
             try {
                 const res = await fetch('/api/beta-signup', {
@@ -489,22 +500,25 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         name: document.getElementById('betaName').value,
-                        email: document.getElementById('betaEmail').value
+                        email: document.getElementById('betaEmail').value,
+                        password: password
                     })
                 });
                 
-                if (res.ok) {
+                const data = await res.json();
+                
+                if (res.ok && data.success) {
                     document.getElementById('betaForm').style.display = 'none';
                     document.getElementById('betaSuccess').style.display = 'block';
                 } else {
-                    alert('Something went wrong. Please try again.');
+                    alert(data.error || 'Something went wrong. Please try again.');
                     btn.disabled = false;
-                    btn.textContent = 'Request Access →';
+                    btn.textContent = 'Create Free Account →';
                 }
             } catch {
                 alert('Connection error. Please try again.');
                 btn.disabled = false;
-                btn.textContent = 'Request Access →';
+                btn.textContent = 'Create Free Account →';
             }
         }
     </script>

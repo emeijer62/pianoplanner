@@ -175,17 +175,38 @@ app.use('/api/uploads', uploadRoutes);
 // Email service for beta signup
 const emailService = require('./utils/emailService');
 
-// Beta signup (public, no auth required)
+// Beta signup (public, no auth required) - creates pending account
 app.post('/api/beta-signup', async (req, res) => {
     try {
-        const { name, email, company } = req.body;
+        const { name, email, password, company } = req.body;
         
-        if (!name || !email) {
-            return res.status(400).json({ error: 'Name and email are required' });
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: 'Name, email and password are required' });
         }
         
-        // Stuur response DIRECT terug
-        res.json({ success: true, message: 'Beta signup received' });
+        if (password.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters' });
+        }
+        
+        // Valideer email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+        
+        // Create account with pending status
+        const result = await userStore.registerUser(email, password, name);
+        
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        // Stuur response terug
+        res.json({ 
+            success: true, 
+            needsApproval: true,
+            message: 'Account created! You will be notified when approved.' 
+        });
         
         // Sla data op voor async context
         const signupData = { name, email, company };
@@ -208,16 +229,17 @@ app.post('/api/beta-signup', async (req, res) => {
                             .detail-row:last-child { border-bottom: none; }
                             .label { color: #86868b; font-size: 14px; }
                             .value { font-weight: 500; color: #1d1d1f; }
-                            .badge { background: #34c759; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+                            .badge { background: #f59e0b; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+                            .action-btn { display: inline-block; background: #34c759; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin-top: 16px; }
                         </style>
                     </head>
                     <body>
                         <div class="container">
                             <div class="header">
-                                <h1>🎹 New Beta Signup!</h1>
+                                <h1>🎹 New Beta Account Request</h1>
                             </div>
                             <div class="content">
-                                <span class="badge">NEW BETA REQUEST</span>
+                                <span class="badge">AWAITING APPROVAL</span>
                                 <div class="detail-card">
                                     <div class="detail-row">
                                         <div class="label">Name</div>
@@ -235,10 +257,11 @@ app.post('/api/beta-signup', async (req, res) => {
                                     ` : ''}
                                     <div class="detail-row">
                                         <div class="label">Signed up at</div>
-                                        <div class="value">${new Date().toLocaleString('en-US')}</div>
+                                        <div class="value">${new Date().toLocaleString('nl-NL')}</div>
                                     </div>
                                 </div>
-                                <p>Reply to this email to send them a beta invite!</p>
+                                <p><strong>Account is aangemaakt en wacht op goedkeuring.</strong></p>
+                                <p>Ga naar de Admin Dashboard om deze gebruiker goed te keuren.</p>
                             </div>
                         </div>
                     </body>
@@ -247,12 +270,12 @@ app.post('/api/beta-signup', async (req, res) => {
                 
                 await emailService.sendEmail({
                     to: 'info@pianoplanner.com',
-                    subject: `🎹 New Beta Signup: ${signupData.name}`,
+                    subject: `🎹 Beta Account Wacht op Goedkeuring: ${signupData.name}`,
                     html,
                     skipBcc: true
                 });
                 
-                console.log(`📧 Beta signup: ${signupData.name} <${signupData.email}> ${signupData.company ? `(${signupData.company})` : ''}`);
+                console.log(`📋 Beta account pending: ${signupData.name} <${signupData.email}> ${signupData.company ? `(${signupData.company})` : ''}`);
             } catch (emailError) {
                 console.error('Beta signup email error:', emailError.message);
             }

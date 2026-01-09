@@ -561,11 +561,15 @@
                             <input type="email" id="beta-email" placeholder="your@email.com" required>
                         </div>
                         <div class="form-group">
+                            <label for="beta-password">Password</label>
+                            <input type="password" id="beta-password" placeholder="Min. 8 characters" required minlength="8">
+                        </div>
+                        <div class="form-group">
                             <label for="beta-company">Company name (optional)</label>
                             <input type="text" id="beta-company" placeholder="Piano Services Inc.">
                         </div>
                         <button type="submit" class="btn btn-primary" id="beta-btn">
-                            Join the Beta
+                            Create Account
                         </button>
                     </form>
                     
@@ -689,36 +693,44 @@
             
             const name = document.getElementById('beta-name').value;
             const email = document.getElementById('beta-email').value;
+            const password = document.getElementById('beta-password').value;
             const company = document.getElementById('beta-company').value;
             const btn = document.getElementById('beta-btn');
             
+            // Validate password
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters.');
+                return;
+            }
+            
             btn.disabled = true;
-            btn.textContent = 'Signing up...';
+            btn.textContent = 'Creating account...';
             
             try {
                 const response = await fetch('/api/beta-signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, company })
+                    body: JSON.stringify({ name, email, password, company })
                 });
                 
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showSuccess('You\'re on the list! Check your email for next steps.');
+                    showSuccess('Account created! Please wait for admin approval. You\'ll receive an email when your account is activated.');
                     document.getElementById('beta-name').value = '';
                     document.getElementById('beta-email').value = '';
+                    document.getElementById('beta-password').value = '';
                     document.getElementById('beta-company').value = '';
-                    btn.textContent = 'Signed up!';
+                    btn.textContent = 'Account Created!';
                 } else {
                     showError(data.error || 'Something went wrong');
                     btn.disabled = false;
-                    btn.textContent = 'Join the Beta';
+                    btn.textContent = 'Create Account';
                 }
             } catch (error) {
                 showError('Something went wrong. Please try again.');
                 btn.disabled = false;
-                btn.textContent = 'Join the Beta';
+                btn.textContent = 'Create Account';
             }
         }
         
