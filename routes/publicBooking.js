@@ -186,11 +186,20 @@ router.post('/customer/:token/appointment', async (req, res) => {
         // Stuur bevestigingsmail
         try {
             const company = await companyStore.getCompanySettings(data.owner.id);
-            await emailService.sendConfirmationEmail(data.owner.id, {
-                ...appointmentData,
-                businessName: company?.name || 'Piano Service',
-                businessPhone: company?.phone
-            });
+            if (emailService.isEmailConfigured() && data.customer.email) {
+                await emailService.sendAppointmentConfirmation({
+                    customerEmail: data.customer.email,
+                    customerName: data.customer.name,
+                    appointmentDate: date,
+                    appointmentTime: time,
+                    serviceName: service.name,
+                    companyName: company?.name || 'Piano Service',
+                    replyTo: data.owner.email,
+                    fromName: company?.name || 'Piano Service',
+                    userId: data.owner.id
+                });
+                console.log('📧 ✅ Customer booking confirmation sent to', data.customer.email);
+            }
         } catch (emailErr) {
             console.error('Email verzenden mislukt:', emailErr);
             // Niet fataal - afspraak is wel aangemaakt
