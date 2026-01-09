@@ -276,7 +276,19 @@ router.post('/admin/login', (req, res) => {
 // Check admin status
 router.get('/admin/status', (req, res) => {
     const isAdmin = req.session.isAdmin || false;
-    res.json({ isAdmin });
+    const username = req.session.adminUsername || null;
+    res.json({ isAdmin, username });
+});
+
+// Check general auth status (including impersonation)
+router.get('/status', (req, res) => {
+    res.json({
+        loggedIn: !!req.session.user,
+        userId: req.session.userId || req.session.user?.id || null,
+        isAdmin: req.session.isAdmin || false,
+        isImpersonating: req.session.isImpersonating || false,
+        originalAdmin: req.session.originalAdmin?.adminUsername || null
+    });
 });
 
 // ==================== PROFILE MANAGEMENT ====================

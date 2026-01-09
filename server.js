@@ -638,6 +638,17 @@ console.log('🚀 Server wordt gestart...');
 const server = app.listen(PORT, async () => {
     console.log(`🎹 PianoPlanner draait op http://localhost:${PORT}`);
     
+    // Initialize audit and error logging
+    try {
+        const auditLog = require('./utils/auditLog');
+        const errorLog = require('./utils/errorLog');
+        await auditLog.initAuditLog();
+        await errorLog.initErrorLog();
+        console.log('✅ Audit en error logging geïnitialiseerd');
+    } catch (err) {
+        console.error('⚠️ Audit/error log initialisatie fout:', err.message);
+    }
+    
     // Ensure all customers have booking tokens (migration)
     try {
         const customerStore = require('./utils/customerStore');

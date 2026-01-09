@@ -339,6 +339,377 @@
             justify-content: flex-end;
             margin-top: 1.5rem;
         }
+
+        /* Admin Tabs */
+        .admin-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+            background: var(--light-gray);
+            border-radius: var(--radius-lg);
+            overflow-x: auto;
+        }
+
+        .admin-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .admin-tab:hover {
+            background: var(--white);
+            color: var(--text-primary);
+        }
+
+        .admin-tab.active {
+            background: var(--white);
+            color: var(--text-primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tab-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 999px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Section Cards */
+        .section-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-card h2 {
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        /* Filters Row */
+        .filters-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filters-row select,
+        .filters-row input {
+            padding: 0.625rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+
+        .filters-row input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--white);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--light-gray);
+        }
+
+        .pagination button.active {
+            background: var(--blue);
+            color: white;
+            border-color: var(--blue);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Alerts List */
+        .alerts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--light-gray);
+            border-radius: var(--radius-md);
+            border-left: 3px solid #f59e0b;
+        }
+
+        .alert-item.critical {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .alert-item.warning {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .alert-item .alert-icon {
+            flex-shrink: 0;
+            color: #f59e0b;
+        }
+
+        .alert-item.critical .alert-icon {
+            color: #ef4444;
+        }
+
+        .alert-item .alert-content {
+            flex: 1;
+        }
+
+        .alert-item .alert-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* System Status Banner */
+        .system-status-banner {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            background: #d1fae5;
+            color: #065f46;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1.5rem;
+        }
+
+        .system-status-banner.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            padding: 1rem 0;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: var(--blue);
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            position: relative;
+        }
+
+        .chart-bar:hover::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1d1d1f;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        /* Announcements */
+        .announcements-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .announcement-card {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+
+        .announcement-card.info {
+            border-left: 4px solid var(--blue);
+        }
+
+        .announcement-card.warning {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .announcement-card.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .announcement-card.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .announcement-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .announcement-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .announcement-message {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .announcement-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* User Detail Modal */
+        .user-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            padding: 0.75rem;
+            background: var(--light-gray);
+            border-radius: var(--radius-sm);
+        }
+
+        .detail-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-item .value {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* Severity badges */
+        .severity-badge {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .severity-info { background: #dbeafe; color: #1e40af; }
+        .severity-warning { background: #fef3c7; color: #92400e; }
+        .severity-error { background: #fee2e2; color: #991b1b; }
+        .severity-critical { background: #991b1b; color: white; }
+
+        /* Action buttons in tables */
+        .action-btn {
+            padding: 0.25rem 0.5rem;
+            border: none;
+            background: var(--light-gray);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            background: var(--blue);
+            color: white;
+        }
+
+        .action-btn.resolve {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .action-btn.resolve:hover {
+            background: #10b981;
+            color: white;
+        }
+
+        .action-btn.view {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .action-btn.impersonate {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .action-btn.delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-btn.delete:hover {
+            background: #ef4444;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -348,16 +719,127 @@
             <span>PianoPlanner Admin</span>
         </div>
         <div class="nav-user">
+            <span id="impersonate-banner" style="display: none; background: #f59e0b; color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); margin-right: 1rem; font-size: 0.8rem;">
+                👤 Impersonating user
+                <button onclick="stopImpersonate()" style="background: #fff; color: #f59e0b; border: none; padding: 0.125rem 0.5rem; border-radius: 3px; margin-left: 0.5rem; cursor: pointer; font-size: 0.75rem;">Stop</button>
+            </span>
             <span id="admin-username">Admin</span>
             <button onclick="logout()" class="btn btn-small">Log out</button>
         </div>
     </nav>
 
     <div class="admin-container">
+        <!-- Admin Navigation Tabs -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="overview" onclick="switchTab('overview')">
+                <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i>
+                Overview
+            </button>
+            <button class="admin-tab" data-tab="users" onclick="switchTab('users')">
+                <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                Users
+            </button>
+            <button class="admin-tab" data-tab="audit" onclick="switchTab('audit')">
+                <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                Audit Log
+            </button>
+            <button class="admin-tab" data-tab="errors" onclick="switchTab('errors')">
+                <i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i>
+                Errors
+                <span id="error-badge" class="tab-badge" style="display: none;">0</span>
+            </button>
+            <button class="admin-tab" data-tab="security" onclick="switchTab('security')">
+                <i data-lucide="shield" style="width: 16px; height: 16px;"></i>
+                Security
+            </button>
+            <button class="admin-tab" data-tab="system" onclick="switchTab('system')">
+                <i data-lucide="server" style="width: 16px; height: 16px;"></i>
+                System
+            </button>
+            <button class="admin-tab" data-tab="announcements" onclick="switchTab('announcements')">
+                <i data-lucide="megaphone" style="width: 16px; height: 16px;"></i>
+                Announcements
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        
+        <!-- ==================== OVERVIEW TAB ==================== -->
+        <div class="tab-content active" id="tab-overview">
+            <div class="admin-header">
+                <h1><i data-lucide="layout-dashboard" style="width: 24px; height: 24px;"></i> Dashboard Overview</h1>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <div class="value" id="overview-total-users">-</div>
+                </div>
+                <div class="stat-card pending">
+                    <h3>Awaiting Approval</h3>
+                    <div class="value" id="overview-pending-users">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Subscriptions</h3>
+                    <div class="value" id="overview-active-users">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Trials</h3>
+                    <div class="value" id="overview-trial-users">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>New Signups (7d)</h3>
+                    <div class="value" id="overview-recent-signups">-</div>
+                </div>
+                <div class="stat-card" id="overview-errors-card">
+                    <h3>Unresolved Errors</h3>
+                    <div class="value" id="overview-errors">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Database Size</h3>
+                    <div class="value" id="overview-db-size">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Appointments</h3>
+                    <div class="value" id="overview-appointments">-</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="section-card">
+                <h2>Quick Actions</h2>
+                <div class="quick-actions">
+                    <button class="btn btn-primary" onclick="switchTab('users'); showCreateModal();">
+                        <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Add User
+                    </button>
+                    <button class="btn btn-secondary" onclick="switchTab('announcements'); showAnnouncementModal();">
+                        <i data-lucide="megaphone" style="width: 16px; height: 16px;"></i> New Announcement
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshAllData()">
+                        <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Login Activity Chart -->
+            <div class="section-card">
+                <h2>Login Activity (7 days)</h2>
+                <div id="login-chart" class="chart-container"></div>
+            </div>
+
+            <!-- Recent Security Alerts -->
+            <div class="section-card" id="overview-security-alerts">
+                <h2>Recent Security Alerts</h2>
+                <div id="recent-alerts-list" class="alerts-list"></div>
+            </div>
+        </div>
+
+        <!-- ==================== USERS TAB ==================== -->
+        <div class="tab-content" id="tab-users">
         <div class="admin-header">
             <h1><i data-lucide="users" style="width: 24px; height: 24px;"></i> User Management</h1>
             <div class="admin-nav">
-                <a href="#" class="active">Users</a>
                 <button class="btn btn-primary" onclick="showCreateModal()">+ New User</button>
             </div>
         </div>
@@ -425,6 +907,262 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+        </div>
+
+        <!-- ==================== AUDIT LOG TAB ==================== -->
+        <div class="tab-content" id="tab-audit">
+            <div class="admin-header">
+                <h1><i data-lucide="file-text" style="width: 24px; height: 24px;"></i> Audit Log</h1>
+                <div class="admin-nav">
+                    <button class="btn btn-secondary" onclick="loadAuditLogs()">
+                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-row">
+                <select id="audit-action-filter" onchange="loadAuditLogs()">
+                    <option value="">All Actions</option>
+                    <option value="login_success">Login Success</option>
+                    <option value="login_failed">Login Failed</option>
+                    <option value="user_approved">User Approved</option>
+                    <option value="user_rejected">User Rejected</option>
+                    <option value="admin_impersonate">Impersonate</option>
+                    <option value="plan_changed">Plan Changed</option>
+                    <option value="settings_changed">Settings Changed</option>
+                </select>
+                <select id="audit-severity-filter" onchange="loadAuditLogs()">
+                    <option value="">All Severities</option>
+                    <option value="info">Info</option>
+                    <option value="warning">Warning</option>
+                    <option value="error">Error</option>
+                    <option value="critical">Critical</option>
+                </select>
+                <input type="text" id="audit-search" placeholder="Search..." oninput="debounceAuditSearch()">
+            </div>
+
+            <!-- Audit Log Table -->
+            <div class="users-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Action</th>
+                            <th>User</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                            <th>Severity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-table-body">
+                        <tr>
+                            <td colspan="6" class="loading">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="audit-pagination"></div>
+        </div>
+
+        <!-- ==================== ERRORS TAB ==================== -->
+        <div class="tab-content" id="tab-errors">
+            <div class="admin-header">
+                <h1><i data-lucide="alert-triangle" style="width: 24px; height: 24px;"></i> Error Log</h1>
+                <div class="admin-nav">
+                    <button class="btn btn-secondary" onclick="loadErrorLogs()">
+                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error Stats -->
+            <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="stat-card">
+                    <h3>Total Errors (7d)</h3>
+                    <div class="value" id="error-total">-</div>
+                </div>
+                <div class="stat-card pending">
+                    <h3>Unresolved</h3>
+                    <div class="value" id="error-unresolved">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>API Errors</h3>
+                    <div class="value" id="error-api">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Sync Errors</h3>
+                    <div class="value" id="error-sync">-</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-row">
+                <select id="error-category-filter" onchange="loadErrorLogs()">
+                    <option value="">All Categories</option>
+                    <option value="api">API</option>
+                    <option value="sync">Sync</option>
+                    <option value="email">Email</option>
+                    <option value="database">Database</option>
+                    <option value="auth">Auth</option>
+                </select>
+                <select id="error-resolved-filter" onchange="loadErrorLogs()">
+                    <option value="false">Unresolved</option>
+                    <option value="">All</option>
+                    <option value="true">Resolved</option>
+                </select>
+                <input type="text" id="error-search" placeholder="Search..." oninput="debounceErrorSearch()">
+            </div>
+
+            <!-- Error Log Table -->
+            <div class="users-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Category</th>
+                            <th>Message</th>
+                            <th>Path</th>
+                            <th>User</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="error-table-body">
+                        <tr>
+                            <td colspan="7" class="loading">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination" id="error-pagination"></div>
+        </div>
+
+        <!-- ==================== SECURITY TAB ==================== -->
+        <div class="tab-content" id="tab-security">
+            <div class="admin-header">
+                <h1><i data-lucide="shield" style="width: 24px; height: 24px;"></i> Security</h1>
+            </div>
+
+            <!-- Security Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Successful Logins (7d)</h3>
+                    <div class="value" id="security-success-logins">-</div>
+                </div>
+                <div class="stat-card pending">
+                    <h3>Failed Logins (7d)</h3>
+                    <div class="value" id="security-failed-logins">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Impersonations (7d)</h3>
+                    <div class="value" id="security-impersonations">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Security Alerts</h3>
+                    <div class="value" id="security-alerts-count">-</div>
+                </div>
+            </div>
+
+            <!-- Security Alerts -->
+            <div class="section-card">
+                <h2>Security Alerts</h2>
+                <div id="security-alerts-list" class="alerts-list"></div>
+            </div>
+
+            <!-- Recent Failed Logins -->
+            <div class="section-card">
+                <h2>Recent Failed Logins</h2>
+                <div class="users-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Email/Identifier</th>
+                                <th>IP Address</th>
+                                <th>User Agent</th>
+                            </tr>
+                        </thead>
+                        <tbody id="failed-logins-body">
+                            <tr><td colspan="4" class="loading">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== SYSTEM TAB ==================== -->
+        <div class="tab-content" id="tab-system">
+            <div class="admin-header">
+                <h1><i data-lucide="server" style="width: 24px; height: 24px;"></i> System Health</h1>
+                <div class="admin-nav">
+                    <button class="btn btn-secondary" onclick="loadSystemHealth()">
+                        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="system-status-banner" id="system-status">
+                <i data-lucide="check-circle" style="width: 24px; height: 24px;"></i>
+                <span>System Status: <strong>Healthy</strong></span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Uptime</h3>
+                    <div class="value" id="system-uptime">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Memory Used</h3>
+                    <div class="value" id="system-memory">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Database Size</h3>
+                    <div class="value" id="system-db-size">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Node Version</h3>
+                    <div class="value" id="system-node">-</div>
+                </div>
+            </div>
+
+            <!-- Database Tables -->
+            <div class="section-card">
+                <h2>Database Tables</h2>
+                <div class="users-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table Name</th>
+                                <th>Row Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="db-tables-body">
+                            <tr><td colspan="2" class="loading">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== ANNOUNCEMENTS TAB ==================== -->
+        <div class="tab-content" id="tab-announcements">
+            <div class="admin-header">
+                <h1><i data-lucide="megaphone" style="width: 24px; height: 24px;"></i> Announcements</h1>
+                <div class="admin-nav">
+                    <button class="btn btn-primary" onclick="showAnnouncementModal()">+ New Announcement</button>
+                </div>
+            </div>
+
+            <!-- Announcements List -->
+            <div id="announcements-list" class="announcements-list">
+                <div class="loading">Loading...</div>
+            </div>
         </div>
     </div>
 
@@ -550,6 +1288,75 @@
         </div>
     </div>
 
+    <!-- User Detail Modal -->
+    <div class="modal" id="user-detail-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>User Details</h2>
+                <button class="modal-close" onclick="closeUserDetailModal()">&times;</button>
+            </div>
+            <div id="user-detail-content">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div class="modal" id="announcement-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Announcement</h2>
+                <button class="modal-close" onclick="closeAnnouncementModal()">&times;</button>
+            </div>
+            <form id="announcement-form">
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" id="announcement-title" required placeholder="Announcement title">
+                </div>
+                <div class="form-group">
+                    <label>Message *</label>
+                    <textarea id="announcement-message" required rows="4" placeholder="Announcement message..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="announcement-type">
+                        <option value="info">Info (Blue)</option>
+                        <option value="success">Success (Green)</option>
+                        <option value="warning">Warning (Orange)</option>
+                        <option value="error">Error (Red)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Expires At (optional)</label>
+                    <input type="datetime-local" id="announcement-expires">
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="checkbox" id="announcement-banner" checked>
+                        Show as banner to users
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAnnouncementModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Error Detail Modal -->
+    <div class="modal" id="error-detail-modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>Error Details</h2>
+                <button class="modal-close" onclick="closeErrorDetailModal()">&times;</button>
+            </div>
+            <div id="error-detail-content">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Check admin status on load
         async function checkAdminStatus() {
@@ -645,13 +1452,15 @@
                         <td>${getSubscriptionBadge(user.subscription)}</td>
                         <td>${formatDate(user.createdAt)}</td>
                         <td class="user-actions">
+                            <button class="action-btn view" onclick="showUserDetail('${user.id}')">View</button>
                             ${user.approvalStatus === 'pending' ? `
                                 <button class="btn-approve btn-small" onclick="approveUser('${user.id}')">Approve</button>
                                 <button class="btn-reject btn-small" onclick="showRejectModal('${user.id}')">Reject</button>
                             ` : `
+                                <button class="action-btn impersonate" onclick="impersonateUser('${user.id}')" title="Login as user">👤</button>
                                 <button class="btn btn-small btn-secondary" onclick="showEditModal('${user.id}')">Edit</button>
                                 <button class="btn btn-small btn-secondary" onclick="showPlanModal('${user.id}')">Plan</button>
-                                <button class="btn btn-small btn-secondary" onclick="deleteUser('${user.id}')" style="color: #ef4444;">Delete</button>
+                                <button class="action-btn delete" onclick="deleteUser('${user.id}')" title="Delete user">🗑️</button>
                             `}
                         </td>
                     </tr>
@@ -965,11 +1774,688 @@
             }, 2000);
         }
 
+        // ==================== TAB NAVIGATION ====================
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === `tab-${tabName}`);
+            });
+            
+            // Load data for tab
+            switch(tabName) {
+                case 'overview':
+                    loadOverviewData();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'audit':
+                    loadAuditLogs();
+                    break;
+                case 'errors':
+                    loadErrorLogs();
+                    loadErrorStats();
+                    break;
+                case 'security':
+                    loadSecurityData();
+                    break;
+                case 'system':
+                    loadSystemHealth();
+                    break;
+                case 'announcements':
+                    loadAnnouncements();
+                    break;
+            }
+            
+            lucide.createIcons();
+        }
+
+        // ==================== OVERVIEW ====================
+        async function loadOverviewData() {
+            try {
+                const response = await fetch('/api/admin/dashboard/stats');
+                if (!response.ok) throw new Error('Failed to load stats');
+                
+                const data = await response.json();
+                
+                document.getElementById('overview-total-users').textContent = data.users.total;
+                document.getElementById('overview-pending-users').textContent = data.users.pending;
+                document.getElementById('overview-active-users').textContent = data.users.active;
+                document.getElementById('overview-trial-users').textContent = data.users.trial;
+                document.getElementById('overview-recent-signups').textContent = data.recentSignups;
+                document.getElementById('overview-errors').textContent = data.errors.total;
+                document.getElementById('overview-db-size').textContent = data.database.sizeMB + ' MB';
+                document.getElementById('overview-appointments').textContent = data.content.appointments;
+                
+                // Color error card if there are errors
+                const errorCard = document.getElementById('overview-errors-card');
+                if (data.errors.total > 0) {
+                    errorCard.classList.add('pending');
+                }
+                
+                // Load login chart
+                renderLoginChart(data.loginStats);
+                
+                // Load security alerts
+                loadRecentSecurityAlerts();
+                
+            } catch (error) {
+                console.error('Error loading overview:', error);
+            }
+        }
+
+        function renderLoginChart(stats) {
+            const container = document.getElementById('login-chart');
+            if (!stats || stats.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">No login data available</p>';
+                return;
+            }
+            
+            // Group by date
+            const byDate = {};
+            stats.forEach(item => {
+                if (!byDate[item.date]) byDate[item.date] = { success: 0, failed: 0 };
+                if (item.action === 'login_success') byDate[item.date].success = item.count;
+                if (item.action === 'login_failed') byDate[item.date].failed = item.count;
+            });
+            
+            const dates = Object.keys(byDate).sort();
+            const maxValue = Math.max(...dates.map(d => byDate[d].success + byDate[d].failed), 1);
+            
+            container.innerHTML = dates.map(date => {
+                const total = byDate[date].success + byDate[date].failed;
+                const height = (total / maxValue) * 100;
+                return `
+                    <div class="chart-bar" style="height: ${height}%;" data-label="${date}: ${byDate[date].success} success, ${byDate[date].failed} failed"></div>
+                `;
+            }).join('');
+        }
+
+        async function loadRecentSecurityAlerts() {
+            try {
+                const response = await fetch('/api/admin/security-alerts');
+                const alerts = await response.json();
+                
+                const container = document.getElementById('recent-alerts-list');
+                if (!alerts || alerts.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-muted);">No recent security alerts</p>';
+                    return;
+                }
+                
+                container.innerHTML = alerts.slice(0, 5).map(alert => `
+                    <div class="alert-item ${alert.severity}">
+                        <div class="alert-icon">
+                            <i data-lucide="${alert.severity === 'critical' ? 'alert-octagon' : 'alert-triangle'}" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <div class="alert-content">
+                            <strong>${escapeHtml(alert.action.replace(/_/g, ' '))}</strong>
+                            <p style="margin: 0.25rem 0 0; font-size: 0.9rem;">${escapeHtml(alert.details || '')}</p>
+                            <span class="alert-time">${formatDateTime(alert.timestamp)}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+            }
+        }
+
+        function refreshAllData() {
+            loadOverviewData();
+        }
+
+        // ==================== AUDIT LOG ====================
+        let auditPage = 0;
+        let auditSearchTimeout;
+
+        async function loadAuditLogs(page = 0) {
+            auditPage = page;
+            const action = document.getElementById('audit-action-filter')?.value || '';
+            const severity = document.getElementById('audit-severity-filter')?.value || '';
+            const search = document.getElementById('audit-search')?.value || '';
+            
+            try {
+                const params = new URLSearchParams({
+                    limit: 50,
+                    offset: page * 50,
+                    ...(action && { action }),
+                    ...(severity && { severity }),
+                    ...(search && { search })
+                });
+                
+                const response = await fetch(`/api/admin/audit-logs?${params}`);
+                const data = await response.json();
+                
+                renderAuditTable(data.logs);
+                renderPagination('audit-pagination', data.total, page, loadAuditLogs);
+            } catch (error) {
+                console.error('Error loading audit logs:', error);
+            }
+        }
+
+        function renderAuditTable(logs) {
+            const tbody = document.getElementById('audit-table-body');
+            
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No audit logs found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>${formatDateTime(log.timestamp)}</td>
+                    <td>${escapeHtml(log.action.replace(/_/g, ' '))}</td>
+                    <td>${escapeHtml(log.user_id || '-')}</td>
+                    <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(log.details || '-')}</td>
+                    <td>${escapeHtml(log.ip_address || '-')}</td>
+                    <td><span class="severity-badge severity-${log.severity}">${log.severity}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function debounceAuditSearch() {
+            clearTimeout(auditSearchTimeout);
+            auditSearchTimeout = setTimeout(() => loadAuditLogs(0), 300);
+        }
+
+        // ==================== ERROR LOG ====================
+        let errorPage = 0;
+        let errorSearchTimeout;
+
+        async function loadErrorLogs(page = 0) {
+            errorPage = page;
+            const category = document.getElementById('error-category-filter')?.value || '';
+            const resolved = document.getElementById('error-resolved-filter')?.value || '';
+            const search = document.getElementById('error-search')?.value || '';
+            
+            try {
+                const params = new URLSearchParams({
+                    limit: 50,
+                    offset: page * 50,
+                    ...(category && { category }),
+                    ...(resolved !== '' && { resolved }),
+                    ...(search && { search })
+                });
+                
+                const response = await fetch(`/api/admin/error-logs?${params}`);
+                const data = await response.json();
+                
+                renderErrorTable(data.errors);
+                renderPagination('error-pagination', data.total, page, loadErrorLogs);
+            } catch (error) {
+                console.error('Error loading error logs:', error);
+            }
+        }
+
+        async function loadErrorStats() {
+            try {
+                const response = await fetch('/api/admin/error-stats');
+                const stats = await response.json();
+                
+                document.getElementById('error-total').textContent = stats.totalCount || 0;
+                document.getElementById('error-unresolved').textContent = stats.unresolvedCount || 0;
+                
+                const apiCount = stats.perCategory?.find(c => c.category === 'api')?.count || 0;
+                const syncCount = stats.perCategory?.find(c => c.category === 'sync')?.count || 0;
+                document.getElementById('error-api').textContent = apiCount;
+                document.getElementById('error-sync').textContent = syncCount;
+                
+                // Update badge
+                const badge = document.getElementById('error-badge');
+                if (stats.unresolvedCount > 0) {
+                    badge.textContent = stats.unresolvedCount;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading error stats:', error);
+            }
+        }
+
+        function renderErrorTable(errors) {
+            const tbody = document.getElementById('error-table-body');
+            
+            if (!errors || errors.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No errors found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = errors.map(err => `
+                <tr>
+                    <td>${formatDateTime(err.timestamp)}</td>
+                    <td><span class="severity-badge severity-${err.category === 'api' ? 'warning' : 'error'}">${err.category}</span></td>
+                    <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(err.message || '-')}</td>
+                    <td>${escapeHtml(err.request_path || '-')}</td>
+                    <td>${escapeHtml(err.user_id || '-')}</td>
+                    <td>${err.resolved ? '<span class="status-badge status-approved">Resolved</span>' : '<span class="status-badge status-pending">Open</span>'}</td>
+                    <td>
+                        <button class="action-btn view" onclick="showErrorDetail(${err.id})">View</button>
+                        ${!err.resolved ? `<button class="action-btn resolve" onclick="resolveError(${err.id})">Resolve</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function debounceErrorSearch() {
+            clearTimeout(errorSearchTimeout);
+            errorSearchTimeout = setTimeout(() => loadErrorLogs(0), 300);
+        }
+
+        async function resolveError(errorId) {
+            const notes = prompt('Resolution notes (optional):');
+            try {
+                const response = await fetch(`/api/admin/error-logs/${errorId}/resolve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ notes })
+                });
+                
+                if (response.ok) {
+                    loadErrorLogs(errorPage);
+                    loadErrorStats();
+                } else {
+                    alert('Failed to resolve error');
+                }
+            } catch (error) {
+                console.error('Error resolving:', error);
+            }
+        }
+
+        function showErrorDetail(errorId) {
+            // TODO: Implement error detail modal
+            alert('Error detail view coming soon');
+        }
+
+        function closeErrorDetailModal() {
+            document.getElementById('error-detail-modal').classList.remove('active');
+        }
+
+        // ==================== SECURITY ====================
+        async function loadSecurityData() {
+            try {
+                // Load audit logs for security tab
+                const logsResponse = await fetch('/api/admin/audit-logs?action=login_failed&limit=20');
+                const logsData = await logsResponse.json();
+                
+                // Load stats
+                const statsResponse = await fetch('/api/admin/dashboard/stats');
+                const stats = await statsResponse.json();
+                
+                // Calculate from login stats
+                let successCount = 0, failedCount = 0;
+                if (stats.loginStats) {
+                    stats.loginStats.forEach(item => {
+                        if (item.action === 'login_success') successCount += item.count;
+                        if (item.action === 'login_failed') failedCount += item.count;
+                    });
+                }
+                
+                document.getElementById('security-success-logins').textContent = successCount;
+                document.getElementById('security-failed-logins').textContent = failedCount;
+                
+                // Load impersonation count
+                const impersonateResponse = await fetch('/api/admin/audit-logs?action=admin_impersonate&limit=100');
+                const impersonateData = await impersonateResponse.json();
+                document.getElementById('security-impersonations').textContent = impersonateData.logs?.length || 0;
+                
+                // Load security alerts
+                const alertsResponse = await fetch('/api/admin/security-alerts');
+                const alerts = await alertsResponse.json();
+                document.getElementById('security-alerts-count').textContent = alerts?.length || 0;
+                
+                // Render alerts
+                const alertsContainer = document.getElementById('security-alerts-list');
+                if (!alerts || alerts.length === 0) {
+                    alertsContainer.innerHTML = '<p style="color: var(--text-muted);">No security alerts</p>';
+                } else {
+                    alertsContainer.innerHTML = alerts.slice(0, 10).map(alert => `
+                        <div class="alert-item ${alert.severity}">
+                            <div class="alert-icon">
+                                <i data-lucide="alert-triangle" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <div class="alert-content">
+                                <strong>${escapeHtml(alert.action.replace(/_/g, ' '))}</strong>
+                                <p style="margin: 0.25rem 0 0; font-size: 0.9rem;">${escapeHtml(alert.details || '')}</p>
+                                <span class="alert-time">${formatDateTime(alert.timestamp)} - IP: ${escapeHtml(alert.ip_address || 'unknown')}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                // Render failed logins
+                const failedBody = document.getElementById('failed-logins-body');
+                if (!logsData.logs || logsData.logs.length === 0) {
+                    failedBody.innerHTML = '<tr><td colspan="4" class="empty-state">No failed login attempts</td></tr>';
+                } else {
+                    failedBody.innerHTML = logsData.logs.map(log => `
+                        <tr>
+                            <td>${formatDateTime(log.timestamp)}</td>
+                            <td>${escapeHtml(log.details || '-')}</td>
+                            <td>${escapeHtml(log.ip_address || '-')}</td>
+                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(log.user_agent || '-')}</td>
+                        </tr>
+                    `).join('');
+                }
+                
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Error loading security data:', error);
+            }
+        }
+
+        // ==================== SYSTEM HEALTH ====================
+        async function loadSystemHealth() {
+            try {
+                const response = await fetch('/api/admin/system/health');
+                const data = await response.json();
+                
+                // Update status banner
+                const banner = document.getElementById('system-status');
+                if (data.status === 'healthy') {
+                    banner.innerHTML = '<i data-lucide="check-circle" style="width: 24px; height: 24px;"></i><span>System Status: <strong>Healthy</strong></span>';
+                    banner.classList.remove('error');
+                } else {
+                    banner.innerHTML = '<i data-lucide="alert-circle" style="width: 24px; height: 24px;"></i><span>System Status: <strong>Error</strong></span>';
+                    banner.classList.add('error');
+                }
+                
+                // Update stats
+                document.getElementById('system-uptime').textContent = data.uptime?.formatted || '-';
+                document.getElementById('system-memory').textContent = data.memory?.heapUsed || '-';
+                document.getElementById('system-db-size').textContent = (data.database?.sizeMB || 0) + ' MB';
+                document.getElementById('system-node').textContent = data.nodeVersion || '-';
+                
+                // Render table rows
+                const tbody = document.getElementById('db-tables-body');
+                if (data.database?.tables) {
+                    tbody.innerHTML = Object.entries(data.database.tables).map(([name, count]) => `
+                        <tr>
+                            <td>${escapeHtml(name)}</td>
+                            <td>${count.toLocaleString()}</td>
+                        </tr>
+                    `).join('');
+                }
+                
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Error loading system health:', error);
+            }
+        }
+
+        // ==================== ANNOUNCEMENTS ====================
+        async function loadAnnouncements() {
+            try {
+                const response = await fetch('/api/admin/announcements');
+                const announcements = await response.json();
+                
+                const container = document.getElementById('announcements-list');
+                
+                if (!announcements || announcements.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i data-lucide="megaphone" style="width: 48px; height: 48px;"></i><p>No announcements yet</p></div>';
+                    lucide.createIcons();
+                    return;
+                }
+                
+                container.innerHTML = announcements.map(ann => `
+                    <div class="announcement-card ${ann.type}">
+                        <div class="announcement-header">
+                            <span class="announcement-title">${escapeHtml(ann.title)}</span>
+                            <span class="announcement-meta">
+                                ${ann.show_banner ? '🔔 Banner' : ''} 
+                                ${ann.expires_at ? `Expires: ${formatDate(ann.expires_at)}` : 'No expiry'}
+                            </span>
+                        </div>
+                        <p class="announcement-message">${escapeHtml(ann.message)}</p>
+                        <div class="announcement-meta">Created by ${escapeHtml(ann.created_by || 'admin')} on ${formatDateTime(ann.created_at)}</div>
+                        <div class="announcement-actions">
+                            <button class="action-btn delete" onclick="deleteAnnouncement(${ann.id})">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+            }
+        }
+
+        function showAnnouncementModal() {
+            document.getElementById('announcement-form').reset();
+            document.getElementById('announcement-modal').classList.add('active');
+        }
+
+        function closeAnnouncementModal() {
+            document.getElementById('announcement-modal').classList.remove('active');
+        }
+
+        document.getElementById('announcement-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                title: document.getElementById('announcement-title').value,
+                message: document.getElementById('announcement-message').value,
+                type: document.getElementById('announcement-type').value,
+                expiresAt: document.getElementById('announcement-expires').value || null,
+                showBanner: document.getElementById('announcement-banner').checked
+            };
+            
+            try {
+                const response = await fetch('/api/admin/announcements', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    closeAnnouncementModal();
+                    loadAnnouncements();
+                } else {
+                    const result = await response.json();
+                    alert('Error: ' + (result.error || 'Could not create announcement'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Something went wrong');
+            }
+        });
+
+        async function deleteAnnouncement(id) {
+            if (!confirm('Are you sure you want to delete this announcement?')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/announcements/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadAnnouncements();
+                } else {
+                    alert('Failed to delete announcement');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // ==================== USER DETAIL ====================
+        async function showUserDetail(userId) {
+            document.getElementById('user-detail-modal').classList.add('active');
+            document.getElementById('user-detail-content').innerHTML = '<div class="loading">Loading...</div>';
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/detail`);
+                const data = await response.json();
+                
+                document.getElementById('user-detail-content').innerHTML = `
+                    <div class="user-detail-grid">
+                        <div class="detail-item">
+                            <label>Name</label>
+                            <div class="value">${escapeHtml(data.user.name || '-')}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Email</label>
+                            <div class="value">${escapeHtml(data.user.email)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Auth Type</label>
+                            <div class="value">${escapeHtml(data.user.authType || 'email')}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Status</label>
+                            <div class="value">${data.user.approvalStatus || 'approved'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Subscription</label>
+                            <div class="value">${data.subscription?.status || 'None'} - ${data.subscription?.plan || ''}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Registered</label>
+                            <div class="value">${formatDateTime(data.user.createdAt)}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Appointments</label>
+                            <div class="value">${data.stats.appointments}</div>
+                        </div>
+                        <div class="detail-item">
+                            <label>Customers</label>
+                            <div class="value">${data.stats.customers}</div>
+                        </div>
+                    </div>
+                    
+                    ${data.company ? `
+                        <h3>Company</h3>
+                        <p>${escapeHtml(data.company.name || '-')} - ${escapeHtml(data.company.city || '')}</p>
+                    ` : ''}
+                    
+                    <h3>Recent Activity</h3>
+                    <div style="max-height: 150px; overflow-y: auto;">
+                        ${data.activity?.length ? data.activity.map(a => `
+                            <div style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                                <strong>${escapeHtml(a.action.replace(/_/g, ' '))}</strong>: ${a.count}x
+                                <span style="color: var(--text-muted); font-size: 0.8rem;">Last: ${formatDateTime(a.last_occurrence)}</span>
+                            </div>
+                        `).join('') : '<p style="color: var(--text-muted);">No recent activity</p>'}
+                    </div>
+                    
+                    <div class="form-actions" style="margin-top: 1.5rem;">
+                        <button class="action-btn impersonate" onclick="impersonateUser('${userId}')" style="padding: 0.5rem 1rem;">
+                            <i data-lucide="user" style="width: 14px; height: 14px;"></i> Impersonate
+                        </button>
+                        <button class="btn btn-secondary" onclick="closeUserDetailModal()">Close</button>
+                    </div>
+                `;
+                
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('user-detail-content').innerHTML = '<p style="color: red;">Error loading user details</p>';
+            }
+        }
+
+        function closeUserDetailModal() {
+            document.getElementById('user-detail-modal').classList.remove('active');
+        }
+
+        // ==================== IMPERSONATE ====================
+        async function impersonateUser(userId) {
+            if (!confirm('Are you sure you want to impersonate this user? You will be logged in as them.')) return;
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/impersonate`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Now impersonating: ${data.user.name || data.user.email}\n\nYou will be redirected to the dashboard.`);
+                    window.location.href = '/dashboard.html';
+                } else {
+                    const error = await response.json();
+                    alert('Failed to impersonate: ' + (error.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Something went wrong');
+            }
+        }
+
+        async function stopImpersonate() {
+            try {
+                const response = await fetch('/api/admin/stop-impersonate', { method: 'POST' });
+                if (response.ok) {
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Check if impersonating
+        async function checkImpersonating() {
+            try {
+                const response = await fetch('/api/auth/status');
+                const data = await response.json();
+                
+                if (data.isImpersonating) {
+                    document.getElementById('impersonate-banner').style.display = 'inline-flex';
+                }
+            } catch (error) {
+                // Ignore
+            }
+        }
+
+        // ==================== HELPERS ====================
+        function renderPagination(containerId, total, currentPage, loadFn) {
+            const container = document.getElementById(containerId);
+            const totalPages = Math.ceil(total / 50);
+            
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            html += `<button ${currentPage === 0 ? 'disabled' : ''} onclick="${loadFn.name}(${currentPage - 1})">Previous</button>`;
+            
+            for (let i = 0; i < Math.min(totalPages, 10); i++) {
+                html += `<button class="${i === currentPage ? 'active' : ''}" onclick="${loadFn.name}(${i})">${i + 1}</button>`;
+            }
+            
+            html += `<button ${currentPage >= totalPages - 1 ? 'disabled' : ''} onclick="${loadFn.name}(${currentPage + 1})">Next</button>`;
+            
+            container.innerHTML = html;
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleString('en-US', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Init
         (async () => {
             const isAdmin = await checkAdminStatus();
             if (isAdmin) {
+                loadOverviewData(); // Load overview first
                 loadUsers();
+                loadErrorStats(); // For badge
+                checkImpersonating();
                 // Set invite link
                 document.getElementById('invite-link').value = window.location.origin + '/invite.html';
             }
