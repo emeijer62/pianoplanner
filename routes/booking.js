@@ -22,18 +22,34 @@ const getAuthClient = (req) => {
 };
 
 /**
- * Autocomplete voor adressen (wereldwijd)
+ * Autocomplete voor adressen (gefilterd op land + buurlanden)
  * GET /api/booking/address-autocomplete
  */
 router.get('/address-autocomplete', async (req, res) => {
     try {
-        const { input, sessionToken } = req.query;
+        const { input, sessionToken, includeNeighbors } = req.query;
         
         if (!input || input.length < 3) {
             return res.json({ predictions: [] });
         }
         
-        const predictions = await getPlaceAutocomplete(input, sessionToken);
+        // Haal het land van de gebruiker op uit company settings
+        let userCountry = 'NL'; // Default
+        try {
+            const companySettings = await companyStore.getCompanySettings(req.session.userId);
+            if (companySettings?.address?.country) {
+                userCountry = companySettings.address.country;
+            }
+        } catch (e) {
+            // Gebruik default bij fout
+        }
+        
+        const predictions = await getPlaceAutocomplete(
+            input, 
+            sessionToken, 
+            userCountry, 
+            includeNeighbors !== 'false' // Default true
+        );
         res.json({ predictions });
     } catch (error) {
         console.error('Autocomplete error:', error);

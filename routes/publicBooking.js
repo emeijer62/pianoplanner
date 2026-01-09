@@ -327,13 +327,34 @@ router.get('/customer/:token/smart-suggestions', async (req, res) => {
  */
 router.get('/address-autocomplete', async (req, res) => {
     try {
-        const { input, sessionToken } = req.query;
+        const { input, sessionToken, slug, includeNeighbors } = req.query;
         
         if (!input || input.length < 3) {
             return res.json({ predictions: [] });
         }
         
-        const predictions = await getPlaceAutocomplete(input, sessionToken);
+        // Probeer het land te bepalen op basis van de slug
+        let userCountry = 'NL'; // Default
+        if (slug) {
+            try {
+                const user = await userStore.getUserByBookingSlug(slug);
+                if (user) {
+                    const companySettings = await companyStore.getCompanySettings(user.id);
+                    if (companySettings?.address?.country) {
+                        userCountry = companySettings.address.country;
+                    }
+                }
+            } catch (e) {
+                // Gebruik default bij fout
+            }
+        }
+        
+        const predictions = await getPlaceAutocomplete(
+            input, 
+            sessionToken,
+            userCountry,
+            includeNeighbors !== 'false'
+        );
         res.json({ predictions });
     } catch (error) {
         console.error('Public autocomplete error:', error);

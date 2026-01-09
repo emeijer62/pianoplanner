@@ -155,7 +155,42 @@ const parseAddressComponents = (components) => {
  * @param {string} sessionToken - Session token voor billing optimization
  * @returns {Promise<Array>}
  */
-const getPlaceAutocomplete = async (input, sessionToken = null) => {
+// Mapping van landen naar aangrenzende landen voor adres autocomplete
+const neighboringCountries = {
+    'NL': ['BE', 'DE'],           // Nederland: België, Duitsland
+    'BE': ['NL', 'DE', 'FR', 'LU'], // België: Nederland, Duitsland, Frankrijk, Luxemburg
+    'DE': ['NL', 'BE', 'FR', 'LU', 'AT', 'CH', 'PL', 'CZ', 'DK'], // Duitsland
+    'FR': ['BE', 'DE', 'LU', 'CH', 'IT', 'ES', 'MC', 'AD'], // Frankrijk
+    'LU': ['BE', 'DE', 'FR'],     // Luxemburg
+    'AT': ['DE', 'CH', 'IT', 'SI', 'HU', 'SK', 'CZ', 'LI'], // Oostenrijk
+    'CH': ['DE', 'FR', 'IT', 'AT', 'LI'], // Zwitserland
+    'GB': ['IE'],                  // Groot-Brittannië: Ierland
+    'IE': ['GB'],                  // Ierland: Groot-Brittannië
+    'ES': ['FR', 'PT', 'AD'],     // Spanje
+    'PT': ['ES'],                  // Portugal
+    'IT': ['FR', 'CH', 'AT', 'SI', 'SM', 'VA'], // Italië
+    'PL': ['DE', 'CZ', 'SK', 'UA', 'BY', 'LT', 'RU'], // Polen
+    'DK': ['DE'],                  // Denemarken
+    'SE': ['NO', 'FI'],           // Zweden
+    'NO': ['SE', 'FI', 'RU'],     // Noorwegen
+    'FI': ['SE', 'NO', 'RU'],     // Finland
+};
+
+/**
+ * Get countries to search in based on user's country
+ * @param {string} userCountry - ISO country code (e.g., 'NL')
+ * @param {boolean} includeNeighbors - Include neighboring countries
+ * @returns {string[]} Array of country codes
+ */
+const getSearchCountries = (userCountry, includeNeighbors = true) => {
+    const countries = [userCountry];
+    if (includeNeighbors && neighboringCountries[userCountry]) {
+        countries.push(...neighboringCountries[userCountry]);
+    }
+    return countries;
+};
+
+const getPlaceAutocomplete = async (input, sessionToken = null, userCountry = null, includeNeighbors = true) => {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
     
     if (!apiKey) {
@@ -166,6 +201,15 @@ const getPlaceAutocomplete = async (input, sessionToken = null) => {
     
     if (sessionToken) {
         url += `&sessiontoken=${sessionToken}`;
+    }
+    
+    // Voeg landenfilter toe als userCountry is opgegeven
+    if (userCountry) {
+        const countries = getSearchCountries(userCountry.toUpperCase(), includeNeighbors);
+        // Google Places API accepteert meerdere landen met pipe separator in components
+        // Format: components=country:nl|country:be|country:de
+        const countryFilter = countries.map(c => `country:${c.toLowerCase()}`).join('|');
+        url += `&components=${countryFilter}`;
     }
     
     return new Promise((resolve, reject) => {
