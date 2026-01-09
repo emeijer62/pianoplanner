@@ -5,19 +5,61 @@ const { calculateTravelTime, findFirstAvailableSlot, getPlaceAutocomplete, getPl
 const serviceStore = require('../utils/serviceStore');
 const customerStore = require('../utils/customerStore');
 const companyStore = require('../utils/companyStore');
+const userStore = require('../utils/userStore');
 const { requireAuth } = require('../middleware/auth');
 
 // Alle routes vereisen authenticatie
 router.use(requireAuth);
 
-// Helper: maak OAuth2 client
-const getAuthClient = (req) => {
+// Helper: maak OAuth2 client met tokens uit database of sessie
+const getAuthClient = async (req) => {
     const oauth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
         process.env.GOOGLE_REDIRECT_URI
     );
-    oauth2Client.setCredentials(req.session.tokens);
+    
+    // Probeer tokens uit sessie, anders uit database
+    let tokens = req.session.tokens;
+    
+    if (!tokens) {
+        // Haal tokens uit database
+        const user = await userStore.getUser(req.session.user.id);
+        if (user && user.tokens) {
+            try {
+                tokens = typeof user.tokens === 'string' ? JSON.parse(user.tokens) : user.tokens;
+                // Cache in sessie voor volgende keer
+                req.session.tokens = tokens;
+            } catch (e) {
+                console.error('Error parsing user tokens:', e);
+            }
+        }
+    }
+    
+    if (!tokens || !tokens.access_token) {
+        throw new Error('No Google tokens available - user needs to connect Google Calendar');
+    }
+    
+    oauth2Client.setCredentials(tokens);
+    
+    // Auto-refresh tokens
+    oauth2Client.on('tokens', async (newTokens) => {
+        console.log(`🔄 Tokens refreshed voor ${req.session.user.email}`);
+        req.session.tokens = { ...tokens, ...newTokens };
+        
+        try {
+            const user = await userStore.getUser(req.session.user.id);
+            if (user) {
+                await userStore.saveUser({
+                    ...user,
+                    tokens: JSON.stringify({ ...tokens, ...newTokens })
+                });
+            }
+        } catch (error) {
+            console.error('Error saving refreshed tokens:', error);
+        }
+    });
+    
     return oauth2Client;
 };
 
@@ -278,7 +320,7 @@ router.post('/find-slot', async (req, res) => {
             };
             
             // Haal events van die dag op
-            const auth = getAuthClient(req);
+            const auth = await getAuthClient(req);
             const calendar = google.calendar({ version: 'v3', auth });
             
             const dayStart = new Date(searchDate);
@@ -415,7 +457,7 @@ router.post('/create', async (req, res) => {
         const end = new Date(start.getTime() + service.duration * 60 * 1000);
         
         // Maak Google Calendar event
-        const auth = getAuthClient(req);
+        const auth = await getAuthClient(req);
         const calendar = google.calendar({ version: 'v3', auth });
         
         const location = customer.address.street 
