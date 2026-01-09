@@ -194,10 +194,11 @@
                 try {
                     const res = await fetch(`/api/booking/address-autocomplete?input=${encodeURIComponent(query)}`);
                     const data = await res.json();
+                    const predictions = Array.isArray(data) ? data : (data.predictions || []);
                     
-                    if (data.predictions && data.predictions.length > 0) {
-                        suggestions.innerHTML = data.predictions.map(p => 
-                            `<div class="autocomplete-item" data-place-id="${p.placeId}">${p.description}</div>`
+                    if (predictions.length > 0) {
+                        suggestions.innerHTML = predictions.map(p => 
+                            `<div class="autocomplete-item" data-place-id="${p.placeId}" data-description="${p.description.replace(/"/g, '&quot;')}">${p.description}</div>`
                         ).join('');
                         suggestions.style.display = 'block';
                     } else {
@@ -216,32 +217,45 @@
             const item = e.target.closest('.autocomplete-item');
             if (item) {
                 const placeId = item.dataset.placeId;
-                const description = item.textContent;
+                const description = item.dataset.description || item.textContent.trim();
+                const postalCodeInput = document.getElementById('customer-postalcode');
+                const cityInput = document.getElementById('customer-city');
                 
-                streetInput.value = description.split(',')[0];
+                // Direct de description splitten voor fallback
+                const parts = description.split(',').map(p => p.trim());
+                streetInput.value = parts[0] || '';
                 suggestions.style.display = 'none';
                 
                 if (placeId) {
                     try {
                         const res = await fetch(`/api/booking/place-details?placeId=${encodeURIComponent(placeId)}`);
-                        if (!res.ok) return;
-                        
-                        const data = await res.json();
-                        const postalCodeInput = document.getElementById('customer-postalcode');
-                        const cityInput = document.getElementById('customer-city');
-                        
-                        if (data.address) {
-                            if (postalCodeInput) postalCodeInput.value = data.address.postalCode || '';
-                            if (cityInput) cityInput.value = data.address.city || '';
-                            if (data.address.street) streetInput.value = data.address.street;
-                        } else if (data.street || data.postalCode || data.city) {
-                            if (postalCodeInput) postalCodeInput.value = data.postalCode || '';
-                            if (cityInput) cityInput.value = data.city || '';
-                            if (data.street) streetInput.value = data.street;
+                        if (res.ok) {
+                            const data = await res.json();
+                            
+                            if (data.address) {
+                                if (data.address.street) streetInput.value = data.address.street;
+                                if (postalCodeInput) postalCodeInput.value = data.address.postalCode || '';
+                                if (cityInput) cityInput.value = data.address.city || '';
+                            } else if (data.street || data.postalCode || data.city) {
+                                if (data.street) streetInput.value = data.street;
+                                if (postalCodeInput) postalCodeInput.value = data.postalCode || '';
+                                if (cityInput) cityInput.value = data.city || '';
+                            } else {
+                                // Fallback naar description parsing
+                                if (cityInput && parts[1]) cityInput.value = parts[1];
+                            }
+                        } else {
+                            // API failed, gebruik description parsing
+                            if (cityInput && parts[1]) cityInput.value = parts[1];
                         }
                     } catch (err) {
                         console.error('Could not fetch address details:', err);
+                        // Fallback naar description parsing
+                        if (cityInput && parts[1]) cityInput.value = parts[1];
                     }
+                } else {
+                    // Geen placeId, gebruik description parsing
+                    if (cityInput && parts[1]) cityInput.value = parts[1];
                 }
             }
         });
