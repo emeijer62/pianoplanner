@@ -685,7 +685,7 @@ const updateBookingSettings = async (userId, settings, companyName = null) => {
         requirePhone: settings.requirePhone !== false,
         requireEmail: settings.requireEmail !== false,
         confirmationMessage: settings.confirmationMessage || 'Bedankt voor uw boeking!',
-        allowedServices: settings.allowedServices || [],
+        allowedServiceIds: settings.allowedServiceIds || [],
         updatedAt: new Date().toISOString()
     });
     
