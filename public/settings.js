@@ -307,8 +307,8 @@ async function loadCompanySettings() {
             // Load logo
             updateLogoPreview(settings.logoUrl);
             
-            // Load availability
-            renderAvailabilityGrid(settings.availability);
+            // Load availability - ondersteun beide formaten (workingHours en availability)
+            renderAvailabilityGrid(settings.workingHours || settings.availability);
             
             // Load theater availability
             const theaterEnabled = settings.theaterHoursEnabled || false;
@@ -415,22 +415,41 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderAvailabilityGrid(availability) {
     const container = document.getElementById('availabilityGrid');
     
+    // Dag namen in volgorde zondag (0) t/m zaterdag (6)
+    const dayNameKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    
     // Default availability if none exists
     const defaultAvailability = {
-        0: { available: false, start: '09:00', end: '18:00' },
-        1: { available: true, start: '09:00', end: '18:00' },
-        2: { available: true, start: '09:00', end: '18:00' },
-        3: { available: true, start: '09:00', end: '18:00' },
-        4: { available: true, start: '09:00', end: '18:00' },
-        5: { available: true, start: '09:00', end: '18:00' },
-        6: { available: false, start: '09:00', end: '18:00' }
+        sunday: { enabled: false, start: '09:00', end: '18:00' },
+        monday: { enabled: true, start: '09:00', end: '18:00' },
+        tuesday: { enabled: true, start: '09:00', end: '18:00' },
+        wednesday: { enabled: true, start: '09:00', end: '18:00' },
+        thursday: { enabled: true, start: '09:00', end: '18:00' },
+        friday: { enabled: true, start: '09:00', end: '18:00' },
+        saturday: { enabled: false, start: '09:00', end: '18:00' }
     };
     
-    const avail = availability || defaultAvailability;
+    // Converteer index-based naar dag-naam als nodig
+    let avail = availability || defaultAvailability;
+    if (avail[0] !== undefined || avail['0'] !== undefined) {
+        // Index-based formaat - converteer naar dag-naam
+        const converted = {};
+        for (let i = 0; i < 7; i++) {
+            const dayData = avail[i] || avail[String(i)] || defaultAvailability[dayNameKeys[i]];
+            converted[dayNameKeys[i]] = {
+                start: dayData.start || '09:00',
+                end: dayData.end || '18:00',
+                enabled: dayData.available === true || dayData.enabled === true
+            };
+        }
+        avail = converted;
+    }
     
     container.innerHTML = DAY_NAMES.map((day, index) => {
-        const dayAvail = avail[index] || defaultAvailability[index];
-        const isAvailable = dayAvail.available;
+        const dayKey = dayNameKeys[index];
+        const dayAvail = avail[dayKey] || defaultAvailability[dayKey];
+        // Support beide veldnamen: 'enabled' (nieuw) en 'available' (oud)
+        const isAvailable = dayAvail.enabled === true || dayAvail.available === true;
         
         return `
             <div class="availability-row ${!isAvailable ? 'disabled' : ''}" data-day="${index}">
@@ -483,22 +502,41 @@ function renderTheaterAvailabilityGrid(availability) {
     const container = document.getElementById('theaterAvailabilityGrid');
     if (!container) return;
     
+    // Dag namen in volgorde zondag (0) t/m zaterdag (6)
+    const dayNameKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    
     // Default theater availability - more flexible hours
     const defaultAvailability = {
-        0: { available: true, start: '08:00', end: '22:00' },
-        1: { available: true, start: '08:00', end: '22:00' },
-        2: { available: true, start: '08:00', end: '22:00' },
-        3: { available: true, start: '08:00', end: '22:00' },
-        4: { available: true, start: '08:00', end: '22:00' },
-        5: { available: true, start: '08:00', end: '22:00' },
-        6: { available: true, start: '08:00', end: '22:00' }
+        sunday: { enabled: true, start: '08:00', end: '22:00' },
+        monday: { enabled: true, start: '08:00', end: '22:00' },
+        tuesday: { enabled: true, start: '08:00', end: '22:00' },
+        wednesday: { enabled: true, start: '08:00', end: '22:00' },
+        thursday: { enabled: true, start: '08:00', end: '22:00' },
+        friday: { enabled: true, start: '08:00', end: '22:00' },
+        saturday: { enabled: true, start: '08:00', end: '22:00' }
     };
     
-    const avail = availability || defaultAvailability;
+    // Converteer index-based naar dag-naam als nodig
+    let avail = availability || defaultAvailability;
+    if (avail[0] !== undefined || avail['0'] !== undefined) {
+        // Index-based formaat - converteer naar dag-naam
+        const converted = {};
+        for (let i = 0; i < 7; i++) {
+            const dayData = avail[i] || avail[String(i)] || defaultAvailability[dayNameKeys[i]];
+            converted[dayNameKeys[i]] = {
+                start: dayData.start || '08:00',
+                end: dayData.end || '22:00',
+                enabled: dayData.available === true || dayData.enabled === true
+            };
+        }
+        avail = converted;
+    }
     
     container.innerHTML = DAY_NAMES.map((day, index) => {
-        const dayAvail = avail[index] || defaultAvailability[index];
-        const isAvailable = dayAvail.available;
+        const dayKey = dayNameKeys[index];
+        const dayAvail = avail[dayKey] || defaultAvailability[dayKey];
+        // Support beide veldnamen: 'enabled' (nieuw) en 'available' (oud)
+        const isAvailable = dayAvail.enabled === true || dayAvail.available === true;
         
         return `
             <div class="availability-row ${!isAvailable ? 'disabled' : ''}" data-theater-day="${index}">

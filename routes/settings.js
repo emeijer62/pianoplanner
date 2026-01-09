@@ -44,19 +44,67 @@ router.put('/company', requireAuth, async (req, res) => {
             lng
         };
         
+        // Converteer index-based availability naar dag-naam based workingHours
+        const dayNameMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        
+        function convertAvailabilityToWorkingHours(availability) {
+            const workingHours = {};
+            for (let i = 0; i < 7; i++) {
+                const dayName = dayNameMap[i];
+                const dayData = availability[i] || availability[String(i)];
+                if (dayData) {
+                    workingHours[dayName] = {
+                        start: dayData.start || '09:00',
+                        end: dayData.end || '17:00',
+                        enabled: dayData.available === true || dayData.enabled === true
+                    };
+                } else {
+                    // Default
+                    workingHours[dayName] = {
+                        start: '09:00',
+                        end: '17:00',
+                        enabled: i >= 1 && i <= 5 // Ma-Vr standaard enabled
+                    };
+                }
+            }
+            return workingHours;
+        }
+        
         // Werkuren: ondersteun oude en nieuwe formaten
         let finalWorkingHours;
         if (availability) {
-            // Nieuw formaat van settings.js frontend
-            finalWorkingHours = availability;
+            // Nieuw formaat van settings.js frontend (index-based)
+            // Converteer naar dag-naam formaat
+            finalWorkingHours = convertAvailabilityToWorkingHours(availability);
         } else if (workingHours) {
-            finalWorkingHours = workingHours;
+            // Check of het al in dag-naam formaat is
+            if (workingHours.monday !== undefined) {
+                finalWorkingHours = workingHours;
+            } else {
+                // Oud index-based formaat
+                finalWorkingHours = convertAvailabilityToWorkingHours(workingHours);
+            }
         } else {
-            // Oud formaat
+            // Default werkuren
             finalWorkingHours = {
-                hours: workHours || { start: '09:00', end: '18:00' },
-                days: workDays || [1, 2, 3, 4, 5]
+                sunday: { start: '09:00', end: '17:00', enabled: false },
+                monday: { start: '09:00', end: '17:00', enabled: true },
+                tuesday: { start: '09:00', end: '17:00', enabled: true },
+                wednesday: { start: '09:00', end: '17:00', enabled: true },
+                thursday: { start: '09:00', end: '17:00', enabled: true },
+                friday: { start: '09:00', end: '17:00', enabled: true },
+                saturday: { start: '09:00', end: '17:00', enabled: false }
             };
+        }
+        
+        // Converteer theater availability ook als nodig
+        let finalTheaterHours = null;
+        if (theaterHours) {
+            if (theaterHours.monday !== undefined) {
+                finalTheaterHours = theaterHours;
+            } else {
+                finalTheaterHours = convertAvailabilityToWorkingHours(theaterHours);
+            }
         }
         
         const settings = await companyStore.saveSettings(req.session.user.id, {
@@ -67,7 +115,7 @@ router.put('/company', requireAuth, async (req, res) => {
             address: addressData,
             timezone: timezone || 'Europe/Amsterdam',
             workingHours: finalWorkingHours,
-            theaterHours: theaterHours || null,
+            theaterHours: finalTheaterHours,
             theaterHoursEnabled: theaterHoursEnabled || false
         });
         
