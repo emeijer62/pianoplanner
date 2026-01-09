@@ -151,7 +151,10 @@
     "minAdvance": "Mindestvorlaufzeit",
     "maxAdvance": "Maximale Vorlaufzeit",
     "hours": "Stunden",
-    "days": "Tage"
+    "days": "Tage",
+    "notAvailableOn": "Nicht verfügbar am",
+    "noSlotsIn14Days": "Keine Zeit in den nächsten 14 Tagen gefunden.",
+    "tryDifferentDate": "Versuchen Sie, ein anderes Startdatum auszuwählen."
   },
   "calendar": {
     "today": "Heute",

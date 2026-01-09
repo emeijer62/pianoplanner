@@ -151,7 +151,10 @@
     "minAdvance": "Minimum advance booking",
     "maxAdvance": "Maximum advance booking",
     "hours": "hours",
-    "days": "days"
+    "days": "days",
+    "notAvailableOn": "Not available on",
+    "noSlotsIn14Days": "No time found in the next 14 days.",
+    "tryDifferentDate": "Try selecting a different starting date."
   },
   "calendar": {
     "today": "Today",

@@ -151,7 +151,10 @@
     "minAdvance": "Minimale boekingstijd vooraf",
     "maxAdvance": "Maximale boekingstijd vooruit",
     "hours": "uur",
-    "days": "dagen"
+    "days": "dagen",
+    "notAvailableOn": "Niet beschikbaar op",
+    "noSlotsIn14Days": "Geen tijd gevonden in de komende 14 dagen.",
+    "tryDifferentDate": "Probeer een andere startdatum te selecteren."
   },
   "calendar": {
     "today": "Vandaag",

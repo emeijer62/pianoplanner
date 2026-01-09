@@ -151,7 +151,10 @@
     "minAdvance": "Délai minimum de réservation",
     "maxAdvance": "Délai maximum de réservation",
     "hours": "heures",
-    "days": "jours"
+    "days": "jours",
+    "notAvailableOn": "Non disponible le",
+    "noSlotsIn14Days": "Aucun créneau trouvé dans les 14 prochains jours.",
+    "tryDifferentDate": "Essayez de sélectionner une autre date de départ."
   },
   "calendar": {
     "today": "Aujourd'hui",

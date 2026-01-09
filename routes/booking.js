@@ -296,7 +296,9 @@ router.post('/find-slot', async (req, res) => {
         if (!dayAvailability || !dayAvailability.enabled) {
             return res.json({
                 available: false,
-                message: `Niet beschikbaar op ${dayNamesNL[dayOfWeek]}. Geen tijd gevonden in de komende 14 dagen.`,
+                message: 'not_available_on_day',
+                dayIndex: dayOfWeek,
+                noSlotsIn14Days: true,
                 service,
                 travelInfo
             });
@@ -304,7 +306,8 @@ router.post('/find-slot', async (req, res) => {
         
         return res.json({
             available: false,
-            message: 'Geen beschikbare tijd gevonden in de komende 14 dagen',
+            message: 'no_slots_found',
+            noSlotsIn14Days: true,
             service,
             travelInfo
         });

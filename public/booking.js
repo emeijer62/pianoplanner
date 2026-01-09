@@ -294,11 +294,21 @@ async function findAvailableSlot() {
                 </button>
             `;
         } else {
+            // Format error message with i18n support
+            let errorMessage = data.message;
+            if (data.message === 'not_available_on_day' && typeof data.dayIndex !== 'undefined') {
+                const days = window.i18n?.t('calendar.days') || ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const dayName = Array.isArray(days) ? days[data.dayIndex] : days;
+                errorMessage = `${window.i18n?.t('booking.notAvailableOn') || 'Not available on'} ${dayName}. ${window.i18n?.t('booking.noSlotsIn14Days') || 'No time found in the next 14 days.'}`;
+            } else if (data.message === 'no_slots_found') {
+                errorMessage = window.i18n?.t('booking.noSlotsIn14Days') || 'No available time found in the next 14 days';
+            }
+            
             resultDiv.className = 'slot-result slot-not-found';
             resultDiv.innerHTML = `
-                <div>❌ ${data.message}</div>
+                <div>❌ ${errorMessage}</div>
                 <p style="margin-top: 0.5rem; color: rgba(255,255,255,0.6);">
-                    Try selecting a different starting date.
+                    ${window.i18n?.t('booking.tryDifferentDate') || 'Try selecting a different starting date.'}
                 </p>
             `;
         }
