@@ -177,7 +177,7 @@ router.post('/travel-time', async (req, res) => {
  */
 router.post('/find-slot', async (req, res) => {
     try {
-        const { serviceId, customerId, date, origin } = req.body;
+        const { serviceId, customerId, date, origin, searchMultipleDays = true } = req.body;
         
         // Validatie
         if (!serviceId || !date) {
@@ -208,83 +208,99 @@ router.post('/find-slot', async (req, res) => {
         // Bereken totale benodigde tijd (buffer voor + reistijd + dienst + buffer na)
         const totalServiceTime = (service.bufferBefore || 0) + service.duration + (service.bufferAfter || 0);
         
-        // Haal beschikbaarheid op voor deze dag
+        // Haal company settings op
         const companySettings = await companyStore.getSettings(req.session.user.id);
-        const requestedDate = new Date(date);
-        const dayOfWeek = requestedDate.getDay(); // 0 = zondag, 1 = maandag, etc.
         
+        // Zoek op de opgegeven dag en eventueel de volgende 14 dagen
+        const maxDaysToSearch = searchMultipleDays ? 14 : 1;
+        const dayNames = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
+        
+        for (let dayOffset = 0; dayOffset < maxDaysToSearch; dayOffset++) {
+            const searchDate = new Date(date);
+            searchDate.setDate(searchDate.getDate() + dayOffset);
+            const dayOfWeek = searchDate.getDay();
+            
+            const dayAvailability = companySettings.availability?.[dayOfWeek];
+            
+            // Skip als deze dag niet beschikbaar is
+            if (!dayAvailability || !dayAvailability.available) {
+                continue;
+            }
+            
+            const workHours = {
+                start: dayAvailability.start || '09:00',
+                end: dayAvailability.end || '18:00'
+            };
+            
+            // Haal events van die dag op
+            const auth = getAuthClient(req);
+            const calendar = google.calendar({ version: 'v3', auth });
+            
+            const dayStart = new Date(searchDate);
+            dayStart.setHours(0, 0, 0, 0);
+            const dayEnd = new Date(searchDate);
+            dayEnd.setHours(23, 59, 59, 999);
+            
+            const eventsResponse = await calendar.events.list({
+                calendarId: 'primary',
+                timeMin: dayStart.toISOString(),
+                timeMax: dayEnd.toISOString(),
+                singleEvents: true,
+                orderBy: 'startTime'
+            });
+            
+            const existingEvents = eventsResponse.data.items || [];
+            
+            // Vind eerste beschikbare slot (met buffertijden)
+            const slot = findFirstAvailableSlot(
+                existingEvents,
+                travelInfo.duration,
+                service.duration,
+                searchDate,
+                workHours,
+                service.bufferBefore || 0,
+                service.bufferAfter || 0
+            );
+            
+            if (slot) {
+                return res.json({
+                    available: true,
+                    slot: {
+                        travelStart: slot.travelStart,
+                        bufferBeforeStart: slot.bufferBeforeStart,
+                        appointmentStart: slot.appointmentStart,
+                        appointmentEnd: slot.appointmentEnd,
+                        slotEnd: slot.slotEnd
+                    },
+                    service,
+                    travelInfo,
+                    totalDuration: travelInfo.duration + totalServiceTime,
+                    searchedDate: date,
+                    foundDate: searchDate.toISOString().split('T')[0],
+                    daysSearched: dayOffset + 1
+                });
+            }
+        }
+        
+        // Geen slot gevonden in de komende 14 dagen
+        const requestedDate = new Date(date);
+        const dayOfWeek = requestedDate.getDay();
         const dayAvailability = companySettings.availability?.[dayOfWeek];
         
-        // Check of deze dag beschikbaar is
         if (!dayAvailability || !dayAvailability.available) {
             return res.json({
                 available: false,
-                message: `Niet beschikbaar op ${['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'][dayOfWeek]}`,
+                message: `Niet beschikbaar op ${dayNames[dayOfWeek]}. Geen tijd gevonden in de komende 14 dagen.`,
                 service,
                 travelInfo
             });
         }
         
-        const workHours = {
-            start: dayAvailability.start || '09:00',
-            end: dayAvailability.end || '18:00'
-        };
-        
-        // Haal events van die dag op
-        const auth = getAuthClient(req);
-        const calendar = google.calendar({ version: 'v3', auth });
-        
-        const dayStart = new Date(date);
-        dayStart.setHours(0, 0, 0, 0);
-        const dayEnd = new Date(date);
-        dayEnd.setHours(23, 59, 59, 999);
-        
-        const eventsResponse = await calendar.events.list({
-            calendarId: 'primary',
-            timeMin: dayStart.toISOString(),
-            timeMax: dayEnd.toISOString(),
-            singleEvents: true,
-            orderBy: 'startTime'
-        });
-        
-        const existingEvents = eventsResponse.data.items || [];
-        
-        // Vind eerste beschikbare slot (met buffertijden)
-        const slot = findFirstAvailableSlot(
-            existingEvents,
-            travelInfo.duration,
-            service.duration,
-            new Date(date),
-            workHours,
-            service.bufferBefore || 0,
-            service.bufferAfter || 0
-        );
-        
-        if (!slot) {
-            return res.json({
-                available: false,
-                message: 'Geen beschikbare tijd op deze dag',
-                service,
-                travelInfo
-            });
-        }
-        
-        res.json({
-            available: true,
-            slot: {
-                travelStart: slot.travelStart,
-                bufferBeforeStart: slot.bufferBeforeStart,
-                appointmentStart: slot.appointmentStart,
-                appointmentEnd: slot.appointmentEnd,
-                slotEnd: slot.slotEnd
-            },
+        return res.json({
+            available: false,
+            message: 'Geen beschikbare tijd gevonden in de komende 14 dagen',
             service,
-            travelInfo,
-            buffers: {
-                before: service.bufferBefore || 0,
-                after: service.bufferAfter || 0
-            },
-            totalDuration: slot.totalDuration
+            travelInfo
         });
         
     } catch (error) {

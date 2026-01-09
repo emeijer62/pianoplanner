@@ -259,12 +259,22 @@ async function findAvailableSlot() {
             const startTime = new Date(data.slot.appointmentStart);
             const endTime = new Date(data.slot.appointmentEnd);
             
+            // Check of een andere dag is gevonden
+            const differentDay = data.foundDate && data.foundDate !== date;
+            const dayNote = differentDay 
+                ? `<div style="background: #fef3c7; color: #92400e; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 13px;">
+                     📅 Geen tijd op ${new Date(date).toLocaleDateString('nl-NL', {weekday: 'long', day: 'numeric', month: 'long'})}. 
+                     Eerst beschikbaar op <strong>${startTime.toLocaleDateString('nl-NL', {weekday: 'long', day: 'numeric', month: 'long'})}</strong>
+                   </div>` 
+                : '';
+            
             resultDiv.className = 'slot-result slot-found';
             resultDiv.innerHTML = `
+                ${dayNote}
                 <div class="slot-time">
                     ${formatTime(startTime)} - ${formatTime(endTime)}
                 </div>
-                <div>First available time on ${formatDate(startTime)}</div>
+                <div>${differentDay ? 'Found available time' : 'First available time'} on ${formatDate(startTime)}</div>
                 <div class="slot-details">
                     <div class="slot-detail">
                         <span>🚗</span>
@@ -288,7 +298,7 @@ async function findAvailableSlot() {
             resultDiv.innerHTML = `
                 <div>❌ ${data.message}</div>
                 <p style="margin-top: 0.5rem; color: rgba(255,255,255,0.6);">
-                    Try a different date.
+                    Try selecting a different starting date.
                 </p>
             `;
         }
