@@ -179,6 +179,8 @@ router.post('/find-slot', async (req, res) => {
     try {
         const { serviceId, customerId, date, origin, searchMultipleDays = true } = req.body;
         
+        console.log('[SMART] Request received:', { serviceId, customerId, date, origin });
+        
         // Validatie
         if (!serviceId || !date) {
             return res.status(400).json({ error: 'Dienst en datum zijn verplicht' });
@@ -188,6 +190,8 @@ router.post('/find-slot', async (req, res) => {
         if (!service) {
             return res.status(404).json({ error: 'Dienst niet gevonden' });
         }
+        
+        console.log('[SMART] Service:', service.name, 'Duration:', service.duration);
         
         // Haal bedrijfsadres op als vertrekpunt
         const companyAddress = await companyStore.getOriginAddress(req.session.user.id);
@@ -205,11 +209,15 @@ router.post('/find-slot', async (req, res) => {
         const fromLocation = origin || companyAddress;
         const travelInfo = await calculateTravelTime(fromLocation, destination);
         
+        console.log('[SMART] Travel from', fromLocation, 'to', destination, '=', travelInfo.duration, 'min');
+        
         // Bereken totale benodigde tijd (buffer voor + reistijd + dienst + buffer na)
         const totalServiceTime = (service.bufferBefore || 0) + service.duration + (service.bufferAfter || 0);
         
         // Haal company settings op
         const companySettings = await companyStore.getSettings(req.session.user.id);
+        
+        console.log('[SMART] Company workingHours:', JSON.stringify(companySettings.workingHours));
         
         // Map day of week number naar dagnaam
         const dayNameMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
