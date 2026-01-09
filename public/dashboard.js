@@ -1548,10 +1548,32 @@ document.getElementById('event-modal')?.addEventListener('click', (e) => {
     }
 });
 
-// Close modal on Escape key
+// Close modal on Escape key + Arrow key navigation
 document.addEventListener('keydown', (e) => {
+    // Don't navigate when typing in input fields or modal is open
+    const isInputFocused = document.activeElement.tagName === 'INPUT' || 
+                           document.activeElement.tagName === 'TEXTAREA' ||
+                           document.activeElement.tagName === 'SELECT';
+    const isModalOpen = document.querySelector('.modal.active') || 
+                        document.querySelector('.ios-modal.active');
+    
     if (e.key === 'Escape') {
         closeModal();
+    }
+    
+    // Arrow key navigation for calendar (only when not in input and no modal)
+    if (!isInputFocused && !isModalOpen) {
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            navigateCalendar(-1);
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            navigateCalendar(1);
+        } else if (e.key === 't' || e.key === 'T') {
+            // 'T' for Today
+            e.preventDefault();
+            goToToday();
+        }
     }
 });
 
