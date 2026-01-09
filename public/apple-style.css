@@ -912,3 +912,433 @@
         padding: var(--apple-space-4, 16px);
     }
 }
+
+/* ========================================
+   DASHBOARD CALENDAR - Apple Calendar Style Override
+   ======================================== */
+
+/* View selector as Apple segmented control */
+.view-selector {
+    display: flex;
+    background: var(--apple-gray-200, #e8e8ed);
+    border-radius: var(--apple-radius-md, 12px);
+    padding: 3px;
+    gap: 2px;
+}
+
+.view-selector select {
+    display: none; /* Hide default select */
+}
+
+.view-selector .view-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--apple-gray-600, #636366);
+    background: transparent;
+    border: none;
+    border-radius: var(--apple-radius-sm, 8px);
+    cursor: pointer;
+    transition: all 0.15s var(--apple-ease);
+}
+
+.view-selector .view-btn:hover {
+    color: var(--apple-gray-900, #1d1d1f);
+}
+
+.view-selector .view-btn.active {
+    background: var(--apple-white, #ffffff);
+    color: var(--apple-gray-900, #1d1d1f);
+    box-shadow: var(--apple-shadow-xs);
+}
+
+/* Week/Day view improvements */
+.week-view, .day-view {
+    background: var(--apple-white, #ffffff);
+    border-radius: var(--apple-radius-lg, 16px);
+    overflow: hidden;
+}
+
+.week-header, .day-header {
+    background: var(--apple-gray-50, #fbfbfd);
+    border-bottom: 0.5px solid var(--apple-gray-200, #e8e8ed);
+}
+
+.week-header-cell {
+    padding: 12px 4px;
+    text-align: center;
+    border-left: 0.5px solid var(--apple-gray-100, #f5f5f7);
+}
+
+.week-header-cell:first-child {
+    border-left: none;
+}
+
+.week-header-day {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--apple-gray-500, #8e8e93);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.week-header-date {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--apple-gray-900, #1d1d1f);
+}
+
+.week-header-cell.today .week-header-date {
+    background: var(--apple-blue, #007aff);
+    color: var(--apple-white, #ffffff);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.week-grid {
+    background: var(--apple-white, #ffffff);
+}
+
+.week-time-slot {
+    background: var(--apple-gray-50, #fbfbfd);
+    border-bottom: 0.5px solid var(--apple-gray-100, #f5f5f7);
+    border-right: 0.5px solid var(--apple-gray-200, #e8e8ed);
+    font-size: 11px;
+    color: var(--apple-gray-500, #8e8e93);
+    padding: 0 8px;
+    text-align: right;
+}
+
+.week-day-slot {
+    border-bottom: 0.5px solid var(--apple-gray-100, #f5f5f7);
+    border-left: 0.5px solid var(--apple-gray-100, #f5f5f7);
+    background: var(--apple-white, #ffffff);
+    transition: background 0.15s var(--apple-ease);
+}
+
+.week-day-slot:hover {
+    background: var(--apple-blue-subtle, rgba(0, 122, 255, 0.05));
+}
+
+.week-day-slot.drag-over {
+    background: var(--apple-blue-light, rgba(0, 122, 255, 0.12));
+    box-shadow: inset 0 0 0 2px var(--apple-blue, #007aff);
+}
+
+/* Month view improvements */
+.month-view {
+    background: var(--apple-white, #ffffff);
+    border-radius: var(--apple-radius-lg, 16px);
+    overflow: hidden;
+}
+
+.month-header {
+    background: var(--apple-gray-50, #fbfbfd);
+    border-bottom: 0.5px solid var(--apple-gray-200, #e8e8ed);
+}
+
+.month-header-cell {
+    padding: 12px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--apple-gray-500, #8e8e93);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.month-day {
+    border-right: 0.5px solid var(--apple-gray-100, #f5f5f7);
+    border-bottom: 0.5px solid var(--apple-gray-100, #f5f5f7);
+    background: var(--apple-white, #ffffff);
+    padding: 8px;
+    min-height: 80px;
+    transition: background 0.15s var(--apple-ease);
+}
+
+.month-day:nth-child(7n) {
+    border-right: none;
+}
+
+.month-day:hover {
+    background: var(--apple-gray-50, #fbfbfd);
+}
+
+.month-day.other-month {
+    background: var(--apple-gray-50, #fbfbfd);
+}
+
+.month-day.other-month .month-day-number {
+    color: var(--apple-gray-400, #aeaeb2);
+}
+
+.month-day-number {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--apple-gray-900, #1d1d1f);
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 4px;
+}
+
+.month-day.today .month-day-number {
+    background: var(--apple-blue, #007aff);
+    color: var(--apple-white, #ffffff);
+}
+
+.month-events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.month-event {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 6px;
+    background: var(--apple-blue, #007aff);
+    color: var(--apple-white, #ffffff);
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity 0.15s var(--apple-ease);
+}
+
+.month-event:hover {
+    opacity: 0.9;
+}
+
+/* Calendar events - Apple style */
+.calendar-event {
+    background: var(--apple-blue, #007aff);
+    color: var(--apple-white, #ffffff);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    cursor: grab;
+    transition: all 0.15s var(--apple-ease);
+    overflow: hidden;
+    line-height: 1.3;
+}
+
+.calendar-event:hover {
+    opacity: 0.9;
+    transform: scale(1.01);
+}
+
+.calendar-event.dragging {
+    opacity: 0.6;
+    cursor: grabbing;
+    transform: scale(1.02);
+    box-shadow: var(--apple-shadow-lg);
+}
+
+.calendar-event-time {
+    font-size: 10px;
+    opacity: 0.9;
+}
+
+/* Time label */
+.time-label {
+    background: var(--apple-gray-50, #fbfbfd);
+    border-right: 0.5px solid var(--apple-gray-200, #e8e8ed);
+    font-size: 11px;
+    color: var(--apple-gray-500, #8e8e93);
+    padding: 2px 8px;
+    text-align: right;
+}
+
+/* Right panel - Today & Upcoming */
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.today-card, .upcoming-card {
+    background: var(--apple-white, #ffffff);
+    border-radius: var(--apple-radius-lg, 16px);
+    border: 0.5px solid var(--apple-gray-200, #e8e8ed);
+    overflow: hidden;
+    box-shadow: var(--apple-shadow-xs);
+}
+
+.panel-header {
+    padding: 14px 16px;
+    background: var(--apple-gray-50, #fbfbfd);
+    border-bottom: 0.5px solid var(--apple-gray-200, #e8e8ed);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--apple-gray-600, #636366);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-content {
+    padding: 12px;
+}
+
+.event-item {
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    background: var(--apple-gray-50, #fbfbfd);
+    border-left: 3px solid var(--apple-blue, #007aff);
+    transition: all 0.2s var(--apple-ease);
+    cursor: pointer;
+}
+
+.event-item:hover {
+    background: var(--apple-white, #ffffff);
+    box-shadow: var(--apple-shadow-sm);
+    transform: translateX(2px);
+}
+
+.event-item:last-child {
+    margin-bottom: 0;
+}
+
+.event-item-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--apple-gray-900, #1d1d1f);
+    margin-bottom: 4px;
+}
+
+.event-item-time {
+    font-size: 12px;
+    color: var(--apple-gray-600, #636366);
+}
+
+.event-item-location {
+    font-size: 12px;
+    color: var(--apple-gray-500, #8e8e93);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+/* Calendar toolbar - Apple style */
+.calendar-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: var(--apple-gray-50, #fbfbfd);
+    border-bottom: 0.5px solid var(--apple-gray-200, #e8e8ed);
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-nav {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--apple-white, #ffffff);
+    border: 0.5px solid var(--apple-gray-200, #e8e8ed);
+    color: var(--apple-gray-600, #636366);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s var(--apple-ease);
+}
+
+.btn-nav:hover {
+    background: var(--apple-gray-100, #f5f5f7);
+    border-color: var(--apple-gray-300, #d2d2d7);
+}
+
+.btn-nav:active {
+    transform: scale(0.95);
+}
+
+.current-date {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--apple-gray-900, #1d1d1f);
+    min-width: 180px;
+    text-align: center;
+}
+
+.btn-today {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--apple-blue, #007aff);
+    background: transparent;
+    border: none;
+    border-radius: var(--apple-radius-sm, 8px);
+    cursor: pointer;
+    transition: all 0.15s var(--apple-ease);
+}
+
+.btn-today:hover {
+    background: var(--apple-blue-subtle, rgba(0, 122, 255, 0.08));
+}
+
+.btn-sync {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--apple-gray-700, #424245);
+    background: var(--apple-white, #ffffff);
+    border: 0.5px solid var(--apple-gray-200, #e8e8ed);
+    border-radius: var(--apple-radius-md, 12px);
+    cursor: pointer;
+    transition: all 0.15s var(--apple-ease);
+}
+
+.btn-sync:hover {
+    background: var(--apple-gray-100, #f5f5f7);
+    border-color: var(--apple-gray-300, #d2d2d7);
+}
+
+.btn-sync.syncing {
+    color: var(--apple-blue, #007aff);
+}
+
+.btn-sync.syncing .sync-icon {
+    animation: spin 1s linear infinite;
+}
+
+.btn-sync.success {
+    background: var(--apple-green-light, rgba(52, 199, 89, 0.12));
+    border-color: var(--apple-green, #34c759);
+    color: var(--apple-green, #34c759);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
