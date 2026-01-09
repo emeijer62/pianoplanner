@@ -96,6 +96,10 @@ const ICON_MAP = {
     '✨': 'sparkles',
     '🧪': 'flask-conical',
     '🧹': 'brush',
+    '🎭': 'theater',
+    '🧠': 'brain',
+    '❓': 'help-circle',
+    '❔': 'help-circle',
     
     // Status Dots
     '🔴': 'circle',
