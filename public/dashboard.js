@@ -1176,7 +1176,13 @@ function setupNewCustomerAutocomplete() {
 }
 
 function openModal() {
-    document.getElementById('event-modal').style.display = 'flex';
+    // Don't reopen if already open
+    const modal = document.getElementById('event-modal');
+    if (modal.style.display === 'flex') {
+        return;
+    }
+    
+    modal.style.display = 'flex';
     
     // Load customers, pianos, services
     loadModalData();
@@ -1192,6 +1198,12 @@ function openModal() {
 
 // Open modal with pre-filled time from clicked slot
 function openModalWithTime(element) {
+    // Don't trigger if modal is already open
+    const modal = document.getElementById('event-modal');
+    if (modal.style.display === 'flex') {
+        return;
+    }
+    
     // Don't trigger if clicking on an event
     if (event.target.closest('.calendar-event')) {
         return;
@@ -1233,6 +1245,12 @@ let editingAppointmentId = null;
 async function openEditModal(appointmentId) {
     event.stopPropagation(); // Prevent triggering slot click
     
+    // Don't reopen if editing the same appointment
+    const modal = document.getElementById('event-modal');
+    if (modal.style.display === 'flex' && editingAppointmentId === appointmentId) {
+        return;
+    }
+    
     const appointment = allEvents.find(e => e.id === appointmentId);
     if (!appointment) {
         console.error('Appointment not found:', appointmentId);
@@ -1241,7 +1259,7 @@ async function openEditModal(appointmentId) {
     
     editingAppointmentId = appointmentId;
     
-    document.getElementById('event-modal').style.display = 'flex';
+    modal.style.display = 'flex';
     
     // Update modal title
     document.querySelector('#event-modal .modal-header h2').textContent = 'Edit Appointment';
