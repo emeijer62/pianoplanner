@@ -628,7 +628,7 @@ const getBookingSettings = async (userId) => {
         requirePhone: true,
         requireEmail: true,
         confirmationMessage: 'Bedankt voor uw boeking! U ontvangt een bevestiging per email.',
-        allowedServices: []   // Leeg = alle actieve diensten
+        allowedServiceIds: []   // Leeg = alle actieve diensten
     };
     
     if (!user) return defaultSettings;
