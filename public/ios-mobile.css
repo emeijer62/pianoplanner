@@ -482,6 +482,511 @@
     .nav-actions {
         display: none !important;
     }
+    
+    /* ============================================
+       STEP 3: iOS Cards & Lists
+       ============================================ */
+    
+    /* iOS Grouped Table View Style */
+    .card,
+    .form-card,
+    .modal-content,
+    .customer-card,
+    .piano-card {
+        background: var(--ios-bg-primary) !important;
+        border: none !important;
+        border-radius: var(--ios-radius-md) !important;
+        box-shadow: none !important;
+        overflow: hidden;
+    }
+    
+    /* iOS List Items */
+    .customer-item,
+    .appointment-item,
+    .piano-item,
+    .service-item,
+    .list-item {
+        background: var(--ios-bg-primary);
+        padding: 12px var(--ios-spacing-md);
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        position: relative;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .customer-item:not(:last-child)::after,
+    .appointment-item:not(:last-child)::after,
+    .piano-item:not(:last-child)::after,
+    .list-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: var(--ios-spacing-md);
+        right: 0;
+        height: 0.5px;
+        background: var(--ios-separator);
+    }
+    
+    /* iOS Chevron for navigation items */
+    .customer-item::before,
+    .piano-card::before {
+        content: '›';
+        position: absolute;
+        right: var(--ios-spacing-md);
+        font-size: 20px;
+        font-weight: 300;
+        color: var(--ios-gray-3);
+    }
+    
+    /* iOS Section Headers */
+    .section-title,
+    .card-header,
+    .panel-title {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        color: var(--ios-text-tertiary) !important;
+        text-transform: uppercase !important;
+        letter-spacing: -0.08px;
+        padding: var(--ios-spacing-sm) var(--ios-spacing-md) !important;
+        padding-top: var(--ios-spacing-lg) !important;
+        background: transparent !important;
+        border: none !important;
+    }
+    
+    /* iOS Inset Grouped Cards */
+    .customers-list,
+    .pianos-grid,
+    .appointments-list {
+        background: transparent !important;
+        padding: 0 var(--ios-spacing-md);
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .customers-list > *,
+    .appointments-list > * {
+        margin: 0 !important;
+    }
+    
+    .customers-list > *:first-child,
+    .appointments-list > *:first-child {
+        border-top-left-radius: var(--ios-radius-md);
+        border-top-right-radius: var(--ios-radius-md);
+    }
+    
+    .customers-list > *:last-child,
+    .appointments-list > *:last-child {
+        border-bottom-left-radius: var(--ios-radius-md);
+        border-bottom-right-radius: var(--ios-radius-md);
+    }
+    
+    /* Pianos grid becomes single column list on mobile */
+    .pianos-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+    }
+    
+    .piano-card {
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    .pianos-grid .piano-card:first-child {
+        border-top-left-radius: var(--ios-radius-md) !important;
+        border-top-right-radius: var(--ios-radius-md) !important;
+    }
+    
+    .pianos-grid .piano-card:last-child {
+        border-bottom-left-radius: var(--ios-radius-md) !important;
+        border-bottom-right-radius: var(--ios-radius-md) !important;
+    }
+    
+    .pianos-grid .piano-card:not(:last-child) {
+        border-bottom: 0.5px solid var(--ios-separator) !important;
+    }
+    
+    /* ============================================
+       STEP 4: iOS Bottom Sheet Modals
+       ============================================ */
+    
+    /* Modal Overlay */
+    .modal,
+    .modal-overlay,
+    [class*="modal"]:not(.modal-content) {
+        background: rgba(0, 0, 0, 0.4) !important;
+        backdrop-filter: none;
+    }
+    
+    /* iOS Sheet Modal */
+    .modal-content,
+    .modal-dialog,
+    .modal-box,
+    [class*="modal-content"] {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        max-height: 90vh !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: var(--ios-radius-lg) var(--ios-radius-lg) 0 0 !important;
+        background: var(--ios-bg-primary) !important;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2) !important;
+        animation: ios-sheet-up 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    @keyframes ios-sheet-up {
+        from {
+            transform: translateY(100%);
+            opacity: 0.5;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes ios-sheet-down {
+        from {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+    }
+    
+    /* iOS Drag Handle */
+    .modal-content::before,
+    .modal-dialog::before,
+    [class*="modal-content"]::before {
+        content: '';
+        display: block;
+        width: 36px;
+        height: 5px;
+        background: var(--ios-gray-4);
+        border-radius: 2.5px;
+        margin: 8px auto 4px;
+        flex-shrink: 0;
+    }
+    
+    /* Modal Header iOS Style */
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px var(--ios-spacing-md) 12px !important;
+        border-bottom: 0.5px solid var(--ios-separator) !important;
+        background: transparent !important;
+        flex-shrink: 0;
+    }
+    
+    .modal-header h2,
+    .modal-header h3,
+    .modal-title {
+        font-size: 17px !important;
+        font-weight: 600 !important;
+        color: var(--ios-text-primary) !important;
+        text-align: center;
+        flex: 1;
+        margin: 0 !important;
+    }
+    
+    /* Modal Body */
+    .modal-body {
+        padding: var(--ios-spacing-md) !important;
+        overflow-y: auto;
+        flex: 1;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Modal Footer */
+    .modal-footer,
+    .modal-actions {
+        padding: var(--ios-spacing-md) !important;
+        padding-bottom: calc(var(--ios-spacing-md) + var(--safe-area-bottom)) !important;
+        border-top: 0.5px solid var(--ios-separator) !important;
+        background: var(--ios-bg-secondary) !important;
+        display: flex;
+        gap: var(--ios-spacing-sm);
+        flex-shrink: 0;
+    }
+    
+    .modal-footer .btn,
+    .modal-actions .btn {
+        flex: 1;
+    }
+    
+    /* Close Button iOS Style */
+    .modal-close,
+    .close-btn,
+    [class*="close"] {
+        width: 30px !important;
+        height: 30px !important;
+        border-radius: 50% !important;
+        background: var(--ios-gray-5) !important;
+        border: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 16px !important;
+        color: var(--ios-gray-1) !important;
+        cursor: pointer;
+        position: absolute;
+        right: var(--ios-spacing-md);
+        top: 14px;
+    }
+    
+    /* ============================================
+       STEP 5: iOS Touch Feedback & Buttons
+       ============================================ */
+    
+    /* iOS Button Base */
+    .btn {
+        height: 50px !important;
+        border-radius: var(--ios-radius-md) !important;
+        font-size: 17px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px;
+        -webkit-tap-highlight-color: transparent;
+        transition: opacity 0.15s ease, transform 0.1s ease !important;
+        cursor: pointer;
+    }
+    
+    .btn:active {
+        opacity: 0.7 !important;
+        transform: scale(0.98) !important;
+    }
+    
+    .btn-primary {
+        background: var(--ios-blue) !important;
+        color: white !important;
+    }
+    
+    .btn-secondary {
+        background: rgba(0, 122, 255, 0.1) !important;
+        color: var(--ios-blue) !important;
+    }
+    
+    .btn-danger,
+    .btn-destructive {
+        background: rgba(255, 59, 48, 0.1) !important;
+        color: var(--ios-red) !important;
+    }
+    
+    .btn-success {
+        background: rgba(52, 199, 89, 0.1) !important;
+        color: var(--ios-green) !important;
+    }
+    
+    /* Small buttons */
+    .btn-sm,
+    .btn-small {
+        height: 34px !important;
+        font-size: 15px !important;
+        padding: 0 12px !important;
+        border-radius: var(--ios-radius-sm) !important;
+    }
+    
+    /* iOS Touch Highlight for List Items */
+    .customer-item:active,
+    .appointment-item:active,
+    .piano-card:active,
+    .list-item:active,
+    .quick-btn:active {
+        background: var(--ios-gray-5) !important;
+    }
+    
+    /* iOS Form Inputs */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    select,
+    textarea {
+        height: 44px;
+        padding: 0 var(--ios-spacing-md) !important;
+        font-size: 17px !important;
+        border: none !important;
+        border-radius: var(--ios-radius-sm) !important;
+        background: var(--ios-bg-primary) !important;
+        color: var(--ios-text-primary) !important;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    
+    textarea {
+        height: auto;
+        min-height: 100px;
+        padding: var(--ios-spacing-md) !important;
+    }
+    
+    input:focus,
+    select:focus,
+    textarea:focus {
+        outline: none !important;
+        box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3) !important;
+    }
+    
+    /* iOS Form Groups */
+    .form-group {
+        margin-bottom: 0 !important;
+        background: var(--ios-bg-primary);
+        padding: 12px var(--ios-spacing-md);
+        position: relative;
+    }
+    
+    .form-group:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: var(--ios-spacing-md);
+        right: 0;
+        height: 0.5px;
+        background: var(--ios-separator);
+    }
+    
+    .form-group label {
+        font-size: 13px !important;
+        color: var(--ios-text-tertiary) !important;
+        margin-bottom: 4px !important;
+        display: block;
+    }
+    
+    /* iOS Toggle/Switch */
+    input[type="checkbox"] {
+        width: 51px !important;
+        height: 31px !important;
+        -webkit-appearance: none;
+        appearance: none;
+        background: var(--ios-gray-5);
+        border-radius: 15.5px !important;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        border: none !important;
+        padding: 0 !important;
+    }
+    
+    input[type="checkbox"]::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 27px;
+        height: 27px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease;
+    }
+    
+    input[type="checkbox"]:checked {
+        background: var(--ios-green) !important;
+    }
+    
+    input[type="checkbox"]:checked::after {
+        transform: translateX(20px);
+    }
+    
+    /* iOS Search Bar */
+    .search-box,
+    .search-input,
+    [class*="search"] input {
+        background: var(--ios-gray-6) !important;
+        border-radius: var(--ios-radius-sm) !important;
+        border: none !important;
+        padding-left: 36px !important;
+    }
+    
+    /* iOS Segmented Control (View Selector) */
+    .view-selector,
+    .tab-buttons,
+    .segmented-control {
+        display: flex !important;
+        background: var(--ios-gray-5) !important;
+        border-radius: 9px !important;
+        padding: 2px !important;
+        gap: 0 !important;
+    }
+    
+    .view-btn,
+    .tab-btn,
+    .segment {
+        flex: 1 !important;
+        padding: 7px 12px !important;
+        border-radius: 7px !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        background: transparent !important;
+        border: none !important;
+        color: var(--ios-text-primary) !important;
+        -webkit-tap-highlight-color: transparent;
+        transition: all 0.15s ease;
+    }
+    
+    .view-btn.active,
+    .tab-btn.active,
+    .segment.active {
+        background: var(--ios-bg-primary) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+    }
+    
+    /* iOS Action Sheet Style for Dropdowns */
+    select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238E8E93' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 12px center !important;
+        padding-right: 32px !important;
+    }
+    
+    /* Page Headers iOS Style */
+    .page-header,
+    .dashboard-header {
+        padding: 0 var(--ios-spacing-md) var(--ios-spacing-md) !important;
+    }
+    
+    .page-header h1,
+    .dashboard-header h1 {
+        font-size: 34px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.37px !important;
+        color: var(--ios-text-primary) !important;
+    }
+    
+    /* Calendar iOS Adjustments */
+    .calendar-container {
+        margin: 0 var(--ios-spacing-md);
+    }
+    
+    .day-column,
+    .time-slot {
+        min-height: 60px;
+    }
+    
+    .event,
+    .appointment-block {
+        border-radius: var(--ios-radius-sm) !important;
+        border: none !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    }
 }
 
 /* ============================================
@@ -514,7 +1019,51 @@
         background: rgba(28, 28, 30, 0.94) !important;
     }
     
-    .dashboard {
+    .dashboard,
+    body {
         background: var(--ios-bg-grouped) !important;
+    }
+    
+    .modal-content,
+    .modal-dialog,
+    [class*="modal-content"] {
+        background: var(--ios-bg-primary) !important;
+    }
+    
+    .modal-footer,
+    .modal-actions {
+        background: var(--ios-bg-secondary) !important;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+        background: var(--ios-bg-secondary) !important;
+        color: var(--ios-text-primary) !important;
+    }
+    
+    .customer-item:active,
+    .appointment-item:active,
+    .piano-card:active {
+        background: var(--ios-gray-4) !important;
+    }
+    
+    /* Dark mode toggle */
+    input[type="checkbox"] {
+        background: var(--ios-gray-4) !important;
+    }
+    
+    input[type="checkbox"]:checked {
+        background: var(--ios-green) !important;
+    }
+    
+    input[type="checkbox"]::after {
+        background: var(--ios-bg-primary);
     }
 }
