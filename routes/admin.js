@@ -363,7 +363,8 @@ router.get('/users/:userId', requireAdminAuth, async (req, res) => {
 
 // Cleanup broken appointments (missing start/end time)
 router.post('/cleanup-appointments', requireAdminAuth, async (req, res) => {
-    try {\n        // First count broken records
+    try {
+        // First count broken records
         const broken = await dbAll(
             'SELECT id, title FROM appointments WHERE start_time IS NULL OR end_time IS NULL'
         );
