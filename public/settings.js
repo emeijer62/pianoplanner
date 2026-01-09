@@ -857,15 +857,64 @@ async function loadBookingSettings() {
         if (reqEmailEl) reqEmailEl.checked = bookingSettings.requireEmail !== false;
         if (reqPhoneEl) reqPhoneEl.checked = bookingSettings.requirePhone !== false;
         
+        // Load and render services for booking
+        await renderBookingServices();
+        
     } catch (error) {
         console.error('Could not load booking settings:', error);
     }
+}
+
+async function renderBookingServices() {
+    const container = document.getElementById('booking-services-list');
+    if (!container) return;
+    
+    // Get allowed service IDs (default to all if not set)
+    const allowedServiceIds = bookingSettings.allowedServiceIds || [];
+    const allServicesAllowed = allowedServiceIds.length === 0;
+    
+    // Fetch services if not already loaded
+    if (services.length === 0) {
+        try {
+            const response = await fetch('/api/settings/services');
+            if (response.ok) {
+                const data = await response.json();
+                services = data.services || data || [];
+            }
+        } catch (error) {
+            console.error('Could not load services:', error);
+        }
+    }
+    
+    if (services.length === 0) {
+        container.innerHTML = '<p style="color: #666; text-align: center;">No services available. Add services first.</p>';
+        return;
+    }
+    
+    container.innerHTML = services.map(service => {
+        const isChecked = allServicesAllowed || allowedServiceIds.includes(service.id);
+        return `
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px; background: white; border-radius: 6px; border: 1px solid var(--gray-200);">
+                <input type="checkbox" class="booking-service-checkbox" value="${service.id}" ${isChecked ? 'checked' : ''}>
+                <span class="service-color" style="background: ${service.color}; width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;"></span>
+                <span style="flex: 1; font-weight: 500;">${service.name}</span>
+                <span style="color: var(--gray-500); font-size: 12px;">${service.duration} min • €${service.price}</span>
+            </label>
+        `;
+    }).join('');
 }
 
 async function saveBookingSettings(e) {
     e.preventDefault();
     
     const confirmEl = document.getElementById('booking-confirmation');
+    
+    // Get selected service IDs
+    const serviceCheckboxes = document.querySelectorAll('.booking-service-checkbox');
+    const allowedServiceIds = Array.from(serviceCheckboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+    
     const settings = {
         enabled: document.getElementById('booking-enabled').checked,
         title: document.getElementById('booking-title').value.trim(),
@@ -875,6 +924,7 @@ async function saveBookingSettings(e) {
         maxAdvanceDays: parseInt(document.getElementById('booking-max-advance').value),
         requireEmail: document.getElementById('booking-require-email').checked,
         requirePhone: document.getElementById('booking-require-phone').checked,
+        allowedServiceIds: allowedServiceIds,
         slug: bookingSettings.slug  // Keep existing slug
     };
     

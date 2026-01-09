@@ -1531,6 +1531,20 @@
                                     <label for="booking-description">Welcome message (optional)</label>
                                     <textarea id="booking-description" name="description" rows="2" placeholder="Message shown on your booking page"></textarea>
                                 </div>
+                                
+                                <!-- Available Services -->
+                                <div class="form-group" style="margin-top: 20px;">
+                                    <label style="display: block; margin-bottom: 12px; font-weight: 600;">
+                                        <i data-lucide="list-checks" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"></i>
+                                        Available services for booking
+                                    </label>
+                                    <p style="color: var(--gray-500); font-size: 13px; margin-bottom: 12px;">
+                                        Select which services customers can book via the public link
+                                    </p>
+                                    <div id="booking-services-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding: 12px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200);">
+                                        <p style="color: #666; text-align: center;">Loading services...</p>
+                                    </div>
+                                </div>
                             </div>
                             
                             <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Save</button>

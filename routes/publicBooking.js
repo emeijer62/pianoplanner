@@ -49,8 +49,11 @@ router.get('/customer/:token', async (req, res) => {
             }
         } 
         // Anders: filter diensten volgens booking settings
-        else if (bookingSettings.allowedServices && bookingSettings.allowedServices.length > 0) {
-            services = services.filter(s => bookingSettings.allowedServices.includes(s.id));
+        else {
+            const allowedIds = bookingSettings.allowedServiceIds || bookingSettings.allowedServices || [];
+            if (allowedIds.length > 0) {
+                services = services.filter(s => allowedIds.includes(s.id));
+            }
         }
         
         // Haal bedrijfslogo op
@@ -417,8 +420,9 @@ router.get('/:slug', async (req, res) => {
         let services = await serviceStore.getActiveServices(user.id);
         
         // Filter op toegestane diensten als ingesteld
-        if (settings.allowedServices && settings.allowedServices.length > 0) {
-            services = services.filter(s => settings.allowedServices.includes(s.id));
+        const allowedIds = settings.allowedServiceIds || settings.allowedServices || [];
+        if (allowedIds.length > 0) {
+            services = services.filter(s => allowedIds.includes(s.id));
         }
         
         // Haal beschikbaarheid op (working hours)
