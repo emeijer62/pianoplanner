@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gebruiksaanwijzing - PianoPlanner</title>
+    <title>User Guide - PianoPlanner</title>
     <style>
         * {
             margin: 0;
@@ -298,17 +298,6 @@
             overflow-x: auto;
         }
 
-        /* Image placeholder */
-        .screenshot {
-            background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
-            border-radius: 12px;
-            padding: 40px;
-            text-align: center;
-            color: #999;
-            margin: 24px 0;
-            border: 1px solid #e5e5e5;
-        }
-
         /* Table */
         .comparison-table {
             width: 100%;
@@ -374,13 +363,13 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <a href="/" class="logo">
+            <a href="/dashboard.html" class="logo">
                 <span>🎹</span>
                 <span>PianoPlanner</span>
             </a>
             <div class="header-buttons">
-                <a href="/about.html" class="btn btn-secondary">Over PianoPlanner</a>
-                <a href="/dashboard.html" class="btn btn-primary">Naar Dashboard</a>
+                <a href="/about.html" class="btn btn-secondary">About PianoPlanner</a>
+                <a href="/dashboard.html" class="btn btn-primary">Go to Dashboard</a>
             </div>
         </div>
     </header>
@@ -388,151 +377,152 @@
     <div class="container">
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
-            <div class="sidebar-title">Aan de slag</div>
-            <a href="#start" class="sidebar-link active">Eerste stappen</a>
-            <a href="#bedrijfsgegevens" class="sidebar-link">Bedrijfsgegevens invullen</a>
-            <a href="#werkuren" class="sidebar-link">Werkdagen & buffers</a>
-            <a href="#rayon" class="sidebar-link">Rayon instellen</a>
+            <div class="sidebar-title">Getting Started</div>
+            <a href="#start" class="sidebar-link active">First Steps</a>
+            <a href="#business-details" class="sidebar-link">Business Details</a>
+            <a href="#working-hours" class="sidebar-link">Working Hours & Buffers</a>
+            <a href="#service-area" class="sidebar-link">Service Area</a>
 
-            <div class="sidebar-title">Kalender koppelen</div>
-            <a href="#google-calendar" class="sidebar-link">Google Agenda koppelen</a>
-            <a href="#apple-calendar" class="sidebar-link">iCloud Agenda koppelen</a>
-            <a href="#sync-methodes" class="sidebar-link">Sync methodes uitgelegd</a>
+            <div class="sidebar-title">Calendar Integration</div>
+            <a href="#google-calendar" class="sidebar-link">Connect Google Calendar</a>
+            <a href="#apple-calendar" class="sidebar-link">Connect iCloud Calendar</a>
+            <a href="#sync-methods" class="sidebar-link">Sync Methods Explained</a>
 
-            <div class="sidebar-title">Email instellen</div>
-            <a href="#eigen-domein" class="sidebar-link">Mailen via eigen domein</a>
-            <a href="#email-sjablonen" class="sidebar-link">Email sjablonen</a>
+            <div class="sidebar-title">Email Setup</div>
+            <a href="#custom-domain" class="sidebar-link">Send from Your Domain</a>
+            <a href="#email-templates" class="sidebar-link">Email Templates</a>
 
-            <div class="sidebar-title">Online boeken</div>
-            <a href="#boekingslink" class="sidebar-link">Boekingslink aanmaken</a>
-            <a href="#klant-link" class="sidebar-link">Persoonlijke klantlink</a>
-            <a href="#smart-suggestions" class="sidebar-link">Slimme suggesties</a>
-            <a href="#theater-availability" class="sidebar-link">Theater beschikbaarheid</a>
+            <div class="sidebar-title">Online Booking</div>
+            <a href="#booking-link" class="sidebar-link">Create Booking Link</a>
+            <a href="#customer-link" class="sidebar-link">Personal Customer Links</a>
+            <a href="#smart-suggestions" class="sidebar-link">Smart Suggestions</a>
+            <a href="#theater-availability" class="sidebar-link">Theater Availability</a>
 
             <div class="sidebar-title">Pianos & Service</div>
-            <a href="#piano-service" class="sidebar-link">Service historie</a>
+            <a href="#piano-service" class="sidebar-link">Service History</a>
+            <a href="#slot-duration" class="sidebar-link">Calendar Slot Duration</a>
         </nav>
 
         <!-- Main Content -->
         <main class="content">
-            <h1>📖 Gebruiksaanwijzing</h1>
+            <h1>📖 User Guide</h1>
             <p class="intro">
-                Welkom bij de PianoPlanner handleiding! Deze gids helpt u om optimaal gebruik te maken van alle mogelijkheden. 
-                Volg de stappen in volgorde voor de beste ervaring, of spring direct naar het onderwerp dat u zoekt.
+                Welcome to the PianoPlanner user guide! This guide helps you make the most of all features. 
+                Follow the steps in order for the best experience, or jump directly to the topic you need.
             </p>
 
-            <!-- EERSTE STAPPEN -->
+            <!-- FIRST STEPS -->
             <section id="start" class="section">
-                <h2><span class="icon">🚀</span> Eerste stappen</h2>
+                <h2><span class="icon">🚀</span> First Steps</h2>
                 <p>
-                    Voordat u kunt beginnen met plannen, is het belangrijk om uw account goed in te richten. 
-                    De volgorde hieronder zorgt ervoor dat alle functies optimaal werken.
+                    Before you can start scheduling, it's important to set up your account properly. 
+                    The order below ensures all features work optimally.
                 </p>
 
                 <div class="callout callout-info">
-                    <div class="callout-title">💡 Aanbevolen volgorde</div>
+                    <div class="callout-title">💡 Recommended Order</div>
                     <p>
-                        1. Bedrijfsgegevens → 2. Werkuren → 3. Rayon → 4. Kalender → 5. Email → 6. Boekingslink
+                        1. Business Details → 2. Working Hours → 3. Service Area → 4. Calendar → 5. Email → 6. Booking Link
                     </p>
                 </div>
 
                 <p>
-                    Neem even de tijd om alles goed in te stellen. Dit bespaart u later veel werk en zorgt ervoor dat:
+                    Take some time to configure everything properly. This saves you work later and ensures that:
                 </p>
                 <ul>
-                    <li>Reistijden correct berekend worden</li>
-                    <li>Klanten alleen kunnen boeken wanneer u beschikbaar bent</li>
-                    <li>Emails professioneel overkomen met uw eigen gegevens</li>
-                    <li>Afspraken automatisch in uw agenda verschijnen</li>
+                    <li>Travel times are calculated correctly</li>
+                    <li>Customers can only book when you're available</li>
+                    <li>Emails look professional with your own details</li>
+                    <li>Appointments automatically appear in your calendar</li>
                 </ul>
             </section>
 
-            <!-- BEDRIJFSGEGEVENS -->
-            <section id="bedrijfsgegevens" class="section">
-                <h2><span class="icon">🏢</span> Bedrijfsgegevens invullen</h2>
+            <!-- BUSINESS DETAILS -->
+            <section id="business-details" class="section">
+                <h2><span class="icon">🏢</span> Business Details</h2>
                 <p>
-                    Uw bedrijfsgegevens zijn essentieel voor de werking van PianoPlanner. Het adres wordt gebruikt als 
-                    <strong>startpunt voor reistijdberekeningen</strong> en verschijnt op emails naar klanten.
+                    Your business details are essential for PianoPlanner to work properly. The address is used as 
+                    <strong>starting point for travel time calculations</strong> and appears on emails to customers.
                 </p>
 
                 <div class="callout callout-warning">
-                    <div class="callout-title">⚠️ Belangrijk</div>
+                    <div class="callout-title">⚠️ Important</div>
                     <p>
-                        Zonder correct adres kunnen reistijden niet berekend worden. Vul dit als eerste in!
+                        Without a correct address, travel times cannot be calculated. Fill this in first!
                     </p>
                 </div>
 
-                <h3>Zo stelt u uw bedrijfsgegevens in:</h3>
+                <h3>How to set up your business details:</h3>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar Instellingen</div>
-                        <p>Klik op <code>Settings</code> in het menu, of ga direct naar het tabblad "Bedrijf".</p>
+                        <div class="step-title">Go to Settings</div>
+                        <p>Click on <code>Settings</code> in the menu, or go directly to the "Company" tab.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Vul uw gegevens in</div>
-                        <p>Bedrijfsnaam, uw naam, email, telefoon en volledig adres. Gebruik de Google Maps suggesties voor een exact adres.</p>
+                        <div class="step-title">Fill in your details</div>
+                        <p>Business name, your name, email, phone and full address. Use Google Maps suggestions for an exact address.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Upload uw logo (optioneel)</div>
-                        <p>Uw logo verschijnt op de boekingspagina en in emails.</p>
+                        <div class="step-title">Upload your logo (optional)</div>
+                        <p>Your logo appears on the booking page and in emails.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Stel uw tijdzone in</div>
-                        <p>Standaard staat dit op Europe/Amsterdam. Pas aan indien nodig.</p>
+                        <div class="step-title">Set your timezone</div>
+                        <p>Default is Europe/Amsterdam. Adjust if needed.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Klik op Opslaan</div>
-                        <p>Uw gegevens worden direct opgeslagen en toegepast.</p>
+                        <div class="step-title">Click Save</div>
+                        <p>Your details are saved and applied immediately.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- WERKUREN EN BUFFERS -->
-            <section id="werkuren" class="section">
-                <h2><span class="icon">⏰</span> Werkdagen, tijden & buffers</h2>
+            <!-- WORKING HOURS AND BUFFERS -->
+            <section id="working-hours" class="section">
+                <h2><span class="icon">⏰</span> Working Hours & Buffers</h2>
                 <p>
-                    Stel in wanneer u beschikbaar bent voor afspraken. Dit bepaalt wanneer klanten online kunnen boeken 
-                    en helpt bij het plannen van uw dag.
+                    Set when you're available for appointments. This determines when customers can book online 
+                    and helps with planning your day.
                 </p>
 
-                <h3>Werkdagen en tijden</h3>
+                <h3>Working Days and Times</h3>
                 <p>
-                    Ga naar <code>Settings → Bedrijf</code> en scroll naar "Werkuren". Hier kunt u per dag aangeven:
+                    Go to <code>Settings → Company</code> and scroll to "Working Hours". Here you can set per day:
                 </p>
                 <ul>
-                    <li>Of u die dag werkt (aan/uit per dag)</li>
-                    <li>Start- en eindtijd van uw werkdag</li>
-                    <li>Pauzetijden (optioneel)</li>
+                    <li>Whether you work that day (on/off per day)</li>
+                    <li>Start and end time of your workday</li>
+                    <li>Break times (optional)</li>
                 </ul>
 
-                <h3>Buffers instellen</h3>
+                <h3>Setting Buffers</h3>
                 <p>
-                    Buffers zorgen voor ademruimte tussen afspraken. U vindt deze instellingen bij <code>Settings → Beschikbaarheid</code>.
+                    Buffers provide breathing room between appointments. You'll find these settings at <code>Settings → Availability</code>.
                 </p>
 
                 <table class="comparison-table">
                     <thead>
                         <tr>
-                            <th>Buffer type</th>
-                            <th>Wat doet het?</th>
-                            <th>Aanbevolen</th>
+                            <th>Buffer Type</th>
+                            <th>What does it do?</th>
+                            <th>Recommended</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>Buffer voor afspraak</strong></td>
-                            <td>Extra tijd vóór een afspraak (bijv. voor voorbereiding)</td>
-                            <td>0-15 minuten</td>
+                            <td><strong>Buffer before appointment</strong></td>
+                            <td>Extra time before an appointment (e.g., for preparation)</td>
+                            <td>0-15 minutes</td>
                         </tr>
                         <tr>
-                            <td><strong>Buffer na afspraak</strong></td>
-                            <td>Extra tijd ná een afspraak (bijv. voor notities)</td>
-                            <td>15-30 minuten</td>
+                            <td><strong>Buffer after appointment</strong></td>
+                            <td>Extra time after an appointment (e.g., for notes)</td>
+                            <td>15-30 minutes</td>
                         </tr>
                         <tr>
-                            <td><strong>Minimale boekingstijd</strong></td>
-                            <td>Hoe ver van tevoren moet geboekt worden?</td>
-                            <td>24-48 uur</td>
+                            <td><strong>Minimum booking time</strong></td>
+                            <td>How far in advance must bookings be made?</td>
+                            <td>24-48 hours</td>
                         </tr>
                     </tbody>
                 </table>
@@ -540,100 +530,100 @@
                 <div class="callout callout-success">
                     <div class="callout-title">✅ Tip</div>
                     <p>
-                        Stel een buffer van minimaal 15 minuten in tussen afspraken. Dit geeft ruimte voor uitloop en reistijd.
+                        Set a buffer of at least 15 minutes between appointments. This allows for overruns and travel time.
                     </p>
                 </div>
             </section>
 
-            <!-- RAYON -->
-            <section id="rayon" class="section">
-                <h2><span class="icon">🗺️</span> Rayon instellen (maximale rijtijd)</h2>
+            <!-- SERVICE AREA -->
+            <section id="service-area" class="section">
+                <h2><span class="icon">🗺️</span> Service Area (Maximum Travel Time)</h2>
                 <p>
-                    Wilt u niet te ver rijden voor een afspraak? Stel een maximale rijtijd in. Klanten buiten uw rayon 
-                    krijgen dan een melding bij het boeken.
+                    Don't want to travel too far for an appointment? Set a maximum travel time. Customers outside your 
+                    service area will get a notification when booking.
                 </p>
 
-                <h3>Zo stelt u uw rayon in:</h3>
+                <h3>How to set your service area:</h3>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar Settings → Reistijd</div>
-                        <p>Hier vindt u alle instellingen voor reistijden en rayon.</p>
+                        <div class="step-title">Go to Settings → Travel Time</div>
+                        <p>Here you'll find all settings for travel times and service area.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Schakel rayon-controle in</div>
-                        <p>Zet de optie "Controleer maximale reistijd" aan.</p>
+                        <div class="step-title">Enable area check</div>
+                        <p>Turn on the option "Check maximum travel time".</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Stel maximale rijtijd in</div>
-                        <p>Bijvoorbeeld: 45 minuten. Afspraken verder weg krijgen een waarschuwing.</p>
+                        <div class="step-title">Set maximum travel time</div>
+                        <p>For example: 45 minutes. Appointments further away will show a warning.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Pas de melding aan (optioneel)</div>
-                        <p>Schrijf een eigen bericht voor klanten buiten uw rayon, bijvoorbeeld met alternatieve opties.</p>
+                        <div class="step-title">Customize the message (optional)</div>
+                        <p>Write a custom message for customers outside your area, for example with alternative options.</p>
                     </div>
                 </div>
 
                 <div class="callout callout-info">
-                    <div class="callout-title">💡 Extra optie: rijtijd tussen afspraken</div>
+                    <div class="callout-title">💡 Extra option: travel time between appointments</div>
                     <p>
-                        U kunt ook een maximale rijtijd instellen tussen twee opeenvolgende afspraken. 
-                        Dit voorkomt dat u na een afspraak in Groningen meteen naar Maastricht moet.
+                        You can also set a maximum travel time between consecutive appointments. 
+                        This prevents you from having to rush from one city to another.
                     </p>
                 </div>
             </section>
 
             <!-- GOOGLE CALENDAR -->
             <section id="google-calendar" class="section">
-                <h2><span class="icon">📅</span> Google Agenda koppelen</h2>
+                <h2><span class="icon">📅</span> Connect Google Calendar</h2>
                 <p>
-                    Koppel uw Google Agenda voor <strong>twee-weg synchronisatie</strong>. Afspraken verschijnen automatisch 
-                    in uw agenda, en wijzigingen in Google komen terug in PianoPlanner.
+                    Connect your Google Calendar for <strong>two-way synchronization</strong>. Appointments automatically 
+                    appear in your calendar, and changes in Google sync back to PianoPlanner.
                 </p>
 
-                <h3>Koppeling maken</h3>
+                <h3>Creating the Connection</h3>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar Settings → Kalender</div>
-                        <p>Open het tabblad "Kalender synchronisatie".</p>
+                        <div class="step-title">Go to Settings → Calendar</div>
+                        <p>Open the "Calendar Sync" tab.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Klik op "Koppel Google Agenda"</div>
-                        <p>U wordt doorgestuurd naar Google om toestemming te geven.</p>
+                        <div class="step-title">Click "Connect Google Calendar"</div>
+                        <p>You'll be redirected to Google to grant permission.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Geef toestemming</div>
-                        <p>Log in met uw Google account en sta toegang toe tot uw agenda.</p>
+                        <div class="step-title">Grant permission</div>
+                        <p>Log in with your Google account and allow access to your calendar.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Kies uw agenda</div>
-                        <p>Selecteer de agenda waarin afspraken moeten verschijnen.</p>
+                        <div class="step-title">Choose your calendar</div>
+                        <p>Select the calendar where appointments should appear.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Stel sync-richting in</div>
-                        <p>Kies voor twee-weg sync, of alleen van PianoPlanner naar Google.</p>
+                        <div class="step-title">Set sync direction</div>
+                        <p>Choose two-way sync, or only from PianoPlanner to Google.</p>
                     </div>
                 </div>
 
-                <h3>Sync opties</h3>
+                <h3>Sync Options</h3>
                 <table class="comparison-table">
                     <thead>
                         <tr>
-                            <th>Optie</th>
-                            <th>Beschrijving</th>
+                            <th>Option</th>
+                            <th>Description</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>Twee-weg sync</strong></td>
-                            <td>Wijzigingen in beide systemen worden gesynchroniseerd</td>
+                            <td><strong>Two-way sync</strong></td>
+                            <td>Changes in both systems are synchronized</td>
                         </tr>
                         <tr>
-                            <td><strong>Alleen naar Google</strong></td>
-                            <td>Afspraken gaan naar Google, maar wijzigingen in Google worden niet teruggehaald</td>
+                            <td><strong>To Google only</strong></td>
+                            <td>Appointments go to Google, but changes in Google aren't synced back</td>
                         </tr>
                         <tr>
-                            <td><strong>Inclusief reistijd</strong></td>
-                            <td>Voeg reistijd toe als apart agenda-item vóór de afspraak</td>
+                            <td><strong>Include travel time</strong></td>
+                            <td>Add travel time as a separate calendar item before the appointment</td>
                         </tr>
                     </tbody>
                 </table>
@@ -641,213 +631,213 @@
 
             <!-- APPLE CALENDAR -->
             <section id="apple-calendar" class="section">
-                <h2><span class="icon">🍎</span> iCloud / Apple Agenda koppelen</h2>
+                <h2><span class="icon">🍎</span> Connect iCloud / Apple Calendar</h2>
                 <p>
-                    Gebruik u liever Apple Agenda of iCloud? Ook dat kan! De koppeling werkt via CalDAV en 
-                    vereist een <strong>app-specifiek wachtwoord</strong>.
+                    Prefer using Apple Calendar or iCloud? That works too! The connection uses CalDAV and 
+                    requires an <strong>app-specific password</strong>.
                 </p>
 
                 <div class="callout callout-warning">
-                    <div class="callout-title">⚠️ Vereist: App-specifiek wachtwoord</div>
+                    <div class="callout-title">⚠️ Required: App-Specific Password</div>
                     <p>
-                        Apple staat niet toe dat apps uw normale wachtwoord gebruiken. U moet eerst een 
-                        speciaal wachtwoord aanmaken op appleid.apple.com.
+                        Apple doesn't allow apps to use your regular password. You must first create a 
+                        special password at appleid.apple.com.
                     </p>
                 </div>
 
-                <h3>App-specifiek wachtwoord aanmaken</h3>
+                <h3>Creating an App-Specific Password</h3>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar appleid.apple.com</div>
-                        <p>Log in met uw Apple ID.</p>
+                        <div class="step-title">Go to appleid.apple.com</div>
+                        <p>Log in with your Apple ID.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Klik op "App-specifieke wachtwoorden"</div>
-                        <p>U vindt dit onder "Aanmelden en beveiliging".</p>
+                        <div class="step-title">Click "App-Specific Passwords"</div>
+                        <p>You'll find this under "Sign-In and Security".</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Klik op "Genereer wachtwoord"</div>
-                        <p>Geef het een naam zoals "PianoPlanner".</p>
+                        <div class="step-title">Click "Generate Password"</div>
+                        <p>Give it a name like "PianoPlanner".</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Kopieer het wachtwoord</div>
-                        <p>Het wachtwoord wordt maar één keer getoond! Kopieer het direct.</p>
+                        <div class="step-title">Copy the password</div>
+                        <p>The password is only shown once! Copy it immediately.</p>
                     </div>
                 </div>
 
-                <h3>Koppeling in PianoPlanner</h3>
+                <h3>Connection in PianoPlanner</h3>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar Settings → Kalender → Apple</div>
-                        <p>Open het Apple Calendar tabblad.</p>
+                        <div class="step-title">Go to Settings → Calendar → Apple</div>
+                        <p>Open the Apple Calendar tab.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Vul uw Apple ID email in</div>
-                        <p>Het emailadres waarmee u inlogt bij Apple.</p>
+                        <div class="step-title">Enter your Apple ID email</div>
+                        <p>The email address you use to log in to Apple.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Plak het app-specifieke wachtwoord</div>
-                        <p>Het wachtwoord dat u zojuist heeft aangemaakt.</p>
+                        <div class="step-title">Paste the app-specific password</div>
+                        <p>The password you just created.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Klik op "Verbinden"</div>
-                        <p>PianoPlanner test de verbinding en toont uw agenda's.</p>
+                        <div class="step-title">Click "Connect"</div>
+                        <p>PianoPlanner tests the connection and shows your calendars.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Selecteer de juiste agenda</div>
-                        <p>Kies de agenda waarin afspraken moeten verschijnen.</p>
+                        <div class="step-title">Select the right calendar</div>
+                        <p>Choose the calendar where appointments should appear.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- SYNC METHODES -->
-            <section id="sync-methodes" class="section">
-                <h2><span class="icon">🔄</span> Sync methodes uitgelegd</h2>
+            <!-- SYNC METHODS -->
+            <section id="sync-methods" class="section">
+                <h2><span class="icon">🔄</span> Sync Methods Explained</h2>
                 <p>
-                    PianoPlanner biedt meerdere manieren om uw agenda te synchroniseren. Hier vindt u een overzicht 
-                    van de verschillen.
+                    PianoPlanner offers multiple ways to sync your calendar. Here's an overview 
+                    of the differences.
                 </p>
 
                 <table class="comparison-table">
                     <thead>
                         <tr>
-                            <th>Methode</th>
-                            <th>Richting</th>
+                            <th>Method</th>
+                            <th>Direction</th>
                             <th>Real-time?</th>
-                            <th>Beste voor</th>
+                            <th>Best for</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><strong>Google Calendar API</strong></td>
-                            <td>↔️ Twee-weg</td>
-                            <td>✅ Ja</td>
-                            <td>Volledige integratie met Google</td>
+                            <td>↔️ Two-way</td>
+                            <td>✅ Yes</td>
+                            <td>Full integration with Google</td>
                         </tr>
                         <tr>
                             <td><strong>Apple CalDAV</strong></td>
-                            <td>↔️ Twee-weg</td>
-                            <td>✅ Ja</td>
-                            <td>Apple/iCloud gebruikers</td>
+                            <td>↔️ Two-way</td>
+                            <td>✅ Yes</td>
+                            <td>Apple/iCloud users</td>
                         </tr>
                         <tr>
-                            <td><strong>iCal Feed (abonnement)</strong></td>
-                            <td>→ Alleen lezen</td>
-                            <td>⏱️ Elke 15-60 min</td>
-                            <td>Outlook, andere apps</td>
+                            <td><strong>iCal Feed (subscription)</strong></td>
+                            <td>→ Read only</td>
+                            <td>⏱️ Every 15-60 min</td>
+                            <td>Outlook, other apps</td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h3>iCal Feed gebruiken</h3>
+                <h3>Using iCal Feed</h3>
                 <p>
-                    Wilt u uw afspraken bekijken in een app die geen directe koppeling ondersteunt? 
-                    Gebruik dan de iCal feed URL.
+                    Want to view your appointments in an app that doesn't support direct connection? 
+                    Use the iCal feed URL.
                 </p>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar Settings → Kalender → iCal Feed</div>
-                        <p>Hier vindt u uw persoonlijke feed URL.</p>
+                        <div class="step-title">Go to Settings → Calendar → iCal Feed</div>
+                        <p>Here you'll find your personal feed URL.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Kopieer de URL</div>
-                        <p>Deze URL is uniek voor uw account. Deel deze niet!</p>
+                        <div class="step-title">Copy the URL</div>
+                        <p>This URL is unique to your account. Don't share it!</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Abonneer in uw agenda-app</div>
-                        <p>Voeg de URL toe als "agenda-abonnement" in Outlook, Thunderbird, etc.</p>
+                        <div class="step-title">Subscribe in your calendar app</div>
+                        <p>Add the URL as a "calendar subscription" in Outlook, Thunderbird, etc.</p>
                     </div>
                 </div>
 
                 <div class="callout callout-info">
-                    <div class="callout-title">💡 Wanneer welke methode?</div>
+                    <div class="callout-title">💡 Which method to use?</div>
                     <p>
-                        <strong>Google gebruiker?</strong> Gebruik Google Calendar koppeling.<br>
-                        <strong>iPhone/Mac gebruiker?</strong> Gebruik Apple Calendar koppeling.<br>
-                        <strong>Outlook/andere app?</strong> Gebruik iCal feed.
+                        <strong>Google user?</strong> Use Google Calendar connection.<br>
+                        <strong>iPhone/Mac user?</strong> Use Apple Calendar connection.<br>
+                        <strong>Outlook/other app?</strong> Use iCal feed.
                     </p>
                 </div>
             </section>
 
-            <!-- EMAIL EIGEN DOMEIN -->
-            <section id="eigen-domein" class="section">
-                <h2><span class="icon">📧</span> Mailen via uw eigen domein</h2>
+            <!-- CUSTOM EMAIL DOMAIN -->
+            <section id="custom-domain" class="section">
+                <h2><span class="icon">📧</span> Send Email from Your Domain</h2>
                 <p>
-                    Standaard verstuurt PianoPlanner emails via onze servers. Wilt u emails versturen vanaf uw eigen 
-                    emailadres (bijv. info@uwbedrijf.nl)? Configureer dan uw eigen SMTP-server.
+                    By default, PianoPlanner sends emails via our servers. Want to send emails from your own 
+                    email address (e.g., info@yourbusiness.com)? Configure your own SMTP server.
                 </p>
 
-                <h3>Waarom eigen SMTP?</h3>
+                <h3>Why use your own SMTP?</h3>
                 <ul>
-                    <li>Emails komen van uw eigen emailadres</li>
-                    <li>Klanten kunnen direct antwoorden naar uw inbox</li>
-                    <li>Betere afleverbaarheid (minder kans op spam)</li>
-                    <li>Professionelere uitstraling</li>
+                    <li>Emails come from your own email address</li>
+                    <li>Customers can reply directly to your inbox</li>
+                    <li>Better deliverability (less chance of spam)</li>
+                    <li>More professional appearance</li>
                 </ul>
 
-                <h3>SMTP instellen</h3>
+                <h3>SMTP Setup</h3>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar Settings → Email → SMTP</div>
-                        <p>Open de SMTP configuratie.</p>
+                        <div class="step-title">Go to Settings → Email → SMTP</div>
+                        <p>Open the SMTP configuration.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Vul uw SMTP-gegevens in</div>
-                        <p>Deze krijgt u van uw emailprovider of webhoster:</p>
+                        <div class="step-title">Enter your SMTP details</div>
+                        <p>You get these from your email provider or web host:</p>
                     </div>
                 </div>
 
                 <table class="comparison-table">
                     <thead>
                         <tr>
-                            <th>Veld</th>
-                            <th>Voorbeeld</th>
-                            <th>Uitleg</th>
+                            <th>Field</th>
+                            <th>Example</th>
+                            <th>Explanation</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><strong>SMTP Host</strong></td>
-                            <td>smtp.mijndomein.nl</td>
-                            <td>Serveradres van uw emailprovider</td>
+                            <td>smtp.mydomain.com</td>
+                            <td>Server address of your email provider</td>
                         </tr>
                         <tr>
-                            <td><strong>Poort</strong></td>
-                            <td>587 of 465</td>
-                            <td>587 voor TLS, 465 voor SSL</td>
+                            <td><strong>Port</strong></td>
+                            <td>587 or 465</td>
+                            <td>587 for TLS, 465 for SSL</td>
                         </tr>
                         <tr>
-                            <td><strong>Gebruikersnaam</strong></td>
-                            <td>info@mijndomein.nl</td>
-                            <td>Vaak uw volledige emailadres</td>
+                            <td><strong>Username</strong></td>
+                            <td>info@mydomain.com</td>
+                            <td>Often your full email address</td>
                         </tr>
                         <tr>
-                            <td><strong>Wachtwoord</strong></td>
+                            <td><strong>Password</strong></td>
                             <td>••••••••</td>
-                            <td>Wachtwoord van uw emailaccount</td>
+                            <td>Password for your email account</td>
                         </tr>
                         <tr>
-                            <td><strong>Van adres</strong></td>
-                            <td>info@mijndomein.nl</td>
-                            <td>Afzender in uitgaande emails</td>
+                            <td><strong>From address</strong></td>
+                            <td>info@mydomain.com</td>
+                            <td>Sender in outgoing emails</td>
                         </tr>
                     </tbody>
                 </table>
 
                 <div class="callout callout-success">
-                    <div class="callout-title">✅ Test uw instellingen</div>
+                    <div class="callout-title">✅ Test your settings</div>
                     <p>
-                        Na het invullen kunt u een test-email versturen. Controleer of deze aankomt en niet in de spam belandt.
+                        After entering details, you can send a test email. Check if it arrives and doesn't end up in spam.
                     </p>
                 </div>
 
-                <h3>Veelgebruikte SMTP-instellingen</h3>
+                <h3>Common SMTP Settings</h3>
                 <table class="comparison-table">
                     <thead>
                         <tr>
                             <th>Provider</th>
                             <th>Host</th>
-                            <th>Poort</th>
+                            <th>Port</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -868,406 +858,442 @@
                         </tr>
                         <tr>
                             <td>Strato</td>
-                            <td>smtp.strato.nl</td>
+                            <td>smtp.strato.com</td>
                             <td>587</td>
                         </tr>
                     </tbody>
                 </table>
             </section>
 
-            <!-- EMAIL SJABLONEN -->
-            <section id="email-sjablonen" class="section">
-                <h2><span class="icon">✉️</span> Email sjablonen personaliseren</h2>
+            <!-- EMAIL TEMPLATES -->
+            <section id="email-templates" class="section">
+                <h2><span class="icon">✉️</span> Customize Email Templates</h2>
                 <p>
-                    Pas de automatische emails aan met uw eigen teksten en stijl. U kunt variabelen gebruiken die 
-                    automatisch worden ingevuld.
+                    Customize automatic emails with your own text and style. You can use variables that 
+                    are automatically filled in.
                 </p>
 
-                <h3>Beschikbare sjablonen</h3>
+                <h3>Available Templates</h3>
                 <ul>
-                    <li><strong>Bevestigingsmail</strong> - Wordt verstuurd na het boeken van een afspraak</li>
-                    <li><strong>Herinneringsmail</strong> - Wordt verstuurd 24/48 uur voor de afspraak</li>
-                    <li><strong>Annuleringsmail</strong> - Wordt verstuurd bij annulering</li>
-                    <li><strong>Wijzigingsmail</strong> - Wordt verstuurd bij wijziging van datum/tijd</li>
+                    <li><strong>Confirmation email</strong> - Sent after booking an appointment</li>
+                    <li><strong>Reminder email</strong> - Sent 24/48 hours before the appointment</li>
+                    <li><strong>Cancellation email</strong> - Sent when cancelled</li>
+                    <li><strong>Modification email</strong> - Sent when date/time changes</li>
                 </ul>
 
-                <h3>Sjabloon bewerken</h3>
+                <h3>Editing a Template</h3>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar Settings → Email → Sjablonen</div>
-                        <p>Hier ziet u alle beschikbare sjablonen.</p>
+                        <div class="step-title">Go to Settings → Email → Templates</div>
+                        <p>Here you see all available templates.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Klik op een sjabloon om te bewerken</div>
-                        <p>U kunt het onderwerp en de inhoud aanpassen.</p>
+                        <div class="step-title">Click a template to edit</div>
+                        <p>You can customize the subject and content.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Gebruik variabelen</div>
-                        <p>Voeg dynamische content toe met de variabelen hieronder.</p>
+                        <div class="step-title">Use variables</div>
+                        <p>Add dynamic content with the variables below.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Preview en opslaan</div>
-                        <p>Bekijk een voorbeeld en sla uw wijzigingen op.</p>
+                        <div class="step-title">Preview and save</div>
+                        <p>View a preview and save your changes.</p>
                     </div>
                 </div>
 
-                <h3>Beschikbare variabelen</h3>
+                <h3>Available Variables</h3>
                 <table class="comparison-table">
                     <thead>
                         <tr>
-                            <th>Variabele</th>
-                            <th>Wordt vervangen door</th>
+                            <th>Variable</th>
+                            <th>Replaced by</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><code>{{klant_naam}}</code></td>
-                            <td>Naam van de klant</td>
+                            <td><code>{{customer_name}}</code></td>
+                            <td>Customer's name</td>
                         </tr>
                         <tr>
-                            <td><code>{{datum}}</code></td>
-                            <td>Datum van de afspraak</td>
+                            <td><code>{{date}}</code></td>
+                            <td>Appointment date</td>
                         </tr>
                         <tr>
-                            <td><code>{{tijd}}</code></td>
-                            <td>Starttijd van de afspraak</td>
+                            <td><code>{{time}}</code></td>
+                            <td>Appointment start time</td>
                         </tr>
                         <tr>
-                            <td><code>{{dienst}}</code></td>
-                            <td>Type dienst (bijv. Stembeurt)</td>
+                            <td><code>{{service}}</code></td>
+                            <td>Service type (e.g., Tuning)</td>
                         </tr>
                         <tr>
-                            <td><code>{{bedrijf_naam}}</code></td>
-                            <td>Uw bedrijfsnaam</td>
+                            <td><code>{{company_name}}</code></td>
+                            <td>Your company name</td>
                         </tr>
                         <tr>
-                            <td><code>{{bedrijf_telefoon}}</code></td>
-                            <td>Uw telefoonnummer</td>
+                            <td><code>{{company_phone}}</code></td>
+                            <td>Your phone number</td>
                         </tr>
                         <tr>
-                            <td><code>{{bedrijf_email}}</code></td>
-                            <td>Uw emailadres</td>
+                            <td><code>{{company_email}}</code></td>
+                            <td>Your email address</td>
                         </tr>
                     </tbody>
                 </table>
             </section>
 
-            <!-- BOEKINGSLINK -->
-            <section id="boekingslink" class="section">
-                <h2><span class="icon">🔗</span> Boekingslink voor uw website</h2>
+            <!-- BOOKING LINK -->
+            <section id="booking-link" class="section">
+                <h2><span class="icon">🔗</span> Booking Link for Your Website</h2>
                 <p>
-                    Laat klanten zelf online een afspraak maken via uw eigen boekingspagina. 
-                    U krijgt een unieke URL die u kunt plaatsen op uw website.
+                    Let customers book appointments online via your own booking page. 
+                    You get a unique URL to place on your website.
                 </p>
 
-                <h3>Boekingslink activeren</h3>
+                <h3>Activating Your Booking Link</h3>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar Settings → Online boeken</div>
-                        <p>Open de instellingen voor online boeken.</p>
+                        <div class="step-title">Go to Settings → Online Booking</div>
+                        <p>Open the online booking settings.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Schakel online boeken in</div>
-                        <p>Zet de schakelaar op "Aan".</p>
+                        <div class="step-title">Enable online booking</div>
+                        <p>Turn the switch to "On".</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Kies uw URL-slug</div>
-                        <p>Dit wordt uw unieke adres, bijv: <code>pianoplanner.app/book/jansenpiano</code></p>
+                        <div class="step-title">Choose your URL slug</div>
+                        <p>This becomes your unique address, e.g.: <code>pianoplanner.app/book/yourcompany</code></p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Selecteer beschikbare diensten</div>
-                        <p>Kies welke diensten klanten online kunnen boeken.</p>
+                        <div class="step-title">Select available services</div>
+                        <p>Choose which services customers can book online.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Kopieer en deel uw link</div>
-                        <p>Plaats de link op uw website, visitekaartje of in uw email-handtekening.</p>
+                        <div class="step-title">Copy and share your link</div>
+                        <p>Place the link on your website, business card, or in your email signature.</p>
                     </div>
                 </div>
 
-                <h3>Op uw website plaatsen</h3>
-                <p>U kunt de link op verschillende manieren integreren:</p>
+                <h3>Adding to Your Website</h3>
+                <p>You can integrate the link in various ways:</p>
 
-                <p><strong>Als simpele link:</strong></p>
-                <div class="path">&lt;a href="https://pianoplanner.app/book/jansenpiano"&gt;Maak een afspraak&lt;/a&gt;</div>
+                <p><strong>As a simple link:</strong></p>
+                <div class="path">&lt;a href="https://pianoplanner.app/book/yourcompany"&gt;Book an appointment&lt;/a&gt;</div>
 
-                <p><strong>Als knop:</strong></p>
-                <div class="path">&lt;a href="https://pianoplanner.app/book/jansenpiano" class="button"&gt;Online boeken&lt;/a&gt;</div>
+                <p><strong>As a button:</strong></p>
+                <div class="path">&lt;a href="https://pianoplanner.app/book/yourcompany" class="button"&gt;Book Online&lt;/a&gt;</div>
 
                 <div class="callout callout-success">
-                    <div class="callout-title">✅ Tip: QR-code</div>
+                    <div class="callout-title">✅ Tip: QR Code</div>
                     <p>
-                        Genereer een QR-code van uw boekingslink. Handig voor flyers, visitekaartjes of posters!
+                        Generate a QR code from your booking link. Great for flyers, business cards, or posters!
                     </p>
                 </div>
             </section>
 
-            <!-- PERSOONLIJKE KLANTLINK -->
-            <section id="klant-link" class="section">
-                <h2><span class="icon">🎭</span> Persoonlijke link voor vaste klanten</h2>
+            <!-- PERSONAL CUSTOMER LINK -->
+            <section id="customer-link" class="section">
+                <h2><span class="icon">🎭</span> Personal Links for Regular Customers</h2>
                 <p>
-                    Heeft u klanten met terugkerende opdrachten, zoals theaters, muziekscholen of conservatoria? 
-                    Maak een <strong>persoonlijke boekingslink</strong> zodat zij snel kunnen boeken met vooringevulde gegevens.
+                    Do you have customers with recurring appointments, like theaters, music schools, or conservatories? 
+                    Create a <strong>personal booking link</strong> so they can quickly book with pre-filled details.
                 </p>
 
                 <div class="callout callout-info">
-                    <div class="callout-title">💡 Perfect voor</div>
+                    <div class="callout-title">💡 Perfect for</div>
                     <p>
-                        • Theaters en concertzalen<br>
-                        • Muziekscholen<br>
-                        • Conservatoria<br>
-                        • Kerken met regelmatige stembeurten<br>
-                        • Vaste particuliere klanten
+                        • Theaters and concert halls<br>
+                        • Music schools<br>
+                        • Conservatories<br>
+                        • Churches with regular tunings<br>
+                        • Regular private customers
                     </p>
                 </div>
 
-                <h3>Zo maakt u een persoonlijke link</h3>
+                <h3>Creating a Personal Link</h3>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar de klantpagina</div>
-                        <p>Open de detailpagina van de klant.</p>
+                        <div class="step-title">Go to the customer page</div>
+                        <p>Open the customer's detail page.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Klik op "Boekingslink genereren"</div>
-                        <p>U vindt dit onder de klantgegevens of bij de acties.</p>
+                        <div class="step-title">Click "Generate Booking Link"</div>
+                        <p>You'll find this under customer details or in the actions menu.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Kopieer de unieke link</div>
-                        <p>Deze link bevat een unieke code voor deze klant.</p>
+                        <div class="step-title">Copy the unique link</div>
+                        <p>This link contains a unique code for this customer.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Deel met de klant</div>
-                        <p>Stuur de link per email of voeg toe aan hun contactpersoon.</p>
+                        <div class="step-title">Share with the customer</div>
+                        <p>Send the link by email or add it to their contact person.</p>
                     </div>
                 </div>
 
-                <h3>Wat gebeurt er?</h3>
-                <p>Wanneer de klant de link opent:</p>
+                <h3>What happens?</h3>
+                <p>When the customer opens the link:</p>
                 <ul>
-                    <li>Naam en contactgegevens zijn al ingevuld</li>
-                    <li>Adres is bekend (geen reistijd-verrassing)</li>
-                    <li>Piano's van deze klant worden getoond</li>
-                    <li>De klant hoeft alleen nog datum/tijd te kiezen</li>
+                    <li>Name and contact details are pre-filled</li>
+                    <li>Address is known (no travel time surprise)</li>
+                    <li>Customer's pianos are shown</li>
+                    <li>They only need to choose date/time</li>
                 </ul>
 
                 <div class="callout callout-success">
-                    <div class="callout-title">✅ Voorbeeld gebruik: Theater</div>
+                    <div class="callout-title">✅ Example: Theater</div>
                     <p>
-                        Een theater moet 4x per jaar de vleugel laten stemmen. Met hun persoonlijke link kunnen zij 
-                        zelf de datum kiezen wanneer het hen uitkomt, zonder steeds opnieuw gegevens in te vullen. 
-                        U krijgt direct een notificatie en de afspraak staat in uw agenda.
+                        A theater needs the grand piano tuned 4x per year. With their personal link, they can 
+                        choose the date that suits them, without filling in details each time. 
+                        You get notified immediately and the appointment is in your calendar.
                     </p>
                 </div>
 
-                <h3>Vaste dienst instellen per klant</h3>
+                <h3>Setting a Default Service per Customer</h3>
                 <p>
-                    Wilt u dat een klant alleen een specifieke dienst kan boeken via hun persoonlijke link? 
-                    Dat kan! Handig voor klanten die altijd dezelfde dienst afnemen.
+                    Want a customer to only book a specific service via their personal link? 
+                    That's possible! Handy for customers who always use the same service.
                 </p>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Bewerk de klant</div>
-                        <p>Ga naar de klantenpagina en klik op "Edit" bij de gewenste klant.</p>
+                        <div class="step-title">Edit the customer</div>
+                        <p>Go to Customers and click "Edit" for the desired customer.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Selecteer een vaste dienst</div>
-                        <p>Bij "Vaste dienst voor zelfboeking" kiest u de dienst die deze klant mag boeken.</p>
+                        <div class="step-title">Select a default service</div>
+                        <p>At "Default service for self-booking" choose the service this customer can book.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Opslaan</div>
-                        <p>Klik op "Save Customer" om de instelling op te slaan.</p>
+                        <div class="step-title">Save</div>
+                        <p>Click "Save Customer" to apply the setting.</p>
                     </div>
                 </div>
                 <div class="callout callout-info">
-                    <div class="callout-title">💡 Resultaat</div>
+                    <div class="callout-title">💡 Result</div>
                     <p>
-                        Wanneer de klant de boekingslink opent, ziet hij alleen de geselecteerde dienst. 
-                        Geen verwarring, geen verkeerde keuzes. Laat u het veld leeg, dan kan de klant 
-                        uit alle beschikbare diensten kiezen.
+                        When the customer opens the booking link, they only see the selected service. 
+                        No confusion, no wrong choices. Leave the field empty for all services.
                     </p>
                 </div>
             </section>
 
             <!-- SMART SUGGESTIONS -->
             <section id="smart-suggestions" class="section">
-                <h2><span class="icon">🧠</span> Slimme boekingssuggesties</h2>
+                <h2><span class="icon">🧠</span> Smart Booking Suggestions</h2>
                 <p>
-                    Wanneer klanten een afspraak boeken via hun persoonlijke link, krijgen zij automatisch 
-                    <strong>slimme tijdsuggesties</strong> te zien. Het systeem analyseert uw bestaande afspraken 
-                    en stelt de meest efficiënte tijdslots voor.
+                    When customers book via their personal link, they automatically see 
+                    <strong>smart time suggestions</strong>. The system analyzes your existing appointments 
+                    and suggests the most efficient time slots.
                 </p>
 
-                <h3>Hoe werkt het?</h3>
+                <h3>How does it work?</h3>
                 <p>
-                    In plaats van handmatig een datum en tijd te kiezen, ziet de klant direct een lijst 
-                    met aanbevolen momenten. Deze worden berekend op basis van:
+                    Instead of manually choosing a date and time, the customer sees a list 
+                    of recommended times. These are calculated based on:
                 </p>
                 <ul>
-                    <li><strong>Bestaande afspraken</strong> - Slots vlak voor of na andere afspraken in de buurt</li>
-                    <li><strong>Locatie</strong> - Minimale reistijd tussen afspraken</li>
-                    <li><strong>Werkuren</strong> - Alleen binnen uw beschikbare tijden</li>
-                    <li><strong>Theater-uren</strong> - Aparte uren voor theaters indien ingesteld</li>
+                    <li><strong>Existing appointments</strong> - Slots just before or after other appointments nearby</li>
+                    <li><strong>Location</strong> - Minimal travel time between appointments</li>
+                    <li><strong>Working hours</strong> - Only within your available times</li>
+                    <li><strong>Theater hours</strong> - Separate hours for theaters if configured</li>
                 </ul>
 
                 <div class="callout callout-success">
-                    <div class="callout-title">✅ Voordelen</div>
+                    <div class="callout-title">✅ Benefits</div>
                     <p>
-                        • Efficiëntere routeplanning - minder kilometers rijden<br>
-                        • Klanten kiezen sneller - geen twijfel over beschikbaarheid<br>
-                        • Betere dagindeling - afspraken clusteren in dezelfde regio
+                        • More efficient route planning - fewer miles driven<br>
+                        • Customers choose faster - no doubt about availability<br>
+                        • Better schedule - appointments cluster in the same area
                     </p>
                 </div>
 
-                <h3>Wat ziet de klant?</h3>
-                <p>Na het selecteren van een dienst verschijnen maximaal 6 optimale tijdslots:</p>
+                <h3>What does the customer see?</h3>
+                <p>After selecting a service, up to 6 optimal time slots appear:</p>
                 <ul>
-                    <li><strong>Aanbevolen</strong> - Het meest efficiënte moment (groene badge)</li>
-                    <li><strong>Alternatief</strong> - Goede opties op andere dagen (oranje badge)</li>
+                    <li><strong>Recommended</strong> - The most efficient time (green badge)</li>
+                    <li><strong>Alternative</strong> - Good options on other days (orange badge)</li>
                 </ul>
                 <p>
-                    De klant kan ook kiezen voor "Ander tijdstip kiezen" om handmatig een datum en tijd te selecteren.
+                    The customer can also choose "Pick another time" to manually select a date and time.
                 </p>
             </section>
 
             <!-- THEATER AVAILABILITY -->
             <section id="theater-availability" class="section">
-                <h2><span class="icon">🎭</span> Theater beschikbaarheid</h2>
+                <h2><span class="icon">🎭</span> Theater Availability</h2>
                 <p>
-                    Theaters, concertzalen en andere venues hebben vaak andere beschikbaarheden dan particulieren. 
-                    Ze zijn vooral 's avonds en in het weekend bereikbaar. Met <strong>Theater Beschikbaarheid</strong> 
-                    kunt u aparte werkuren instellen voor dit type klanten.
+                    Theaters, concert halls, and other venues often have different availability than private customers. 
+                    They're mainly available evenings and weekends. With <strong>Theater Availability</strong> 
+                    you can set separate working hours for this type of customer.
                 </p>
 
-                <h3>Theater-uren instellen</h3>
+                <h3>Setting Theater Hours</h3>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Ga naar Settings → Bedrijf</div>
-                        <p>Scroll naar de sectie "Theater Beschikbaarheid".</p>
+                        <div class="step-title">Go to Settings → Company</div>
+                        <p>Scroll to the "Theater Availability" section.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Schakel Theater-uren in</div>
-                        <p>Zet de schakelaar op "Aan" om theater-uren te activeren.</p>
+                        <div class="step-title">Enable Theater Hours</div>
+                        <p>Turn the switch to "On" to activate theater hours.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Stel de tijden in</div>
-                        <p>Geef per dag aan wanneer u beschikbaar bent voor theaters. 
-                        Bijvoorbeeld: doordeweeks 18:00-22:00, weekend 10:00-18:00.</p>
+                        <div class="step-title">Set the times</div>
+                        <p>Specify per day when you're available for theaters. 
+                        For example: weekdays 18:00-22:00, weekends 10:00-18:00.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Opslaan</div>
-                        <p>Klik op "Opslaan" om de theater-uren te bewaren.</p>
+                        <div class="step-title">Save</div>
+                        <p>Click "Save" to store the theater hours.</p>
                     </div>
                 </div>
 
-                <h3>Klant markeren als theater</h3>
-                <p>Om een klant de theater-uren te laten gebruiken:</p>
+                <h3>Marking a Customer as Theater</h3>
+                <p>To let a customer use theater hours:</p>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Open de klantgegevens</div>
-                        <p>Ga naar Klanten en klik op "Edit" bij de gewenste klant.</p>
+                        <div class="step-title">Open customer details</div>
+                        <p>Go to Customers and click "Edit" for the desired customer.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Vink "Gebruik theater beschikbaarheid" aan</div>
-                        <p>Deze optie verschijnt alleen als theater-uren zijn ingeschakeld.</p>
+                        <div class="step-title">Check "Use theater availability"</div>
+                        <p>This option only appears if theater hours are enabled.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Opslaan</div>
-                        <p>De klant kan nu boeken op basis van uw theater-uren.</p>
+                        <div class="step-title">Save</div>
+                        <p>The customer can now book based on your theater hours.</p>
                     </div>
                 </div>
 
                 <div class="callout callout-info">
-                    <div class="callout-title">💡 Voorbeeld</div>
+                    <div class="callout-title">💡 Example</div>
                     <p>
-                        <strong>Normale werkuren:</strong> Ma-Vr 09:00-17:00<br>
-                        <strong>Theater-uren:</strong> Ma-Vr 18:00-22:00, Za 10:00-18:00<br><br>
-                        Een particuliere klant ziet alleen ma-vr overdag slots. 
-                        Een theater ziet alleen avond- en weekendslots.
+                        <strong>Normal working hours:</strong> Mon-Fri 09:00-17:00<br>
+                        <strong>Theater hours:</strong> Mon-Fri 18:00-22:00, Sat 10:00-18:00<br><br>
+                        A private customer only sees weekday daytime slots. 
+                        A theater only sees evening and weekend slots.
                     </p>
                 </div>
             </section>
 
-            <!-- PIANO SERVICE HISTORIE -->
+            <!-- PIANO SERVICE HISTORY -->
             <section id="piano-service" class="section">
-                <h2><span class="icon">🎹</span> Piano service historie</h2>
+                <h2><span class="icon">🎹</span> Piano Service History</h2>
                 <p>
-                    PianoPlanner houdt automatisch de servicehistorie van elke piano bij. 
-                    Dit helpt u te bepalen wanneer een piano weer gestemd moet worden.
+                    PianoPlanner automatically tracks the service history of every piano. 
+                    This helps you determine when a piano needs tuning again.
                 </p>
 
-                <h3>Automatische tracking</h3>
+                <h3>Automatic Tracking</h3>
                 <p>
-                    De "Laatste stembeurt" van een piano wordt automatisch bijgewerkt op basis van:
+                    The "Last tuning" of a piano is automatically updated based on:
                 </p>
                 <ul>
-                    <li><strong>Afspraken</strong> - Voltooide afspraken gekoppeld aan de piano</li>
-                    <li><strong>Service records</strong> - Handmatig toegevoegde service notities</li>
-                    <li><strong>Handmatige datum</strong> - Als u zelf een datum invult</li>
+                    <li><strong>Appointments</strong> - Completed appointments linked to the piano</li>
+                    <li><strong>Service records</strong> - Manually added service notes</li>
+                    <li><strong>Manual date</strong> - If you enter a date yourself</li>
                 </ul>
                 <p>
-                    Het systeem neemt automatisch de meest recente datum van deze drie bronnen.
+                    The system automatically uses the most recent date from these three sources.
                 </p>
 
-                <h3>Service status indicators</h3>
+                <h3>Service Status Indicators</h3>
                 <table class="comparison-table">
                     <thead>
                         <tr>
                             <th>Status</th>
-                            <th>Betekenis</th>
+                            <th>Meaning</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>✅ <strong>Last: [datum]</strong></td>
-                            <td>Piano is recent gestemd, volgende beurt nog niet nodig</td>
+                            <td>✅ <strong>Last: [date]</strong></td>
+                            <td>Piano was recently tuned, next service not yet needed</td>
                         </tr>
                         <tr>
                             <td>⏰ <strong>Service needed in X days</strong></td>
-                            <td>Servicebeurt komt eraan (binnen 30 dagen)</td>
+                            <td>Service is coming up (within 30 days)</td>
                         </tr>
                         <tr>
                             <td>⚠️ <strong>X days past service date</strong></td>
-                            <td>Service is achterstallig</td>
+                            <td>Service is overdue</td>
                         </tr>
                         <tr>
                             <td>⚠️ <strong>Not yet tuned</strong></td>
-                            <td>Geen service historie bekend</td>
+                            <td>No service history known</td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h3>Service interval instellen</h3>
+                <h3>Setting Service Interval</h3>
                 <p>
-                    Standaard gaat PianoPlanner uit van een service-interval van 6 maanden. 
-                    U kunt dit per piano aanpassen:
+                    By default, PianoPlanner assumes a 6-month service interval. 
+                    You can adjust this per piano:
                 </p>
                 <div class="steps">
                     <div class="step">
-                        <div class="step-title">Open de piano</div>
-                        <p>Ga naar de klant en klik op de piano.</p>
+                        <div class="step-title">Open the piano</div>
+                        <p>Go to the customer and click on the piano.</p>
                     </div>
                     <div class="step">
-                        <div class="step-title">Pas het interval aan</div>
-                        <p>Bij "Service interval" kunt u het aantal maanden wijzigen (bijv. 12 voor jaarlijks).</p>
+                        <div class="step-title">Adjust the interval</div>
+                        <p>At "Service interval" you can change the number of months (e.g., 12 for yearly).</p>
                     </div>
                 </div>
 
                 <div class="callout callout-success">
                     <div class="callout-title">✅ Tip</div>
                     <p>
-                        Concertvleugels en piano's in muziekscholen hebben vaak een korter interval nodig (3-4 maanden), 
-                        terwijl hobby-piano's met 6-12 maanden toe kunnen.
+                        Concert grands and pianos in music schools often need a shorter interval (3-4 months), 
+                        while hobby pianos can go 6-12 months.
                     </p>
                 </div>
             </section>
 
-            <!-- Hulp nodig -->
+            <!-- CALENDAR SLOT DURATION -->
+            <section id="slot-duration" class="section">
+                <h2><span class="icon">📅</span> Calendar Slot Duration</h2>
+                <p>
+                    You can customize how the calendar displays time slots. Choose between 
+                    <strong>1-hour slots</strong> or <strong>1.5-hour slots</strong> depending on your typical appointment length.
+                </p>
+
+                <h3>Changing Slot Duration</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Go to the Dashboard</div>
+                        <p>Open your calendar view.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Find the slot selector</div>
+                        <p>In the toolbar next to the view selector (Day/Week/Month), you'll see a dropdown.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Choose your duration</div>
+                        <p>Select "1 hour" or "1½ hour" from the dropdown.</p>
+                    </div>
+                </div>
+
+                <div class="callout callout-info">
+                    <div class="callout-title">💡 When to use which?</div>
+                    <p>
+                        <strong>1 hour slots:</strong> Standard tuning appointments, quick services<br>
+                        <strong>1.5 hour slots:</strong> Regulation, voicing, or when tunings typically take longer
+                    </p>
+                </div>
+
+                <p>
+                    Your preference is saved automatically and will be remembered next time you visit.
+                </p>
+            </section>
+
+            <!-- Need Help -->
             <section class="section" style="text-align: center; padding: 48px; background: white; border-radius: 16px; margin-top: 64px;">
-                <h2 style="margin-bottom: 16px;">Hulp nodig?</h2>
+                <h2 style="margin-bottom: 16px;">Need Help?</h2>
                 <p style="color: #666; margin-bottom: 24px;">
-                    Komt u er niet uit? Neem gerust contact met ons op.
+                    Can't figure it out? Feel free to contact us.
                 </p>
                 <a href="mailto:support@pianoplanner.app" class="btn btn-primary" style="display: inline-block;">
-                    📧 Contact opnemen
+                    📧 Contact Support
                 </a>
             </section>
         </main>
@@ -1275,7 +1301,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>© 2026 PianoPlanner. Speciaal ontwikkeld voor pianotechnici.</p>
+        <p>© 2026 PianoPlanner. Built specially for piano technicians.</p>
     </footer>
 
     <script>
