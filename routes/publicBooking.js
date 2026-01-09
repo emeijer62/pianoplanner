@@ -715,74 +715,92 @@ router.post('/:slug', async (req, res) => {
             setImmediate(async () => {
                 try {
                     console.log('📧 Starting email process for booking');
+                    console.log('📧 Email data prepared:', JSON.stringify({
+                        customerEmail: emailData.customerEmail,
+                        customerName: emailData.customerName,
+                        userEmail: emailData.userEmail,
+                        userId: emailData.userId
+                    }));
                     
-                    let db;
-                    try {
-                        db = getDb();
-                    } catch (dbErr) {
-                        console.error('❌ Database connection error in email process:', dbErr.message);
-                        return;
-                    }
+                    // Default email settings (always enabled for public bookings)
+                    let sendConfirmation = true;
+                    let sendNotification = true;
                     
-                    // Check email settings (default to enabled if not set)
-                    let emailSettings = { send_confirmations: 1, notify_new_bookings: 1 };
+                    // Try to get user-specific settings but don't fail if we can't
                     try {
-                        emailSettings = await new Promise((resolve, reject) => {
-                            db.get('SELECT * FROM email_settings WHERE user_id = ?', [emailData.userId], (err, row) => {
-                                if (err) {
-                                    console.error('❌ Error fetching email settings:', err.message);
-                                    resolve({ send_confirmations: 1, notify_new_bookings: 1 }); // Default on error
-                                } else {
-                                    resolve(row || { send_confirmations: 1, notify_new_bookings: 1 });
+                        const db = getDb();
+                        const row = await new Promise((resolve) => {
+                            db.get('SELECT send_confirmations, notify_new_bookings FROM email_settings WHERE user_id = ?', 
+                                [emailData.userId], 
+                                (err, row) => {
+                                    if (err) {
+                                        console.log('📧 Could not fetch email settings, using defaults');
+                                    }
+                                    resolve(row);
                                 }
-                            });
+                            );
                         });
+                        if (row) {
+                            sendConfirmation = row.send_confirmations !== 0;
+                            sendNotification = row.notify_new_bookings !== 0;
+                        }
                     } catch (settingsErr) {
-                        console.error('❌ Failed to get email settings:', settingsErr.message);
+                        console.log('📧 Email settings error, using defaults:', settingsErr.message);
                     }
                     
-                    console.log('📧 Email settings:', JSON.stringify(emailSettings));
-                    console.log('📧 Customer email:', emailData.customerEmail);
+                    console.log('📧 Will send confirmation:', sendConfirmation, '| notification:', sendNotification);
                     
-                    // Send confirmation to customer if enabled (default: ON)
-                    if (emailSettings.send_confirmations && emailData.customerEmail) {
+                    // Send confirmation to customer if enabled
+                    if (sendConfirmation && emailData.customerEmail) {
                         console.log('📧 Sending confirmation to:', emailData.customerEmail);
-                        const result = await emailService.sendAppointmentConfirmation({
-                            customerEmail: emailData.customerEmail,
-                            customerName: emailData.customerName,
-                            appointmentDate: emailData.date,
-                            appointmentTime: emailData.time,
-                            serviceName: emailData.serviceName,
-                            companyName: emailData.companyName,
-                            replyTo: emailData.userEmail,
-                            fromName: emailData.companyName,
-                            userId: emailData.userId
-                        });
-                        console.log(`📧 Confirmation result:`, JSON.stringify(result));
+                        try {
+                            const result = await emailService.sendAppointmentConfirmation({
+                                customerEmail: emailData.customerEmail,
+                                customerName: emailData.customerName,
+                                appointmentDate: emailData.date,
+                                appointmentTime: emailData.time,
+                                serviceName: emailData.serviceName,
+                                companyName: emailData.companyName,
+                                replyTo: emailData.userEmail,
+                                fromName: emailData.companyName,
+                                userId: emailData.userId
+                            });
+                            console.log('📧 Confirmation sent successfully:', result?.messageId || 'OK');
+                        } catch (confErr) {
+                            console.error('❌ Failed to send confirmation:', confErr.message);
+                        }
                     } else {
-                        console.log('📧 Skipping confirmation - send_confirmations:', emailSettings.send_confirmations, 'customerEmail:', emailData.customerEmail);
+                        console.log('📧 Skipping confirmation - enabled:', sendConfirmation, 'email:', emailData.customerEmail);
                     }
                     
-                    // Send notification to technician if enabled (default: ON)
-                    if (emailSettings.notify_new_bookings && emailData.userEmail) {
+                    // Send notification to technician if enabled
+                    if (sendNotification && emailData.userEmail) {
                         console.log('📧 Sending notification to:', emailData.userEmail);
-                        const result2 = await emailService.sendNewBookingNotification({
-                            technicianEmail: emailData.userEmail,
-                            customerName: emailData.customerName,
-                            customerEmail: emailData.customerEmail,
-                            customerPhone: emailData.customerPhone,
-                            appointmentDate: emailData.date,
-                            appointmentTime: emailData.time,
-                            serviceName: emailData.serviceName,
-                            notes: emailData.customerNotes,
-                            companyName: emailData.companyName
-                        });
-                        console.log(`📧 Notification sent to: ${emailData.userEmail}`);
+                        try {
+                            const result2 = await emailService.sendNewBookingNotification({
+                                technicianEmail: emailData.userEmail,
+                                customerName: emailData.customerName,
+                                customerEmail: emailData.customerEmail,
+                                customerPhone: emailData.customerPhone,
+                                appointmentDate: emailData.date,
+                                appointmentTime: emailData.time,
+                                serviceName: emailData.serviceName,
+                                notes: emailData.customerNotes,
+                                companyName: emailData.companyName
+                            });
+                            console.log('📧 Notification sent successfully:', result2?.messageId || 'OK');
+                        } catch (notifErr) {
+                            console.error('❌ Failed to send notification:', notifErr.message);
+                        }
                     }
+                    
+                    console.log('📧 Email process completed');
                 } catch (emailError) {
-                    console.error('❌ Failed to send booking emails:', emailError.message);
+                    console.error('❌ Email process failed:', emailError.message);
                 }
             });
+        } else {
+            console.log('📧 Email not configured, skipping notifications');
         }
         
     } catch (error) {
