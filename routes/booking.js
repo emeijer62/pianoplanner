@@ -223,6 +223,33 @@ router.post('/find-slot', async (req, res) => {
         const dayNameMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayNamesNL = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
         
+        // Converteer workingHours naar dag-naam formaat als nodig
+        let workingHours = companySettings.workingHours;
+        if (workingHours && (workingHours[0] !== undefined || workingHours['0'] !== undefined)) {
+            // Oud index-based formaat - converteer
+            console.log('[SMART] Converting old index-based workingHours to day-name format');
+            const converted = {};
+            for (let i = 0; i < 7; i++) {
+                const dayData = workingHours[i] || workingHours[String(i)];
+                const dayName = dayNameMap[i];
+                if (dayData) {
+                    converted[dayName] = {
+                        start: dayData.start || '09:00',
+                        end: dayData.end || '17:00',
+                        enabled: dayData.available === true || dayData.enabled === true
+                    };
+                } else {
+                    converted[dayName] = {
+                        start: '09:00',
+                        end: '17:00',
+                        enabled: i >= 1 && i <= 5
+                    };
+                }
+            }
+            workingHours = converted;
+            console.log('[SMART] Converted workingHours:', JSON.stringify(workingHours));
+        }
+        
         // Zoek op de opgegeven dag en eventueel de volgende 14 dagen
         const maxDaysToSearch = searchMultipleDays ? 14 : 1;
         const maxSlotsToFind = 5; // Maximaal 5 opties tonen
@@ -235,10 +262,13 @@ router.post('/find-slot', async (req, res) => {
             const dayName = dayNameMap[dayOfWeek];
             
             // Haal werkuren op via dagnaam (workingHours.monday, etc.)
-            const dayAvailability = companySettings.workingHours?.[dayName];
+            const dayAvailability = workingHours?.[dayName];
+            
+            console.log(`[SMART] Checking ${dayName} (offset ${dayOffset}):`, dayAvailability);
             
             // Skip als deze dag niet beschikbaar is
             if (!dayAvailability || !dayAvailability.enabled) {
+                console.log(`[SMART] Skipping ${dayName} - not enabled`);
                 continue;
             }
             
@@ -317,7 +347,7 @@ router.post('/find-slot', async (req, res) => {
         const requestedDate = new Date(date);
         const dayOfWeek = requestedDate.getDay();
         const dayName = dayNameMap[dayOfWeek];
-        const dayAvailability = companySettings.workingHours?.[dayName];
+        const dayAvailability = workingHours?.[dayName];
         
         if (!dayAvailability || !dayAvailability.enabled) {
             return res.json({
