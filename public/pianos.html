@@ -579,32 +579,32 @@
     <nav class="nav">
         <div class="nav-content">
             <a href="/dashboard.html" class="nav-logo">
-                <span class="nav-logo-icon">🎹</span>
+                <i data-lucide="piano" style="width: 24px; height: 24px;"></i>
                 <span>PianoPlanner</span>
             </a>
             <div class="nav-links">
-                <a href="/dashboard.html" class="nav-link">Dashboard</a>
-                <a href="/customers.html" class="nav-link">Customers</a>
-                <a href="/pianos.html" class="nav-link active">Pianos</a>
-                <a href="/settings.html" class="nav-link">Settings</a>
-                <a href="/guide.html" class="nav-link">Help</a>
+                <a href="/dashboard.html" class="nav-link"><i data-lucide="calendar"></i> Dashboard</a>
+                <a href="/customers.html" class="nav-link"><i data-lucide="users"></i> Customers</a>
+                <a href="/pianos.html" class="nav-link active"><i data-lucide="piano"></i> Pianos</a>
+                <a href="/settings.html" class="nav-link"><i data-lucide="settings"></i> Settings</a>
+                <a href="/guide.html" class="nav-link"><i data-lucide="help-circle"></i> Help</a>
             </div>
             <div class="nav-user">
-                <a href="/booking.html" class="btn btn-primary btn-small">+ Appointment</a>
-                <a href="/auth/logout" class="btn btn-secondary btn-small">Log out</a>
+                <a href="/booking.html" class="btn btn-primary btn-sm"><i data-lucide="plus" style="width: 14px; height: 14px;"></i> Appointment</a>
+                <a href="/auth/logout" class="btn btn-secondary btn-sm">Logout</a>
             </div>
         </div>
     </nav>
 
     <main class="pianos-container">
         <div class="page-header">
-            <h1>🎹 <span data-i18n="pianos.title">Pianos</span></h1>
+            <h1 style="display: flex; align-items: center; gap: 12px;"><i data-lucide="piano" style="width: 28px; height: 28px;"></i> <span data-i18n="pianos.title">Pianos</span></h1>
             <div class="header-actions">
                 <div class="search-box">
-                    <input type="text" id="search-input" placeholder="🔍 Search pianos...">
+                    <input type="text" id="search-input" placeholder="Search pianos...">
                 </div>
-                <button class="btn btn-secondary" onclick="refreshPianos()" title="Refresh">↻</button>
-                <button class="btn btn-primary" onclick="openPianoModal()">+ <span data-i18n="pianos.addPiano">New Piano</span></button>
+                <button class="btn btn-secondary" onclick="refreshPianos()" title="Refresh"><i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i></button>
+                <button class="btn btn-primary" onclick="openPianoModal()"><i data-lucide="plus" style="width: 16px; height: 16px;"></i> <span data-i18n="pianos.addPiano">New Piano</span></button>
             </div>
         </div>
 

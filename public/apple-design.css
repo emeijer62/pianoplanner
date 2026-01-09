@@ -256,40 +256,48 @@ a:hover {
     position: sticky;
     top: 0;
     z-index: var(--apple-z-sticky);
-    background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: saturate(180%) blur(var(--apple-blur-lg));
-    -webkit-backdrop-filter: saturate(180%) blur(var(--apple-blur-lg));
-    border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+    background: rgba(251, 251, 253, 0.8);
+    backdrop-filter: saturate(180%) blur(var(--apple-blur-xl));
+    -webkit-backdrop-filter: saturate(180%) blur(var(--apple-blur-xl));
+    border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
 }
 
 .nav-content {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 var(--apple-space-6);
-    height: 48px;
+    height: 52px;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.nav-logo {
+/* Logo */
+.nav-logo,
+.nav-brand {
     display: flex;
     align-items: center;
-    gap: var(--apple-space-2);
+    gap: var(--apple-space-3);
     font-weight: var(--apple-weight-semibold);
     font-size: var(--apple-text-md);
     color: var(--apple-gray-900);
     text-decoration: none;
+    transition: opacity var(--apple-duration-fast) var(--apple-ease);
 }
 
-.nav-logo:hover {
+.nav-logo:hover,
+.nav-brand:hover {
     color: var(--apple-gray-900);
+    opacity: 0.8;
 }
 
-.nav-logo-icon {
-    font-size: 22px;
+.nav-logo-icon,
+.nav-logo {
+    font-size: 24px;
+    line-height: 1;
 }
 
+/* Navigation Links */
 .nav-links {
     display: flex;
     align-items: center;
@@ -297,11 +305,14 @@ a:hover {
 }
 
 .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--apple-space-2);
     font-size: var(--apple-text-sm);
-    font-weight: var(--apple-weight-regular);
-    color: var(--apple-gray-900);
+    font-weight: var(--apple-weight-medium);
+    color: var(--apple-gray-600);
     text-decoration: none;
-    padding: var(--apple-space-2) var(--apple-space-3);
+    padding: var(--apple-space-2) var(--apple-space-4);
     border-radius: var(--apple-radius-full);
     transition: all var(--apple-duration-fast) var(--apple-ease);
 }
@@ -312,11 +323,19 @@ a:hover {
 }
 
 .nav-link.active {
-    background: var(--apple-gray-900);
+    background: var(--apple-blue);
     color: var(--apple-white);
 }
 
-.nav-user {
+.nav-link svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* User Section */
+.nav-user,
+.nav-actions {
     display: flex;
     align-items: center;
     gap: var(--apple-space-3);
@@ -324,6 +343,7 @@ a:hover {
 
 .nav-user-name {
     font-size: var(--apple-text-sm);
+    font-weight: var(--apple-weight-medium);
     color: var(--apple-gray-600);
 }
 
@@ -332,6 +352,23 @@ a:hover {
     height: 32px;
     border-radius: var(--apple-radius-full);
     border: 2px solid var(--apple-gray-200);
+    object-fit: cover;
+    transition: border-color var(--apple-duration-fast) var(--apple-ease);
+}
+
+.nav-user-picture:hover {
+    border-color: var(--apple-blue);
+}
+
+/* Navigation Buttons */
+.nav .btn {
+    padding: var(--apple-space-2) var(--apple-space-4);
+    font-size: var(--apple-text-sm);
+}
+
+.nav .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
 }
 
 /* ========================================

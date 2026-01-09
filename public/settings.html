@@ -752,26 +752,26 @@
     <nav class="nav">
         <div class="nav-content">
             <a href="/dashboard.html" class="nav-logo">
-                <span class="nav-logo-icon">🎹</span>
+                <i data-lucide="piano" style="width: 24px; height: 24px;"></i>
                 <span>PianoPlanner</span>
             </a>
             <div class="nav-links">
-                <a href="/dashboard.html" class="nav-link">Dashboard</a>
-                <a href="/customers.html" class="nav-link">Customers</a>
-                <a href="/pianos.html" class="nav-link">Pianos</a>
-                <a href="/settings.html" class="nav-link active">Settings</a>
-                <a href="/guide.html" class="nav-link">Help</a>
+                <a href="/dashboard.html" class="nav-link"><i data-lucide="calendar"></i> Dashboard</a>
+                <a href="/customers.html" class="nav-link"><i data-lucide="users"></i> Customers</a>
+                <a href="/pianos.html" class="nav-link"><i data-lucide="piano"></i> Pianos</a>
+                <a href="/settings.html" class="nav-link active"><i data-lucide="settings"></i> Settings</a>
+                <a href="/guide.html" class="nav-link"><i data-lucide="help-circle"></i> Help</a>
             </div>
             <div class="nav-user">
-                <a href="/booking.html" class="btn btn-primary btn-small">+ Appointment</a>
-                <a href="/auth/logout" class="btn btn-secondary btn-small">Log out</a>
+                <a href="/booking.html" class="btn btn-primary btn-sm"><i data-lucide="plus" style="width: 14px; height: 14px;"></i> Appointment</a>
+                <a href="/auth/logout" class="btn btn-secondary btn-sm">Logout</a>
             </div>
         </div>
     </nav>
 
     <div class="settings-container">
         <div class="page-header" style="margin-bottom: 24px;">
-            <h1 style="font-size: 28px; font-weight: 700;">⚙️ Settings</h1>
+            <h1 style="font-size: 28px; font-weight: 700; display: flex; align-items: center; gap: 12px;"><i data-lucide="settings" style="width: 28px; height: 28px;"></i> Settings</h1>
         </div>
         
         <div id="alertContainer"></div>
@@ -779,21 +779,21 @@
         <!-- Tab Navigation -->
         <div class="settings-tabs">
             <button class="settings-tab active" data-tab="calendar" onclick="switchTab('calendar')">
-                <span class="tab-icon">📅</span>
+                <i data-lucide="calendar" class="tab-icon" style="width: 16px; height: 16px;"></i>
                 <span class="tab-label">Calendar</span>
                 <span class="tab-status" id="calendar-tab-status"></span>
             </button>
             <button class="settings-tab" data-tab="email" onclick="switchTab('email')">
-                <span class="tab-icon">✉️</span>
+                <i data-lucide="mail" class="tab-icon" style="width: 16px; height: 16px;"></i>
                 <span class="tab-label">Email</span>
                 <span class="tab-status" id="email-tab-status"></span>
             </button>
             <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
-                <span class="tab-icon">👤</span>
+                <i data-lucide="user" class="tab-icon" style="width: 16px; height: 16px;"></i>
                 <span class="tab-label">Account</span>
             </button>
             <button class="settings-tab" data-tab="services" onclick="switchTab('services')">
-                <span class="tab-icon">🎹</span>
+                <i data-lucide="piano" class="tab-icon" style="width: 16px; height: 16px;"></i>
                 <span class="tab-label">Services</span>
             </button>
         </div>
@@ -805,7 +805,7 @@
             <div class="settings-card" id="google-card">
                 <div class="settings-card-header" onclick="toggleCard('google-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">🔄</span>
+                        <i data-lucide="refresh-cw" class="card-icon" style="width: 18px; height: 18px;"></i>
                         Google Calendar
                     </div>
                     <div class="settings-card-status">

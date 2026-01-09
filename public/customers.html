@@ -20,19 +20,19 @@
     <nav class="nav">
         <div class="nav-content">
             <a href="/dashboard.html" class="nav-logo">
-                <span class="nav-logo-icon">🎹</span>
+                <i data-lucide="piano" style="width: 24px; height: 24px;"></i>
                 <span>PianoPlanner</span>
             </a>
             <div class="nav-links">
-                <a href="/dashboard.html" class="nav-link">Dashboard</a>
-                <a href="/customers.html" class="nav-link active">Customers</a>
-                <a href="/pianos.html" class="nav-link">Pianos</a>
-                <a href="/settings.html" class="nav-link">Settings</a>
-                <a href="/guide.html" class="nav-link">Help</a>
+                <a href="/dashboard.html" class="nav-link"><i data-lucide="calendar"></i> Dashboard</a>
+                <a href="/customers.html" class="nav-link active"><i data-lucide="users"></i> Customers</a>
+                <a href="/pianos.html" class="nav-link"><i data-lucide="piano"></i> Pianos</a>
+                <a href="/settings.html" class="nav-link"><i data-lucide="settings"></i> Settings</a>
+                <a href="/guide.html" class="nav-link"><i data-lucide="help-circle"></i> Help</a>
             </div>
             <div class="nav-user">
-                <a href="/booking.html" class="btn btn-primary btn-small">+ Appointment</a>
-                <a href="/auth/logout" class="btn btn-secondary btn-small">Log out</a>
+                <a href="/booking.html" class="btn btn-primary btn-sm"><i data-lucide="plus" style="width: 14px; height: 14px;"></i> Appointment</a>
+                <a href="/auth/logout" class="btn btn-secondary btn-sm">Logout</a>
             </div>
         </div>
     </nav>
@@ -45,14 +45,17 @@
                 <p class="page-subtitle">Manage your customer database</p>
             </div>
             <div class="page-actions">
-                <button id="duplicates-btn" class="btn btn-secondary" style="display: none;">🔄 Duplicates (<span id="duplicate-count">0</span>)</button>
-                <button id="add-customer-btn" class="btn btn-primary">+ New Customer</button>
+                <button id="duplicates-btn" class="btn btn-secondary" style="display: none;"><i data-lucide="copy\" style=\"width: 16px; height: 16px;\"></i> Duplicates (<span id="duplicate-count">0</span>)</button>
+                <button id="add-customer-btn" class="btn btn-primary\"><i data-lucide=\"plus\" style=\"width: 16px; height: 16px;\"></i> New Customer</button>
             </div>
         </div>
 
         <!-- Search -->
         <div class="card" style="margin-bottom: 24px; padding: 16px 20px;">
-            <input type="text" id="search-input" class="form-input" placeholder="🔍 Search customers by name, email, city or phone..." style="border: none; padding: 0; font-size: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i data-lucide="search" style="width: 18px; height: 18px; color: var(--apple-gray-400);"></i>
+                <input type="text" id="search-input" class="form-input" placeholder="Search customers by name, email, city or phone..." style="border: none; padding: 0; font-size: 16px; flex: 1;">
+            </div>
         </div>
 
         <!-- Stats -->

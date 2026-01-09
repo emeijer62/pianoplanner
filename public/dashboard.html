@@ -1019,30 +1019,30 @@
     <nav class="nav">
         <div class="nav-content">
             <a href="/dashboard.html" class="nav-brand">
-                <span class="nav-logo">🎹</span>
+                <i data-lucide="piano" style="width: 24px; height: 24px;"></i>
                 <span>PianoPlanner</span>
             </a>
             <div class="nav-links">
-                <a href="/dashboard.html" class="nav-link active">📅 <span data-i18n="nav.dashboard">Calendar</span></a>
-                <a href="/customers.html" class="nav-link">👥 <span data-i18n="nav.customers">Customers</span></a>
-                <a href="/pianos.html" class="nav-link">🎹 <span data-i18n="nav.pianos">Pianos</span></a>
-                <a href="/settings.html" class="nav-link">⚙️</a>
-                <a href="/guide.html" class="nav-link">❓ <span data-i18n="nav.help">Help</span></a>
+                <a href="/dashboard.html" class="nav-link active"><i data-lucide="calendar"></i> <span data-i18n="nav.dashboard">Calendar</span></a>
+                <a href="/customers.html" class="nav-link"><i data-lucide="users"></i> <span data-i18n="nav.customers">Customers</span></a>
+                <a href="/pianos.html" class="nav-link"><i data-lucide="piano"></i> <span data-i18n="nav.pianos">Pianos</span></a>
+                <a href="/settings.html" class="nav-link"><i data-lucide="settings"></i></a>
+                <a href="/guide.html" class="nav-link"><i data-lucide="help-circle"></i> <span data-i18n="nav.help">Help</span></a>
             </div>
             <div class="nav-actions">
                 <a href="/admin-dashboard.html" id="admin-link" class="btn btn-secondary btn-sm" style="display: none;">Admin</a>
-                <img id="nav-user-picture" src="" alt="" class="nav-user-picture" style="width: 32px; height: 32px; border-radius: 50%; display: none;">
-                <span id="nav-user-name" style="font-size: 0.875rem; color: var(--gray-600);"></span>
-                <a href="/auth/logout" class="btn btn-secondary btn-sm" data-i18n="nav.logout">Out</a>
+                <img id="nav-user-picture" src="" alt="" class="nav-user-picture" style="display: none;">
+                <span id="nav-user-name" class="nav-user-name"></span>
+                <a href="/auth/logout" class="btn btn-secondary btn-sm" data-i18n="nav.logout">Logout</a>
             </div>
         </div>
     </nav>
 
     <main class="dashboard">
         <div class="dashboard-header">
-            <h1>📅 <span data-i18n="nav.dashboard">Calendar</span></h1>
+            <h1 style="display: flex; align-items: center; gap: 10px;"><i data-lucide="calendar" style="width: 22px; height: 22px;"></i> <span data-i18n="nav.dashboard">Calendar</span></h1>
             <div class="header-actions">
-                <button id="add-event-btn" class="btn btn-primary">+ <span data-i18n="appointments.newAppointment">Appointment</span></button>
+                <button id="add-event-btn" class="btn btn-primary"><i data-lucide="plus" style="width: 16px; height: 16px;"></i> <span data-i18n="appointments.newAppointment">Appointment</span></button>
             </div>
         </div>
 
