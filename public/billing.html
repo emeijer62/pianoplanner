@@ -305,31 +305,31 @@
 
             <!-- Features -->
             <div class="billing-card">
-                <h2>✨ Included in PianoPlanner Pro</h2>
+                <h2><i data-lucide="sparkles" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 8px;"></i>Included in PianoPlanner Pro</h2>
                 
                 <div class="features-grid">
                     <div class="feature-item">
-                        <span class="icon">✓</span>
+                        <span class="icon"><i data-lucide="check" style="width: 12px; height: 12px;"></i></span>
                         Unlimited appointments
                     </div>
                     <div class="feature-item">
-                        <span class="icon">✓</span>
+                        <span class="icon"><i data-lucide="check" style="width: 12px; height: 12px;"></i></span>
                         Google Calendar sync
                     </div>
                     <div class="feature-item">
-                        <span class="icon">✓</span>
+                        <span class="icon"><i data-lucide="check" style="width: 12px; height: 12px;"></i></span>
                         Online booking page
                     </div>
                     <div class="feature-item">
-                        <span class="icon">✓</span>
+                        <span class="icon"><i data-lucide="check" style="width: 12px; height: 12px;"></i></span>
                         Customer management
                     </div>
                     <div class="feature-item">
-                        <span class="icon">✓</span>
+                        <span class="icon"><i data-lucide="check" style="width: 12px; height: 12px;"></i></span>
                         Customizable services
                     </div>
                     <div class="feature-item">
-                        <span class="icon">✓</span>
+                        <span class="icon"><i data-lucide="check" style="width: 12px; height: 12px;"></i></span>
                         Email reminders
                     </div>
                 </div>
@@ -337,7 +337,7 @@
 
             <!-- Help -->
             <div class="billing-card">
-                <h2>💬 Need help?</h2>
+                <h2><i data-lucide="message-circle" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 8px;"></i>Need help?</h2>
                 <p style="color: #666; margin-bottom: 16px;">
                     Do you have questions about your subscription or invoices? Contact us.
                 </p>
@@ -353,7 +353,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         
         if (urlParams.get('success') === 'true') {
-            showAlert('success', '🎉 Your subscription has been activated! Enjoy PianoPlanner.');
+            showAlert('success', 'Your subscription has been activated! Enjoy PianoPlanner.');
             // Clean URL
             window.history.replaceState({}, '', '/billing.html');
         }
@@ -399,19 +399,19 @@
             switch (sub.status) {
                 case 'trialing':
                     badgeClass = 'trial';
-                    badgeText = `🕐 Trial (${sub.daysLeft} days)`;
+                    badgeText = `Trial (${sub.daysLeft} days)`;
                     break;
                 case 'active':
                     badgeClass = 'active';
-                    badgeText = '✓ Active';
+                    badgeText = 'Active';
                     break;
                 case 'trial_expired':
                     badgeClass = 'expired';
-                    badgeText = '⚠ Trial expired';
+                    badgeText = 'Trial expired';
                     break;
                 case 'canceled':
                     badgeClass = 'canceled';
-                    badgeText = '✕ Canceled';
+                    badgeText = 'Canceled';
                     break;
                 default:
                     badgeClass = 'expired';
@@ -488,7 +488,7 @@
             if (sub.status === 'trialing' || sub.status === 'trial_expired' || sub.status === 'canceled' || !sub.status) {
                 buttonsHTML = `
                     <button class="btn btn-primary" onclick="startSubscription()">
-                        💳 Start subscription
+                        Start subscription
                     </button>
                 `;
             } else if (sub.status === 'active') {
@@ -552,6 +552,7 @@
         }
 
         loadSubscription();
+        lucide.createIcons();
     </script>
 </body>
 </html>

@@ -126,8 +126,7 @@
             border-bottom: none;
         }
 
-        .features-list li::before {
-            content: '✓';
+        .features-list li .check-icon {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -136,9 +135,12 @@
             background: #e8f5e9;
             color: #2e7d32;
             border-radius: 50%;
-            font-size: 0.875rem;
-            font-weight: 600;
             flex-shrink: 0;
+        }
+        
+        .features-list li .check-icon svg {
+            width: 14px;
+            height: 14px;
         }
 
         .cta-button {
@@ -260,7 +262,7 @@
     <header class="header">
         <div class="header-content">
             <a href="/" class="logo">
-                <span class="logo-icon">🎹</span>
+                <i data-lucide="piano" class="logo-icon" style="width: 24px; height: 24px;"></i>
                 <span>PianoPlanner</span>
             </a>
             <nav class="nav-links">
@@ -295,14 +297,14 @@
                 </div>
 
                 <ul class="features-list">
-                    <li>Unlimited appointment scheduling</li>
-                    <li>Google Calendar synchronization</li>
-                    <li>Online booking page for customers</li>
-                    <li>Customer management with history</li>
-                    <li>Customizable services & prices</li>
-                    <li>Automatic travel time buffers</li>
-                    <li>Email reminders</li>
-                    <li>No setup fees</li>
+                    <li><span class="check-icon"><i data-lucide="check"></i></span>Unlimited appointment scheduling</li>
+                    <li><span class="check-icon"><i data-lucide="check"></i></span>Google Calendar synchronization</li>
+                    <li><span class="check-icon"><i data-lucide="check"></i></span>Online booking page for customers</li>
+                    <li><span class="check-icon"><i data-lucide="check"></i></span>Customer management with history</li>
+                    <li><span class="check-icon"><i data-lucide="check"></i></span>Customizable services & prices</li>
+                    <li><span class="check-icon"><i data-lucide="check"></i></span>Automatic travel time buffers</li>
+                    <li><span class="check-icon"><i data-lucide="check"></i></span>Email reminders</li>
+                    <li><span class="check-icon"><i data-lucide="check"></i></span>No setup fees</li>
                 </ul>
 
                 <button class="cta-button" id="startTrialBtn" onclick="startTrial()" data-i18n="pricing.startTrial">
@@ -317,8 +319,8 @@
                 </div>
 
                 <div class="payment-methods">
-                    <span class="payment-method">💳 Credit card</span>
-                    <span class="payment-method">🏦 Bank transfer</span>
+                    <span class="payment-method"><i data-lucide="credit-card" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;"></i> Credit card</span>
+                    <span class="payment-method"><i data-lucide="landmark" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;"></i> Bank transfer</span>
                 </div>
             </div>
         </div>
@@ -413,6 +415,7 @@
         }
 
         checkAuth();
+        lucide.createIcons();
     </script>
 </body>
 </html>

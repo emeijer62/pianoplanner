@@ -830,17 +830,17 @@
                             <div class="sync-direction-options">
                                 <label class="radio-option">
                                     <input type="radio" name="syncDirection" value="both" checked>
-                                    <span>🔄 Two-way sync</span>
+                                    <span><i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Two-way sync</span>
                                     <small>PianoPlanner ↔ Google (recommended)</small>
                                 </label>
                                 <label class="radio-option">
                                     <input type="radio" name="syncDirection" value="toGoogle">
-                                    <span>➡️ Export only</span>
+                                    <span><i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i> Export only</span>
                                     <small>PianoPlanner → Google</small>
                                 </label>
                                 <label class="radio-option">
                                     <input type="radio" name="syncDirection" value="fromGoogle">
-                                    <span>⬅️ Import only</span>
+                                    <span><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Import only</span>
                                     <small>Google → PianoPlanner</small>
                                 </label>
                             </div>
@@ -858,7 +858,7 @@
                                 ✓ Enable Sync
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="syncNow()" id="sync-now-btn" style="display: none;">
-                                🔄 Sync Now
+                                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Sync Now
                             </button>
                         </div>
                         
@@ -885,7 +885,7 @@
             <div class="settings-card" id="apple-card">
                 <div class="settings-card-header" onclick="toggleCard('apple-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">🍎</span>
+                        <span class="card-icon"><i data-lucide="calendar" style="width: 20px; height: 20px;"></i></span>
                         Apple Calendar
                     </div>
                     <div class="settings-card-status">
@@ -907,7 +907,7 @@
                     <!-- Connect form -->
                     <div id="apple-connect-form" style="display: none;">
                         <div class="info-box" style="background: #f0f7ff; border: 1px solid #b3d7ff; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-                            <strong>📱 Setup instructions:</strong>
+                            <strong><i data-lucide="smartphone" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i> Setup instructions:</strong>
                             <ol style="margin: 12px 0 0 20px; color: #444; font-size: 14px;">
                                 <li>Go to <a href="https://appleid.apple.com" target="_blank" style="color: #0071e3;">appleid.apple.com</a></li>
                                 <li>Sign in → Security → App-Specific Passwords</li>
@@ -927,7 +927,7 @@
                         </div>
                         
                         <button type="button" class="btn btn-primary" onclick="connectAppleCalendar()">
-                            🍎 Connect
+                            <i data-lucide="link" style="width: 16px; height: 16px;"></i> Connect
                         </button>
                     </div>
                     
@@ -938,17 +938,17 @@
                             <div class="sync-direction-options">
                                 <label class="radio-option">
                                     <input type="radio" name="appleSyncDirection" value="both" checked>
-                                    <span>🔄 Two-way sync</span>
+                                    <span><i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Two-way sync</span>
                                     <small>PianoPlanner ↔ Apple (recommended)</small>
                                 </label>
                                 <label class="radio-option">
                                     <input type="radio" name="appleSyncDirection" value="toApple">
-                                    <span>➡️ Export only</span>
+                                    <span><i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i> Export only</span>
                                     <small>PianoPlanner → Apple</small>
                                 </label>
                                 <label class="radio-option">
                                     <input type="radio" name="appleSyncDirection" value="fromApple">
-                                    <span>⬅️ Import only</span>
+                                    <span><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Import only</span>
                                     <small>Apple → PianoPlanner</small>
                                 </label>
                             </div>
@@ -966,7 +966,7 @@
                                 ✓ Enable Sync
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="syncAppleNow()" id="apple-sync-now-btn" style="display: none;">
-                                🔄 Sync Now
+                                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Sync Now
                             </button>
                             <button type="button" class="btn btn-danger" onclick="disconnectAppleCalendar()" style="margin-left: auto;">
                                 Disconnect
@@ -984,7 +984,7 @@
             <div class="settings-card" id="feed-card">
                 <div class="settings-card-header" onclick="toggleCard('feed-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">📅</span>
+                        <i data-lucide="calendar" class="card-icon" style="width: 18px; height: 18px;"></i>
                         Calendar Subscription
                     </div>
                     <div class="settings-card-status">
@@ -1004,7 +1004,7 @@
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <input type="text" id="feed-url" readonly style="flex: 1; background: var(--gray-100); font-family: monospace; font-size: 12px; padding: 10px;">
                             <button type="button" class="btn btn-secondary btn-small" onclick="copyFeedUrl()">
-                                📋 Copy
+                                <i data-lucide="clipboard" style="width: 16px; height: 16px;"></i> Copy
                             </button>
                         </div>
                     </div>
@@ -1012,9 +1012,9 @@
                     <div id="feed-instructions" style="display: none; background: var(--gray-50); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px;">
                         <strong>Add to your calendar:</strong>
                         <div style="margin-top: 8px; display: grid; gap: 4px;">
-                            <span>🍎 Apple: File → New Calendar Subscription</span>
-                            <span>📱 Google: Settings → Add Calendar → From URL</span>
-                            <span>📧 Outlook: Add Calendar → Subscribe from web</span>
+                            <span><i data-lucide="laptop" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i> Apple: File → New Calendar Subscription</span>
+                            <span><i data-lucide="smartphone" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i> Google: Settings → Add Calendar → From URL</span>
+                            <span><i data-lucide="mail" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></i> Outlook: Add Calendar → Subscribe from web</span>
                         </div>
                     </div>
                     
@@ -1026,7 +1026,7 @@
                             Disable
                         </button>
                         <button type="button" id="feed-regenerate-btn" class="btn btn-secondary" style="display: none;" onclick="regenerateCalendarFeed()">
-                            🔄 New Link
+                            <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> New Link
                         </button>
                     </div>
                 </div>
@@ -1036,7 +1036,7 @@
             <div class="settings-card" id="export-card">
                 <div class="settings-card-header" onclick="toggleCard('export-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">💾</span>
+                        <i data-lucide="hard-drive" class="card-icon" style="width: 20px; height: 20px;"></i>
                         Export / Backup
                     </div>
                     <div class="settings-card-status">
@@ -1060,7 +1060,7 @@
                             <input type="date" id="export-to" style="padding: 8px;">
                         </div>
                         <button type="button" class="btn btn-primary" onclick="exportCalendar()">
-                            📥 Download .ics
+                            <i data-lucide="download" style="width: 16px; height: 16px;"></i> Download .ics
                         </button>
                     </div>
                     <p style="color: #888; font-size: 12px; margin: 0;">
@@ -1078,7 +1078,7 @@
             <div class="settings-card expanded" id="smtp-card">
                 <div class="settings-card-header" onclick="toggleCard('smtp-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">📤</span>
+                        <i data-lucide="send" class="card-icon" style="width: 20px; height: 20px;"></i>
                         Email Configuration
                     </div>
                     <div class="settings-card-status">
@@ -1103,12 +1103,12 @@
                             <div class="sync-direction-options">
                                 <label class="radio-option">
                                     <input type="radio" name="smtpChoice" value="pianoplanner" checked>
-                                    <span>🎹 PianoPlanner (default)</span>
+                                    <span><i data-lucide="piano" style="width: 16px; height: 16px;"></i> PianoPlanner (default)</span>
                                     <small>Emails sent on your behalf via info@pianoplanner.com</small>
                                 </label>
                                 <label class="radio-option">
                                     <input type="radio" name="smtpChoice" value="own">
-                                    <span>📧 My own email</span>
+                                    <span><i data-lucide="mail" style="width: 16px; height: 16px;"></i> My own email</span>
                                     <small>Emails sent from your personal email address</small>
                                 </label>
                             </div>
@@ -1162,10 +1162,10 @@
                             
                             <div style="display: flex; gap: 8px;">
                                 <button type="button" class="btn btn-primary" onclick="saveSmtpSettings()">
-                                    💾 Save
+                                    <i data-lucide="save" style="width: 16px; height: 16px;"></i> Save
                                 </button>
                                 <button type="button" class="btn btn-secondary" onclick="testSmtpConnection()">
-                                    🧪 Test
+                                    <i data-lucide="flask-conical" style="width: 16px; height: 16px;"></i> Test
                                 </button>
                             </div>
                             
@@ -1179,7 +1179,7 @@
             <div class="settings-card expanded" id="notifications-card">
                 <div class="settings-card-header" onclick="toggleCard('notifications-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">🔔</span>
+                        <i data-lucide="bell" class="card-icon" style="width: 20px; height: 20px;"></i>
                         Notifications
                     </div>
                     <div class="settings-card-status">
@@ -1259,10 +1259,10 @@
                         
                         <div style="display: flex; gap: 8px;">
                             <button type="button" class="btn btn-primary" onclick="saveEmailSettings()">
-                                💾 Save
+                                <i data-lucide="save" style="width: 16px; height: 16px;"></i> Save
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="sendTestEmail(this)">
-                                📤 Send Test
+                                <i data-lucide="send" style="width: 16px; height: 16px;"></i> Send Test
                             </button>
                         </div>
                     </div>
@@ -1273,7 +1273,7 @@
             <div class="settings-card" id="email-templates-card">
                 <div class="settings-card-header" onclick="toggleCard('email-templates-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">✉️</span>
+                        <i data-lucide="mail" class="card-icon" style="width: 20px; height: 20px;"></i>
                         Email Sjablonen
                     </div>
                     <div class="settings-card-status">
@@ -1334,7 +1334,7 @@
                     <div style="background: #f5f5f7; border-radius: 8px; padding: 16px; margin-top: 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                             <strong>Preview</strong>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="refreshTemplatePreview()">🔄 Ververs</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="refreshTemplatePreview()"><i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Ververs</button>
                         </div>
                         <div id="template-preview" style="background: white; border-radius: 8px; padding: 16px; min-height: 150px;">
                             <em style="color: #999;">Klik "Ververs" om een preview te zien</em>
@@ -1343,11 +1343,11 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" onclick="resetTemplateToDefault()" id="template-reset-btn">
-                        ↩️ Reset naar standaard
+                        <i data-lucide="undo-2" style="width: 16px; height: 16px;"></i> Reset naar standaard
                     </button>
                     <div style="display: flex; gap: 8px;">
                         <button type="button" class="btn btn-secondary" onclick="closeTemplateModal()">Annuleren</button>
-                        <button type="button" class="btn btn-primary" onclick="saveTemplate()">💾 Opslaan</button>
+                        <button type="button" class="btn btn-primary" onclick="saveTemplate()"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Opslaan</button>
                     </div>
                 </div>
             </div>
@@ -1360,7 +1360,7 @@
             <div class="settings-card" id="regional-card">
                 <div class="settings-card-header" onclick="toggleCard('regional-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">🌍</span>
+                        <i data-lucide="globe" class="card-icon" style="width: 20px; height: 20px;"></i>
                         Regional Settings
                     </div>
                     <div class="settings-card-status">
@@ -1429,7 +1429,7 @@
                     </div>
                     
                     <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
-                        <button type="button" class="btn btn-secondary btn-small" onclick="detectTimezone()">🔍 Auto-detect</button>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="detectTimezone()"><i data-lucide="search" style="width: 16px; height: 16px;"></i> Auto-detect</button>
                         <span id="detected-timezone" style="font-size: 12px; color: var(--gray-500);"></span>
                     </div>
                     
@@ -1443,7 +1443,7 @@
             <div class="settings-card" id="booking-card">
                 <div class="settings-card-header" onclick="toggleCard('booking-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">🔗</span>
+                        <i data-lucide="link" class="card-icon" style="width: 18px; height: 18px;"></i>
                         Public Booking Link
                     </div>
                     <div class="settings-card-status">
@@ -1467,8 +1467,8 @@
                             <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">Your booking URL:</label>
                             <div style="display: flex; gap: 8px; align-items: center;">
                                 <input type="text" id="booking-link-url" readonly style="flex: 1; background: var(--gray-100); font-family: monospace; font-size: 12px;">
-                                <button type="button" class="btn btn-secondary btn-small" onclick="copyBookingLink()">📋 Copy</button>
-                                <a id="booking-link-preview" href="#" target="_blank" class="btn btn-secondary btn-small">👁️ Preview</a>
+                                <button type="button" class="btn btn-secondary btn-small" onclick="copyBookingLink()"><i data-lucide="clipboard" style="width: 16px; height: 16px;"></i> Copy</button>
+                                <a id="booking-link-preview" href="#" target="_blank" class="btn btn-secondary btn-small"><i data-lucide="eye" style="width: 16px; height: 16px;"></i> Preview</a>
                             </div>
                         </div>
                         
@@ -1533,7 +1533,7 @@
                                 </div>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary">💾 Save</button>
+                            <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Save</button>
                         </form>
                     </div>
                 </div>
@@ -1543,7 +1543,7 @@
             <div class="settings-card" id="travel-card">
                 <div class="settings-card-header" onclick="toggleCard('travel-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">🚗</span>
+                        <i data-lucide="car" class="card-icon" style="width: 20px; height: 20px;"></i>
                         Travel Settings
                     </div>
                     <div class="settings-card-status">
@@ -1570,7 +1570,7 @@
                         </div>
                         
                         <div id="travel-options" style="display: none;">
-                            <div class="form-section-header">📍 Online Booking Radius</div>
+                            <div class="form-section-header"><i data-lucide="map-pin" style="width: 18px; height: 18px;"></i> Online Booking Radius</div>
                             <p class="form-section-hint">Limit online bookings to customers within a certain travel distance from your location.</p>
                             
                             <div class="form-row">
@@ -1593,7 +1593,7 @@
                                 <span class="form-section-hint" style="margin-top: 6px;">Shown when a customer's location exceeds the maximum travel time.</span>
                             </div>
                             
-                            <div class="form-section-header">🔄 Route Efficiency</div>
+                            <div class="form-section-header"><i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Route Efficiency</div>
                             <p class="form-section-hint">Optimize smart suggestions by limiting travel between consecutive appointments.</p>
                             
                             <div class="form-row">
@@ -1611,12 +1611,12 @@
                             
                             <div style="background: var(--gray-100); padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
                                 <p style="font-size: 13px; color: var(--gray-600); margin: 0;">
-                                    ℹ️ Smart suggestions will prioritize time slots where travel to/from other appointments stays within this limit.
+                                    <i data-lucide="info" style="width: 16px; height: 16px;"></i> Smart suggestions will prioritize time slots where travel to/from other appointments stays within this limit.
                                 </p>
                             </div>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary">💾 Save Travel Settings</button>
+                        <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Save Travel Settings</button>
                     </form>
                 </div>
             </div>
@@ -1625,7 +1625,7 @@
             <div class="settings-card" id="profile-card">
                 <div class="settings-card-header" onclick="toggleCard('profile-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">👤</span>
+                        <i data-lucide="user" class="card-icon" style="width: 20px; height: 20px;"></i>
                         Profile
                     </div>
                     <div class="settings-card-status">
@@ -1652,7 +1652,7 @@
                                 <!-- Filled dynamically -->
                             </p>
                         </div>
-                        <button type="submit" class="btn btn-primary">💾 Save Profile</button>
+                        <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Save Profile</button>
                     </form>
                 </div>
             </div>
@@ -1661,7 +1661,7 @@
             <div class="settings-card" id="password-card">
                 <div class="settings-card-header" onclick="toggleCard('password-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">🔐</span>
+                        <i data-lucide="lock" class="card-icon" style="width: 20px; height: 20px;"></i>
                         Password
                     </div>
                     <div class="settings-card-status">
@@ -1692,7 +1692,7 @@
                                 <input type="password" id="confirmPassword" name="confirmPassword" required minlength="6" autocomplete="new-password" placeholder="••••••••">
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="passwordSubmitBtn">🔐 Change Password</button>
+                        <button type="submit" class="btn btn-primary" id="passwordSubmitBtn"><i data-lucide="lock" style="width: 16px; height: 16px;"></i> Change Password</button>
                     </form>
                 </div>
             </div>
@@ -1701,7 +1701,7 @@
             <div class="settings-card" id="company-card">
                 <div class="settings-card-header" onclick="toggleCard('company-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">🏢</span>
+                        <i data-lucide="building" class="card-icon" style="width: 20px; height: 20px;"></i>
                         Company & Availability
                     </div>
                     <div class="settings-card-status">
@@ -1713,21 +1713,21 @@
                 <div class="settings-card-body">
                     <form id="companyForm">
                         <!-- Logo Upload Section -->
-                        <div class="form-section-header">🖼️ Company Logo</div>
+                        <div class="form-section-header"><i data-lucide="image" style="width: 18px; height: 18px;"></i> Company Logo</div>
                         <p class="form-section-hint">Upload your logo to personalize emails and your booking page.</p>
                         
                         <div class="logo-upload-section" style="margin-bottom: 24px;">
                             <div style="display: flex; align-items: center; gap: 20px;">
                                 <div id="logo-preview" style="width: 100px; height: 100px; border-radius: 12px; background: #f5f5f7; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px dashed #ddd;">
-                                    <span style="font-size: 40px; color: #ccc;">🏢</span>
+                                    <i data-lucide="building" style="width: 40px; height: 40px; color: #ccc;"></i>
                                 </div>
                                 <div style="flex: 1;">
                                     <input type="file" id="logo-input" accept="image/*" style="display: none;">
                                     <button type="button" class="btn btn-secondary" onclick="document.getElementById('logo-input').click()">
-                                        📤 Upload Logo
+                                        <i data-lucide="upload" style="width: 16px; height: 16px;"></i> Upload Logo
                                     </button>
                                     <button type="button" class="btn btn-danger" id="logo-delete-btn" onclick="deleteLogo()" style="display: none; margin-left: 8px;">
-                                        🗑️ Remove
+                                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i> Remove
                                     </button>
                                     <p style="color: #666; font-size: 12px; margin-top: 8px;">
                                         PNG, JPG or GIF. Max 5MB. Will be resized to max 400x400px.
@@ -1736,7 +1736,7 @@
                             </div>
                         </div>
                         
-                        <div class="form-section-header">📝 Basic Information</div>
+                        <div class="form-section-header"><i data-lucide="file-text" style="width: 18px; height: 18px;"></i> Basic Information</div>
                         
                         <div class="form-row">
                             <div class="form-group">
@@ -1760,7 +1760,7 @@
                             </div>
                         </div>
                         
-                        <div class="form-section-header">📍 Address (travel time calculation)</div>
+                        <div class="form-section-header"><i data-lucide="map-pin" style="width: 18px; height: 18px;"></i> Address (travel time calculation)</div>
                         
                         <div class="form-group" style="position: relative;">
                             <label for="address-search">Search address</label>
@@ -1788,14 +1788,14 @@
                             </div>
                         </div>
                         
-                        <div class="form-section-header">🕐 Weekly Availability</div>
+                        <div class="form-section-header"><i data-lucide="clock" style="width: 18px; height: 18px;"></i> Weekly Availability</div>
                         <p class="form-section-hint">Set your working hours for each day.</p>
                         
                         <div class="availability-grid" id="availabilityGrid">
                             <!-- Loaded dynamically -->
                         </div>
                         
-                        <div class="form-section-header" style="margin-top: 32px;">🎭 Theater Availability</div>
+                        <div class="form-section-header" style="margin-top: 32px;"><i data-lucide="theater" style="width: 18px; height: 18px;"></i> Theater Availability</div>
                         <p class="form-section-hint">Optional separate availability for theaters/venues. Enable this to allow certain customers to book outside normal hours.</p>
                         
                         <div class="form-group" style="margin-bottom: 16px;">
@@ -1811,7 +1811,7 @@
                             </div>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary">💾 Save Company</button>
+                        <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Save Company</button>
                     </form>
                 </div>
             </div>
@@ -1820,7 +1820,7 @@
             <div class="settings-card" id="language-card">
                 <div class="settings-card-header" onclick="toggleCard('language-card')">
                     <div class="settings-card-title">
-                        <span class="card-icon">🌐</span>
+                        <i data-lucide="globe" class="card-icon" style="width: 20px; height: 20px;"></i>
                         Language
                     </div>
                     <div class="settings-card-status">
@@ -1850,7 +1850,7 @@
             <div class="settings-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <div>
-                        <h2 style="margin: 0;">🎹 Services</h2>
+                        <h2 style="margin: 0;"><i data-lucide="piano" style="width: 20px; height: 20px;"></i> Services</h2>
                         <p style="margin: 8px 0 0; color: var(--gray-500);">Manage the services you offer. Buffer times are included in scheduling.</p>
                     </div>
                     <button class="btn btn-primary" onclick="openServiceModal()">+ New Service</button>
@@ -1921,7 +1921,7 @@
                 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">💾 Save</button>
+                    <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -2017,7 +2017,7 @@
                 if (settings.enabled) {
                     statusEl.className = 'sync-status connected';
                     statusEl.innerHTML = `
-                        <strong>✅ Sync active</strong>
+                        <strong><i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> Sync active</strong>
                         <span style="color: #666; margin-left: 8px;">${getSyncDirectionLabel(settings.syncDirection)}</span>
                     `;
                     document.getElementById('sync-now-btn').style.display = 'inline-block';
@@ -2040,7 +2040,7 @@
                 } else {
                     statusEl.className = 'sync-status disconnected';
                     statusEl.innerHTML = `
-                        <strong>⚠️ Sync disabled</strong>
+                        <strong><i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i> Sync disabled</strong>
                         <span style="color: #666; margin-left: 8px;">Google connected, sync not active</span>
                     `;
                     
@@ -2067,9 +2067,9 @@
         
         function getSyncDirectionLabel(direction) {
             switch(direction) {
-                case 'both': return '🔄 Both directions';
-                case 'toGoogle': return '➡️ To Google only';
-                case 'fromGoogle': return '⬅️ From Google only';
+                case 'both': return '<i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Both directions';
+                case 'toGoogle': return '<i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i> To Google only';
+                case 'fromGoogle': return '<i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> From Google only';
                 default: return 'Unknown';
             }
         }
@@ -2144,7 +2144,8 @@
         async function syncNow() {
             const btn = document.getElementById('sync-now-btn');
             btn.disabled = true;
-            btn.textContent = '🔄 Syncing...';
+            btn.innerHTML = '<i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Syncing...';
+            lucide.createIcons();
             
             try {
                 const response = await fetch('/api/calendar/sync', { method: 'POST' });
@@ -2160,7 +2161,8 @@
                 showAlert('Error syncing', 'error');
             } finally {
                 btn.disabled = false;
-                btn.textContent = '🔄 Sync now';
+                btn.innerHTML = '<i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Sync now';
+                lucide.createIcons();
             }
         }
         
@@ -2257,7 +2259,7 @@
                 
                 if (data.connected) {
                     statusEl.className = 'sync-status connected';
-                    statusEl.innerHTML = `<strong>✅ Connected</strong><br><small>${data.appleId}</small>`;
+                    statusEl.innerHTML = `<strong><i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> Connected</strong><br><small>${data.appleId}</small>`;
                     connectForm.style.display = 'none';
                     syncOptions.style.display = 'block';
                     
@@ -2284,7 +2286,7 @@
             } catch (error) {
                 console.error('Error loading Apple Calendar status:', error);
                 document.getElementById('apple-calendar-status').innerHTML = 
-                    '<strong>⚠️ Could not load status</strong>';
+                    '<strong><i data-lucide="alert-triangle" style="width: 16px; height: 16px;"></i> Could not load status</strong>';
             }
         }
         
@@ -2307,7 +2309,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showAlert('🍎 Apple Calendar connected successfully!', 'success');
+                    showAlert('Apple Calendar connected successfully!', 'success');
                     document.getElementById('apple-password').value = '';
                     loadAppleCalendarStatus();
                 } else {
@@ -2417,7 +2419,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showAlert('🍎 Apple Calendar sync enabled!', 'success');
+                    showAlert('Apple Calendar sync enabled!', 'success');
                     loadAppleSyncSettings();
                 } else {
                     showAlert(data.error || 'Could not enable sync', 'error');
@@ -2430,14 +2432,15 @@
         async function syncAppleNow() {
             const btn = document.getElementById('apple-sync-now-btn');
             btn.disabled = true;
-            btn.textContent = '🔄 Syncing...';
+            btn.innerHTML = '<i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Syncing...';
+            lucide.createIcons();
             
             try {
                 const response = await fetch('/api/apple-calendar/sync', { method: 'POST' });
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showAlert(`🍎 Sync complete! ${data.synced || 0} items synchronized.`, 'success');
+                    showAlert(`Sync complete! ${data.synced || 0} items synchronized.`, 'success');
                     loadAppleSyncSettings();
                 } else {
                     showAlert(data.error || 'Sync failed', 'error');
@@ -2446,7 +2449,8 @@
                 showAlert('Error syncing with Apple Calendar', 'error');
             } finally {
                 btn.disabled = false;
-                btn.textContent = '🔄 Sync now';
+                btn.innerHTML = '<i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Sync now';
+                lucide.createIcons();
             }
         }
         
@@ -2509,7 +2513,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showAlert('✅ Email settings saved', 'success');
+                    showAlert('Email settings saved', 'success');
                 } else {
                     showAlert(data.error || 'Could not save settings', 'error');
                 }
@@ -2521,7 +2525,8 @@
         async function sendTestEmail(btn) {
             if (!btn) btn = document.querySelector('button[onclick*="sendTestEmail"]');
             btn.disabled = true;
-            btn.textContent = '📤 Sending...';
+            btn.innerHTML = '<i data-lucide="loader" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i> Sending...';
+            if (window.lucide) lucide.createIcons();
             
             try {
                 const response = await fetch('/api/email/test', {
@@ -2533,7 +2538,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showAlert('✅ Test email sent! Check your inbox.', 'success');
+                    showAlert('Test email sent! Check your inbox.', 'success');
                 } else {
                     showAlert(data.error || data.message || 'Could not send test email', 'error');
                 }
@@ -2542,7 +2547,8 @@
                 showAlert('Error sending test email', 'error');
             } finally {
                 btn.disabled = false;
-                btn.textContent = '📤 Send test email';
+                btn.innerHTML = '<i data-lucide="send" style="width: 16px; height: 16px;"></i> Send test email';
+                if (window.lucide) lucide.createIcons();
             }
         }
         

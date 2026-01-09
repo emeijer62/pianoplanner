@@ -493,6 +493,7 @@ a:hover {
     padding: var(--apple-space-6);
     box-shadow: var(--apple-shadow-sm);
     transition: all var(--apple-duration-normal) var(--apple-ease);
+    border: 0.5px solid transparent;
 }
 
 .card:hover {
@@ -507,6 +508,19 @@ a:hover {
 .card-flat:hover {
     box-shadow: none;
     border-color: var(--apple-gray-300);
+}
+
+.card-interactive {
+    cursor: pointer;
+}
+
+.card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--apple-shadow-lg);
+}
+
+.card-interactive:active {
+    transform: translateY(0);
 }
 
 .card-header {
@@ -529,6 +543,289 @@ a:hover {
 
 .card-body {
     color: var(--apple-gray-600);
+}
+
+/* Settings Card - Apple Style */
+.settings-card {
+    background: var(--apple-white);
+    border-radius: var(--apple-radius-xl);
+    border: 0.5px solid var(--apple-gray-200);
+    margin-bottom: var(--apple-space-4);
+    overflow: hidden;
+    transition: border-color var(--apple-duration-fast) var(--apple-ease);
+}
+
+.settings-card:hover {
+    border-color: var(--apple-gray-300);
+}
+
+.settings-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--apple-space-4) var(--apple-space-5);
+    cursor: pointer;
+    transition: background var(--apple-duration-fast) var(--apple-ease);
+}
+
+.settings-card-header:hover {
+    background: var(--apple-gray-50);
+}
+
+.settings-card-title {
+    display: flex;
+    align-items: center;
+    gap: var(--apple-space-3);
+    font-weight: var(--apple-weight-semibold);
+    font-size: var(--apple-text-base);
+    color: var(--apple-gray-900);
+}
+
+.settings-card-title .card-icon {
+    color: var(--apple-gray-500);
+}
+
+.settings-card-status {
+    display: flex;
+    align-items: center;
+    gap: var(--apple-space-2);
+    font-size: var(--apple-text-sm);
+    color: var(--apple-gray-500);
+}
+
+.settings-card-body {
+    display: none;
+    padding: 0 var(--apple-space-5) var(--apple-space-5);
+    border-top: 0.5px solid var(--apple-gray-100);
+}
+
+.settings-card.expanded .settings-card-body {
+    display: block;
+    padding-top: var(--apple-space-4);
+}
+
+.settings-card .chevron-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--apple-gray-400);
+    transition: transform var(--apple-duration-fast) var(--apple-ease);
+}
+
+.settings-card.expanded .chevron-icon {
+    transform: rotate(180deg);
+}
+
+/* Quick Action Buttons - Apple Style */
+.quick-actions {
+    background: var(--apple-white);
+    border-radius: var(--apple-radius-xl);
+    padding: var(--apple-space-4) var(--apple-space-5);
+    border: 0.5px solid var(--apple-gray-200);
+}
+
+.quick-actions h3 {
+    font-size: var(--apple-text-xs);
+    font-weight: var(--apple-weight-semibold);
+    color: var(--apple-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--apple-space-3);
+}
+
+.quick-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--apple-space-3);
+    width: 100%;
+    padding: var(--apple-space-3) var(--apple-space-4);
+    margin-bottom: var(--apple-space-2);
+    background: var(--apple-gray-50);
+    border: 0.5px solid var(--apple-gray-200);
+    border-radius: var(--apple-radius-md);
+    font-size: var(--apple-text-sm);
+    font-weight: var(--apple-weight-medium);
+    text-align: left;
+    cursor: pointer;
+    transition: all var(--apple-duration-fast) var(--apple-ease);
+    color: var(--apple-gray-700);
+    text-decoration: none;
+}
+
+.quick-btn:hover {
+    background: var(--apple-white);
+    border-color: var(--apple-blue);
+    color: var(--apple-blue);
+    box-shadow: var(--apple-shadow-sm);
+}
+
+.quick-btn:active {
+    transform: scale(0.98);
+}
+
+.quick-btn:last-child {
+    margin-bottom: 0;
+}
+
+.quick-btn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* Mini Calendar Card - Apple Style */
+.mini-calendar-card {
+    background: var(--apple-white);
+    border: 0.5px solid var(--apple-gray-200);
+    border-radius: var(--apple-radius-xl);
+    padding: var(--apple-space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--apple-space-3);
+}
+
+.mini-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--apple-space-2);
+}
+
+.mini-title {
+    font-weight: var(--apple-weight-semibold);
+    color: var(--apple-gray-900);
+    font-size: var(--apple-text-sm);
+}
+
+.mini-nav {
+    display: flex;
+    gap: var(--apple-space-1);
+}
+
+.mini-nav button {
+    border: 0.5px solid var(--apple-gray-200);
+    background: var(--apple-gray-50);
+    color: var(--apple-gray-600);
+    border-radius: var(--apple-radius-sm);
+    padding: var(--apple-space-1) var(--apple-space-2);
+    cursor: pointer;
+    font-size: var(--apple-text-xs);
+    font-weight: var(--apple-weight-medium);
+    transition: all var(--apple-duration-fast) var(--apple-ease);
+}
+
+.mini-nav button:hover {
+    background: var(--apple-white);
+    border-color: var(--apple-gray-300);
+}
+
+.mini-daynames {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--apple-space-1);
+    font-size: var(--apple-text-xs);
+    color: var(--apple-gray-500);
+    text-align: center;
+    font-weight: var(--apple-weight-medium);
+}
+
+.mini-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--apple-space-1);
+}
+
+.mini-day {
+    border-radius: var(--apple-radius-md);
+    padding: var(--apple-space-2) var(--apple-space-1);
+    min-height: 44px;
+    background: var(--apple-gray-50);
+    border: 0.5px solid transparent;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transition: all var(--apple-duration-fast) var(--apple-ease);
+    font-size: var(--apple-text-xs);
+    color: var(--apple-gray-800);
+}
+
+.mini-day:hover {
+    background: var(--apple-white);
+    border-color: var(--apple-gray-300);
+}
+
+.mini-day.today {
+    background: var(--apple-blue);
+    color: var(--apple-white);
+}
+
+.mini-day.today:hover {
+    background: var(--apple-blue-hover);
+}
+
+.mini-day.selected {
+    background: var(--apple-blue-light);
+    border-color: var(--apple-blue);
+    color: var(--apple-blue);
+}
+
+.mini-day.other-month {
+    color: var(--apple-gray-400);
+    background: transparent;
+}
+
+/* Settings Tabs - Apple Segmented Control */
+.settings-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--apple-gray-200);
+    padding: 3px;
+    border-radius: var(--apple-radius-lg);
+    margin-bottom: var(--apple-space-6);
+}
+
+.settings-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--apple-space-2);
+    padding: var(--apple-space-3) var(--apple-space-4);
+    border: none;
+    background: transparent;
+    border-radius: var(--apple-radius-md);
+    font-size: var(--apple-text-sm);
+    font-weight: var(--apple-weight-medium);
+    color: var(--apple-gray-600);
+    cursor: pointer;
+    transition: all var(--apple-duration-fast) var(--apple-ease);
+}
+
+.settings-tab:hover {
+    color: var(--apple-gray-900);
+}
+
+.settings-tab.active {
+    background: var(--apple-white);
+    color: var(--apple-gray-900);
+    box-shadow: var(--apple-shadow-sm);
+}
+
+.settings-tab .tab-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.settings-tab .tab-status {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--apple-radius-full);
+    background: var(--apple-gray-300);
+}
+
+.settings-tab .tab-status.active {
+    background: var(--apple-green);
 }
 
 /* ========================================

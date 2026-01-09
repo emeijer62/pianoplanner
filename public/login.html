@@ -490,7 +490,7 @@
     <main class="main">
         <div class="login-container">
             <div class="login-header">
-                <span class="login-icon">🎹</span>
+                <span class="login-icon"><i data-lucide="piano" style="width: 56px; height: 56px;"></i></span>
                 <h1>Welcome</h1>
                 <p data-i18n="app.tagline">Smart scheduling for piano technicians</p>
             </div>
@@ -544,7 +544,7 @@
                 <!-- Beta Signup Form -->
                 <div id="beta-panel" class="form-panel">
                     <div class="beta-badge">
-                        <span>✨</span> Beta Access
+                        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> Beta Access
                     </div>
                     
                     <div class="beta-info">
@@ -705,7 +705,7 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showSuccess('🎉 You\'re on the list! Check your email for next steps.');
+                    showSuccess('You\'re on the list! Check your email for next steps.');
                     document.getElementById('beta-name').value = '';
                     document.getElementById('beta-email').value = '';
                     document.getElementById('beta-company').value = '';
@@ -741,7 +741,7 @@
                     userPanel.classList.add('active');
                     userPanel.style.display = 'block';
                     
-                    document.getElementById('user-picture').src = data.user.picture || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23e8e8ed"/><text x="50" y="60" text-anchor="middle" font-size="40">👤</text></svg>';
+                    document.getElementById('user-picture').src = data.user.picture || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23e8e8ed"/><circle cx="50" cy="38" r="18" fill="%2386868b"/><ellipse cx="50" cy="85" rx="30" ry="25" fill="%2386868b"/></svg>';
                     document.getElementById('user-name').textContent = data.user.name || 'User';
                     document.getElementById('user-email').textContent = data.user.email;
                 }
@@ -752,6 +752,7 @@
         
         // Init
         checkAuth();
+        lucide.createIcons();
     </script>
 </body>
 </html>

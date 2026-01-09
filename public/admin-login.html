@@ -133,7 +133,7 @@
     <div class="admin-login-container">
         <div class="admin-login-card">
             <div class="admin-logo">
-                <div class="icon">🔐</div>
+                <div class="icon"><i data-lucide="lock" style="width: 48px; height: 48px;"></i></div>
                 <h1>Admin Login</h1>
                 <p>PianoPlanner Management</p>
             </div>
@@ -202,6 +202,9 @@
                 window.location.href = '/admin-dashboard.html';
             }
         });
+
+        // Initialize Lucide icons
+        lucide.createIcons();
     </script>
 </body>
 </html>

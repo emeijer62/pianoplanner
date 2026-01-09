@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email Test - PianoPlanner</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -57,7 +58,7 @@
 </head>
 <body>
     <div class="card">
-        <h1>📧 Email Test</h1>
+        <h1><i data-lucide="mail" style="width: 24px; height: 24px; vertical-align: middle; margin-right: 8px;"></i>Email Test</h1>
         <p>Test of de SMTP configuratie werkt.</p>
         
         <input type="email" id="email" placeholder="Je email adres" required>
@@ -91,12 +92,12 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showResult(`✅ Email verstuurd naar ${email}!\n\nCheck je inbox (en spam folder).`, 'success');
+                    showResult(`Email verstuurd naar ${email}!\n\nCheck je inbox (en spam folder).`, 'success');
                 } else {
-                    showResult(`❌ Fout: ${data.error}\n\n${data.details || ''}`, 'error');
+                    showResult(`Fout: ${data.error}\n\n${data.details || ''}`, 'error');
                 }
             } catch (err) {
-                showResult(`❌ Netwerkfout: ${err.message}`, 'error');
+                showResult(`Netwerkfout: ${err.message}`, 'error');
             }
             
             btn.disabled = false;
@@ -114,6 +115,8 @@
         document.getElementById('email').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') testEmail();
         });
+        
+        lucide.createIcons();
     </script>
 </body>
 </html>

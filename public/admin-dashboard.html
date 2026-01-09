@@ -344,7 +344,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">
-            <span class="piano-icon">🎹</span>
+            <i data-lucide="piano" style="width: 28px; height: 28px;"></i>
             <span>PianoPlanner Admin</span>
         </div>
         <div class="nav-user">
@@ -355,7 +355,7 @@
 
     <div class="admin-container">
         <div class="admin-header">
-            <h1>👥 User Management</h1>
+            <h1><i data-lucide="users" style="width: 24px; height: 24px;"></i> User Management</h1>
             <div class="admin-nav">
                 <a href="#" class="active">Users</a>
                 <button class="btn btn-primary" onclick="showCreateModal()">+ New User</button>
@@ -384,7 +384,7 @@
 
         <!-- Wachtende Goedkeuringen -->
         <div class="pending-section" id="pending-section" style="display: none;">
-            <h2>⏳ Awaiting Approval</h2>
+            <h2><i data-lucide="clock" style="width: 20px; height: 20px;"></i> Awaiting Approval</h2>
             <div class="pending-list" id="pending-list">
                 <!-- Pending users komen hier -->
             </div>
@@ -590,8 +590,8 @@
                                 <div class="date">Registered: ${formatDate(user.createdAt)}</div>
                             </div>
                             <div class="pending-actions">
-                                <button class="btn-approve" onclick="approveUser('${user.id}')">✓ Approve</button>
-                                <button class="btn-reject" onclick="showRejectModal('${user.id}')">✗ Reject</button>
+                                <button class="btn-approve" onclick="approveUser('${user.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Approve</button>
+                                <button class="btn-reject" onclick="showRejectModal('${user.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Reject</button>
                             </div>
                         </div>
                     `).join('');
@@ -606,7 +606,7 @@
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="6" class="empty-state">
-                                <div class="icon">👥</div>
+                                <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
                                 <p>No users registered yet</p>
                             </td>
                         </tr>
@@ -939,6 +939,9 @@
                 loadUsers();
             }
         })();
+
+        // Initialize Lucide icons
+        lucide.createIcons();
     </script>
 </body>
 </html>

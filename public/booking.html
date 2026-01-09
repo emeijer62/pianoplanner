@@ -304,7 +304,7 @@
                 <h2>2. Customer details</h2>
                 
                 <div class="customer-search-box">
-                    <input type="text" id="customer-search" class="form-input" placeholder="🔍 Search existing customer (name, email, city)...">
+                    <input type="text" id="customer-search" class="form-input" placeholder="Search existing customer (name, email, city)...">
                     <div id="search-results" class="search-results"></div>
                 </div>
                 
@@ -364,7 +364,7 @@
                         <label class="form-label" for="appointment-date">Preferred date</label>
                         <input type="date" id="appointment-date" class="form-input">
                     </div>
-                    <button id="find-slot-btn" class="btn btn-primary">🔍 Find available time</button>
+                    <button id="find-slot-btn" class="btn btn-primary"><i data-lucide="search" style="width: 16px; height: 16px;"></i> Find available time</button>
                 </div>
                 
                 <div id="slot-result" class="slot-result" style="display: none;">
@@ -378,23 +378,23 @@
                 
                 <div class="confirmation-card">
                     <div class="confirm-row">
-                        <span class="confirm-label">📋 Service</span>
+                        <span class="confirm-label"><i data-lucide="clipboard-list" style="width: 16px; height: 16px;"></i> Service</span>
                         <span id="confirm-service">-</span>
                     </div>
                     <div class="confirm-row">
-                        <span class="confirm-label">👤 Customer</span>
+                        <span class="confirm-label"><i data-lucide="user" style="width: 16px; height: 16px;"></i> Customer</span>
                         <span id="confirm-customer">-</span>
                     </div>
                     <div class="confirm-row">
-                        <span class="confirm-label">📍 Location</span>
+                        <span class="confirm-label"><i data-lucide="map-pin" style="width: 16px; height: 16px;"></i> Location</span>
                         <span id="confirm-location">-</span>
                     </div>
                     <div class="confirm-row">
-                        <span class="confirm-label">🚗 Travel time</span>
+                        <span class="confirm-label"><i data-lucide="car" style="width: 16px; height: 16px;"></i> Travel time</span>
                         <span id="confirm-travel">-</span>
                     </div>
                     <div class="confirm-row highlight">
-                        <span class="confirm-label">📅 Date & time</span>
+                        <span class="confirm-label"><i data-lucide="calendar" style="width: 16px; height: 16px;"></i> Date & time</span>
                         <span id="confirm-datetime">-</span>
                     </div>
                     
@@ -404,8 +404,8 @@
                     </div>
                     
                     <div class="confirm-actions">
-                        <button id="back-to-date-btn" class="btn btn-secondary">← Different date</button>
-                        <button id="confirm-booking-btn" class="btn btn-primary btn-large">✅ Confirm Appointment</button>
+                        <button id="back-to-date-btn" class="btn btn-secondary"><i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Different date</button>
+                        <button id="confirm-booking-btn" class="btn btn-primary btn-large"><i data-lucide="check" style="width: 18px; height: 18px;"></i> Confirm Appointment</button>
                     </div>
                 </div>
             </section>
@@ -413,11 +413,11 @@
             <!-- Success -->
             <section class="wizard-step" id="step-success" style="display: none;">
                 <div class="success-message">
-                    <div class="success-icon">✅</div>
+                    <div class="success-icon"><i data-lucide="check-circle" style="width: 48px; height: 48px; color: var(--apple-green);"></i></div>
                     <h2>Appointment Booked!</h2>
                     <p>The appointment has been added to your calendar.</p>
                     <div class="success-actions">
-                        <a href="/booking.html" class="btn btn-primary">+ New Appointment</a>
+                        <a href="/booking.html" class="btn btn-primary"><i data-lucide="plus" style="width: 16px; height: 16px;"></i> New Appointment</a>
                         <a href="/dashboard.html" class="btn btn-secondary">Go to Dashboard</a>
                     </div>
                 </div>

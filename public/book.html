@@ -728,7 +728,7 @@
     <nav class="nav">
         <div class="nav-content">
             <a href="https://pianoplanner.com" class="nav-logo">
-                <span class="nav-logo-icon">🎹</span>
+                <i data-lucide="piano" class="nav-logo-icon" style="width: 24px; height: 24px;"></i>
                 PianoPlanner
             </a>
         </div>
@@ -845,14 +845,14 @@
                             ← Back
                         </button>
                         <button type="button" class="btn btn-primary btn-next" onclick="confirmBooking()" disabled id="btn-step3">
-                            Confirm Appointment ✓
+                            Confirm Appointment
                         </button>
                     </div>
                 </div>
                 
                 <!-- Success -->
                 <div id="step-success" class="step-content success-message" style="display: none;">
-                    <div class="success-icon">✅</div>
+                    <div class="success-icon"><i data-lucide="check-circle" style="width: 64px; height: 64px; color: var(--success);"></i></div>
                     <h2>Appointment Scheduled!</h2>
                     <p id="confirmation-message"></p>
                     <div class="booking-summary" id="final-summary"></div>
@@ -888,6 +888,7 @@
         
         document.addEventListener('DOMContentLoaded', async () => {
             await loadBookingPage();
+            lucide.createIcons();
         });
         
         async function loadBookingPage() {
@@ -949,12 +950,13 @@
                 <div class="service-option" data-id="${service.id}" onclick="selectService('${service.id}')">
                     <h4>${escapeHtml(service.name)}</h4>
                     <div class="service-meta">
-                        <span>⏱️ ${service.duration} min</span>
-                        <span>💰 ${service.price > 0 ? '€' + service.price : 'On request'}</span>
+                        <span><i data-lucide="clock" style="width: 14px; height: 14px; vertical-align: middle;"></i> ${service.duration} min</span>
+                        <span><i data-lucide="banknote" style="width: 14px; height: 14px; vertical-align: middle;"></i> ${service.price > 0 ? '€' + service.price : 'On request'}</span>
                     </div>
                     ${service.description ? `<div class="service-description">${escapeHtml(service.description)}</div>` : ''}
                 </div>
             `).join('');
+            lucide.createIcons();
         }
         
         function selectService(serviceId) {
@@ -1068,7 +1070,7 @@
             goToStep(3);
             
             const container = document.getElementById('smart-suggestions');
-            container.innerHTML = '<p class="no-slots">🔍 Finding the best times for your location...</p>';
+            container.innerHTML = '<p class="no-slots">Finding the best times for your location...</p>';
             
             // Get customer address data
             const street = document.getElementById('customer-street').value.trim();
@@ -1114,7 +1116,7 @@
             
             container.innerHTML = `
                 <div class="too-far-message">
-                    <div class="too-far-icon">🚗</div>
+                    <div class="too-far-icon"><i data-lucide="car" style="width: 48px; height: 48px;"></i></div>
                     <h3>Outside Service Area</h3>
                     <p class="too-far-distance">
                         Your location is approximately <strong>${travelTimeStr}</strong> away 
@@ -1122,14 +1124,15 @@
                     </p>
                     <p class="too-far-text">${escapeHtml(data.message)}</p>
                     <div class="too-far-contact">
-                        ${data.contactPhone ? `<a href="tel:${data.contactPhone}" class="btn btn-secondary">📞 ${data.contactPhone}</a>` : ''}
-                        ${data.contactEmail ? `<a href="mailto:${data.contactEmail}" class="btn btn-primary">✉️ Send Email</a>` : ''}
+                        ${data.contactPhone ? `<a href="tel:${data.contactPhone}" class="btn btn-secondary"><i data-lucide="phone" style="width: 16px; height: 16px;"></i> ${data.contactPhone}</a>` : ''}
+                        ${data.contactEmail ? `<a href="mailto:${data.contactEmail}" class="btn btn-primary"><i data-lucide="mail" style="width: 16px; height: 16px;"></i> Send Email</a>` : ''}
                     </div>
                 </div>
             `;
             
             // Disable the confirm button since no slot can be selected
             document.getElementById('btn-step3').disabled = true;
+            lucide.createIcons();
         }
         
         function renderSuggestions(suggestions) {
@@ -1137,7 +1140,7 @@
             
             container.innerHTML = suggestions.map((s, idx) => `
                 <div class="suggestion-card" data-index="${idx}" onclick="selectSuggestion(${idx})">
-                    <div class="suggestion-icon">${idx === 0 ? '⭐' : '📅'}</div>
+                    <div class="suggestion-icon"><i data-lucide="${idx === 0 ? 'star' : 'calendar'}" style="width: 32px; height: 32px;"></i></div>
                     <div class="suggestion-details">
                         <div class="suggestion-datetime">
                             ${s.displayDate} &nbsp;•&nbsp; ${s.displayTime}
@@ -1152,6 +1155,7 @@
             
             // Store suggestions for selection
             window.currentSuggestions = suggestions;
+            lucide.createIcons();
         }
         
         function selectSuggestion(index) {
@@ -1228,7 +1232,7 @@
                 console.error('Booking error:', error);
                 alert(error.message || 'Could not book appointment. Please try again.');
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Confirm Appointment ✓';
+                submitBtn.textContent = 'Confirm Appointment';
             }
         }
         
@@ -1266,6 +1270,7 @@
                     </div>
                 `;
             }
+            lucide.createIcons();
         }
         
         function escapeHtml(text) {

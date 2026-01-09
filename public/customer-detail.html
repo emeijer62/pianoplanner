@@ -470,7 +470,7 @@
                         <div class="customer-since" id="customer-since">Customer since -</div>
                     </div>
                     <div class="customer-actions">
-                        <button class="btn btn-secondary" onclick="editCustomer()">✏️ Edit</button>
+                        <button class="btn btn-secondary" onclick="editCustomer()"><i data-lucide="pencil" style="width: 14px; height: 14px;"></i> Edit</button>
                         <button class="btn btn-primary" onclick="openNewAppointment()">+ Appointment</button>
                     </div>
                 </div>
@@ -495,19 +495,19 @@
                 
                 <!-- Booking Link Section -->
                 <div class="booking-link-section" id="booking-link-section" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                    <div class="info-label" style="margin-bottom: 8px;">📨 Personal Booking Link</div>
+                    <div class="info-label" style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px;"><i data-lucide="mail" style="width: 14px; height: 14px;"></i> Personal Booking Link</div>
                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <input type="text" id="booking-link-input" readonly class="form-input" 
                             style="flex: 1; min-width: 200px; font-size: 13px; padding: 8px 12px; background: var(--light-gray); cursor: text;"
                             value="Loading...">
                         <button class="btn btn-secondary btn-small" onclick="copyBookingLink()" id="copy-link-btn">
-                            📋 Copy
+                            <i data-lucide="clipboard" style="width: 14px; height: 14px;"></i> Copy
                         </button>
                         <button class="btn btn-secondary btn-small" onclick="openBookingLink()">
-                            🔗 Open
+                            <i data-lucide="link" style="width: 14px; height: 14px;"></i> Open
                         </button>
                         <button class="btn btn-small" style="background: #fef3c7; color: #92400e;" onclick="regenerateBookingLink()" title="Generate new link (old link stops working)">
-                            🔄 Regenerate
+                            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i> Regenerate
                         </button>
                     </div>
                     
@@ -529,9 +529,9 @@
             <!-- Tabs -->
             <div class="tabs-container">
                 <div class="tabs">
-                    <button class="tab active" data-tab="pianos">🎹 Pianos</button>
-                    <button class="tab" data-tab="history">📋 Service History</button>
-                    <button class="tab" data-tab="appointments">📅 Appointments</button>
+                    <button class="tab active" data-tab="pianos"><i data-lucide="piano" style="width: 14px; height: 14px;"></i> Pianos</button>
+                    <button class="tab" data-tab="history"><i data-lucide="clipboard" style="width: 14px; height: 14px;"></i> Service History</button>
+                    <button class="tab" data-tab="appointments"><i data-lucide="calendar" style="width: 14px; height: 14px;"></i> Appointments</button>
                 </div>
 
                 <!-- Pianos tab -->
@@ -542,7 +542,7 @@
                     </div>
                     <div id="pianos-list" class="pianos-grid">
                         <div class="empty-state">
-                            <div class="empty-state-icon">🎹</div>
+                            <div class="empty-state-icon"><i data-lucide="piano" style="width: 48px; height: 48px;"></i></div>
                             <p>No pianos linked yet</p>
                             <button class="btn btn-primary" onclick="openAddPianoModal()">Add first piano</button>
                         </div>
@@ -556,7 +556,7 @@
                     </div>
                     <div id="service-history" class="service-history">
                         <div class="empty-state">
-                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-icon"><i data-lucide="clipboard" style="width: 48px; height: 48px;"></i></div>
                             <p>No service performed yet</p>
                         </div>
                     </div>
@@ -569,7 +569,7 @@
                     </div>
                     <div id="appointments-list" class="appointments-list">
                         <div class="empty-state">
-                            <div class="empty-state-icon">📅</div>
+                            <div class="empty-state-icon"><i data-lucide="calendar" style="width: 48px; height: 48px;"></i></div>
                             <p>No appointments yet</p>
                             <button class="btn btn-primary" onclick="openNewAppointment()">Schedule appointment</button>
                         </div>
@@ -888,8 +888,8 @@
             document.execCommand('copy');
             
             const btn = document.getElementById('copy-link-btn');
-            btn.textContent = '✓ Copied!';
-            setTimeout(() => btn.textContent = '📋 Copy', 2000);
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg> Copied!';
+            setTimeout(() => btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Copy', 2000);
         }
         
         function openBookingLink() {
@@ -940,7 +940,7 @@
             if (pianosData.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">🎹</div>
+                        <div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="6" y2="20"/><line x1="10" y1="8" x2="10" y2="20"/><line x1="14" y1="8" x2="14" y2="20"/><line x1="18" y1="8" x2="18" y2="20"/></svg></div>
                         <p>No pianos linked to this customer yet</p>
                         <button class="btn btn-primary" onclick="openAddPianoModal()">Add first piano</button>
                     </div>
@@ -980,8 +980,12 @@
         }
 
         function getServiceStatus(piano) {
+            const alertIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+            const clockIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+            const checkIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>';
+            
             if (!piano.lastTuningDate) {
-                return { class: 'service-due', text: '⚠️ Not yet tuned' };
+                return { class: 'service-due', text: alertIcon + 'Not yet tuned' };
             }
 
             const lastService = new Date(piano.lastTuningDate);
@@ -992,11 +996,11 @@
             const daysUntil = Math.ceil((nextService - now) / (1000 * 60 * 60 * 24));
 
             if (daysUntil < 0) {
-                return { class: 'service-due', text: `⚠️ ${Math.abs(daysUntil)} days past service date` };
+                return { class: 'service-due', text: alertIcon + `${Math.abs(daysUntil)} days past service date` };
             } else if (daysUntil < 30) {
-                return { class: 'service-soon', text: `⏰ Service needed in ${daysUntil} days` };
+                return { class: 'service-soon', text: clockIcon + `Service needed in ${daysUntil} days` };
             } else {
-                return { class: 'service-ok', text: `✅ Last: ${lastService.toLocaleDateString('en-US')}` };
+                return { class: 'service-ok', text: checkIcon + `Last: ${lastService.toLocaleDateString('en-US')}` };
             }
         }
 
@@ -1019,7 +1023,7 @@
             if (!services || services.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">📋</div>
+                        <div class="empty-state-icon"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg></div>
                         <p>No service history yet</p>
                     </div>
                 `;
@@ -1052,7 +1056,7 @@
                                 ${service.pianoName || 'Piano'}
                             </div>
                             ${service.notes ? `<div class="service-notes">${service.notes}</div>` : ''}
-                            ${service.pitch ? `<span class="service-pitch">🎵 ${service.pitch} Hz</span>` : ''}
+                            ${service.pitch ? `<span class="service-pitch"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>${service.pitch} Hz</span>` : ''}
                         </div>
                     </div>
                 `;

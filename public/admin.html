@@ -374,7 +374,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-brand">
-            <span class="piano-icon">🎹</span>
+            <i data-lucide="piano" style="width: 28px; height: 28px;"></i>
             <span>PianoPlanner Admin</span>
         </div>
         <div class="nav-links">
@@ -407,17 +407,17 @@
         </div>
 
         <div id="not-admin" class="not-admin" style="display: none;">
-            <h2>⛔ Access Denied</h2>
+            <h2><i data-lucide="alert-triangle" style="width: 24px; height: 24px;"></i> Access Denied</h2>
             <p>You don't have admin rights to view this page.</p>
             <a href="/admin-login.html" class="btn btn-primary" style="margin-top: 20px;">Admin Login</a>
         </div>
 
         <div id="admin-content" class="admin-container" style="display: none;">
             <div class="admin-header">
-                <h1>👥 User Management</h1>
+                <h1><i data-lucide="users" style="width: 24px; height: 24px;"></i> User Management</h1>
                 <div style="display: flex; gap: 8px;">
                     <button id="add-user-btn" class="btn btn-primary">+ New user</button>
-                    <button id="refresh-btn" class="btn btn-secondary">🔄 Refresh</button>
+                    <button id="refresh-btn" class="btn btn-secondary"><i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Refresh</button>
                 </div>
             </div>
 
@@ -547,7 +547,7 @@
                 const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US') : '-';
                 const avatar = user.picture 
                     ? `<img src="${user.picture}" alt="${user.name}">` 
-                    : '👤';
+                    : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
                 return `
                     <tr>
@@ -563,15 +563,15 @@
                         <td>${status}</td>
                         <td>${createdAt}</td>
                         <td>
-                            <button class="action-btn edit" onclick="editUser('${user.id}')">✏️</button>
+                            <button class="action-btn edit" onclick="editUser('${user.id}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
                             <select class="plan-select" onchange="setPlan('${user.id}', this.value)">
                                 <option value="">Set plan...</option>
-                                <option value="active">✓ Active (1 year)</option>
-                                <option value="trialing">🕐 Trial (14 days)</option>
-                                <option value="none">✕ Cancel</option>
+                                <option value="active">Active (1 year)</option>
+                                <option value="trialing">Trial (14 days)</option>
+                                <option value="none">Cancel</option>
                             </select>
                             <button class="action-btn extend" onclick="extendTrial('${user.id}')">+14 days</button>
-                            <button class="action-btn delete" onclick="deleteUser('${user.id}', '${user.email}')">🗑️</button>
+                            <button class="action-btn delete" onclick="deleteUser('${user.id}', '${user.email}')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg></button>
                         </td>
                     </tr>
                 `;
@@ -582,13 +582,13 @@
         function getStatusBadge(status) {
             switch (status) {
                 case 'active':
-                    return '<span class="status-badge active">✓ Active</span>';
+                    return '<span class="status-badge active"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Active</span>';
                 case 'trialing':
-                    return '<span class="status-badge trial">🕐 Trial</span>';
+                    return '<span class="status-badge trial"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Trial</span>';
                 case 'trial_expired':
-                    return '<span class="status-badge expired">⚠ Expired</span>';
+                    return '<span class="status-badge expired"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Expired</span>';
                 case 'canceled':
-                    return '<span class="status-badge expired">✕ Canceled</span>';
+                    return '<span class="status-badge expired"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Canceled</span>';
                 default:
                     return '<span class="status-badge none">- None</span>';
             }
@@ -703,13 +703,13 @@
             document.getElementById('user-id').value = '';
             
             if (mode === 'edit' && user) {
-                title.textContent = '✏️ Edit user';
+                title.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit user';
                 submitBtn.textContent = 'Save';
                 document.getElementById('user-id').value = user.id;
                 document.getElementById('user-email').value = user.email || '';
                 document.getElementById('user-name').value = user.name || '';
             } else {
-                title.textContent = '➕ New user';
+                title.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg> New user';
                 submitBtn.textContent = 'Create';
             }
             
@@ -789,6 +789,9 @@
 
         // Init
         checkAdmin();
+
+        // Initialize Lucide icons
+        lucide.createIcons();
     </script>
 </body>
 </html>
