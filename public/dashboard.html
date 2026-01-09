@@ -437,6 +437,7 @@
         .time-grid {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
         }
         
         .time-slot {
@@ -449,6 +450,7 @@
             transition: background-color 0.15s ease;
             background: #fff;
             overflow: hidden;
+            position: relative;
         }
         
         .time-slot:hover {
@@ -463,6 +465,7 @@
         .time-label {
             width: 45px;
             min-width: 45px;
+            max-width: 45px;
             padding: 0.15rem 0.3rem;
             font-size: 0.6rem;
             color: var(--text-muted);
@@ -470,6 +473,7 @@
             border-right: 1px solid var(--border-color);
             background: #f1f5f9;
             flex-shrink: 0;
+            box-sizing: border-box;
         }
         
         .time-content {
@@ -478,6 +482,10 @@
             overflow: hidden;
             height: 100%;
             max-height: 100%;
+            min-width: 0;
+            position: relative;
+            display: flex;
+            gap: 2px;
         }
         
         .time-content .calendar-event {
@@ -485,6 +493,13 @@
             max-height: calc(100% - 2px);
             overflow: hidden;
             box-sizing: border-box;
+            flex: 1;
+            min-width: 0;
+            position: relative;
+        }
+        
+        .time-content .calendar-event-travel {
+            display: none;
         }
         
         /* Week View Compact */
