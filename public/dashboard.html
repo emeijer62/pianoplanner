@@ -1045,8 +1045,23 @@
         </div>
 
         <div class="cockpit-grid">
-            <!-- Left: Stats & Quick Actions -->
+            <!-- Left: Mini Calendar, Stats & Quick Actions -->
             <div class="left-panel">
+                <div class="mini-calendar-card">
+                    <div class="mini-header">
+                        <div class="mini-title" id="miniCalendarTitle">Month</div>
+                        <div class="mini-nav">
+                            <button type="button" onclick="changeMiniMonth(-1)">‹</button>
+                            <button type="button" onclick="goToToday()">Today</button>
+                            <button type="button" onclick="changeMiniMonth(1)">›</button>
+                        </div>
+                    </div>
+                    <div class="mini-daynames">
+                        <div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div><div>Su</div>
+                    </div>
+                    <div class="mini-grid" id="miniCalendarGrid"></div>
+                </div>
+                
                 <div class="stat-card">
                     <h3 data-i18n="time.today">Today</h3>
                     <div class="value" id="stat-today">0</div>
@@ -1072,21 +1087,6 @@
                     <a href="/billing.html" class="quick-btn">💳 <span data-i18n="billing.title">Subscription</span></a>
                     <button onclick="openRouteOptimizer()" class="quick-btn" style="border: none; background: none; width: 100%; cursor: pointer;">🗺️ Optimize route</button>
                 </div>
-
-                <div class="mini-calendar-card">
-                    <div class="mini-header">
-                        <div class="mini-title" id="miniCalendarTitle">Month</div>
-                        <div class="mini-nav">
-                            <button type="button" onclick="changeMiniMonth(-1)">‹</button>
-                            <button type="button" onclick="goToToday()">Today</button>
-                            <button type="button" onclick="changeMiniMonth(1)">›</button>
-                        </div>
-                    </div>
-                    <div class="mini-daynames">
-                        <div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div><div>Su</div>
-                    </div>
-                    <div class="mini-grid" id="miniCalendarGrid"></div>
-                </div>
             </div>
 
             <!-- Middle: Calendar -->
@@ -1105,6 +1105,10 @@
                             <span class="sync-icon">🔄</span>
                             <span class="sync-text">Sync</span>
                         </button>
+                        <select id="slotDurationSelect" onchange="changeSlotDuration(this.value)" title="Time slot duration">
+                            <option value="60">1 uur</option>
+                            <option value="90">1½ uur</option>
+                        </select>
                         <select id="viewSelect" onchange="changeView(this.value)">
                             <option value="day">Day</option>
                             <option value="week" selected>Week</option>

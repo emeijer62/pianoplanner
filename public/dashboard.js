@@ -6,6 +6,7 @@ let allEvents = [];
 let currentView = 'week';
 let currentDate = new Date();
 let miniMonthDate = new Date();
+let slotDuration = parseInt(localStorage.getItem('calendarSlotDuration') || '60'); // 60 or 90 minutes
 
 const DAYS_NL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -78,6 +79,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadAllEvents(),
             loadCalendars()
         ]);
+        
+        // Initialize slot duration selector
+        const slotSelect = document.getElementById('slotDurationSelect');
+        if (slotSelect) {
+            slotSelect.value = slotDuration.toString();
+        }
         
         // Render initial view
         renderCalendar();
@@ -491,23 +498,25 @@ function renderDayView(container) {
     let html = `<div class="day-view">`;
     html += `<div class="time-grid">`;
     
-    // Render time slots (6:00 - 22:00)
-    for (let hour = 6; hour <= 22; hour++) {
-        const timeStr = `${hour.toString().padStart(2, '0')}:00`;
-        const hourEvents = dayEvents.filter(e => {
-            const eventHour = new Date(e.start.dateTime || e.start.date).getHours();
-            return eventHour === hour;
+    // Generate time slots based on slot duration
+    const slots = generateTimeSlots();
+    
+    for (const slot of slots) {
+        const slotEvents = dayEvents.filter(e => {
+            const eventTime = new Date(e.start.dateTime || e.start.date);
+            const eventMinutes = eventTime.getHours() * 60 + eventTime.getMinutes();
+            return eventMinutes >= slot.startMinutes && eventMinutes < slot.endMinutes;
         });
         
         html += `
-            <div class="time-slot" data-date="${dateStr}" data-hour="${hour}" 
+            <div class="time-slot" data-date="${dateStr}" data-hour="${slot.hour}" data-minute="${slot.minute}"
                  onclick="openModalWithTime(this)"
                  ondragover="handleDragOver(event)"
                  ondragleave="handleDragLeave(event)"
-                 ondrop="handleDrop(event, '${dateStr}', ${hour})">
-                <div class="time-label">${timeStr}</div>
+                 ondrop="handleDrop(event, '${dateStr}', ${slot.hour})">
+                <div class="time-label">${slot.label}</div>
                 <div class="time-content">
-                    ${hourEvents.map(e => createEventElement(e)).join('')}
+                    ${slotEvents.map(e => createEventElement(e)).join('')}
                 </div>
             </div>
         `;
@@ -515,6 +524,33 @@ function renderDayView(container) {
     
     html += `</div></div>`;
     container.innerHTML = html;
+}
+
+// Generate time slots based on slot duration setting
+function generateTimeSlots() {
+    const slots = [];
+    const startHour = 6;
+    const endHour = 22;
+    
+    for (let minutes = startHour * 60; minutes < endHour * 60; minutes += slotDuration) {
+        const hour = Math.floor(minutes / 60);
+        const minute = minutes % 60;
+        slots.push({
+            hour,
+            minute,
+            startMinutes: minutes,
+            endMinutes: minutes + slotDuration,
+            label: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
+        });
+    }
+    return slots;
+}
+
+// Change slot duration
+function changeSlotDuration(duration) {
+    slotDuration = parseInt(duration);
+    localStorage.setItem('calendarSlotDuration', duration);
+    renderCalendar();
 }
 
 function renderWeekView(container) {
@@ -543,10 +579,13 @@ function renderWeekView(container) {
     // Time grid
     html += `<div class="week-grid">`;
     
+    // Generate time slots based on duration setting
+    const slots = generateTimeSlots();
+    
     // Time column
     html += `<div class="week-time-col">`;
-    for (let hour = 6; hour <= 22; hour++) {
-        html += `<div class="week-time-slot">${hour.toString().padStart(2, '0')}:00</div>`;
+    for (const slot of slots) {
+        html += `<div class="week-time-slot">${slot.label}</div>`;
     }
     html += `</div>`;
     
@@ -559,19 +598,20 @@ function renderWeekView(container) {
         
         html += `<div class="week-day-col">`;
         
-        for (let hour = 6; hour <= 22; hour++) {
-            const hourEvents = dayEvents.filter(e => {
+        for (const slot of slots) {
+            const slotEvents = dayEvents.filter(e => {
                 const start = new Date(e.start.dateTime || e.start.date);
-                return start.getHours() === hour;
+                const eventMinutes = start.getHours() * 60 + start.getMinutes();
+                return eventMinutes >= slot.startMinutes && eventMinutes < slot.endMinutes;
             });
             
             html += `
-                <div class="week-day-slot" data-date="${dateStr}" data-hour="${hour}" 
+                <div class="week-day-slot" data-date="${dateStr}" data-hour="${slot.hour}" data-minute="${slot.minute}"
                      onclick="openModalWithTime(this)"
                      ondragover="handleDragOver(event)"
                      ondragleave="handleDragLeave(event)"
-                     ondrop="handleDrop(event, '${dateStr}', ${hour})">
-                    ${hourEvents.map(e => createEventElement(e, true)).join('')}
+                     ondrop="handleDrop(event, '${dateStr}', ${slot.hour})">
+                    ${slotEvents.map(e => createEventElement(e, true)).join('')}
                 </div>
             `;
         }
