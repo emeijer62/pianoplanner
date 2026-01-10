@@ -16,7 +16,7 @@ if (process.env.STRIPE_SECRET_KEY) {
 // Prijzen configuratie
 const PRICES = {
     monthly: {
-        amount: 3630, // €36,30 in centen (€30 excl + 21% BTW)
+        amount: 3000, // €30,00 in centen (exclusief BTW)
         currency: 'eur',
         interval: 'month',
         name: 'PianoPlanner Pro',
@@ -109,8 +109,8 @@ router.post('/create-checkout-session', requireAuth, requireStripe, async (req, 
 
         res.json({ url: session.url });
     } catch (error) {
-        console.error('Stripe checkout error:', error);
-        res.status(500).json({ error: 'Kon checkout niet starten' });
+        console.error('Stripe checkout error:', error.message, error.type);
+        res.status(500).json({ error: `Kon checkout niet starten: ${error.message}` });
     }
 });
 
