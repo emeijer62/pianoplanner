@@ -277,18 +277,18 @@ a:hover {
 .nav-brand {
     display: flex;
     align-items: center;
-    gap: var(--apple-space-3);
+    gap: 10px;
     font-weight: var(--apple-weight-semibold);
-    font-size: var(--apple-text-md);
-    color: var(--apple-gray-900);
+    font-size: 18px;
+    color: #B8860B;
     text-decoration: none;
-    transition: opacity var(--apple-duration-fast) var(--apple-ease);
+    transition: all var(--apple-duration-fast) var(--apple-ease);
 }
 
 .nav-logo:hover,
 .nav-brand:hover {
-    color: var(--apple-gray-900);
-    opacity: 0.8;
+    color: #DAA520;
+    opacity: 1;
 }
 
 .nav-logo-icon,
