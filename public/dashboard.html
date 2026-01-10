@@ -443,13 +443,12 @@
         .time-slot {
             display: flex;
             border-bottom: 1px solid var(--border-color);
-            height: 36px;
-            min-height: 36px;
-            max-height: 36px;
+            height: var(--slot-height, 36px);
+            min-height: var(--slot-height, 36px);
             cursor: pointer;
             transition: background-color 0.15s ease;
             background: #fff;
-            overflow: hidden;
+            overflow: visible;
             position: relative;
         }
         
@@ -479,9 +478,8 @@
         .time-content {
             flex: 1;
             padding: 1px 3px;
-            overflow: hidden;
+            overflow: visible;
             height: 100%;
-            max-height: 100%;
             min-width: 0;
             position: relative;
             display: flex;
@@ -489,13 +487,12 @@
         }
         
         .time-content .calendar-event {
-            height: calc(100% - 2px);
-            max-height: calc(100% - 2px);
             overflow: hidden;
             box-sizing: border-box;
             flex: 1;
             min-width: 0;
             position: relative;
+            z-index: 2;
         }
         
         .time-content .calendar-event-travel {
@@ -554,15 +551,14 @@
         .week-grid {
             display: grid;
             grid-template-columns: 45px repeat(7, 1fr);
-            grid-auto-rows: 36px;
+            grid-auto-rows: var(--slot-height, 36px);
             flex: 1;
             overflow-y: auto;
         }
         
         .week-time-slot {
-            height: 36px;
-            min-height: 36px;
-            max-height: 36px;
+            height: var(--slot-height, 36px);
+            min-height: var(--slot-height, 36px);
             border-bottom: 1px solid var(--border-color);
             padding: 1px 4px;
             font-size: 0.6rem;
@@ -573,30 +569,28 @@
         }
         
         .week-day-slot {
-            height: 36px;
-            min-height: 36px;
-            max-height: 36px;
+            height: var(--slot-height, 36px);
+            min-height: var(--slot-height, 36px);
             border-bottom: 1px solid var(--border-color);
             border-left: 1px solid var(--border-color);
             cursor: pointer;
             transition: background-color 0.15s ease;
             background: #fff;
-            overflow: hidden;
+            overflow: visible;
             position: relative;
             padding: 1px;
         }
         
         .week-day-slot .calendar-event {
             max-width: 100%;
-            height: calc(100% - 2px);
-            max-height: calc(100% - 2px);
             overflow: hidden;
             text-overflow: ellipsis;
             margin: 0;
             display: flex;
-            align-items: center;
-            padding: 0 4px;
+            align-items: flex-start;
+            padding: 2px 4px;
             box-sizing: border-box;
+            z-index: 2;
         }
         
         .week-day-slot:hover {

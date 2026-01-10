@@ -106,6 +106,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             slotSelect.value = slotDuration.toString();
         }
         
+        // Initialize slot height CSS variable
+        updateSlotHeight();
+        
         // Render initial view
         renderCalendar();
         
@@ -594,11 +597,21 @@ function generateTimeSlots() {
     return slots;
 }
 
-// Change slot duration
+// Change slot duration and update slot height CSS variable
 function changeSlotDuration(duration) {
     slotDuration = parseInt(duration);
     localStorage.setItem('calendarSlotDuration', duration);
+    updateSlotHeight();
     renderCalendar();
+}
+
+// Update CSS variable for slot height based on duration
+function updateSlotHeight() {
+    // Base height is 36px for 30-minute slots
+    // Scale proportionally: 15min = 18px, 30min = 36px, 60min = 72px
+    const baseHeight = 36; // pixels for 30 minutes
+    const slotHeight = (slotDuration / 30) * baseHeight;
+    document.documentElement.style.setProperty('--slot-height', `${slotHeight}px`);
 }
 
 function renderWeekView(container) {
@@ -835,9 +848,22 @@ function getEventsForDay(date) {
 
 function createEventElement(event, compact = false) {
     const start = event.start.dateTime ? new Date(event.start.dateTime) : null;
+    const end = event.end.dateTime ? new Date(event.end.dateTime) : null;
     // Use user's browser locale for time format
     const timeStr = start ? start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '';
     const color = getEventColor(event);
+    
+    // Calculate event duration in minutes
+    let durationMinutes = 60; // default 1 hour
+    if (start && end) {
+        durationMinutes = (end - start) / (1000 * 60);
+    }
+    
+    // Calculate how many slots this event spans
+    const slotsSpanned = Math.max(1, durationMinutes / slotDuration);
+    
+    // Calculate slot height dynamically: base 36px for 30-min slots
+    const baseSlotHeight = (slotDuration / 30) * 36;
     
     // Check for travel time info
     const hasTravelTime = event.travelTimeMinutes && event.travelStartTime;
@@ -848,8 +874,10 @@ function createEventElement(event, compact = false) {
     }
     
     if (compact) {
+        // Week view - event height based on duration and current slot size
+        const weekEventHeight = Math.max(baseSlotHeight - 4, slotsSpanned * baseSlotHeight - 4);
         return `
-            <div class="calendar-event" style="background: ${color}; cursor: grab;" 
+            <div class="calendar-event" style="background: ${color}; cursor: grab; min-height: ${weekEventHeight}px; height: ${weekEventHeight}px;" 
                  title="${escapeHtml(event.summary || 'No title')}${hasTravelTime ? ` (🚗 ${event.travelTimeMinutes} min)` : ''}"
                  onclick="openEditModal('${event.id}')"
                  draggable="true"
@@ -859,6 +887,9 @@ function createEventElement(event, compact = false) {
             </div>
         `;
     }
+    
+    // Day view - same calculation
+    const dayEventHeight = Math.max(baseSlotHeight - 4, slotsSpanned * baseSlotHeight - 4);
     
     // Show travel time as separate block before appointment
     let travelBlock = '';
@@ -873,7 +904,7 @@ function createEventElement(event, compact = false) {
     
     return `
         ${travelBlock}
-        <div class="calendar-event" style="background: ${color}; cursor: grab;" 
+        <div class="calendar-event" style="background: ${color}; cursor: grab; min-height: ${dayEventHeight}px; height: ${dayEventHeight}px;" 
              onclick="openEditModal('${event.id}')"
              draggable="true"
              ondragstart="handleDragStart(event, '${event.id}')"
