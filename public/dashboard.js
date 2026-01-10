@@ -2145,3 +2145,137 @@ async function handleDrop(event, dateStr, hour) {
         alert('Could not move appointment. Please try again.');
     }
 }
+
+// ========== MOBILE SWIPE NAVIGATION ==========
+// Relaxed swipe detection - only triggers on clear horizontal swipes
+
+(function initSwipeNavigation() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+    let isSwiping = false;
+    
+    // Swipe thresholds - relaxed to avoid accidental triggers
+    const MIN_SWIPE_DISTANCE = 80;  // Minimum 80px horizontal movement
+    const MAX_VERTICAL_DRIFT = 60;  // Max 60px vertical drift allowed
+    const SWIPE_TIMEOUT = 400;      // Must complete within 400ms
+    
+    let swipeStartTime = 0;
+    
+    function handleTouchStart(e) {
+        // Don't interfere with form inputs, buttons, or modals
+        const target = e.target;
+        if (target.tagName === 'INPUT' || 
+            target.tagName === 'SELECT' || 
+            target.tagName === 'TEXTAREA' ||
+            target.tagName === 'BUTTON' ||
+            target.closest('.modal') ||
+            target.closest('.btn') ||
+            target.closest('.event') ||
+            target.closest('.appointment-block')) {
+            isSwiping = false;
+            return;
+        }
+        
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        swipeStartTime = Date.now();
+        isSwiping = true;
+    }
+    
+    function handleTouchMove(e) {
+        if (!isSwiping) return;
+        
+        touchEndX = e.touches[0].clientX;
+        touchEndY = e.touches[0].clientY;
+        
+        // Check if it's becoming a vertical scroll
+        const verticalDrift = Math.abs(touchEndY - touchStartY);
+        const horizontalDrift = Math.abs(touchEndX - touchStartX);
+        
+        // If vertical movement is dominant, cancel swipe
+        if (verticalDrift > horizontalDrift && verticalDrift > 20) {
+            isSwiping = false;
+        }
+    }
+    
+    function handleTouchEnd(e) {
+        if (!isSwiping) return;
+        
+        const swipeDuration = Date.now() - swipeStartTime;
+        const horizontalDistance = touchEndX - touchStartX;
+        const verticalDistance = Math.abs(touchEndY - touchStartY);
+        
+        // Validate swipe
+        if (swipeDuration > SWIPE_TIMEOUT) {
+            isSwiping = false;
+            return;
+        }
+        
+        if (verticalDistance > MAX_VERTICAL_DRIFT) {
+            isSwiping = false;
+            return;
+        }
+        
+        if (Math.abs(horizontalDistance) < MIN_SWIPE_DISTANCE) {
+            isSwiping = false;
+            return;
+        }
+        
+        // Valid swipe detected!
+        if (horizontalDistance > 0) {
+            // Swiped right = go to previous
+            navigateCalendar(-1);
+            showSwipeFeedback('←');
+        } else {
+            // Swiped left = go to next
+            navigateCalendar(1);
+            showSwipeFeedback('→');
+        }
+        
+        isSwiping = false;
+    }
+    
+    function showSwipeFeedback(direction) {
+        // Brief visual feedback
+        const calendarContent = document.getElementById('calendarContent');
+        if (calendarContent) {
+            calendarContent.style.opacity = '0.7';
+            setTimeout(() => {
+                calendarContent.style.opacity = '1';
+            }, 150);
+        }
+    }
+    
+    // Attach to calendar content area
+    function attachSwipeListeners() {
+        const calendarContent = document.getElementById('calendarContent');
+        if (calendarContent) {
+            calendarContent.addEventListener('touchstart', handleTouchStart, { passive: true });
+            calendarContent.addEventListener('touchmove', handleTouchMove, { passive: true });
+            calendarContent.addEventListener('touchend', handleTouchEnd, { passive: true });
+        }
+    }
+    
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachSwipeListeners);
+    } else {
+        // DOM already loaded, wait for calendar to render
+        setTimeout(attachSwipeListeners, 500);
+    }
+    
+    // Re-attach after calendar re-renders (MutationObserver)
+    const observer = new MutationObserver(() => {
+        attachSwipeListeners();
+    });
+    
+    setTimeout(() => {
+        const calendarContainer = document.querySelector('.calendar-container');
+        if (calendarContainer) {
+            observer.observe(calendarContainer, { childList: true, subtree: true });
+        }
+    }, 1000);
+})();
+
