@@ -868,7 +868,9 @@ function getAvailabilityFromForm() {
 async function saveCompanySettings(e) {
     e.preventDefault();
     
-    const theaterHoursEnabled = document.getElementById('theaterHoursEnabled').checked;
+    console.log('saveCompanySettings called');
+    
+    const theaterHoursEnabled = document.getElementById('theaterHoursEnabled')?.checked || false;
     
     const settings = {
         name: document.getElementById('companyName').value,
@@ -886,6 +888,8 @@ async function saveCompanySettings(e) {
         theaterHours: theaterHoursEnabled ? getTheaterAvailabilityFromForm() : null
     };
     
+    console.log('Saving settings:', settings);
+    
     try {
         const response = await fetch('/api/settings/company', {
             method: 'PUT',
@@ -893,7 +897,11 @@ async function saveCompanySettings(e) {
             body: JSON.stringify(settings)
         });
         
+        console.log('Response status:', response.status);
+        
         if (response.ok) {
+            const result = await response.json();
+            console.log('Save successful:', result);
             showAlert('Company profile saved!', 'success');
         } else {
             const errorData = await response.json().catch(() => ({}));
