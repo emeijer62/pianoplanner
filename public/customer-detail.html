@@ -215,6 +215,26 @@
             border-top: 1px solid var(--border-color);
             font-size: 0.8rem;
         }
+        
+        .piano-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        
+        .piano-actions .btn-small {
+            padding: 4px 8px;
+        }
+        
+        .btn-danger {
+            background: #fff5f5;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .btn-danger:hover {
+            background: #ffebee;
+        }
 
         .service-ok { color: #2e7d32; }
         .service-due { color: #c62828; }
@@ -957,25 +977,36 @@
                 const serviceStatus = getServiceStatus(piano);
 
                 return `
-                    <div class="piano-card" onclick="openPianoDetail('${piano.id}')">
-                        <div class="piano-card-header">
+                    <div class="piano-card">
+                        <div class="piano-card-header" onclick="openPianoDetail('${piano.id}')" style="cursor: pointer;">
                             <div>
                                 <div class="piano-brand-model">${piano.brand} ${piano.model || ''}</div>
                                 ${piano.year ? `<div style="font-size: 0.85rem; color: var(--text-secondary);">Built ${piano.year}</div>` : ''}
                             </div>
                             <span class="piano-type-badge ${piano.type}">${typeLabel}</span>
                         </div>
-                        <div class="piano-info">
+                        <div class="piano-info" onclick="openPianoDetail('${piano.id}')" style="cursor: pointer;">
                             ${piano.serialNumber ? `Serial: ${piano.serialNumber}` : ''}
                             ${piano.location ? `• ${piano.location}` : ''}
                         </div>
                         <div class="piano-service-status">
                             <span class="${serviceStatus.class}">${serviceStatus.text}</span>
-                            <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); openServiceModal('${piano.id}')">+ Service</button>
+                            <div class="piano-actions">
+                                <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); openEditPianoModal('${piano.id}')" title="Edit piano">
+                                    <i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+                                </button>
+                                <button class="btn btn-small btn-secondary" onclick="event.stopPropagation(); openServiceModal('${piano.id}')">+ Service</button>
+                                <button class="btn btn-small btn-danger" onclick="event.stopPropagation(); deletePiano('${piano.id}')" title="Delete piano">
+                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
             }).join('');
+            
+            // Refresh Lucide icons
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function getServiceStatus(piano) {
@@ -1099,9 +1130,17 @@
             document.getElementById('piano-modal').classList.remove('active');
             document.getElementById('delete-piano-btn').style.display = 'none';
         }
+        
+        // Open edit modal for a specific piano (from card)
+        function openEditPianoModal(pianoId) {
+            openPianoDetail(pianoId);
+        }
 
-        async function deletePiano() {
-            const pianoId = document.getElementById('piano-id').value;
+        async function deletePiano(pianoId) {
+            // If called without ID, get from modal
+            if (!pianoId) {
+                pianoId = document.getElementById('piano-id').value;
+            }
             if (!pianoId) return;
 
             const piano = pianosData.find(p => p.id === pianoId);
