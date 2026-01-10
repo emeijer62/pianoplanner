@@ -1,6 +1,6 @@
 /**
  * Stripe Routes voor PianoPlanner
- * B2B Pricing: €30/month + applicable taxes
+ * B2B Pricing: €25/month + applicable taxes (Introductory price)
  */
 
 const express = require('express');
@@ -13,14 +13,14 @@ if (process.env.STRIPE_SECRET_KEY) {
     stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 }
 
-// Prijzen configuratie
+// Prijzen configuratie - Introductieprijs €25 (normaal €30)
 const PRICES = {
     monthly: {
-        amount: 3000, // €30,00 in centen (exclusief BTW)
+        amount: 2500, // €25,00 in centen (exclusief BTW) - Introductieprijs!
         currency: 'eur',
         interval: 'month',
-        name: 'PianoPlanner Pro',
-        description: 'Maandelijks abonnement - alle features'
+        name: 'PianoPlanner Go',
+        description: 'Maandelijks abonnement - alle features (introductieprijs)'
     }
 };
 
