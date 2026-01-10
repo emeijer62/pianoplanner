@@ -99,6 +99,11 @@
             color: var(--gray-900);
         }
         
+        .nav-logo img {
+            height: 32px;
+            width: auto;
+        }
+        
         .nav-links { display: flex; align-items: center; gap: 28px; }
         .nav-link { font-size: 14px; color: var(--gray-900); }
         .nav-link:hover { color: var(--blue); }
@@ -406,8 +411,7 @@
     <nav class="nav">
         <div class="nav-content">
             <a href="/" class="nav-logo">
-                <i data-lucide="piano" style="width: 24px; height: 24px;"></i>
-                <span>PianoPlanner</span>
+                <img src="/assets/logo.png" alt="PianoPlanner">
             </a>
             <div class="nav-links">
                 <a href="#features" class="nav-link">Features</a>
