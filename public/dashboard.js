@@ -129,10 +129,10 @@ function updateMobileHeader() {
     if (!titleEl) return;
     
     const today = new Date();
-    const isToday = selectedDate.toDateString() === today.toDateString();
+    const isToday = currentDate.toDateString() === today.toDateString();
     
     const options = { weekday: 'short', day: 'numeric', month: 'short' };
-    const dateStr = selectedDate.toLocaleDateString(i18n?.currentLang === 'nl' ? 'nl-NL' : 'en-US', options);
+    const dateStr = currentDate.toLocaleDateString(i18n?.currentLang === 'nl' ? 'nl-NL' : 'en-US', options);
     
     if (isToday) {
         titleEl.textContent = (i18n?.currentLang === 'nl' ? 'Vandaag' : 'Today') + ', ' + dateStr;
@@ -143,7 +143,7 @@ function updateMobileHeader() {
 
 // Navigate day (for mobile header)
 function navigateDay(direction) {
-    selectedDate.setDate(selectedDate.getDate() + direction);
+    currentDate.setDate(currentDate.getDate() + direction);
     updateMobileHeader();
     renderCalendar();
 }
