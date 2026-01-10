@@ -119,15 +119,17 @@ function renderCustomers(customers) {
         return;
     }
     
-    container.innerHTML = customers.map(customer => `
+    container.innerHTML = customers.map(customer => {
+        const address = customer.address || {};
+        return `
         <div class="list-item" data-customer-id="${customer.id}">
             <div class="list-item-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600;">
-                ${customer.name.charAt(0).toUpperCase()}
+                ${(customer.name || '?').charAt(0).toUpperCase()}
             </div>
             <div class="list-item-content">
-                <div class="list-item-title">${escapeHtml(customer.name)}</div>
+                <div class="list-item-title">${escapeHtml(customer.name || '')}</div>
                 <div class="list-item-subtitle">
-                    ${customer.address.city || 'No city'} 
+                    ${address.city || 'No city'} 
                     ${customer.phone ? '• ' + customer.phone : ''} 
                     ${customer.pianos?.length ? '• 🎹 ' + customer.pianos.length : ''}
                 </div>
@@ -135,12 +137,12 @@ function renderCustomers(customers) {
             <div class="list-item-meta" onclick="event.stopPropagation();">
                 <div style="display: flex; gap: 8px;">
                     <button class="btn btn-secondary btn-small" onclick="openModal('${customer.id}')">Edit</button>
-                    <button class="btn btn-small" style="background: #fee2e2; color: #dc2626;" onclick="deleteCustomer('${customer.id}', '${escapeHtml(customer.name).replace(/'/g, "\\'")}')">Delete</button>
+                    <button class="btn btn-small" style="background: #fee2e2; color: #dc2626;" onclick="deleteCustomer('${customer.id}', '${escapeHtml(customer.name || '').replace(/'/g, "\\'")}')">Delete</button>
                     <a href="/booking.html?customer=${customer.id}" class="btn btn-primary btn-small">+ Appointment</a>
                 </div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
     
     // Add scroll-aware tap handlers for mobile
     setupCustomerTapHandlers();
@@ -179,16 +181,19 @@ function openModal(customerId = null) {
     }
     
     if (customerId) {
-        const customer = allCustomers.find(c => c.id === customerId);
+        // Convert to string for comparison since onclick passes string
+        const customer = allCustomers.find(c => String(c.id) === String(customerId));
         if (customer) {
             document.getElementById('modal-title').textContent = 'Edit Customer';
             document.getElementById('customer-id').value = customer.id;
-            document.getElementById('customer-name').value = customer.name;
+            document.getElementById('customer-name').value = customer.name || '';
             document.getElementById('customer-email').value = customer.email || '';
             document.getElementById('customer-phone').value = customer.phone || '';
-            document.getElementById('customer-street').value = customer.address.street || '';
-            document.getElementById('customer-postalcode').value = customer.address.postalCode || '';
-            document.getElementById('customer-city').value = customer.address.city || '';
+            // Safely access address properties
+            const address = customer.address || {};
+            document.getElementById('customer-street').value = address.street || '';
+            document.getElementById('customer-postalcode').value = address.postalCode || '';
+            document.getElementById('customer-city').value = address.city || '';
             document.getElementById('customer-notes').value = customer.notes || '';
             document.getElementById('customer-default-service').value = customer.defaultServiceId || '';
             document.getElementById('customer-theater-hours').checked = customer.useTheaterHours || false;
