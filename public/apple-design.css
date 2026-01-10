@@ -327,10 +327,15 @@ a:hover {
     color: var(--apple-white);
 }
 
+.nav-link.active svg {
+    color: var(--apple-white);
+}
+
 .nav-link svg {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
+    color: #DAA520; /* Gold color for nav icons */
 }
 
 /* User Section */

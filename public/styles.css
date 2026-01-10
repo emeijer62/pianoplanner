@@ -365,6 +365,15 @@ body {
     color: white;
 }
 
+.nav-links a.active svg {
+    color: white;
+}
+
+.nav-links a svg,
+.nav-link svg {
+    color: #DAA520; /* Gold color for nav icons */
+}
+
 .nav-user-picture {
     width: 32px;
     height: 32px;
