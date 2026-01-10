@@ -1684,25 +1684,32 @@
         text-overflow: ellipsis;
     }
     
+    /* Hide action buttons on mobile - tap row to go to detail page */
     #customers-list .list-item-meta {
-        width: 100%;
-        padding-top: 10px;
-        border-top: 0.5px solid var(--ios-separator);
+        display: none !important;
     }
     
-    #customers-list .list-item-meta > div {
-        display: flex;
-        gap: 8px;
+    /* Add chevron indicator for tap-to-open */
+    #customers-list .list-item {
+        position: relative;
     }
     
-    #customers-list .list-item-meta .btn {
-        flex: 1;
-        justify-content: center;
-        padding: 10px 8px;
-        font-size: 14px;
-        font-weight: 500;
-        height: 38px !important;
-        min-height: 38px !important;
+    #customers-list .list-item::after {
+        content: '';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid var(--ios-text-tertiary);
+        border-bottom: 2px solid var(--ios-text-tertiary);
+        transform: translateY(-50%) rotate(-45deg);
+        opacity: 0.5;
+    }
+    
+    #customers-list .list-item-content {
+        padding-right: 24px;
     }
     
     /* ==========================================
