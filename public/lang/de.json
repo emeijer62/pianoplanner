@@ -249,5 +249,72 @@
     "trial": "Testversion",
     "expired": "Abgelaufen",
     "canceled": "Gekündigt"
+  },
+  "import": {
+    "title": "Daten importieren",
+    "selectSource": "Importquelle auswählen",
+    "selectSourceDesc": "Wählen Sie, woher Sie Ihre Kundendaten importieren möchten.",
+    "step": {
+      "source": "Quelle",
+      "upload": "Hochladen",
+      "preview": "Vorschau",
+      "import": "Import"
+    },
+    "external": {
+      "desc": "Piano-Service-Software"
+    },
+    "csv": {
+      "desc": "Generische CSV-Datei"
+    },
+    "uploadFile": "Datei hochladen",
+    "uploadFileDesc": "Laden Sie Ihre Exportdatei hoch (CSV-Format).",
+    "dropFile": "Datei hier ablegen",
+    "orClick": "oder klicken zum Durchsuchen",
+    "previewData": "Datenvorschau",
+    "previewDesc": "Überprüfen Sie die Daten vor dem Import.",
+    "totalRecords": "Gesamt",
+    "activeClients": "Aktive Kunden",
+    "inactiveClients": "Inaktive Kunden",
+    "withEmail": "Mit E-Mail",
+    "th": {
+      "name": "Name",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "city": "Stadt",
+      "status": "Status"
+    },
+    "options": "Import-Optionen",
+    "opt": {
+      "activeOnly": "Nur aktive Kunden importieren",
+      "activeOnlyDesc": "Inaktive Kunden überspringen",
+      "skipDuplicates": "Duplikate überspringen",
+      "skipDuplicatesDesc": "Kunden mit bereits vorhandener E-Mail überspringen",
+      "includeCompany": "Firmenname einschließen",
+      "includeCompanyDesc": "Firmenname zum Kundennamen hinzufügen"
+    },
+    "importing": "Importieren...",
+    "complete": "Import abgeschlossen!",
+    "failed": "Import fehlgeschlagen",
+    "partialComplete": "Import teilweise abgeschlossen",
+    "successMessage": "{{count}} Kunden erfolgreich importiert.",
+    "partialMessage": "{{imported}} Kunden importiert mit {{errors}} Fehlern.",
+    "noImports": "Keine Kunden wurden importiert.",
+    "imported": "Importiert",
+    "skipped": "Übersprungen",
+    "errors": "Fehler",
+    "viewCustomers": "Kunden anzeigen",
+    "importMore": "Mehr importieren",
+    "undoImport": "Import rückgängig",
+    "undone": "Import rückgängig gemacht",
+    "undoneMessage": "{{count}} Datensätze erfolgreich gelöscht.",
+    "next": "Weiter",
+    "back": "Zurück",
+    "cancel": "Abbrechen",
+    "preview": "Vorschau",
+    "startImport": "Import starten",
+    "error": {
+      "csvOnly": "Bitte laden Sie eine CSV-Datei hoch",
+      "parse": "Fehler beim Parsen der CSV-Datei"
+    }
   }
 }

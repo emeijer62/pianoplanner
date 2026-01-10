@@ -249,5 +249,72 @@
     "trial": "Essai",
     "expired": "Expiré",
     "canceled": "Annulé"
+  },
+  "import": {
+    "title": "Importer des données",
+    "selectSource": "Sélectionner la source",
+    "selectSourceDesc": "Choisissez d'où vous voulez importer vos données clients.",
+    "step": {
+      "source": "Source",
+      "upload": "Télécharger",
+      "preview": "Aperçu",
+      "import": "Import"
+    },
+    "external": {
+      "desc": "Logiciel de service piano"
+    },
+    "csv": {
+      "desc": "Fichier CSV générique"
+    },
+    "uploadFile": "Télécharger le fichier",
+    "uploadFileDesc": "Téléchargez votre fichier d'export (format CSV).",
+    "dropFile": "Déposez votre fichier ici",
+    "orClick": "ou cliquez pour parcourir",
+    "previewData": "Aperçu des données",
+    "previewDesc": "Vérifiez les données avant l'importation.",
+    "totalRecords": "Total",
+    "activeClients": "Clients actifs",
+    "inactiveClients": "Clients inactifs",
+    "withEmail": "Avec email",
+    "th": {
+      "name": "Nom",
+      "email": "Email",
+      "phone": "Téléphone",
+      "city": "Ville",
+      "status": "Statut"
+    },
+    "options": "Options d'import",
+    "opt": {
+      "activeOnly": "Importer uniquement les clients actifs",
+      "activeOnlyDesc": "Ignorer les clients inactifs",
+      "skipDuplicates": "Ignorer les doublons",
+      "skipDuplicatesDesc": "Ignorer les clients avec email déjà existant",
+      "includeCompany": "Inclure le nom de l'entreprise",
+      "includeCompanyDesc": "Ajouter le nom de l'entreprise au nom du client"
+    },
+    "importing": "Importation...",
+    "complete": "Import terminé !",
+    "failed": "Import échoué",
+    "partialComplete": "Import partiellement terminé",
+    "successMessage": "{{count}} clients importés avec succès.",
+    "partialMessage": "{{imported}} clients importés avec {{errors}} erreurs.",
+    "noImports": "Aucun client n'a été importé.",
+    "imported": "Importés",
+    "skipped": "Ignorés",
+    "errors": "Erreurs",
+    "viewCustomers": "Voir les clients",
+    "importMore": "Importer plus",
+    "undoImport": "Annuler l'import",
+    "undone": "Import annulé",
+    "undoneMessage": "{{count}} enregistrements supprimés.",
+    "next": "Suivant",
+    "back": "Retour",
+    "cancel": "Annuler",
+    "preview": "Aperçu",
+    "startImport": "Démarrer l'import",
+    "error": {
+      "csvOnly": "Veuillez télécharger un fichier CSV",
+      "parse": "Erreur lors de l'analyse du fichier CSV"
+    }
   }
 }
