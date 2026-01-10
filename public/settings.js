@@ -896,11 +896,13 @@ async function saveCompanySettings(e) {
         if (response.ok) {
             showAlert('Company profile saved!', 'success');
         } else {
-            throw new Error('Save failed');
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Save failed:', response.status, errorData);
+            throw new Error(errorData.error || 'Save failed');
         }
     } catch (error) {
-        showAlert('Could not save company profile', 'error');
-        console.error(error);
+        showAlert(`Could not save company profile: ${error.message}`, 'error');
+        console.error('Save company error:', error);
     }
 }
 

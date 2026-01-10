@@ -121,8 +121,8 @@ router.put('/company', requireAuth, async (req, res) => {
         
         res.json(settings);
     } catch (error) {
-        console.error('Error saving company settings:', error);
-        res.status(500).json({ error: 'Kon instellingen niet opslaan' });
+        console.error('Error saving company settings:', error.message, error.stack);
+        res.status(500).json({ error: `Kon instellingen niet opslaan: ${error.message}` });
     }
 });
 
