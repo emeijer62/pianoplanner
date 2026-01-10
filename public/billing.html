@@ -427,7 +427,8 @@
             let detailsHTML = '';
 
             if (sub.status === 'trialing') {
-                const progress = Math.round(((14 - sub.daysLeft) / 14) * 100);
+                const daysLeft = sub.daysLeft ?? 14;
+                const progress = Math.round(((14 - daysLeft) / 14) * 100);
                 detailsHTML = `
                     <div class="plan-info">
                         <span class="plan-label">Plan</span>
@@ -442,7 +443,7 @@
                             <div class="trial-progress-fill" style="width: ${progress}%"></div>
                         </div>
                         <div class="trial-progress-text">
-                            ${sub.daysLeft} days left in your trial
+                            ${daysLeft} days left in your trial
                         </div>
                     </div>
                 `;

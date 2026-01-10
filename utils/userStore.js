@@ -512,7 +512,7 @@ const getSubscriptionStatus = async (userId) => {
         subscriptionId: user.subscription_id,
         endsAt: user.subscription_ends_at,
         createdAt: user.created_at,
-        daysLeft: endsAt ? Math.max(0, Math.ceil((endsAt - now) / (1000 * 60 * 60 * 24))) : null
+        daysLeft: endsAt ? Math.max(0, Math.ceil((endsAt - now) / (1000 * 60 * 60 * 24))) : (status === 'trial' || status === 'trialing' ? 14 : null)
     };
 };
 
