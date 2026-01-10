@@ -582,7 +582,7 @@ const setUserTier = async (userId, tier) => {
 
 const startTrial = async (userId) => {
     const trialEnds = new Date();
-    trialEnds.setDate(trialEnds.getDate() + 30); // 30 dagen trial
+    trialEnds.setDate(trialEnds.getDate() + 14); // 14 dagen trial
     
     await updateSubscription(userId, {
         status: 'trial',
