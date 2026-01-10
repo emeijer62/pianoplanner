@@ -403,9 +403,10 @@
             let badgeText = 'Loading...';
 
             switch (sub.status) {
+                case 'trial':
                 case 'trialing':
                     badgeClass = 'trial';
-                    badgeText = `Trial (${sub.daysLeft} days)`;
+                    badgeText = `Trial (${sub.daysLeft || 14} days left)`;
                     break;
                 case 'active':
                     badgeClass = 'active';
@@ -432,7 +433,7 @@
             // Plan details
             let detailsHTML = '';
 
-            if (sub.status === 'trialing') {
+            if (sub.status === 'trial' || sub.status === 'trialing') {
                 const daysLeft = sub.daysLeft ?? 14;
                 const progress = Math.round(((14 - daysLeft) / 14) * 100);
                 detailsHTML = `
@@ -494,7 +495,7 @@
             // Action buttons
             let buttonsHTML = '';
 
-            if (sub.status === 'trialing' || sub.status === 'trial_expired' || sub.status === 'canceled' || sub.status === 'none' || !sub.status) {
+            if (sub.status === 'trial' || sub.status === 'trialing' || sub.status === 'trial_expired' || sub.status === 'canceled' || sub.status === 'none' || !sub.status) {
                 buttonsHTML = `
                     <button class="btn btn-primary" onclick="startSubscription()">
                         Start subscription
