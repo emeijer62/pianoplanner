@@ -2174,6 +2174,8 @@
                             <option value="nl">🇳🇱 Nederlands</option>
                             <option value="de">🇩🇪 Deutsch</option>
                             <option value="fr">🇫🇷 Français</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="it">🇮🇹 Italiano</option>
                         </select>
                     </div>
                 </div>
@@ -2960,10 +2962,19 @@
         
         // ========== LANGUAGE ==========
         
+        const languageNames = {
+            en: 'English',
+            nl: 'Nederlands',
+            de: 'Deutsch',
+            fr: 'Français',
+            es: 'Español',
+            it: 'Italiano'
+        };
+        
         async function changeLanguage(lang) {
             await i18n.setLanguage(lang);
             // Show confirmation
-            showAlert(`Language changed to ${lang === 'nl' ? 'Nederlands' : 'English'}`, 'success');
+            showAlert(`Language changed to ${languageNames[lang] || lang}`, 'success');
         }
         
         // Set current language in selector when i18n is ready
