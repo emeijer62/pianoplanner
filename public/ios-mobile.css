@@ -1455,63 +1455,476 @@
 }
 
 /* ============================================
-   Customers List - Mobile Fix
+   ALL PAGES - Mobile Improvements
    ============================================ */
 @media (max-width: 768px) {
-    /* Fix customer list items for mobile - stack buttons below content */
-    #customers-list .list-item {
-        flex-wrap: wrap;
-        padding: 16px;
+    
+    /* ==========================================
+       GENERAL PAGE LAYOUT
+       ========================================== */
+    
+    /* Page container - full width, no excess padding */
+    .page,
+    .settings-container,
+    .billing-container,
+    .pianos-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        padding-top: calc(44px + var(--safe-area-top)) !important;
+        padding-bottom: calc(var(--ios-tab-bar-height) + 20px) !important;
+        background: var(--ios-bg-grouped) !important;
+    }
+    
+    /* Page header - iOS large title style */
+    .page-header {
+        padding: 16px 16px 12px !important;
+        margin: 0 !important;
+        background: transparent !important;
+        display: flex;
+        flex-direction: column;
         gap: 12px;
     }
     
+    .page-header h1,
+    .page-title {
+        font-size: 28px !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.5px !important;
+        color: var(--ios-text-primary) !important;
+        margin: 0 !important;
+    }
+    
+    .page-header p,
+    .page-subtitle {
+        font-size: 15px !important;
+        color: var(--ios-text-tertiary) !important;
+        margin: 0 !important;
+    }
+    
+    .page-actions,
+    .header-actions {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .page-actions .btn,
+    .header-actions .btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    /* ==========================================
+       SEARCH BAR - iOS Style
+       ========================================== */
+    
+    .card:has(#search-input),
+    .search-box {
+        margin: 0 16px 16px !important;
+        padding: 0 !important;
+        background: var(--ios-bg-primary) !important;
+        border-radius: var(--ios-radius-md) !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .card:has(#search-input) > div,
+    .search-box {
+        display: flex;
+        align-items: center;
+        padding: 12px 16px !important;
+        gap: 10px;
+    }
+    
+    #search-input,
+    .search-box input {
+        flex: 1 !important;
+        width: 100% !important;
+        border: none !important;
+        background: transparent !important;
+        font-size: 17px !important;
+        padding: 0 !important;
+        height: auto !important;
+    }
+    
+    /* ==========================================
+       STATS GRID - Compact iOS Cards
+       ========================================== */
+    
+    .stat-grid,
+    .stats-row {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+        padding: 0 16px !important;
+        margin-bottom: 16px !important;
+    }
+    
+    .stat-card,
+    .stat-badge {
+        background: var(--ios-bg-primary) !important;
+        border: none !important;
+        border-radius: var(--ios-radius-md) !important;
+        padding: 12px !important;
+        box-shadow: none !important;
+    }
+    
+    .stat-label,
+    .stat-badge .label {
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+        color: var(--ios-text-tertiary) !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .stat-value,
+    .stat-badge .number {
+        font-size: 22px !important;
+        font-weight: 700 !important;
+        color: var(--ios-text-primary) !important;
+    }
+    
+    /* ==========================================
+       CUSTOMERS LIST
+       ========================================== */
+    
+    #customers-list {
+        padding: 0 16px !important;
+    }
+    
+    #customers-list .list-item {
+        background: var(--ios-bg-primary);
+        border-radius: 0 !important;
+        flex-wrap: wrap;
+        padding: 14px 16px;
+        gap: 12px;
+        margin: 0 !important;
+    }
+    
+    #customers-list .list-item:first-child {
+        border-radius: var(--ios-radius-md) var(--ios-radius-md) 0 0 !important;
+    }
+    
+    #customers-list .list-item:last-child {
+        border-radius: 0 0 var(--ios-radius-md) var(--ios-radius-md) !important;
+    }
+    
+    #customers-list .list-item:only-child {
+        border-radius: var(--ios-radius-md) !important;
+    }
+    
+    #customers-list .list-item:not(:last-child) {
+        border-bottom: 0.5px solid var(--ios-separator);
+    }
+    
     #customers-list .list-item-icon {
-        width: 48px;
-        height: 48px;
-        font-size: 20px;
-        border-radius: 12px;
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+        border-radius: 10px;
+        flex-shrink: 0;
     }
     
     #customers-list .list-item-content {
         flex: 1;
-        min-width: calc(100% - 70px);
+        min-width: 0;
     }
     
     #customers-list .list-item-title {
         font-size: 17px;
         font-weight: 600;
+        color: var(--ios-text-primary);
     }
     
     #customers-list .list-item-subtitle {
         font-size: 14px;
-        color: #666;
-        margin-top: 4px;
-        line-height: 1.4;
+        color: var(--ios-text-tertiary);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
-    /* Buttons row - full width below content */
     #customers-list .list-item-meta {
         width: 100%;
-        margin-top: 4px;
-        padding-top: 12px;
-        border-top: 1px solid #f0f0f0;
+        padding-top: 10px;
+        border-top: 0.5px solid var(--ios-separator);
     }
     
     #customers-list .list-item-meta > div {
         display: flex;
         gap: 8px;
-        justify-content: flex-start;
     }
     
     #customers-list .list-item-meta .btn {
         flex: 1;
         justify-content: center;
-        padding: 10px 12px;
+        padding: 10px 8px;
         font-size: 14px;
         font-weight: 500;
+        height: 38px !important;
+        min-height: 38px !important;
     }
     
-    #customers-list .list-item-meta .btn-small {
-        min-height: 36px;
+    /* ==========================================
+       PIANOS PAGE
+       ========================================== */
+    
+    .pianos-table {
+        display: none !important;
     }
-}
+    
+    /* Mobile piano cards */
+    .piano-cards-mobile {
+        padding: 0 16px;
+    }
+    
+    .piano-card-mobile {
+        background: var(--ios-bg-primary);
+        padding: 16px;
+        margin: 0;
+        position: relative;
+    }
+    
+    .piano-card-mobile:first-child {
+        border-radius: var(--ios-radius-md) var(--ios-radius-md) 0 0;
+    }
+    
+    .piano-card-mobile:last-child {
+        border-radius: 0 0 var(--ios-radius-md) var(--ios-radius-md);
+    }
+    
+    .piano-card-mobile:only-child {
+        border-radius: var(--ios-radius-md);
+    }
+    
+    .piano-card-mobile:not(:last-child) {
+        border-bottom: 0.5px solid var(--ios-separator);
+    }
+    
+    .piano-card-mobile .piano-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+    }
+    
+    .piano-card-mobile .piano-brand {
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--ios-text-primary);
+    }
+    
+    .piano-card-mobile .piano-type {
+        font-size: 13px;
+        color: var(--ios-text-tertiary);
+        background: var(--ios-gray-6);
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    
+    .piano-card-mobile .piano-customer {
+        font-size: 15px;
+        color: var(--ios-blue);
+        margin-bottom: 8px;
+    }
+    
+    .piano-card-mobile .piano-details {
+        font-size: 14px;
+        color: var(--ios-text-tertiary);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+    }
+    
+    .piano-card-mobile .piano-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 0.5px solid var(--ios-separator);
+    }
+    
+    .piano-card-mobile .piano-actions .btn {
+        flex: 1;
+        height: 38px !important;
+        font-size: 14px !important;
+    }
+    
+    /* ==========================================
+       SETTINGS PAGE
+       ========================================== */
+    
+    /* Settings tabs - horizontal scroll */
+    .settings-tabs {
+        display: flex !important;
+        gap: 0 !important;
+        padding: 4px !important;
+        margin: 16px !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        background: var(--ios-gray-6) !important;
+        border-radius: 10px !important;
+    }
+    
+    .settings-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .settings-tab {
+        flex: 0 0 auto !important;
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+        white-space: nowrap;
+        border-radius: 8px !important;
+        min-width: auto !important;
+    }
+    
+    .settings-tab.active {
+        background: var(--ios-bg-primary) !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    }
+    
+    .settings-tab .tab-icon {
+        display: none !important;
+    }
+    
+    /* Settings cards */
+    .settings-card,
+    .tab-panel .card {
+        margin: 0 16px 16px !important;
+        border-radius: var(--ios-radius-md) !important;
+        border: none !important;
+        background: var(--ios-bg-primary) !important;
+        overflow: hidden;
+    }
+    
+    .settings-card-header,
+    .card-header {
+        padding: 16px !important;
+        background: transparent !important;
+        border-bottom: 0.5px solid var(--ios-separator) !important;
+    }
+    
+    .settings-card-header h3 {
+        font-size: 17px !important;
+        font-weight: 600 !important;
+    }
+    
+    .settings-card-body,
+    .card-body {
+        padding: 0 !important;
+    }
+    
+    /* Settings form rows */
+    .settings-row,
+    .form-group {
+        padding: 14px 16px !important;
+        margin: 0 !important;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        border-bottom: 0.5px solid var(--ios-separator);
+    }
+    
+    .settings-row:last-child,
+    .form-group:last-child {
+        border-bottom: none;
+    }
+    
+    .settings-row label,
+    .form-group label {
+        font-size: 13px !important;
+        color: var(--ios-text-tertiary) !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* ==========================================
+       BILLING PAGE
+       ========================================== */
+    
+    .billing-card {
+        margin: 0 16px 16px !important;
+        padding: 20px 16px !important;
+        border-radius: var(--ios-radius-md) !important;
+        border: none !important;
+        background: var(--ios-bg-primary) !important;
+    }
+    
+    .billing-card h2 {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: var(--ios-text-primary) !important;
+        margin-bottom: 16px !important;
+    }
+    
+    .plan-info {
+        padding: 14px 0 !important;
+    }
+    
+    .plan-label {
+        font-size: 14px !important;
+        color: var(--ios-text-tertiary) !important;
+    }
+    
+    .plan-value {
+        font-size: 15px !important;
+        font-weight: 500 !important;
+        color: var(--ios-text-primary) !important;
+    }
+    
+    .status-badge {
+        font-size: 13px !important;
+        padding: 4px 10px !important;
+    }
+    
+    /* ==========================================
+       GUIDE PAGE - Already has accordion
+       ========================================== */
+    
+    /* Guide page is already handled in guide.html */
+    
+    /* ==========================================
+       EMPTY STATES
+       ========================================== */
+    
+    .empty-state,
+    .no-results {
+        padding: 40px 20px !important;
+        text-align: center;
+    }
+    
+    .empty-state-icon {
+        font-size: 48px !important;
+        margin-bottom: 16px;
+    }
+    
+    .empty-state-title {
+        font-size: 17px !important;
+        font-weight: 600 !important;
+        color: var(--ios-text-primary) !important;
+        margin-bottom: 8px;
+    }
+    
+    .empty-state-text {
+        font-size: 15px !important;
+        color: var(--ios-text-tertiary) !important;
+    }
+    
+    /* ==========================================
+       LOADING STATES
+       ========================================== */
+    
+    .loading,
+    .spinner-container {
+        padding: 40px 20px;
+        text-align: center;
+    }
+    
+    .spinner {
+        width: 32px !important;
+        height: 32px !important;
+        border-width: 3px !important;
