@@ -441,8 +441,12 @@ router.get('/:slug', async (req, res) => {
             services = services.filter(s => allowedIds.includes(s.id));
         }
         
-        // Sorteer diensten op prijs (hoogste eerst)
-        services.sort((a, b) => (b.price || 0) - (a.price || 0));
+        // Sorteer diensten op prijs (laagste eerst), dan op duur (kortste eerst)
+        services.sort((a, b) => {
+            const priceDiff = (a.price || 0) - (b.price || 0);
+            if (priceDiff !== 0) return priceDiff;
+            return (a.duration || 0) - (b.duration || 0);
+        });
         
         // Haal beschikbaarheid op (working hours)
         const availability = company?.workingHours || {
