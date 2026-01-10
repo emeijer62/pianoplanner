@@ -315,8 +315,6 @@ app.post('/api/contact', async (req, res) => {
         };
         
         const contactEmail = process.env.CONTACT_EMAIL || process.env.SMTP_USER;
-        console.log(`📬 Contact form: ${name} <${email}> - ${subjectLabels[subject] || subject}`);
-        console.log(`📬 Will send to: ${contactEmail}`);
         
         // Send notification email (fire-and-forget)
         setImmediate(async () => {
@@ -369,15 +367,14 @@ app.post('/api/contact', async (req, res) => {
                     </html>
                 `;
                 
-                const result = await emailService.sendEmail({
+                await emailService.sendEmail({
                     to: contactEmail,
                     subject: `[PianoPlanner Contact] ${subjectLabels[subject] || subject} - ${name}`,
                     html: html,
                     replyTo: email
                 });
-                console.log(`📬 Contact email result:`, result);
             } catch (emailError) {
-                console.error('❌ Contact form email error:', emailError.message, emailError.stack);
+                console.error('Contact form email error:', emailError.message);
             }
         });
         
