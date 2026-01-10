@@ -78,6 +78,11 @@
         display: none !important;
     }
     
+    /* iOS Mobile Header - hide on dashboard (uses calendar toolbar instead) */
+    body.dashboard-page .ios-mobile-header {
+        display: none !important;
+    }
+    
     /* iOS Mobile Header */
     .ios-mobile-header {
         display: flex;
@@ -287,10 +292,10 @@
     
     /* Main Content Adjustment */
     .dashboard {
-        padding-top: calc(44px + var(--safe-area-top) + 60px) !important;
+        padding-top: calc(44px + var(--safe-area-top) + 8px) !important;
         padding-bottom: calc(var(--ios-tab-bar-height) + 12px) !important;
-        padding-left: var(--ios-spacing-md) !important;
-        padding-right: var(--ios-spacing-md) !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
         height: auto !important;
         min-height: 100vh;
         overflow: auto !important;
@@ -1088,21 +1093,285 @@
         color: var(--ios-text-primary) !important;
     }
     
-    /* Calendar iOS Adjustments */
+    /* ============================================
+       IMPROVED MOBILE CALENDAR DASHBOARD
+       ============================================ */
+    
+    /* Dashboard body - no extra padding needed */
+    body.dashboard-page .dashboard {
+        padding-top: var(--safe-area-top) !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+    
+    /* Calendar container full width */
     .calendar-container {
-        margin: 0 var(--ios-spacing-md);
+        margin: 0 !important;
+        border-radius: 0 !important;
+        overflow: hidden;
+        background: var(--ios-bg-primary) !important;
+    }
+    
+    /* Sticky calendar toolbar at top */
+    .calendar-toolbar {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 50 !important;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 10px 12px !important;
+        padding-top: calc(10px + var(--safe-area-top)) !important;
+        gap: 8px !important;
+        background: rgba(249, 249, 249, 0.95) !important;
+        backdrop-filter: saturate(180%) blur(20px) !important;
+        -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
+        border-bottom: 0.5px solid var(--ios-separator) !important;
+    }
+    
+    /* Navigation buttons inline */
+    .calendar-nav {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        order: 1;
+    }
+    
+    .calendar-nav button {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 8px !important;
+        background: var(--ios-gray-6) !important;
+        border: none !important;
+        font-size: 14px !important;
+        color: var(--ios-text-primary) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .calendar-nav button:active {
+        background: var(--ios-gray-5) !important;
+    }
+    
+    /* Today button styled */
+    .calendar-nav button:nth-child(2) {
+        width: auto !important;
+        padding: 0 14px !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+    }
+    
+    /* Calendar title compact */
+    .calendar-title {
+        font-size: 18px !important;
+        font-weight: 600 !important;
+        color: var(--ios-text-primary) !important;
+        text-align: center !important;
+        order: 2;
+        flex: 0 0 auto !important;
+    }
+    
+    /* Toolbar right - sync and dropdown */
+    .toolbar-right {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        order: 3;
+    }
+    
+    /* Hide slot duration selector on mobile */
+    #slotDurationSelect {
+        display: none !important;
+    }
+    
+    /* View selector compact */
+    #viewSelect {
+        height: 36px !important;
+        padding: 0 28px 0 12px !important;
+        font-size: 14px !important;
+        background: var(--ios-gray-6) !important;
+        border-radius: 8px !important;
+        min-width: 70px !important;
+    }
+    
+    /* Sync button compact */
+    .btn-sync {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        border-radius: 8px !important;
+        background: var(--ios-gray-6) !important;
+        border: none !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .btn-sync .sync-text {
+        display: none !important;
+    }
+    
+    .btn-sync .sync-icon {
+        width: 18px !important;
+        height: 18px !important;
+    }
+    
+    /* Week grid improvements */
+    .week-grid {
+        font-size: 13px !important;
+    }
+    
+    /* Day headers more compact */
+    .week-header {
+        display: grid !important;
+        background: var(--ios-bg-secondary) !important;
+        border-bottom: 0.5px solid var(--ios-separator) !important;
+    }
+    
+    .day-header {
+        padding: 8px 4px !important;
+        text-align: center !important;
+        font-size: 11px !important;
+        font-weight: 500 !important;
+        color: var(--ios-text-tertiary) !important;
+        text-transform: uppercase !important;
+    }
+    
+    .day-header .day-name {
+        display: block !important;
+        font-size: 11px !important;
+        color: var(--ios-text-tertiary) !important;
+    }
+    
+    .day-header .day-number {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 28px !important;
+        height: 28px !important;
+        margin: 4px auto 0 !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: var(--ios-text-primary) !important;
+        border-radius: 50% !important;
+    }
+    
+    .day-header.today .day-number {
+        background: var(--ios-blue) !important;
+        color: white !important;
+    }
+    
+    /* Time slots more visible */
+    .time-column {
+        width: 42px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .time-label {
+        font-size: 10px !important;
+        color: var(--ios-text-tertiary) !important;
+        padding: 0 4px !important;
+        text-align: right !important;
     }
     
     .day-column,
     .time-slot {
-        min-height: 60px;
+        min-height: 50px !important;
     }
     
+    /* Events/Appointments better visibility */
     .event,
-    .appointment-block {
-        border-radius: var(--ios-radius-sm) !important;
+    .appointment-block,
+    .calendar-event {
+        border-radius: 6px !important;
         border: none !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+        padding: 4px 6px !important;
+        font-size: 11px !important;
+        font-weight: 500 !important;
+        line-height: 1.3 !important;
+        overflow: hidden !important;
+        min-height: 24px !important;
+    }
+    
+    .event .event-title,
+    .appointment-block .event-title,
+    .calendar-event .event-title {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    
+    .event .event-time,
+    .appointment-block .event-time,
+    .calendar-event .event-time {
+        font-size: 10px !important;
+        opacity: 0.9 !important;
+    }
+    
+    /* Better event colors */
+    .event.confirmed,
+    .appointment-block.confirmed {
+        background: var(--ios-green) !important;
+        color: white !important;
+    }
+    
+    .event.pending,
+    .appointment-block.pending {
+        background: var(--ios-orange) !important;
+        color: white !important;
+    }
+    
+    .event.cancelled,
+    .appointment-block.cancelled {
+        background: var(--ios-gray-3) !important;
+        color: var(--ios-text-secondary) !important;
+    }
+    
+    /* FAB higher visibility */
+    .ios-fab {
+        bottom: calc(var(--ios-tab-bar-height) + 20px) !important;
+        right: 20px !important;
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 32px !important;
+        box-shadow: 0 4px 16px rgba(0, 122, 255, 0.45) !important;
+    }
+    
+    /* Month view improvements */
+    .month-grid .day-cell {
+        min-height: 70px !important;
+        padding: 4px !important;
+    }
+    
+    .month-grid .day-cell .date {
+        font-size: 13px !important;
+        font-weight: 500 !important;
+    }
+    
+    .month-grid .day-cell.today .date {
+        background: var(--ios-blue) !important;
+        color: white !important;
+        width: 26px !important;
+        height: 26px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .month-grid .day-cell .events-preview {
+        font-size: 10px !important;
+    }
+    
+    .month-grid .event-dot {
+        width: 6px !important;
+        height: 6px !important;
+        border-radius: 50% !important;
     }
 }
 
