@@ -4,17 +4,22 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 const customerStore = require('../utils/customerStore');
 const pianoStore = require('../utils/pianoStore');
+
+// Generate a unique batch ID for tracking imports
+function generateBatchId() {
+    return 'imp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
 
 /**
  * POST /api/import/gazelle
  * Import customers from Gazelle CSV data
  */
-router.post('/gazelle', authenticate, async (req, res) => {
+router.post('/gazelle', requireAuth, async (req, res) => {
     try {
-        const { customers, options = {} } = req.body;
+        const { customers, options = {}, batchId: clientBatchId } = req.body;
         const userId = req.user.id;
         
         if (!customers || !Array.isArray(customers)) {
@@ -24,9 +29,13 @@ router.post('/gazelle', authenticate, async (req, res) => {
             });
         }
         
+        // Use client-provided batch ID or generate new one
+        const batchId = clientBatchId || generateBatchId();
+        
         let imported = 0;
         let skipped = 0;
         const errors = [];
+        const importedIds = [];  // Track imported IDs for undo
         
         // Get existing customers for duplicate check
         let existingEmails = new Set();
@@ -57,7 +66,7 @@ router.post('/gazelle', authenticate, async (req, res) => {
                     continue;
                 }
                 
-                // Build customer data
+                // Build customer data with batch ID in notes
                 const customerData = {
                     name: customer.name.trim(),
                     email: customer.email?.trim() || null,
@@ -65,12 +74,13 @@ router.post('/gazelle', authenticate, async (req, res) => {
                     street: customer.street?.trim() || null,
                     postalCode: customer.postalCode?.trim() || null,
                     city: customer.city?.trim() || null,
-                    notes: buildNotes(customer)
+                    notes: buildNotes(customer, batchId)
                 };
                 
                 // Create customer
-                await customerStore.createCustomer(userId, customerData);
+                const newCustomer = await customerStore.createCustomer(userId, customerData);
                 imported++;
+                importedIds.push(newCustomer.id);
                 
                 // Add email to set to prevent duplicates within batch
                 if (customer.email) {
@@ -86,6 +96,8 @@ router.post('/gazelle', authenticate, async (req, res) => {
             success: true,
             imported,
             skipped,
+            batchId,
+            importedIds,
             errors: errors.length > 0 ? errors : undefined
         });
         
@@ -102,7 +114,7 @@ router.post('/gazelle', authenticate, async (req, res) => {
  * POST /api/import/csv
  * Generic CSV import (for future use)
  */
-router.post('/csv', authenticate, async (req, res) => {
+router.post('/csv', requireAuth, async (req, res) => {
     try {
         const { customers, mapping, options = {} } = req.body;
         const userId = req.user.id;
@@ -134,8 +146,13 @@ router.post('/csv', authenticate, async (req, res) => {
 /**
  * Build notes from Gazelle data
  */
-function buildNotes(customer) {
+function buildNotes(customer, batchId = null) {
     const parts = [];
+    
+    // Add import batch ID for undo functionality
+    if (batchId) {
+        parts.push(`Import Batch: ${batchId}`);
+    }
     
     // Add Gazelle ID reference
     if (customer.gazelleId) {
@@ -159,9 +176,9 @@ function buildNotes(customer) {
  * POST /api/import/gazelle-pianos
  * Import pianos from Gazelle CSV data
  */
-router.post('/gazelle-pianos', authenticate, async (req, res) => {
+router.post('/gazelle-pianos', requireAuth, async (req, res) => {
     try {
-        const { pianos, options = {} } = req.body;
+        const { pianos, options = {}, batchId: clientBatchId } = req.body;
         const userId = req.user.id;
         
         if (!pianos || !Array.isArray(pianos)) {
@@ -171,9 +188,13 @@ router.post('/gazelle-pianos', authenticate, async (req, res) => {
             });
         }
         
+        // Use client-provided batch ID or generate new one
+        const batchId = clientBatchId || generateBatchId();
+        
         let imported = 0;
         let skipped = 0;
         const errors = [];
+        const importedIds = [];  // Track imported IDs for undo
         
         // Get all customers to find matches by Gazelle ID
         const allCustomers = await customerStore.getAllCustomers(userId);
@@ -226,7 +247,7 @@ router.post('/gazelle-pianos', authenticate, async (req, res) => {
                         // Create the customer
                         const newCustomer = await customerStore.createCustomer(userId, {
                             name: piano.customerName,
-                            notes: `Gazelle ID: ${piano.clientId}\n\nAuto-created during piano import`
+                            notes: `Import Batch: ${batchId}\n\nGazelle ID: ${piano.clientId}\n\nAuto-created during piano import`
                         });
                         customerId = newCustomer.id;
                         customerByGazelleId.set(piano.clientId, newCustomer);
@@ -235,6 +256,8 @@ router.post('/gazelle-pianos', authenticate, async (req, res) => {
                 
                 // Build piano notes
                 const noteParts = [];
+                // Add import batch ID for undo functionality
+                noteParts.push(`Import Batch: ${batchId}`);
                 if (piano.gazelleId) {
                     noteParts.push(`Gazelle Piano ID: ${piano.gazelleId}`);
                 }
@@ -261,8 +284,9 @@ router.post('/gazelle-pianos', authenticate, async (req, res) => {
                 };
                 
                 // Create piano
-                await pianoStore.createPiano(userId, pianoData);
+                const newPiano = await pianoStore.createPiano(userId, pianoData);
                 imported++;
+                importedIds.push(newPiano.id);
                 
             } catch (err) {
                 errors.push(`Error importing "${piano.brand} ${piano.model || ''}": ${err.message}`);
@@ -273,11 +297,82 @@ router.post('/gazelle-pianos', authenticate, async (req, res) => {
             success: true,
             imported,
             skipped,
+            batchId,
+            importedIds,
             errors: errors.length > 0 ? errors : undefined
         });
         
     } catch (error) {
         console.error('Piano import error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+/**
+ * POST /api/import/undo
+ * Undo an import by batch ID - deletes all records from that import
+ */
+router.post('/undo', requireAuth, async (req, res) => {
+    try {
+        const { batchId, type, ids } = req.body;
+        const userId = req.user.id;
+        
+        if (!batchId || !type || !ids || !Array.isArray(ids)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Missing required fields: batchId, type, and ids' 
+            });
+        }
+        
+        let deleted = 0;
+        const errors = [];
+        
+        if (type === 'customers') {
+            // Delete customers by ID
+            for (const id of ids) {
+                try {
+                    // Verify the customer belongs to this user and has the batch ID
+                    const customer = await customerStore.getCustomerById(userId, id);
+                    if (customer && customer.notes && customer.notes.includes(`Import Batch: ${batchId}`)) {
+                        await customerStore.deleteCustomer(userId, id);
+                        deleted++;
+                    }
+                } catch (err) {
+                    errors.push(`Failed to delete customer ${id}: ${err.message}`);
+                }
+            }
+        } else if (type === 'pianos') {
+            // Delete pianos by ID
+            for (const id of ids) {
+                try {
+                    // Verify the piano belongs to this user and has the batch ID
+                    const piano = await pianoStore.getPianoById(userId, id);
+                    if (piano && piano.notes && piano.notes.includes(`Import Batch: ${batchId}`)) {
+                        await pianoStore.deletePiano(userId, id);
+                        deleted++;
+                    }
+                } catch (err) {
+                    errors.push(`Failed to delete piano ${id}: ${err.message}`);
+                }
+            }
+        } else {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Invalid type. Must be "customers" or "pianos"' 
+            });
+        }
+        
+        res.json({
+            success: true,
+            deleted,
+            errors: errors.length > 0 ? errors : undefined
+        });
+        
+    } catch (error) {
+        console.error('Undo import error:', error);
         res.status(500).json({ 
             success: false, 
             error: error.message 

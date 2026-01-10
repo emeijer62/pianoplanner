@@ -795,9 +795,13 @@
                         
                         <div class="error-list" id="errorList" style="display: none;"></div>
                         
-                        <div class="button-group" style="justify-content: center;" id="resultsButtons">
+                        <div class="button-group" style="justify-content: center; flex-wrap: wrap;" id="resultsButtons">
                             <a href="/customers.html" class="btn btn-primary" id="viewResultsBtn">View Customers</a>
                             <button class="btn btn-secondary" onclick="resetWizard()" data-i18n="import.importMore">Import More</button>
+                            <button class="btn btn-danger" id="undoImportBtn" onclick="undoImport()" style="display: none; background: #dc2626; color: white;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: middle;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                                Undo Import
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -811,6 +815,11 @@
         let selectedType = 'customers';
         let uploadedFile = null;
         let parsedData = [];
+        
+        // Undo import tracking
+        let lastImportBatchId = null;
+        let lastImportType = null;
+        let lastImportedIds = [];
         
         // Source selection
         document.querySelectorAll('.source-option[data-source]').forEach(option => {
@@ -1243,6 +1252,12 @@
                 includeCompany: document.getElementById('optIncludeCompany').checked
             };
             
+            // Generate batch ID for this entire import
+            const batchId = 'imp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            lastImportBatchId = batchId;
+            lastImportType = 'customers';
+            lastImportedIds = [];
+            
             // Filter data based on options
             let dataToImport = [...parsedData];
             
@@ -1278,7 +1293,8 @@
                         },
                         body: JSON.stringify({
                             customers: batch,
-                            options: options
+                            options: options,
+                            batchId: batchId
                         })
                     });
                     
@@ -1287,6 +1303,9 @@
                     if (result.success) {
                         imported += result.imported || 0;
                         skipped += result.skipped || 0;
+                        if (result.importedIds) {
+                            lastImportedIds = lastImportedIds.concat(result.importedIds);
+                        }
                         if (result.errors) {
                             errors = errors.concat(result.errors);
                         }
@@ -1317,6 +1336,12 @@
                 createCustomer: document.getElementById('optCreateCustomer').checked
             };
             
+            // Generate batch ID for this entire import
+            const batchId = 'imp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            lastImportBatchId = batchId;
+            lastImportType = 'pianos';
+            lastImportedIds = [];
+            
             // Filter data based on options
             let dataToImport = [...parsedData];
             
@@ -1344,7 +1369,8 @@
                         },
                         body: JSON.stringify({
                             pianos: batch,
-                            options: options
+                            options: options,
+                            batchId: batchId
                         })
                     });
                     
@@ -1353,6 +1379,9 @@
                     if (result.success) {
                         imported += result.imported || 0;
                         skipped += result.skipped || 0;
+                        if (result.importedIds) {
+                            lastImportedIds = lastImportedIds.concat(result.importedIds);
+                        }
                         if (result.errors) {
                             errors = errors.concat(result.errors);
                         }
@@ -1383,6 +1412,14 @@
             document.getElementById('importedCount').textContent = imported;
             document.getElementById('skippedCount').textContent = skipped;
             document.getElementById('errorCount').textContent = errors.length;
+            
+            // Show undo button if we have imported items
+            const undoBtn = document.getElementById('undoImportBtn');
+            if (imported > 0 && lastImportBatchId && lastImportedIds.length > 0) {
+                undoBtn.style.display = 'inline-flex';
+            } else {
+                undoBtn.style.display = 'none';
+            }
             
             // Update results button
             const viewBtn = document.getElementById('viewResultsBtn');
@@ -1435,12 +1472,18 @@
             uploadedFile = null;
             parsedData = [];
             
+            // Reset undo tracking
+            lastImportBatchId = null;
+            lastImportType = null;
+            lastImportedIds = [];
+            
             // Reset UI
             removeFile();
             document.getElementById('progressSection').style.display = 'block';
             document.getElementById('resultsSection').style.display = 'none';
             document.getElementById('progressBar').style.width = '0%';
             document.getElementById('errorList').style.display = 'none';
+            document.getElementById('undoImportBtn').style.display = 'none';
             
             // Reset checkboxes
             document.getElementById('optActiveOnly').checked = false;
@@ -1448,6 +1491,74 @@
             document.getElementById('optIncludeCompany').checked = true;
             
             setStep(1);
+        }
+        
+        // Undo import
+        async function undoImport() {
+            if (!lastImportBatchId || !lastImportType || lastImportedIds.length === 0) {
+                alert('No import to undo');
+                return;
+            }
+            
+            const count = lastImportedIds.length;
+            const typeLabel = lastImportType === 'pianos' ? 'pianos' : 'customers';
+            
+            if (!confirm(`Are you sure you want to undo this import?\n\nThis will delete ${count} ${typeLabel} that were just imported.\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            const undoBtn = document.getElementById('undoImportBtn');
+            undoBtn.disabled = true;
+            undoBtn.innerHTML = '<span class="spinner" style="width: 16px; height: 16px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; margin-right: 6px;"></span>Undoing...';
+            
+            try {
+                const response = await fetch('/api/import/undo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        batchId: lastImportBatchId,
+                        type: lastImportType,
+                        ids: lastImportedIds
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update the UI
+                    const resultsIcon = document.getElementById('resultsIcon');
+                    const resultsTitle = document.getElementById('resultsTitle');
+                    const resultsSubtitle = document.getElementById('resultsSubtitle');
+                    
+                    resultsIcon.className = 'results-icon';
+                    resultsIcon.textContent = '↩';
+                    resultsIcon.style.background = '#fef3c7';
+                    resultsIcon.style.color = '#d97706';
+                    resultsTitle.textContent = 'Import Undone';
+                    resultsSubtitle.textContent = `Successfully deleted ${result.deleted} ${typeLabel}.`;
+                    
+                    // Update counts
+                    document.getElementById('importedCount').textContent = '0';
+                    
+                    // Hide undo button
+                    undoBtn.style.display = 'none';
+                    
+                    // Clear tracking
+                    lastImportBatchId = null;
+                    lastImportType = null;
+                    lastImportedIds = [];
+                } else {
+                    alert('Error undoing import: ' + (result.error || 'Unknown error'));
+                    undoBtn.disabled = false;
+                    undoBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: middle;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>Undo Import';
+                }
+            } catch (err) {
+                alert('Error undoing import: ' + err.message);
+                undoBtn.disabled = false;
+                undoBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px; vertical-align: middle;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>Undo Import';
+            }
         }
         
         // Auth check

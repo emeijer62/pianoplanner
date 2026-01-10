@@ -1854,27 +1854,48 @@ async function openEditModal(appointmentId) {
     }
 }
 
-// Delete the currently editing appointment
-async function deleteCurrentAppointment() {
+// Delete the currently editing appointment - opens confirmation modal
+function deleteCurrentAppointment() {
     if (!editingAppointmentId) return;
     
-    // Get appointment title for confirmation
+    // Get appointment details for confirmation
     const appointment = allEvents.find(e => e.id === editingAppointmentId);
-    const title = appointment?.summary || 'this appointment';
+    if (!appointment) return;
     
-    if (!confirm(`Are you sure you want to delete "${title}"?\n\nThis action cannot be undone.`)) {
-        return;
+    const title = appointment.summary || 'Appointment';
+    
+    // Format date/time for display
+    let dateTime = '';
+    if (appointment.start?.dateTime) {
+        const startDate = new Date(appointment.start.dateTime);
+        const options = { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
+        dateTime = startDate.toLocaleDateString('nl-NL', options);
+    } else if (appointment.start?.date) {
+        const startDate = new Date(appointment.start.date);
+        const options = { weekday: 'short', day: 'numeric', month: 'short' };
+        dateTime = startDate.toLocaleDateString('nl-NL', options) + ' (hele dag)';
     }
+    
+    // Open the confirmation modal
+    openDeleteConfirmModal(editingAppointmentId, title, dateTime);
+}
+
+// Actually perform the delete after confirmation
+async function confirmDeleteAppointment() {
+    const appointmentId = pendingDeleteAppointmentId;
+    if (!appointmentId) return;
+    
+    // Close confirm modal
+    closeDeleteConfirmModal();
     
     try {
         // Instantly remove from UI (optimistic update)
-        const deletedId = editingAppointmentId;
-        allEvents = allEvents.filter(e => e.id !== deletedId);
-        closeModal(true);  // Force close after delete action
+        allEvents = allEvents.filter(e => e.id !== appointmentId);
+        closeModal(true);  // Force close the edit modal after delete action
         renderCalendar();
         
         // Then delete on server
-        const response = await fetch(`/api/appointments/${deletedId}`, {
+        const response = await fetch(`/api/appointments/${appointmentId}`, {
             method: 'DELETE'
         });
         
