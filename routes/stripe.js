@@ -102,6 +102,7 @@ router.post('/create-checkout-session', requireAuth, requireStripe, async (req, 
                         description: PRICES.monthly.description
                     },
                     unit_amount: PRICES.monthly.amount,
+                    tax_behavior: 'exclusive', // BTW wordt BOVENOP de €25 berekend
                     recurring: {
                         interval: PRICES.monthly.interval
                     }
