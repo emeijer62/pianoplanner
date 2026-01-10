@@ -367,7 +367,7 @@ app.post('/api/contact', async (req, res) => {
                     </html>
                 `;
                 
-                await emailService.sendMail({
+                await emailService.sendEmail({
                     to: process.env.CONTACT_EMAIL || process.env.SMTP_USER,
                     subject: `[PianoPlanner Contact] ${subjectLabels[subject] || subject} - ${name}`,
                     html: html,
