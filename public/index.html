@@ -21,9 +21,9 @@
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-    <link rel="stylesheet" href="icons.css?v=20260109b">
+    <link rel="stylesheet" href="icons.css?v=20260110">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="icons.js?v=20260109" defer></script>
+    <script src="icons.js?v=20260110" defer></script>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -44,7 +44,6 @@
             --blue-hover: #0077ed;
             --blue-light: rgba(0, 113, 227, 0.1);
             --green: #34c759;
-            --orange: #ff9500;
             --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         
@@ -61,9 +60,9 @@
         }
         
         h1, h2, h3 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
-        h1 { font-size: clamp(40px, 7vw, 64px); font-weight: 700; }
-        h2 { font-size: clamp(28px, 4vw, 40px); }
-        h3 { font-size: 20px; }
+        h1 { font-size: clamp(32px, 5vw, 48px); font-weight: 700; }
+        h2 { font-size: clamp(24px, 3vw, 32px); }
+        h3 { font-size: 18px; }
         p { color: var(--gray-500); }
         a { color: var(--blue); text-decoration: none; }
         
@@ -99,11 +98,6 @@
             color: var(--gray-900);
         }
         
-        .nav-logo img {
-            height: 32px;
-            width: auto;
-        }
-        
         .nav-links { display: flex; align-items: center; gap: 28px; }
         .nav-link { font-size: 14px; color: var(--gray-900); }
         .nav-link:hover { color: var(--blue); }
@@ -120,12 +114,23 @@
         
         .nav-mobile { display: none; background: var(--blue); color: white; border: none; padding: 8px 16px; border-radius: 980px; font-size: 14px; cursor: pointer; }
         
-        /* Hero */
+        /* Hero - Side by Side Layout */
         .hero {
-            padding: 120px 24px 60px;
-            text-align: center;
+            padding: 80px 24px 40px;
             background: linear-gradient(180deg, var(--gray-100) 0%, var(--white) 100%);
+            min-height: calc(100vh - 52px);
+            display: flex;
+            align-items: center;
         }
+        
+        .hero .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 48px;
+            align-items: center;
+        }
+        
+        .hero-content { text-align: left; }
         
         .hero-badge {
             display: inline-flex;
@@ -138,7 +143,7 @@
             font-size: 13px;
             font-weight: 500;
             color: var(--gray-500);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         
         .hero-badge-dot {
@@ -150,20 +155,20 @@
         .hero h1 { margin-bottom: 16px; }
         
         .hero-sub {
-            font-size: clamp(17px, 2vw, 20px);
+            font-size: 17px;
             color: var(--gray-500);
-            max-width: 520px;
-            margin: 0 auto 32px;
+            margin-bottom: 28px;
+            line-height: 1.6;
         }
         
-        .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
         
         /* iPhone Mockup */
         .iphone-mockup {
-            margin: 60px auto 0;
             position: relative;
-            width: 280px;
-            height: 570px;
+            width: 260px;
+            height: 530px;
+            margin: 0 auto;
         }
         
         .iphone-frame {
@@ -171,7 +176,7 @@
             top: 0; left: 0; right: 0; bottom: 0;
             background: #1d1d1f;
             border-radius: 44px;
-            padding: 14px;
+            padding: 12px;
             box-shadow: 
                 0 0 0 3px #2d2d2f,
                 0 25px 50px rgba(0,0,0,0.25),
@@ -180,13 +185,13 @@
         
         .iphone-notch {
             position: absolute;
-            top: 14px;
+            top: 12px;
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
-            height: 28px;
+            width: 90px;
+            height: 26px;
             background: #1d1d1f;
-            border-radius: 0 0 18px 18px;
+            border-radius: 0 0 16px 16px;
             z-index: 10;
         }
         
@@ -194,7 +199,7 @@
             width: 100%;
             height: 100%;
             background: white;
-            border-radius: 32px;
+            border-radius: 34px;
             overflow: hidden;
             position: relative;
         }
@@ -208,10 +213,10 @@
         
         .iphone-home-indicator {
             position: absolute;
-            bottom: 8px;
+            bottom: 6px;
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
+            width: 90px;
             height: 4px;
             background: rgba(0,0,0,0.2);
             border-radius: 2px;
@@ -221,9 +226,9 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 14px 28px;
+            padding: 12px 24px;
             border-radius: 980px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
             border: none;
             cursor: pointer;
@@ -236,25 +241,21 @@
         .btn-secondary:hover { background: var(--blue-light); }
         
         /* Features */
-        .features { padding: 60px 24px 80px; }
+        .features { padding: 40px 24px 60px; }
         
-        .section-head {
-            text-align: center;
-            margin-bottom: 48px;
-        }
-        
-        .section-head p { font-size: 17px; max-width: 480px; margin: 12px auto 0; }
+        .section-head { text-align: center; margin-bottom: 32px; }
+        .section-head p { font-size: 16px; max-width: 480px; margin: 10px auto 0; }
         
         .features-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            gap: 16px;
         }
         
         .feature {
             background: var(--gray-50);
-            border-radius: 16px;
-            padding: 28px 24px;
+            border-radius: 14px;
+            padding: 20px;
             transition: all 0.3s;
         }
         
@@ -265,42 +266,37 @@
         }
         
         .feature-icon {
-            width: 44px; height: 44px;
+            width: 40px; height: 40px;
             background: var(--white);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            margin-bottom: 16px;
+            font-size: 20px;
+            margin-bottom: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         
-        .feature h3 { margin-bottom: 8px; }
-        .feature p { font-size: 14px; line-height: 1.5; }
+        .feature h3 { margin-bottom: 6px; font-size: 16px; }
+        .feature p { font-size: 13px; line-height: 1.5; }
         
-        /* Beta CTA */
-        .beta-cta {
-            padding: 60px 24px;
+        /* CTA Section */
+        .cta-section {
+            padding: 40px 24px;
             background: var(--gray-900);
             text-align: center;
         }
         
-        .beta-cta h2 { color: white; margin-bottom: 12px; }
-        .beta-cta > .container > p { color: var(--gray-400); margin-bottom: 28px; font-size: 17px; }
+        .cta-section h2 { color: white; margin-bottom: 10px; }
+        .cta-section > .container > p { color: var(--gray-400); margin-bottom: 24px; font-size: 16px; }
         
-        .signup-form { max-width: 440px; margin: 0 auto; }
-        
-        .signup-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
+        .signup-form { max-width: 400px; margin: 0 auto; }
+        .signup-row { display: flex; gap: 10px; margin-bottom: 10px; }
         
         .signup-input {
             flex: 1;
-            padding: 14px 16px;
-            font-size: 15px;
+            padding: 12px 14px;
+            font-size: 14px;
             font-family: var(--font);
             border: none;
             border-radius: 10px;
@@ -310,17 +306,12 @@
         
         .signup-input::placeholder { color: var(--gray-400); }
         .signup-input:focus { outline: none; background: rgba(255,255,255,0.15); }
-        
-        .signup-btn {
-            width: 100%;
-            background: var(--blue);
-            border: none;
-        }
+        .signup-btn { width: 100%; background: var(--blue); border: none; }
         
         .signup-success {
-            padding: 32px;
+            padding: 24px;
             background: rgba(255,255,255,0.1);
-            border-radius: 16px;
+            border-radius: 14px;
         }
         
         .signup-success h3 { color: white; margin-bottom: 4px; }
@@ -328,7 +319,7 @@
         
         /* Status bar */
         .status-bar {
-            padding: 16px 24px;
+            padding: 14px 24px;
             background: var(--gray-100);
             border-top: 1px solid var(--gray-200);
         }
@@ -339,21 +330,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 24px;
+            gap: 20px;
             flex-wrap: wrap;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--gray-500);
         }
         
-        .status-item { display: flex; align-items: center; gap: 6px; }
+        .status-item { display: flex; align-items: center; gap: 5px; }
         .status-done { color: var(--green); }
-        .status-progress { color: var(--blue); font-weight: 500; }
         
         /* Footer */
-        .footer {
-            padding: 32px 24px;
-            background: var(--gray-100);
-        }
+        .footer { padding: 24px; background: var(--gray-100); }
         
         .footer-content {
             max-width: 1080px;
@@ -362,21 +349,21 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 12px;
         }
         
-        .footer-brand { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--gray-900); }
-        .footer-links { display: flex; gap: 24px; }
-        .footer-link { font-size: 13px; color: var(--gray-500); }
+        .footer-brand { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--gray-900); font-size: 14px; }
+        .footer-links { display: flex; gap: 20px; }
+        .footer-link { font-size: 12px; color: var(--gray-500); }
         .footer-link:hover { color: var(--gray-900); }
         
         .footer-copy {
             width: 100%;
             text-align: center;
-            padding-top: 20px;
+            padding-top: 16px;
             margin-top: 8px;
             border-top: 1px solid var(--gray-200);
-            font-size: 12px;
+            font-size: 11px;
             color: var(--gray-400);
         }
         
@@ -387,23 +374,33 @@
             .features-grid { grid-template-columns: repeat(2, 1fr); }
         }
         
+        @media (max-width: 768px) {
+            .hero .container {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+            
+            .hero-content { text-align: center; order: 2; }
+            
+            .iphone-mockup { order: 1; width: 220px; height: 450px; }
+            .iphone-frame { border-radius: 36px; padding: 10px; }
+            .iphone-screen { border-radius: 28px; }
+            .iphone-notch { width: 75px; height: 22px; top: 10px; }
+            .hero-cta { justify-content: center; }
+        }
+        
         @media (max-width: 640px) {
             html, body { overflow-x: hidden; }
             .nav-links { display: none; }
             .nav-mobile { display: block; }
-            .hero { padding: 100px 24px 48px; }
+            .hero { padding: 70px 24px 30px; min-height: auto; }
             .hero-cta { flex-direction: column; align-items: center; }
-            .iphone-mockup { width: 240px; height: 490px; margin-top: 48px; }
-            .iphone-frame { border-radius: 38px; padding: 12px; }
-            .iphone-screen { border-radius: 28px; }
-            .iphone-notch { width: 85px; height: 24px; top: 12px; }
             .btn { width: 100%; max-width: 280px; justify-content: center; }
             .features-grid { grid-template-columns: 1fr; }
             .signup-row { flex-direction: column; }
             .footer-content { flex-direction: column; text-align: center; }
             .footer-links { flex-wrap: wrap; justify-content: center; }
-            .status-content { flex-direction: column; gap: 8px; }
-            .status-item { font-size: 12px; }
+            .status-content { flex-direction: column; gap: 6px; }
         }
     </style>
 </head>
@@ -411,43 +408,43 @@
     <nav class="nav">
         <div class="nav-content">
             <a href="/" class="nav-logo">
-                <i class="icon-piano"></i> PianoPlanner
+                🎹 PianoPlanner
             </a>
             <div class="nav-links">
-                <a href="#features" class="nav-link">Features</a>
-                <a href="/pricing.html" class="nav-link">Pricing</a>
-                <a href="/login.html" class="nav-cta">Get Started</a>
+                <a href="#features" class="nav-link" data-i18n="landing.features">Features</a>
+                <a href="/pricing.html" class="nav-link" data-i18n="landing.pricing">Pricing</a>
+                <a href="/login.html" class="nav-cta" data-i18n="landing.getStarted">Get Started</a>
             </div>
-            <button class="nav-mobile" onclick="location.href='/login.html'">Get Started</button>
+            <button class="nav-mobile" onclick="location.href='/login.html'" data-i18n="landing.getStarted">Get Started</button>
         </div>
     </nav>
     
     <section class="hero">
         <div class="container">
-            <div class="hero-badge">
-                <span class="hero-badge-dot"></span>
-                <span>Now Live</span>
-            </div>
-            <h1>The smart calendar for<br>piano technicians.</h1>
-            <p class="hero-sub">
-                Optimize routes. Manage clients. Let customers book online. 
-                All in one beautifully simple app.
-            </p>
-            <div class="hero-cta">
-                <a href="/login.html" class="btn btn-primary">
-                    Get Started Free →
-                </a>
-                <a href="#features" class="btn btn-secondary">Learn more</a>
-            </div>
-            
-            <!-- iPhone Mockup -->
+            <!-- iPhone Mockup - Left -->
             <div class="iphone-mockup">
                 <div class="iphone-frame">
                     <div class="iphone-notch"></div>
                     <div class="iphone-screen">
-                        <img src="/assets/iphone-screenshot.jpeg" alt="PianoPlanner mobile app screenshot">
+                        <img src="/assets/iphone-screenshot.jpeg" alt="PianoPlanner mobile app">
                         <div class="iphone-home-indicator"></div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Content - Right -->
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="hero-badge-dot"></span>
+                    <span data-i18n="landing.nowLive">Now Live</span>
+                </div>
+                <h1 data-i18n="landing.headline">The smart calendar for piano technicians.</h1>
+                <p class="hero-sub" data-i18n="landing.subheadline">Optimize routes. Manage clients. Let customers book online. All in one beautifully simple app.</p>
+                <div class="hero-cta">
+                    <a href="/login.html" class="btn btn-primary">
+                        <span data-i18n="landing.startFree">Get Started Free</span> →
+                    </a>
+                    <a href="#features" class="btn btn-secondary" data-i18n="landing.learnMore">Learn more</a>
                 </div>
             </div>
         </div>
@@ -456,71 +453,71 @@
     <section class="features" id="features">
         <div class="container">
             <div class="section-head">
-                <h2>Everything you need.</h2>
-                <p>Built by and for piano technicians. Every feature designed to save you time.</p>
+                <h2 data-i18n="landing.everythingYouNeed">Everything you need.</h2>
+                <p data-i18n="landing.builtFor">Built by and for piano technicians. Every feature designed to save you time.</p>
             </div>
             
             <div class="features-grid">
                 <div class="feature">
                     <div class="feature-icon">🧠</div>
-                    <h3>Smart Suggestions</h3>
-                    <p>AI-powered booking suggestions based on existing appointments and location. Optimal routes, automatically.</p>
+                    <h3 data-i18n="landing.feature1Title">Smart Suggestions</h3>
+                    <p data-i18n="landing.feature1Desc">AI-powered booking suggestions based on existing appointments and location.</p>
                 </div>
                 
                 <div class="feature">
-                    <div class="feature-icon"><i data-lucide="calendar" style="width: 32px; height: 32px;"></i></div>
-                    <h3>Calendar Sync</h3>
-                    <p>Two-way sync with Google & Apple Calendar. Real-time updates, no double bookings.</p>
+                    <div class="feature-icon"><i data-lucide="calendar" style="width: 24px; height: 24px;"></i></div>
+                    <h3 data-i18n="landing.feature2Title">Calendar Sync</h3>
+                    <p data-i18n="landing.feature2Desc">Two-way sync with Google & Apple Calendar. Real-time updates.</p>
                 </div>
                 
                 <div class="feature">
-                    <div class="feature-icon"><i data-lucide="piano" style="width: 32px; height: 32px;"></i></div>
-                    <h3>Piano Service History</h3>
-                    <p>Track every piano with automatic service history. Know exactly when each instrument needs attention.</p>
+                    <div class="feature-icon"><i data-lucide="piano" style="width: 24px; height: 24px;"></i></div>
+                    <h3 data-i18n="landing.feature3Title">Piano Service History</h3>
+                    <p data-i18n="landing.feature3Desc">Track every piano with automatic service history.</p>
                 </div>
                 
                 <div class="feature">
-                    <div class="feature-icon"><i data-lucide="link" style="width: 32px; height: 32px;"></i></div>
-                    <h3>Personal Booking Links</h3>
-                    <p>Give theaters and regular customers their own booking link. Pre-filled details, instant scheduling.</p>
+                    <div class="feature-icon"><i data-lucide="link" style="width: 24px; height: 24px;"></i></div>
+                    <h3 data-i18n="landing.feature4Title">Personal Booking Links</h3>
+                    <p data-i18n="landing.feature4Desc">Give customers their own booking link. Pre-filled details.</p>
                 </div>
                 
                 <div class="feature">
                     <div class="feature-icon">🎭</div>
-                    <h3>Theater Availability</h3>
-                    <p>Separate hours for venues. Theaters book evenings & weekends, private clients book during the day.</p>
+                    <h3 data-i18n="landing.feature5Title">Theater Availability</h3>
+                    <p data-i18n="landing.feature5Desc">Separate hours for venues. Theaters book evenings & weekends.</p>
                 </div>
                 
                 <div class="feature">
-                    <div class="feature-icon"><i data-lucide="mail" style="width: 32px; height: 32px;"></i></div>
-                    <h3>Custom Email Domain</h3>
-                    <p>Send confirmations from your own email address. Professional appearance, better deliverability.</p>
+                    <div class="feature-icon"><i data-lucide="mail" style="width: 24px; height: 24px;"></i></div>
+                    <h3 data-i18n="landing.feature6Title">Custom Email Domain</h3>
+                    <p data-i18n="landing.feature6Desc">Send confirmations from your own email address.</p>
                 </div>
             </div>
         </div>
     </section>
     
-    <section class="beta-cta" id="signup">
+    <section class="cta-section" id="signup">
         <div class="container">
-            <h2>Start Free Today</h2>
-            <p>Join piano technicians who save hours every week with smarter scheduling.</p>
+            <h2 data-i18n="landing.startToday">Start Free Today</h2>
+            <p data-i18n="landing.joinTechnicians">Join piano technicians who save hours every week with smarter scheduling.</p>
             
             <form class="signup-form" id="betaForm" onsubmit="submitBeta(event)">
                 <div class="signup-row">
-                    <input type="text" id="betaName" placeholder="Your name" required class="signup-input">
+                    <input type="text" id="betaName" data-i18n-placeholder="landing.yourName" placeholder="Your name" required class="signup-input">
                     <input type="email" id="betaEmail" placeholder="Email" required class="signup-input">
                 </div>
                 <div class="signup-row">
-                    <input type="password" id="betaPassword" placeholder="Password (min. 8 characters)" required minlength="8" class="signup-input">
+                    <input type="password" id="betaPassword" data-i18n-placeholder="landing.password" placeholder="Password (min. 8 characters)" required minlength="8" class="signup-input">
                 </div>
                 <button type="submit" class="btn btn-primary signup-btn" id="betaBtn">
-                    Create Free Account →
+                    <span data-i18n="landing.createAccount">Create Free Account</span> →
                 </button>
             </form>
             
             <div id="betaSuccess" class="signup-success" style="display: none;">
-                <h3>✓ Account created!</h3>
-                <p>Your account is awaiting approval. You'll receive an email when activated.</p>
+                <h3 data-i18n="landing.accountCreated">✓ Account created!</h3>
+                <p data-i18n="landing.awaitingApproval">Your account is awaiting approval. You'll receive an email when activated.</p>
             </div>
         </div>
     </section>
@@ -531,19 +528,17 @@
             <span class="status-item status-done">✓ Microsoft 365</span>
             <span class="status-item status-done">✓ Apple Calendar</span>
             <span class="status-item status-done">✓ Smart Suggestions</span>
-            <span class="status-item status-done">✓ Theater Booking</span>
         </div>
     </div>
     
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <i data-lucide="piano" style="width: 20px; height: 20px;"></i>
-                <span>PianoPlanner</span>
+                🎹 <span>PianoPlanner</span>
             </div>
             <div class="footer-links">
-                <a href="#features" class="footer-link">Features</a>
-                <a href="/pricing.html" class="footer-link">Pricing</a>
+                <a href="#features" class="footer-link" data-i18n="landing.features">Features</a>
+                <a href="/pricing.html" class="footer-link" data-i18n="landing.pricing">Pricing</a>
                 <a href="/login.html" class="footer-link">Login</a>
             </div>
             <div class="footer-copy">
@@ -553,6 +548,162 @@
     </footer>
     
     <script>
+        const landingTranslations = {
+            en: {
+                'landing.features': 'Features',
+                'landing.pricing': 'Pricing',
+                'landing.getStarted': 'Get Started',
+                'landing.nowLive': 'Now Live',
+                'landing.headline': 'The smart calendar for piano technicians.',
+                'landing.subheadline': 'Optimize routes. Manage clients. Let customers book online. All in one beautifully simple app.',
+                'landing.startFree': 'Get Started Free',
+                'landing.learnMore': 'Learn more',
+                'landing.everythingYouNeed': 'Everything you need.',
+                'landing.builtFor': 'Built by and for piano technicians. Every feature designed to save you time.',
+                'landing.feature1Title': 'Smart Suggestions',
+                'landing.feature1Desc': 'AI-powered booking suggestions based on existing appointments and location.',
+                'landing.feature2Title': 'Calendar Sync',
+                'landing.feature2Desc': 'Two-way sync with Google & Apple Calendar. Real-time updates.',
+                'landing.feature3Title': 'Piano Service History',
+                'landing.feature3Desc': 'Track every piano with automatic service history.',
+                'landing.feature4Title': 'Personal Booking Links',
+                'landing.feature4Desc': 'Give customers their own booking link. Pre-filled details.',
+                'landing.feature5Title': 'Theater Availability',
+                'landing.feature5Desc': 'Separate hours for venues. Theaters book evenings & weekends.',
+                'landing.feature6Title': 'Custom Email Domain',
+                'landing.feature6Desc': 'Send confirmations from your own email address.',
+                'landing.startToday': 'Start Free Today',
+                'landing.joinTechnicians': 'Join piano technicians who save hours every week with smarter scheduling.',
+                'landing.yourName': 'Your name',
+                'landing.password': 'Password (min. 8 characters)',
+                'landing.createAccount': 'Create Free Account',
+                'landing.accountCreated': '✓ Account created!',
+                'landing.awaitingApproval': "Your account is awaiting approval. You'll receive an email when activated."
+            },
+            nl: {
+                'landing.features': 'Functies',
+                'landing.pricing': 'Prijzen',
+                'landing.getStarted': 'Start nu',
+                'landing.nowLive': 'Nu beschikbaar',
+                'landing.headline': 'De slimme agenda voor pianotechnici.',
+                'landing.subheadline': 'Optimaliseer routes. Beheer klanten. Laat klanten online boeken. Alles in één overzichtelijke app.',
+                'landing.startFree': 'Gratis starten',
+                'landing.learnMore': 'Meer info',
+                'landing.everythingYouNeed': 'Alles wat je nodig hebt.',
+                'landing.builtFor': 'Gemaakt door en voor pianotechnici. Elke functie ontworpen om tijd te besparen.',
+                'landing.feature1Title': 'Slimme suggesties',
+                'landing.feature1Desc': 'AI-gestuurde boekingssuggesties op basis van bestaande afspraken en locatie.',
+                'landing.feature2Title': 'Agenda synchronisatie',
+                'landing.feature2Desc': 'Tweeweg sync met Google & Apple Calendar. Realtime updates.',
+                'landing.feature3Title': 'Piano servicehistorie',
+                'landing.feature3Desc': 'Volg elke piano met automatische servicehistorie.',
+                'landing.feature4Title': 'Persoonlijke boeklinks',
+                'landing.feature4Desc': 'Geef klanten hun eigen boekingslink. Vooraf ingevulde gegevens.',
+                'landing.feature5Title': 'Theater beschikbaarheid',
+                'landing.feature5Desc': "Aparte uren voor theaters. Zij boeken 's avonds & weekends.",
+                'landing.feature6Title': 'Eigen e-maildomein',
+                'landing.feature6Desc': 'Verstuur bevestigingen vanaf je eigen e-mailadres.',
+                'landing.startToday': 'Start vandaag gratis',
+                'landing.joinTechnicians': 'Sluit je aan bij pianotechnici die elke week uren besparen.',
+                'landing.yourName': 'Je naam',
+                'landing.password': 'Wachtwoord (min. 8 tekens)',
+                'landing.createAccount': 'Gratis account aanmaken',
+                'landing.accountCreated': '✓ Account aangemaakt!',
+                'landing.awaitingApproval': 'Je account wacht op goedkeuring. Je ontvangt een e-mail zodra het actief is.'
+            },
+            de: {
+                'landing.features': 'Funktionen',
+                'landing.pricing': 'Preise',
+                'landing.getStarted': 'Loslegen',
+                'landing.nowLive': 'Jetzt verfügbar',
+                'landing.headline': 'Der smarte Kalender für Klaviertechniker.',
+                'landing.subheadline': 'Routen optimieren. Kunden verwalten. Online buchen lassen. Alles in einer übersichtlichen App.',
+                'landing.startFree': 'Kostenlos starten',
+                'landing.learnMore': 'Mehr erfahren',
+                'landing.everythingYouNeed': 'Alles was Sie brauchen.',
+                'landing.builtFor': 'Von und für Klaviertechniker entwickelt. Jede Funktion spart Zeit.',
+                'landing.feature1Title': 'Smarte Vorschläge',
+                'landing.feature1Desc': 'KI-gestützte Buchungsvorschläge basierend auf Terminen und Standort.',
+                'landing.feature2Title': 'Kalender-Sync',
+                'landing.feature2Desc': 'Zwei-Wege-Sync mit Google & Apple Calendar. Echtzeit-Updates.',
+                'landing.feature3Title': 'Klavier-Servicehistorie',
+                'landing.feature3Desc': 'Verfolgen Sie jedes Klavier mit automatischer Servicehistorie.',
+                'landing.feature4Title': 'Persönliche Buchungslinks',
+                'landing.feature4Desc': 'Geben Sie Kunden ihren eigenen Buchungslink.',
+                'landing.feature5Title': 'Theater-Verfügbarkeit',
+                'landing.feature5Desc': 'Separate Zeiten für Veranstaltungsorte. Abende & Wochenenden.',
+                'landing.feature6Title': 'Eigene E-Mail-Domain',
+                'landing.feature6Desc': 'Senden Sie Bestätigungen von Ihrer eigenen E-Mail-Adresse.',
+                'landing.startToday': 'Heute kostenlos starten',
+                'landing.joinTechnicians': 'Schließen Sie sich Klaviertechnikern an, die jede Woche Stunden sparen.',
+                'landing.yourName': 'Ihr Name',
+                'landing.password': 'Passwort (min. 8 Zeichen)',
+                'landing.createAccount': 'Kostenloses Konto erstellen',
+                'landing.accountCreated': '✓ Konto erstellt!',
+                'landing.awaitingApproval': 'Ihr Konto wartet auf Genehmigung. Sie erhalten eine E-Mail.'
+            },
+            fr: {
+                'landing.features': 'Fonctionnalités',
+                'landing.pricing': 'Tarifs',
+                'landing.getStarted': 'Commencer',
+                'landing.nowLive': 'Disponible',
+                'landing.headline': "L'agenda intelligent pour accordeurs de piano.",
+                'landing.subheadline': 'Optimisez les itinéraires. Gérez les clients. Réservations en ligne. Tout dans une application simple.',
+                'landing.startFree': 'Commencer gratuitement',
+                'landing.learnMore': 'En savoir plus',
+                'landing.everythingYouNeed': 'Tout ce dont vous avez besoin.',
+                'landing.builtFor': 'Conçu par et pour les techniciens piano. Chaque fonction fait gagner du temps.',
+                'landing.feature1Title': 'Suggestions intelligentes',
+                'landing.feature1Desc': 'Suggestions de réservation IA basées sur les rendez-vous et la localisation.',
+                'landing.feature2Title': 'Sync calendrier',
+                'landing.feature2Desc': 'Synchronisation bidirectionnelle avec Google & Apple Calendar.',
+                'landing.feature3Title': 'Historique de service',
+                'landing.feature3Desc': 'Suivez chaque piano avec un historique de service automatique.',
+                'landing.feature4Title': 'Liens de réservation',
+                'landing.feature4Desc': 'Donnez aux clients leur propre lien de réservation.',
+                'landing.feature5Title': 'Disponibilité théâtre',
+                'landing.feature5Desc': 'Horaires séparés pour les salles. Soirées & week-ends.',
+                'landing.feature6Title': 'Domaine email personnalisé',
+                'landing.feature6Desc': 'Envoyez des confirmations depuis votre propre adresse email.',
+                'landing.startToday': 'Commencez gratuitement',
+                'landing.joinTechnicians': 'Rejoignez les techniciens piano qui gagnent des heures chaque semaine.',
+                'landing.yourName': 'Votre nom',
+                'landing.password': 'Mot de passe (min. 8 caractères)',
+                'landing.createAccount': 'Créer un compte gratuit',
+                'landing.accountCreated': '✓ Compte créé !',
+                'landing.awaitingApproval': "Votre compte est en attente d'approbation. Vous recevrez un email."
+            }
+        };
+        
+        function getBrowserLanguage() {
+            const lang = navigator.language || navigator.userLanguage;
+            const shortLang = lang.split('-')[0];
+            return ['nl', 'de', 'fr'].includes(shortLang) ? shortLang : 'en';
+        }
+        
+        function applyTranslations() {
+            const lang = getBrowserLanguage();
+            const translations = landingTranslations[lang];
+            if (!translations) return;
+            
+            document.documentElement.lang = lang;
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[key]) el.textContent = translations[key];
+            });
+            
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[key]) el.placeholder = translations[key];
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTranslations();
+            lucide.createIcons();
+        });
+        
         document.querySelectorAll('a[href^="#"]').forEach(a => {
             a.addEventListener('click', e => {
                 e.preventDefault();
@@ -563,14 +714,15 @@
         async function submitBeta(e) {
             e.preventDefault();
             const btn = document.getElementById('betaBtn');
+            const lang = getBrowserLanguage();
             btn.disabled = true;
-            btn.textContent = 'Creating account...';
+            btn.innerHTML = lang === 'nl' ? 'Account aanmaken...' : 'Creating account...';
             
             const password = document.getElementById('betaPassword').value;
             if (password.length < 8) {
-                alert('Password must be at least 8 characters');
+                alert(lang === 'nl' ? 'Wachtwoord moet minimaal 8 tekens zijn' : 'Password must be at least 8 characters');
                 btn.disabled = false;
-                btn.textContent = 'Create Free Account →';
+                btn.innerHTML = '<span>' + landingTranslations[lang]['landing.createAccount'] + '</span> →';
                 return;
             }
             
@@ -591,14 +743,14 @@
                     document.getElementById('betaForm').style.display = 'none';
                     document.getElementById('betaSuccess').style.display = 'block';
                 } else {
-                    alert(data.error || 'Something went wrong. Please try again.');
+                    alert(data.error || (lang === 'nl' ? 'Er ging iets mis. Probeer opnieuw.' : 'Something went wrong. Please try again.'));
                     btn.disabled = false;
-                    btn.textContent = 'Create Free Account →';
+                    btn.innerHTML = '<span>' + landingTranslations[lang]['landing.createAccount'] + '</span> →';
                 }
-            } catch {
-                alert('Connection error. Please try again.');
+            } catch (err) {
+                alert(lang === 'nl' ? 'Verbindingsfout. Probeer opnieuw.' : 'Connection error. Please try again.');
                 btn.disabled = false;
-                btn.textContent = 'Create Free Account →';
+                btn.innerHTML = '<span>' + landingTranslations[lang]['landing.createAccount'] + '</span> →';
             }
         }
     </script>
