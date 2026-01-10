@@ -1722,6 +1722,21 @@
     .header-actions .btn {
         flex: 1;
         justify-content: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+        padding: 0 12px !important;
+    }
+    
+    /* Shorter button text on mobile */
+    .page-actions .btn .btn-text {
+        display: none;
+    }
+    
+    /* Hide duplicates button completely if 0 duplicates */
+    #duplicates-btn[style*="display: none"] {
+        display: none !important;
     }
     
     /* ==========================================
