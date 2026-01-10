@@ -20,7 +20,7 @@ function generateBatchId() {
 router.post('/gazelle', requireAuth, async (req, res) => {
     try {
         const { customers, options = {}, batchId: clientBatchId } = req.body;
-        const userId = req.user.id;
+        const userId = req.session.user.id;
         
         if (!customers || !Array.isArray(customers)) {
             return res.status(400).json({ 
@@ -123,7 +123,7 @@ router.post('/gazelle', requireAuth, async (req, res) => {
 router.post('/csv', requireAuth, async (req, res) => {
     try {
         const { customers, mapping, options = {} } = req.body;
-        const userId = req.user.id;
+        const userId = req.session.user.id;
         
         if (!customers || !Array.isArray(customers)) {
             return res.status(400).json({ 
@@ -185,7 +185,7 @@ function buildNotes(customer, batchId = null) {
 router.post('/gazelle-pianos', requireAuth, async (req, res) => {
     try {
         const { pianos, options = {}, batchId: clientBatchId } = req.body;
-        const userId = req.user.id;
+        const userId = req.session.user.id;
         
         if (!pianos || !Array.isArray(pianos)) {
             return res.status(400).json({ 
@@ -332,7 +332,7 @@ router.post('/gazelle-pianos', requireAuth, async (req, res) => {
 router.post('/undo', requireAuth, async (req, res) => {
     try {
         const { batchId, type, ids } = req.body;
-        const userId = req.user.id;
+        const userId = req.session.user.id;
         
         if (!batchId || !type || !ids || !Array.isArray(ids)) {
             return res.status(400).json({ 
