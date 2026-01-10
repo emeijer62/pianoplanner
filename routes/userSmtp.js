@@ -115,12 +115,7 @@ router.get('/settings', requireAuth, async (req, res) => {
         const db = getDb();
         const userId = req.session.user.id;
 
-        const settings = await new Promise((resolve, reject) => {
-            db.get('SELECT * FROM user_smtp_settings WHERE user_id = ?', [userId], (err, row) => {
-                if (err) reject(err);
-                else resolve(row);
-            });
-        });
+        const settings = await db.get('SELECT * FROM user_smtp_settings WHERE user_id = ?', [userId]);
 
         if (!settings) {
             return res.json({
@@ -185,69 +180,54 @@ router.post('/settings', requireAuth, async (req, res) => {
         }
 
         // Check if settings exist
-        const existing = await new Promise((resolve, reject) => {
-            db.get('SELECT id, smtp_pass_encrypted FROM user_smtp_settings WHERE user_id = ?', [userId], (err, row) => {
-                if (err) reject(err);
-                else resolve(row);
-            });
-        });
+        const existing = await db.get('SELECT id, smtp_pass_encrypted FROM user_smtp_settings WHERE user_id = ?', [userId]);
 
         if (existing) {
             // Update existing settings
-            await new Promise((resolve, reject) => {
-                db.run(`
-                    UPDATE user_smtp_settings SET
-                        enabled = ?,
-                        provider = ?,
-                        smtp_host = ?,
-                        smtp_port = ?,
-                        smtp_secure = ?,
-                        smtp_user = ?,
-                        smtp_pass_encrypted = COALESCE(?, smtp_pass_encrypted),
-                        from_name = ?,
-                        from_email = ?,
-                        verified = 0,
-                        updated_at = CURRENT_TIMESTAMP
-                    WHERE user_id = ?
-                `, [
-                    enabled ? 1 : 0,
-                    provider,
-                    host,
-                    port,
-                    secure ? 1 : 0,
-                    smtpUser,
-                    encryptedPass,
-                    fromName || null,
-                    fromEmail || smtpUser,
-                    userId
-                ], (err) => {
-                    if (err) reject(err);
-                    else resolve();
-                });
-            });
+            await db.run(`
+                UPDATE user_smtp_settings SET
+                    enabled = ?,
+                    provider = ?,
+                    smtp_host = ?,
+                    smtp_port = ?,
+                    smtp_secure = ?,
+                    smtp_user = ?,
+                    smtp_pass_encrypted = COALESCE(?, smtp_pass_encrypted),
+                    from_name = ?,
+                    from_email = ?,
+                    verified = 0,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = ?
+            `, [
+                enabled ? 1 : 0,
+                provider,
+                host,
+                port,
+                secure ? 1 : 0,
+                smtpUser,
+                encryptedPass,
+                fromName || null,
+                fromEmail || smtpUser,
+                userId
+            ]);
         } else {
             // Insert new settings
-            await new Promise((resolve, reject) => {
-                db.run(`
-                    INSERT INTO user_smtp_settings 
-                    (user_id, enabled, provider, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_pass_encrypted, from_name, from_email)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                `, [
-                    userId,
-                    enabled ? 1 : 0,
-                    provider,
-                    host,
-                    port,
-                    secure ? 1 : 0,
-                    smtpUser,
-                    encryptedPass,
-                    fromName || null,
-                    fromEmail || smtpUser
-                ], (err) => {
-                    if (err) reject(err);
-                    else resolve();
-                });
-            });
+            await db.run(`
+                INSERT INTO user_smtp_settings 
+                (user_id, enabled, provider, smtp_host, smtp_port, smtp_secure, smtp_user, smtp_pass_encrypted, from_name, from_email)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                userId,
+                enabled ? 1 : 0,
+                provider,
+                host,
+                port,
+                secure ? 1 : 0,
+                smtpUser,
+                encryptedPass,
+                fromName || null,
+                fromEmail || smtpUser
+            ]);
         }
 
         console.log(`📧 SMTP settings saved for user ${req.session.user.email}`);
@@ -269,12 +249,7 @@ router.post('/test', requireAuth, async (req, res) => {
         const userEmail = req.session.user.email;
 
         // Get settings from database
-        const settings = await new Promise((resolve, reject) => {
-            db.get('SELECT * FROM user_smtp_settings WHERE user_id = ?', [userId], (err, row) => {
-                if (err) reject(err);
-                else resolve(row);
-            });
-        });
+        const settings = await db.get('SELECT * FROM user_smtp_settings WHERE user_id = ?', [userId]);
 
         if (!settings || !settings.smtp_user || !settings.smtp_pass_encrypted) {
             return res.status(400).json({ 
@@ -340,18 +315,13 @@ router.post('/test', requireAuth, async (req, res) => {
         });
 
         // Update verified status
-        await new Promise((resolve, reject) => {
-            db.run(`
-                UPDATE user_smtp_settings SET 
-                    verified = 1, 
-                    last_test_at = CURRENT_TIMESTAMP,
-                    last_test_result = 'success'
-                WHERE user_id = ?
-            `, [userId], (err) => {
-                if (err) reject(err);
-                else resolve();
-            });
-        });
+        await db.run(`
+            UPDATE user_smtp_settings SET 
+                verified = 1, 
+                last_test_at = CURRENT_TIMESTAMP,
+                last_test_result = 'success'
+            WHERE user_id = ?
+        `, [userId]);
 
         console.log(`✅ SMTP test successful for user ${userEmail}`);
         res.json({ 
@@ -364,15 +334,17 @@ router.post('/test', requireAuth, async (req, res) => {
 
         // Update test result
         const db = getDb();
-        await new Promise((resolve) => {
-            db.run(`
+        try {
+            await db.run(`
                 UPDATE user_smtp_settings SET 
                     verified = 0,
                     last_test_at = CURRENT_TIMESTAMP,
                     last_test_result = ?
                 WHERE user_id = ?
-            `, [error.message, req.session.user.id], () => resolve());
-        });
+            `, [error.message, req.session.user.id]);
+        } catch (e) {
+            console.error('Failed to update test result:', e);
+        }
 
         // Return user-friendly error
         let errorMessage = 'Kon geen verbinding maken';
@@ -400,12 +372,7 @@ router.delete('/settings', requireAuth, async (req, res) => {
         const db = getDb();
         const userId = req.session.user.id;
 
-        await new Promise((resolve, reject) => {
-            db.run('DELETE FROM user_smtp_settings WHERE user_id = ?', [userId], (err) => {
-                if (err) reject(err);
-                else resolve();
-            });
-        });
+        await db.run('DELETE FROM user_smtp_settings WHERE user_id = ?', [userId]);
 
         console.log(`📧 SMTP settings removed for user ${req.session.user.email}`);
         res.json({ success: true, message: 'SMTP instellingen verwijderd' });
@@ -423,16 +390,10 @@ async function getUserTransporter(userId) {
     try {
         const db = getDb();
         
-        const settings = await new Promise((resolve, reject) => {
-            db.get(
-                'SELECT * FROM user_smtp_settings WHERE user_id = ? AND enabled = 1 AND verified = 1',
-                [userId],
-                (err, row) => {
-                    if (err) reject(err);
-                    else resolve(row);
-                }
-            );
-        });
+        const settings = await db.get(
+            'SELECT * FROM user_smtp_settings WHERE user_id = ? AND enabled = 1 AND verified = 1',
+            [userId]
+        );
 
         if (!settings || !settings.smtp_pass_encrypted) {
             return null;
