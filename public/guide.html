@@ -17,6 +17,7 @@
             background: #f5f7fa;
             color: #1a1a1a;
             line-height: 1.7;
+            visibility: hidden;
         }
 
         /* Header */
@@ -1607,6 +1608,26 @@
     </footer>
 
     <script>
+        // Check login - redirect if not authenticated
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                if (!data.loggedIn) {
+                    window.location.href = '/login.html';
+                    return false;
+                }
+                document.body.style.visibility = 'visible';
+                return true;
+            } catch (error) {
+                window.location.href = '/login.html';
+                return false;
+            }
+        }
+        
+        // Check auth immediately
+        checkAuth();
+        
         // Check if mobile
         const isMobile = () => window.innerWidth <= 768;
         
