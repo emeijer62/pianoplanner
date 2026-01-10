@@ -1,6 +1,6 @@
 /**
  * Stripe Routes voor PianoPlanner
- * Abonnementen: €30/maand excl BTW (€36,30 incl 21% BTW)
+ * B2B Pricing: €30/maand excl. BTW
  */
 
 const express = require('express');
