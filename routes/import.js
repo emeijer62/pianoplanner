@@ -1,5 +1,5 @@
 /**
- * Import Routes - Gazelle en CSV import
+ * Import Routes - External system and CSV import
  */
 
 const express = require('express');
@@ -79,8 +79,14 @@ router.post('/gazelle', requireAuth, async (req, res) => {
                 
                 // Create customer
                 const newCustomer = await customerStore.createCustomer(userId, customerData);
-                imported++;
-                importedIds.push(newCustomer.id);
+                
+                if (newCustomer && newCustomer.id) {
+                    imported++;
+                    importedIds.push(newCustomer.id);
+                } else {
+                    errors.push(`Failed to create customer "${customer.name}": No ID returned`);
+                    continue;
+                }
                 
                 // Add email to set to prevent duplicates within batch
                 if (customer.email) {
@@ -144,7 +150,7 @@ router.post('/csv', requireAuth, async (req, res) => {
 });
 
 /**
- * Build notes from Gazelle data
+ * Build notes from imported data
  */
 function buildNotes(customer, batchId = null) {
     const parts = [];
@@ -154,9 +160,9 @@ function buildNotes(customer, batchId = null) {
         parts.push(`Import Batch: ${batchId}`);
     }
     
-    // Add Gazelle ID reference
+    // Add original system ID reference
     if (customer.gazelleId) {
-        parts.push(`Gazelle ID: ${customer.gazelleId}`);
+        parts.push(`Original ID: ${customer.gazelleId}`);
     }
     
     // Add original notes
@@ -166,7 +172,7 @@ function buildNotes(customer, batchId = null) {
     
     // Add status if inactive
     if (customer.status && customer.status !== 'active') {
-        parts.push(`Status in Gazelle: ${customer.status}`);
+        parts.push(`Original status: ${customer.status}`);
     }
     
     return parts.join('\n\n') || null;
@@ -196,22 +202,22 @@ router.post('/gazelle-pianos', requireAuth, async (req, res) => {
         const errors = [];
         const importedIds = [];  // Track imported IDs for undo
         
-        // Get all customers to find matches by Gazelle ID
+        // Get all customers to find matches by original ID
         const allCustomers = await customerStore.getAllCustomers(userId);
         
-        // Build lookup map: Gazelle Client ID -> Customer
-        const customerByGazelleId = new Map();
+        // Build lookup map: Original Client ID -> Customer
+        const customerByOriginalId = new Map();
         for (const customer of allCustomers) {
-            // Look for Gazelle ID in notes
+            // Look for Original ID in notes (supports both old "Gazelle ID:" and new "Original ID:" format)
             if (customer.notes) {
-                const match = customer.notes.match(/Gazelle ID:\s*(cli_[a-zA-Z0-9]+)/);
+                const match = customer.notes.match(/(?:Gazelle ID|Original ID):\s*(cli_[a-zA-Z0-9]+)/);
                 if (match) {
-                    customerByGazelleId.set(match[1], customer);
+                    customerByOriginalId.set(match[1], customer);
                 }
             }
         }
         
-        console.log(`Found ${customerByGazelleId.size} customers with Gazelle IDs`);
+        console.log(`Found ${customerByOriginalId.size} customers with original IDs`);
         
         // Process each piano
         for (const piano of pianos) {
@@ -223,12 +229,12 @@ router.post('/gazelle-pianos', requireAuth, async (req, res) => {
                     continue;
                 }
                 
-                // Find customer by Gazelle Client ID
+                // Find customer by original Client ID
                 let customerId = null;
                 let customerFound = false;
                 
                 if (piano.clientId) {
-                    const customer = customerByGazelleId.get(piano.clientId);
+                    const customer = customerByOriginalId.get(piano.clientId);
                     if (customer) {
                         customerId = customer.id;
                         customerFound = true;
@@ -247,10 +253,12 @@ router.post('/gazelle-pianos', requireAuth, async (req, res) => {
                         // Create the customer
                         const newCustomer = await customerStore.createCustomer(userId, {
                             name: piano.customerName,
-                            notes: `Import Batch: ${batchId}\n\nGazelle ID: ${piano.clientId}\n\nAuto-created during piano import`
+                            notes: `Import Batch: ${batchId}\n\nOriginal ID: ${piano.clientId}\n\nAuto-created during piano import`
                         });
-                        customerId = newCustomer.id;
-                        customerByGazelleId.set(piano.clientId, newCustomer);
+                        if (newCustomer && newCustomer.id) {
+                            customerId = newCustomer.id;
+                            customerByOriginalId.set(piano.clientId, newCustomer);
+                        }
                     }
                 }
                 
@@ -259,13 +267,13 @@ router.post('/gazelle-pianos', requireAuth, async (req, res) => {
                 // Add import batch ID for undo functionality
                 noteParts.push(`Import Batch: ${batchId}`);
                 if (piano.gazelleId) {
-                    noteParts.push(`Gazelle Piano ID: ${piano.gazelleId}`);
+                    noteParts.push(`Original Piano ID: ${piano.gazelleId}`);
                 }
                 if (piano.notes) {
                     noteParts.push(piano.notes);
                 }
                 if (piano.status && piano.status !== 'active') {
-                    noteParts.push(`Status in Gazelle: ${piano.status}`);
+                    noteParts.push(`Original status: ${piano.status}`);
                 }
                 
                 // Build piano data
@@ -285,8 +293,14 @@ router.post('/gazelle-pianos', requireAuth, async (req, res) => {
                 
                 // Create piano
                 const newPiano = await pianoStore.createPiano(userId, pianoData);
-                imported++;
-                importedIds.push(newPiano.id);
+                
+                if (newPiano && newPiano.id) {
+                    imported++;
+                    importedIds.push(newPiano.id);
+                } else {
+                    errors.push(`Failed to create piano "${piano.brand} ${piano.model || ''}": No ID returned`);
+                    continue;
+                }
                 
             } catch (err) {
                 errors.push(`Error importing "${piano.brand} ${piano.model || ''}": ${err.message}`);
