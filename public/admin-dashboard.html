@@ -2393,7 +2393,7 @@
         // Check if impersonating
         async function checkImpersonating() {
             try {
-                const response = await fetch('/api/auth/status');
+                const response = await fetch('/auth/status');
                 const data = await response.json();
                 
                 if (data.isImpersonating) {
