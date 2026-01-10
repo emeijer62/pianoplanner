@@ -82,6 +82,10 @@ router.post('/create-checkout-session', requireAuth, requireStripe, async (req, 
         // Maak checkout session met automatische BTW
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
+            customer_update: {
+                address: 'auto',  // Sla billing adres automatisch op bij customer
+                name: 'auto'
+            },
             payment_method_types: ['card', 'ideal', 'bancontact'],
             mode: 'subscription',
             // Automatische BTW berekening op basis van locatie
