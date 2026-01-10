@@ -348,14 +348,22 @@ function showTrialBanner() {
 }
 
 function updateNavbar(user) {
-    document.getElementById('nav-user-name').textContent = user.name;
-    if (user.picture) {
-        document.getElementById('nav-user-picture').src = user.picture;
+    // These elements may not exist in new navbar design
+    const navUserName = document.getElementById('nav-user-name');
+    const navUserPicture = document.getElementById('nav-user-picture');
+    
+    if (navUserName) {
+        navUserName.textContent = user.name;
+    }
+    if (navUserPicture && user.picture) {
+        navUserPicture.src = user.picture;
+        navUserPicture.style.display = 'block';
     }
     
     // Show admin link only for admins
-    if (isAdmin) {
-        document.getElementById('admin-link').style.display = 'inline-block';
+    const adminLink = document.getElementById('admin-link');
+    if (adminLink && isAdmin) {
+        adminLink.style.display = 'inline-block';
     }
 }
 
