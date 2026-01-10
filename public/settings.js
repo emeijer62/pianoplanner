@@ -91,6 +91,104 @@ async function loadProfileSettings() {
     await loadTimezone();
 }
 
+// ========== CLEAN NOTES ==========
+
+// Clean up notes by removing duplicate lines and repeated text
+function cleanNotesText(notes) {
+    if (!notes) return '';
+    
+    // Split into lines and trim each
+    let lines = notes.split(/\r?\n/).map(l => l.trim());
+    
+    // Remove empty lines at start/end
+    while (lines.length && !lines[0]) lines.shift();
+    while (lines.length && !lines[lines.length - 1]) lines.pop();
+    
+    // Remove duplicate consecutive lines
+    const uniqueLines = [];
+    for (const line of lines) {
+        // Skip if this line is the same as the previous (ignore case and whitespace)
+        const lastLine = uniqueLines[uniqueLines.length - 1] || '';
+        if (line.toLowerCase().trim() !== lastLine.toLowerCase().trim()) {
+            uniqueLines.push(line);
+        }
+    }
+    
+    // Find and remove repeated paragraphs
+    const result = [];
+    const seenParagraphs = new Set();
+    let currentParagraph = [];
+    
+    for (const line of uniqueLines) {
+        if (line === '') {
+            // End of paragraph
+            if (currentParagraph.length > 0) {
+                const paragraphText = currentParagraph.join('\n').toLowerCase().trim();
+                if (!seenParagraphs.has(paragraphText)) {
+                    seenParagraphs.add(paragraphText);
+                    result.push(...currentParagraph);
+                }
+                currentParagraph = [];
+            }
+            // Keep single empty line between paragraphs
+            if (result.length > 0 && result[result.length - 1] !== '') {
+                result.push('');
+            }
+        } else {
+            currentParagraph.push(line);
+        }
+    }
+    
+    // Don't forget the last paragraph
+    if (currentParagraph.length > 0) {
+        const paragraphText = currentParagraph.join('\n').toLowerCase().trim();
+        if (!seenParagraphs.has(paragraphText)) {
+            result.push(...currentParagraph);
+        }
+    }
+    
+    // Remove trailing empty lines
+    while (result.length && !result[result.length - 1]) result.pop();
+    
+    return result.join('\n');
+}
+
+async function cleanAllNotes() {
+    const btn = document.getElementById('cleanNotesBtn');
+    const resultSpan = document.getElementById('cleanNotesResult');
+    
+    if (!confirm('This will clean up all customer and piano notes by removing duplicate text and repeated lines.\n\nDo you want to continue?')) {
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span style="display: inline-block; width: 16px; height: 16px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite;"></span> Cleaning...';
+    resultSpan.textContent = '';
+    
+    try {
+        const response = await fetch('/api/customers/clean-notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            resultSpan.innerHTML = `<span style="color: var(--green-600);">✓ Cleaned ${data.customersUpdated} customers and ${data.pianosUpdated} pianos</span>`;
+            showAlert(`Notes cleaned! Updated ${data.customersUpdated} customers and ${data.pianosUpdated} pianos.`, 'success');
+        } else {
+            throw new Error(data.error || 'Unknown error');
+        }
+    } catch (error) {
+        resultSpan.innerHTML = `<span style="color: var(--red-600);">✕ Error: ${error.message}</span>`;
+        showAlert('Error cleaning notes: ' + error.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="sparkles" style="width: 16px; height: 16px;"></i> Clean All Notes';
+        lucide.createIcons();
+    }
+}
+
 // ========== TIMEZONE SETTINGS ==========
 
 async function loadTimezone() {

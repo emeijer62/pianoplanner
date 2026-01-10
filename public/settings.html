@@ -1610,6 +1610,26 @@
                             <li>Generic CSV with name, email, phone, address</li>
                         </ul>
                     </div>
+                    
+                    <!-- Clean Notes Tool -->
+                    <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--gray-200);">
+                        <h4 style="margin-bottom: 8px; font-size: 15px; font-weight: 600;">
+                            <i data-lucide="sparkles" style="width: 16px; height: 16px; vertical-align: middle; margin-right: 6px;"></i>
+                            Clean Up Notes
+                        </h4>
+                        <p style="color: var(--gray-500); font-size: 13px; margin-bottom: 12px;">
+                            Remove duplicate text and repeated lines from customer and piano notes. 
+                            Useful after importing data that may contain merge artifacts.
+                        </p>
+                        
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                            <button onclick="cleanAllNotes()" class="btn btn-secondary" id="cleanNotesBtn" style="display: inline-flex; align-items: center; gap: 8px;">
+                                <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
+                                Clean All Notes
+                            </button>
+                            <span id="cleanNotesResult" style="font-size: 13px; color: var(--gray-500);"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
             

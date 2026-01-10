@@ -85,6 +85,107 @@ router.post('/merge', async (req, res) => {
     }
 });
 
+// Clean up notes (remove duplicates and repeated text)
+router.post('/clean-notes', async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        
+        // Helper function to clean notes
+        function cleanNotesText(notes) {
+            if (!notes) return '';
+            
+            // Split into lines and trim each
+            let lines = notes.split(/\r?\n/).map(l => l.trim());
+            
+            // Remove empty lines at start/end
+            while (lines.length && !lines[0]) lines.shift();
+            while (lines.length && !lines[lines.length - 1]) lines.pop();
+            
+            // Remove duplicate consecutive lines
+            const uniqueLines = [];
+            for (const line of lines) {
+                const lastLine = uniqueLines[uniqueLines.length - 1] || '';
+                if (line.toLowerCase().trim() !== lastLine.toLowerCase().trim()) {
+                    uniqueLines.push(line);
+                }
+            }
+            
+            // Find and remove repeated paragraphs
+            const result = [];
+            const seenParagraphs = new Set();
+            let currentParagraph = [];
+            
+            for (const line of uniqueLines) {
+                if (line === '') {
+                    if (currentParagraph.length > 0) {
+                        const paragraphText = currentParagraph.join('\n').toLowerCase().trim();
+                        if (!seenParagraphs.has(paragraphText)) {
+                            seenParagraphs.add(paragraphText);
+                            result.push(...currentParagraph);
+                        }
+                        currentParagraph = [];
+                    }
+                    if (result.length > 0 && result[result.length - 1] !== '') {
+                        result.push('');
+                    }
+                } else {
+                    currentParagraph.push(line);
+                }
+            }
+            
+            if (currentParagraph.length > 0) {
+                const paragraphText = currentParagraph.join('\n').toLowerCase().trim();
+                if (!seenParagraphs.has(paragraphText)) {
+                    result.push(...currentParagraph);
+                }
+            }
+            
+            while (result.length && !result[result.length - 1]) result.pop();
+            
+            return result.join('\n');
+        }
+        
+        // Get all customers
+        const customers = await customerStore.getAllCustomers(userId);
+        let customersUpdated = 0;
+        
+        for (const customer of customers) {
+            if (customer.notes) {
+                const cleanedNotes = cleanNotesText(customer.notes);
+                if (cleanedNotes !== customer.notes) {
+                    await customerStore.updateCustomer(userId, customer.id, { notes: cleanedNotes });
+                    customersUpdated++;
+                }
+            }
+        }
+        
+        // Also clean piano notes
+        const pianoStore = require('../utils/pianoStore');
+        const pianos = await pianoStore.getAllPianos(userId);
+        let pianosUpdated = 0;
+        
+        for (const piano of pianos) {
+            if (piano.notes) {
+                const cleanedNotes = cleanNotesText(piano.notes);
+                if (cleanedNotes !== piano.notes) {
+                    await pianoStore.updatePiano(userId, piano.id, { notes: cleanedNotes });
+                    pianosUpdated++;
+                }
+            }
+        }
+        
+        console.log(`🧹 Notes cleaned: ${customersUpdated} customers, ${pianosUpdated} pianos`);
+        res.json({ 
+            success: true, 
+            customersUpdated, 
+            pianosUpdated 
+        });
+    } catch (error) {
+        console.error('Error cleaning notes:', error);
+        res.status(500).json({ error: 'Could not clean notes' });
+    }
+});
+
 // Haal specifieke klant op
 router.get('/:id', async (req, res) => {
     try {
