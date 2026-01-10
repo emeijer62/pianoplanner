@@ -1167,16 +1167,119 @@ async function loadModalData() {
 }
 
 function populateCustomerDropdown() {
-    const select = document.getElementById('event-customer');
-    select.innerHTML = '<option value="">-- Select customer --</option>';
+    // Customer search is now used instead of dropdown
+    // Just setup the search functionality
+    setupCustomerSearch();
+}
+
+function setupCustomerSearch() {
+    const searchInput = document.getElementById('event-customer-search');
+    const resultsDiv = document.getElementById('customer-search-results');
+    const hiddenInput = document.getElementById('event-customer');
     
-    customersCache.forEach(c => {
-        const option = document.createElement('option');
-        option.value = c.id;
-        option.textContent = c.name + (c.city ? ` (${c.city})` : '');
-        option.dataset.address = [c.street, c.postalCode, c.city].filter(Boolean).join(', ');
-        select.appendChild(option);
+    if (!searchInput) return;
+    
+    let debounceTimer;
+    
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim().toLowerCase();
+        
+        if (query.length < 1) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+        
+        debounceTimer = setTimeout(() => {
+            const matches = customersCache.filter(c => {
+                const searchText = `${c.name} ${c.city || ''} ${c.street || ''} ${c.email || ''}`.toLowerCase();
+                return searchText.includes(query);
+            }).slice(0, 10); // Limit to 10 results
+            
+            if (matches.length === 0) {
+                resultsDiv.innerHTML = '<div class="autocomplete-item" style="color: var(--gray-400);">No customers found</div>';
+            } else {
+                resultsDiv.innerHTML = matches.map(c => {
+                    const address = [c.street, c.city].filter(Boolean).join(', ');
+                    return `<div class="autocomplete-item" data-id="${c.id}" data-name="${c.name}" data-address="${[c.street, c.postalCode, c.city].filter(Boolean).join(', ')}">
+                        <div style="font-weight: 500;">${c.name}</div>
+                        ${address ? `<div style="font-size: 12px; color: var(--gray-500);">${address}</div>` : ''}
+                    </div>`;
+                }).join('');
+            }
+            resultsDiv.style.display = 'block';
+        }, 150);
     });
+    
+    // Handle click on search result
+    resultsDiv.addEventListener('click', function(e) {
+        const item = e.target.closest('.autocomplete-item');
+        if (item && item.dataset.id) {
+            selectCustomer(item.dataset.id, item.dataset.name, item.dataset.address);
+        }
+    });
+    
+    // Close results on blur (with delay for click)
+    searchInput.addEventListener('blur', function() {
+        setTimeout(() => {
+            resultsDiv.style.display = 'none';
+        }, 200);
+    });
+    
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', function(e) {
+        const items = resultsDiv.querySelectorAll('.autocomplete-item[data-id]');
+        const current = resultsDiv.querySelector('.autocomplete-item.active');
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (!current && items.length > 0) {
+                items[0].classList.add('active');
+            } else if (current) {
+                const next = current.nextElementSibling;
+                if (next && next.dataset.id) {
+                    current.classList.remove('active');
+                    next.classList.add('active');
+                }
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (current) {
+                const prev = current.previousElementSibling;
+                if (prev && prev.dataset.id) {
+                    current.classList.remove('active');
+                    prev.classList.add('active');
+                }
+            }
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (current && current.dataset.id) {
+                selectCustomer(current.dataset.id, current.dataset.name, current.dataset.address);
+            }
+        } else if (e.key === 'Escape') {
+            resultsDiv.style.display = 'none';
+        }
+    });
+}
+
+function selectCustomer(customerId, customerName, customerAddress) {
+    const searchInput = document.getElementById('event-customer-search');
+    const hiddenInput = document.getElementById('event-customer');
+    const resultsDiv = document.getElementById('customer-search-results');
+    
+    searchInput.value = customerName;
+    hiddenInput.value = customerId;
+    resultsDiv.style.display = 'none';
+    
+    // Trigger the customer change handler
+    onCustomerChange(customerAddress);
+}
+
+function clearCustomerSelection() {
+    const searchInput = document.getElementById('event-customer-search');
+    const hiddenInput = document.getElementById('event-customer');
+    if (searchInput) searchInput.value = '';
+    if (hiddenInput) hiddenInput.value = '';
 }
 
 function populateServiceDropdown() {
@@ -1284,7 +1387,7 @@ function updateEndTimeForMultiplePianos() {
     endInput.value = formatDateTimeLocal(endDate);
 }
 
-function onCustomerChange() {
+function onCustomerChange(customerAddress) {
     const customerId = document.getElementById('event-customer').value;
     const pianoContainer = document.getElementById('piano-checkboxes');
     const locationInput = document.getElementById('event-location');
@@ -1341,10 +1444,15 @@ function onCustomerChange() {
             updatePianoDurationDisplay();
         }
         
-        // Fill location from customer address
-        const selectedOption = document.getElementById('event-customer').selectedOptions[0];
-        if (selectedOption && selectedOption.dataset.address) {
-            locationInput.value = selectedOption.dataset.address;
+        // Fill location from customer address (passed from search or from cache)
+        if (customerAddress) {
+            locationInput.value = customerAddress;
+        } else {
+            // Fallback: look up from cache
+            const customer = customersCache.find(c => c.id === customerId);
+            if (customer) {
+                locationInput.value = [customer.street, customer.postalCode, customer.city].filter(Boolean).join(', ');
+            }
         }
         
         // Show confirmation checkbox if customer has email
@@ -1691,12 +1799,14 @@ async function saveNewCustomer() {
             }
         }
         
-        // Add to cache and dropdown
+        // Add to cache
         customersCache.push(newCustomer);
-        populateCustomerDropdown();
         
-        // Select the new customer
-        document.getElementById('event-customer').value = newCustomer.id;
+        // Select the new customer in search field
+        const searchInput = document.getElementById('event-customer-search');
+        const hiddenInput = document.getElementById('event-customer');
+        if (searchInput) searchInput.value = newCustomer.name;
+        if (hiddenInput) hiddenInput.value = newCustomer.id;
         onCustomerChange();
         
         // If a piano was created, select it
@@ -1877,9 +1987,10 @@ function openModalWithTime(element) {
     document.getElementById('event-start').value = formatDateTimeLocal(startDate);
     document.getElementById('event-end').value = formatDateTimeLocal(endDate);
     
-    // Focus on customer field first
+    // Focus on customer search field first
     setTimeout(() => {
-        document.getElementById('event-customer').focus();
+        const searchInput = document.getElementById('event-customer-search');
+        if (searchInput) searchInput.focus();
     }, 100);
 }
 
@@ -1936,8 +2047,14 @@ async function openEditModal(appointmentId) {
     
     // Set customer if exists
     if (appointment.customerId) {
-        document.getElementById('event-customer').value = appointment.customerId;
-        onCustomerChange(); // Load pianos for this customer
+        const customer = customersCache.find(c => c.id === appointment.customerId);
+        if (customer) {
+            const searchInput = document.getElementById('event-customer-search');
+            const hiddenInput = document.getElementById('event-customer');
+            if (searchInput) searchInput.value = customer.name;
+            if (hiddenInput) hiddenInput.value = appointment.customerId;
+            onCustomerChange(); // Load pianos for this customer
+        }
         
         // Set piano after pianos are loaded
         setTimeout(() => {
@@ -2058,6 +2175,9 @@ function closeModal(force = false) {
     if (confirmationWrapper) {
         confirmationWrapper.style.display = 'none';
     }
+    
+    // Clear customer search
+    clearCustomerSelection();
     
     // Reset edit mode
     editingAppointmentId = null;

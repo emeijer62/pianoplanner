@@ -16,7 +16,10 @@
     "todayAppointments": "Today's Appointments",
     "upcomingAppointments": "Upcoming Appointments",
     "noAppointments": "No appointments scheduled",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "customer": "Customer",
+    "searchCustomer": "Search customer...",
+    "noCustomersFound": "No customers found"
   },
   "customers": {
     "title": "Customers",

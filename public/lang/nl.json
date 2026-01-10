@@ -16,7 +16,10 @@
     "todayAppointments": "Afspraken vandaag",
     "upcomingAppointments": "Komende afspraken",
     "noAppointments": "Geen afspraken gepland",
-    "viewAll": "Bekijk alles"
+    "viewAll": "Bekijk alles",
+    "customer": "Klant",
+    "searchCustomer": "Zoek klant...",
+    "noCustomersFound": "Geen klanten gevonden"
   },
   "customers": {
     "title": "Klanten",

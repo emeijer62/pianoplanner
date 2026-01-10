@@ -16,7 +16,10 @@
     "todayAppointments": "Termine heute",
     "upcomingAppointments": "Kommende Termine",
     "noAppointments": "Keine Termine geplant",
-    "viewAll": "Alle anzeigen"
+    "viewAll": "Alle anzeigen",
+    "customer": "Kunde",
+    "searchCustomer": "Kunde suchen...",
+    "noCustomersFound": "Keine Kunden gefunden"
   },
   "customers": {
     "title": "Kunden",

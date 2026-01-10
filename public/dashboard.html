@@ -1237,11 +1237,13 @@
             </div>
             <form id="event-form">
                 <div class="form-group">
-                    <label for="event-customer">Customer</label>
+                    <label for="event-customer-search" data-i18n="dashboard.customer">Customer</label>
                     <div style="display: flex; gap: 0.5rem;">
-                        <select id="event-customer" style="flex: 1;" onchange="onCustomerChange()">
-                            <option value="">-- Select customer --</option>
-                        </select>
+                        <div style="flex: 1; position: relative;">
+                            <input type="text" id="event-customer-search" placeholder="Search customer..." autocomplete="off" data-i18n-placeholder="dashboard.searchCustomer">
+                            <input type="hidden" id="event-customer">
+                            <div id="customer-search-results" class="autocomplete-suggestions" style="display: none;"></div>
+                        </div>
                         <button type="button" class="btn btn-secondary" onclick="openNewCustomerForm()" title="Add new customer">+</button>
                     </div>
                 </div>
@@ -1552,7 +1554,8 @@
         .autocomplete-item:last-child {
             border-bottom: none;
         }
-        .autocomplete-item:hover {
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
             background: var(--light-gray);
         }
         
