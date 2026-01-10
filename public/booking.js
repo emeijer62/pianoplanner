@@ -567,11 +567,11 @@ function showStep(stepId) {
 }
 
 function formatTime(date) {
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 function formatDate(date) {
-    return date.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
+    return date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
 function escapeHtml(text) {

@@ -835,7 +835,8 @@ function getEventsForDay(date) {
 
 function createEventElement(event, compact = false) {
     const start = event.start.dateTime ? new Date(event.start.dateTime) : null;
-    const timeStr = start ? start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+    // Use user's locale with 24-hour format
+    const timeStr = start ? start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false }) : '';
     const color = getEventColor(event);
     
     // Check for travel time info
@@ -843,7 +844,7 @@ function createEventElement(event, compact = false) {
     let travelStr = '';
     if (hasTravelTime) {
         const travelStart = new Date(event.travelStartTime);
-        travelStr = travelStart.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        travelStr = travelStart.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
     }
     
     if (compact) {
@@ -1272,8 +1273,8 @@ async function findSmartSlot() {
                                     ${isFirstChoice ? '⭐ ' : ''}${startTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
                                 </div>
                                 <div style="font-size: 14px; color: #666;">
-                                    ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} - 
-                                    ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                    ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })} - 
+                                    ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}
                                 </div>
                             </div>
                             <div style="color: var(--primary-color, #007AFF); font-size: 20px;">→</div>
@@ -1309,8 +1310,8 @@ async function findSmartSlot() {
                 <div style="background: var(--success-bg, #dcfce7); border: 1px solid var(--success-color, #22c55e); border-radius: 8px; padding: 12px;">
                     <div style="font-weight: 600; color: var(--success-color, #22c55e); margin-bottom: 8px;">
                         ✓ Available: ${startTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} 
-                        ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} - 
-                        ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                        ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })} - 
+                        ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}
                     </div>
                     <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 10px;">
                         ${pianoInfo}🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min service
