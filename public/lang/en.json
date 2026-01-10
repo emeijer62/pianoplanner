@@ -249,5 +249,69 @@
     "trial": "Trial",
     "expired": "Expired",
     "canceled": "Canceled"
+  },
+  "import": {
+    "title": "Import Data",
+    "selectSource": "Select Import Source",
+    "selectSourceDesc": "Choose where you want to import your customer data from.",
+    "step": {
+      "source": "Source",
+      "upload": "Upload",
+      "preview": "Preview",
+      "import": "Import"
+    },
+    "gazelle": {
+      "desc": "Piano service management"
+    },
+    "csv": {
+      "desc": "Generic CSV file"
+    },
+    "uploadFile": "Upload File",
+    "uploadFileDesc": "Upload your export file (CSV format).",
+    "dropFile": "Drop your file here",
+    "orClick": "or click to browse",
+    "previewData": "Preview Data",
+    "previewDesc": "Review the data before importing.",
+    "totalRecords": "Total Records",
+    "activeClients": "Active Clients",
+    "inactiveClients": "Inactive Clients",
+    "withEmail": "With Email",
+    "th": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "city": "City",
+      "status": "Status"
+    },
+    "options": "Import Options",
+    "opt": {
+      "activeOnly": "Only import active clients",
+      "activeOnlyDesc": "Skip clients marked as inactive",
+      "skipDuplicates": "Skip duplicates",
+      "skipDuplicatesDesc": "Skip clients with email addresses already in your database",
+      "includeCompany": "Include company name",
+      "includeCompanyDesc": "Add company name to customer name (e.g., \"Company - John Doe\")"
+    },
+    "importing": "Importing...",
+    "complete": "Import Complete!",
+    "failed": "Import Failed",
+    "partialComplete": "Import Partially Complete",
+    "successMessage": "Successfully imported {{count}} customers.",
+    "partialMessage": "Imported {{imported}} customers with {{errors}} errors.",
+    "noImports": "No customers were imported.",
+    "imported": "Imported",
+    "skipped": "Skipped",
+    "errors": "Errors",
+    "viewCustomers": "View Customers",
+    "importMore": "Import More",
+    "next": "Next",
+    "back": "Back",
+    "cancel": "Cancel",
+    "preview": "Preview",
+    "startImport": "Start Import",
+    "error": {
+      "csvOnly": "Please upload a CSV file",
+      "parse": "Error parsing CSV file"
+    }
   }
 }

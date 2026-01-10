@@ -1552,6 +1552,42 @@
         <!-- ==================== ACCOUNT TAB ==================== -->
         <div class="tab-panel" id="panel-account">
             
+            <!-- Import Data Card -->
+            <div class="settings-card" id="import-card">
+                <div class="settings-card-header" onclick="toggleCard('import-card')">
+                    <div class="settings-card-title">
+                        <i data-lucide="upload" class="card-icon" style="width: 20px; height: 20px;"></i>
+                        Import Data
+                    </div>
+                    <div class="settings-card-status">
+                        <span style="color: var(--gray-500); font-size: 13px;">Gazelle, CSV</span>
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Import your existing customer data from Gazelle or other sources.
+                    </p>
+                    
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <a href="/import.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
+                            <i data-lucide="upload" style="width: 16px; height: 16px;"></i>
+                            Import Wizard
+                        </a>
+                    </div>
+                    
+                    <div style="margin-top: 16px; padding: 12px; background: var(--gray-50); border-radius: 8px; font-size: 13px; color: var(--gray-600);">
+                        <strong>Supported formats:</strong>
+                        <ul style="margin: 8px 0 0 16px; padding: 0;">
+                            <li>Gazelle client export (CSV)</li>
+                            <li>Generic CSV with name, email, phone, address</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Regional Settings Card (Timezone) -->
             <div class="settings-card" id="regional-card">
                 <div class="settings-card-header" onclick="toggleCard('regional-card')">

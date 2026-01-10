@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import - PianoPlanner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="stylesheet" href="icons.css?v=20260110">
+    <link rel="stylesheet" href="ios-mobile.css?v=20260110">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/i18n.js"></script>
+    <script src="icons.js?v=20260110" defer></script>
+    <style>
+        .import-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        /* Wizard Steps */
+        .wizard-steps {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+        
+        .wizard-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .wizard-step .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .wizard-step.active .step-number {
+            background: var(--primary, #007AFF);
+            color: white;
+        }
+        
+        .wizard-step.completed .step-number {
+            background: #34c759;
+            color: white;
+        }
+        
+        .wizard-step .step-label {
+            font-size: 13px;
+            color: var(--gray-500);
+            display: none;
+        }
+        
+        @media (min-width: 600px) {
+            .wizard-step .step-label {
+                display: block;
+            }
+        }
+        
+        .wizard-step.active .step-label {
+            color: var(--gray-900);
+            font-weight: 500;
+        }
+        
+        .step-connector {
+            width: 40px;
+            height: 2px;
+            background: var(--gray-200);
+        }
+        
+        .step-connector.completed {
+            background: #34c759;
+        }
+        
+        /* Import Card */
+        .import-card {
+            background: var(--white);
+            border-radius: 16px;
+            border: 1px solid var(--gray-200);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .import-card h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--gray-900);
+        }
+        
+        .import-card p {
+            color: var(--gray-500);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        
+        /* File Drop Zone */
+        .drop-zone {
+            border: 2px dashed var(--gray-300);
+            border-radius: 12px;
+            padding: 48px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: var(--primary, #007AFF);
+            background: rgba(0, 122, 255, 0.05);
+        }
+        
+        .drop-zone .drop-icon {
+            font-size: 48px;
+            color: var(--gray-400);
+            margin-bottom: 16px;
+        }
+        
+        .drop-zone h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+        
+        .drop-zone p {
+            color: var(--gray-500);
+            font-size: 13px;
+            margin-bottom: 0;
+        }
+        
+        .drop-zone input[type="file"] {
+            display: none;
+        }
+        
+        .file-selected {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+        
+        .file-selected .file-icon {
+            font-size: 24px;
+            color: #34c759;
+        }
+        
+        .file-selected .file-info {
+            flex: 1;
+        }
+        
+        .file-selected .file-name {
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+        
+        .file-selected .file-size {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+        
+        .file-selected .remove-file {
+            padding: 8px;
+            border: none;
+            background: transparent;
+            color: var(--gray-400);
+            cursor: pointer;
+        }
+        
+        .file-selected .remove-file:hover {
+            color: #ff3b30;
+        }
+        
+        /* Preview Table */
+        .preview-section {
+            margin-top: 24px;
+        }
+        
+        .preview-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--gray-50);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .stat-card .stat-label {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+        
+        .stat-card.success .stat-value {
+            color: #34c759;
+        }
+        
+        .stat-card.warning .stat-value {
+            color: #ff9500;
+        }
+        
+        .stat-card.error .stat-value {
+            color: #ff3b30;
+        }
+        
+        .preview-table-container {
+            overflow-x: auto;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+        }
+        
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .preview-table th {
+            background: var(--gray-50);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-600);
+            border-bottom: 1px solid var(--gray-200);
+            white-space: nowrap;
+        }
+        
+        .preview-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--gray-100);
+            color: var(--gray-700);
+        }
+        
+        .preview-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .preview-table tr:hover {
+            background: var(--gray-50);
+        }
+        
+        /* Import Options */
+        .import-options {
+            margin-top: 24px;
+        }
+        
+        .option-group {
+            margin-bottom: 16px;
+        }
+        
+        .option-group label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--gray-50);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .option-group label:hover {
+            background: var(--gray-100);
+        }
+        
+        .option-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary, #007AFF);
+        }
+        
+        .option-group .option-text {
+            flex: 1;
+        }
+        
+        .option-group .option-title {
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+        
+        .option-group .option-desc {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 2px;
+        }
+        
+        /* Progress */
+        .progress-section {
+            text-align: center;
+            padding: 48px 0;
+        }
+        
+        .progress-spinner {
+            width: 64px;
+            height: 64px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary, #007AFF);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar-container {
+            background: var(--gray-200);
+            border-radius: 8px;
+            height: 8px;
+            overflow: hidden;
+            margin: 24px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--primary, #007AFF);
+            border-radius: 8px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            font-size: 14px;
+            color: var(--gray-500);
+        }
+        
+        /* Results */
+        .results-section {
+            text-align: center;
+        }
+        
+        .results-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .results-icon.success {
+            color: #34c759;
+        }
+        
+        .results-icon.error {
+            color: #ff3b30;
+        }
+        
+        .results-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .results-subtitle {
+            color: var(--gray-500);
+            margin-bottom: 24px;
+        }
+        
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--primary, #007AFF);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-primary:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+        
+        /* Source selector */
+        .source-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .source-option {
+            padding: 20px;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .source-option:hover {
+            border-color: var(--gray-400);
+        }
+        
+        .source-option.selected {
+            border-color: var(--primary, #007AFF);
+            background: rgba(0, 122, 255, 0.05);
+        }
+        
+        .source-option .source-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .source-option .source-name {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .source-option .source-desc {
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+        
+        /* Hide steps */
+        .wizard-panel {
+            display: none;
+        }
+        
+        .wizard-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Error list */
+        .error-list {
+            text-align: left;
+            margin-top: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .error-item {
+            padding: 8px 12px;
+            background: #fff5f5;
+            border-left: 3px solid #ff3b30;
+            margin-bottom: 8px;
+            border-radius: 0 4px 4px 0;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <div class="nav-content">
+            <a href="/" class="nav-logo">
+                <i class="icon-piano"></i> PianoPlanner
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link"><i class="icon-calendar"></i> <span data-i18n="nav.dashboard">Dashboard</span></a>
+                <a href="/customers.html" class="nav-link"><i class="icon-users"></i> <span data-i18n="nav.customers">Customers</span></a>
+                <a href="/pianos.html" class="nav-link"><i class="icon-piano"></i> <span data-i18n="nav.pianos">Pianos</span></a>
+                <a href="/settings.html" class="nav-link"><i class="icon-settings"></i> <span data-i18n="nav.settings">Settings</span></a>
+            </div>
+            <div class="nav-user">
+                <button class="user-menu-btn" id="userMenuBtn">
+                    <img src="" alt="User" class="user-avatar" id="userAvatar">
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="import-container">
+            <h1><i class="icon-upload"></i> <span data-i18n="import.title">Import Data</span></h1>
+            
+            <!-- Wizard Steps -->
+            <div class="wizard-steps">
+                <div class="wizard-step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <span class="step-label" data-i18n="import.step.source">Source</span>
+                </div>
+                <div class="step-connector"></div>
+                <div class="wizard-step" data-step="2">
+                    <div class="step-number">2</div>
+                    <span class="step-label" data-i18n="import.step.upload">Upload</span>
+                </div>
+                <div class="step-connector"></div>
+                <div class="wizard-step" data-step="3">
+                    <div class="step-number">3</div>
+                    <span class="step-label" data-i18n="import.step.preview">Preview</span>
+                </div>
+                <div class="step-connector"></div>
+                <div class="wizard-step" data-step="4">
+                    <div class="step-number">4</div>
+                    <span class="step-label" data-i18n="import.step.import">Import</span>
+                </div>
+            </div>
+            
+            <!-- Step 1: Select Source -->
+            <div class="wizard-panel active" id="step1">
+                <div class="import-card">
+                    <h2 data-i18n="import.selectSource">Select Import Source</h2>
+                    <p data-i18n="import.selectSourceDesc">Choose where you want to import your customer data from.</p>
+                    
+                    <div class="source-selector">
+                        <div class="source-option selected" data-source="gazelle">
+                            <div class="source-icon">🦌</div>
+                            <div class="source-name">Gazelle</div>
+                            <div class="source-desc" data-i18n="import.gazelle.desc">Piano service management</div>
+                        </div>
+                        <div class="source-option" data-source="csv">
+                            <div class="source-icon">📄</div>
+                            <div class="source-name">CSV</div>
+                            <div class="source-desc" data-i18n="import.csv.desc">Generic CSV file</div>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <a href="/settings.html" class="btn btn-secondary" data-i18n="import.cancel">Cancel</a>
+                        <button class="btn btn-primary" onclick="nextStep(2)" data-i18n="import.next">Next</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2: Upload File -->
+            <div class="wizard-panel" id="step2">
+                <div class="import-card">
+                    <h2 data-i18n="import.uploadFile">Upload File</h2>
+                    <p id="uploadDesc">Upload your Gazelle client export file (CSV format).</p>
+                    
+                    <div class="drop-zone" id="dropZone">
+                        <div class="drop-icon">📁</div>
+                        <h3 data-i18n="import.dropFile">Drop your file here</h3>
+                        <p data-i18n="import.orClick">or click to browse</p>
+                        <input type="file" id="fileInput" accept=".csv">
+                    </div>
+                    
+                    <div class="file-selected" id="fileSelected" style="display: none;">
+                        <div class="file-icon">✓</div>
+                        <div class="file-info">
+                            <div class="file-name" id="fileName"></div>
+                            <div class="file-size" id="fileSize"></div>
+                        </div>
+                        <button class="remove-file" onclick="removeFile()">✕</button>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-secondary" onclick="prevStep(1)" data-i18n="import.back">Back</button>
+                        <button class="btn btn-primary" id="previewBtn" onclick="previewFile()" disabled data-i18n="import.preview">Preview</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3: Preview & Options -->
+            <div class="wizard-panel" id="step3">
+                <div class="import-card">
+                    <h2 data-i18n="import.previewData">Preview Data</h2>
+                    <p data-i18n="import.previewDesc">Review the data before importing.</p>
+                    
+                    <div class="preview-stats" id="previewStats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalRecords">0</div>
+                            <div class="stat-label" data-i18n="import.totalRecords">Total Records</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="stat-value" id="activeRecords">0</div>
+                            <div class="stat-label" data-i18n="import.activeClients">Active Clients</div>
+                        </div>
+                        <div class="stat-card warning">
+                            <div class="stat-value" id="inactiveRecords">0</div>
+                            <div class="stat-label" data-i18n="import.inactiveClients">Inactive Clients</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="withEmail">0</div>
+                            <div class="stat-label" data-i18n="import.withEmail">With Email</div>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-table-container">
+                        <table class="preview-table" id="previewTable">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="import.th.name">Name</th>
+                                    <th data-i18n="import.th.email">Email</th>
+                                    <th data-i18n="import.th.phone">Phone</th>
+                                    <th data-i18n="import.th.city">City</th>
+                                    <th data-i18n="import.th.status">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="import-options">
+                        <h3 style="margin-bottom: 12px; font-size: 15px;" data-i18n="import.options">Import Options</h3>
+                        
+                        <div class="option-group">
+                            <label>
+                                <input type="checkbox" id="optActiveOnly">
+                                <div class="option-text">
+                                    <div class="option-title" data-i18n="import.opt.activeOnly">Only import active clients</div>
+                                    <div class="option-desc" data-i18n="import.opt.activeOnlyDesc">Skip clients marked as inactive</div>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label>
+                                <input type="checkbox" id="optSkipDuplicates" checked>
+                                <div class="option-text">
+                                    <div class="option-title" data-i18n="import.opt.skipDuplicates">Skip duplicates</div>
+                                    <div class="option-desc" data-i18n="import.opt.skipDuplicatesDesc">Skip clients with email addresses already in your database</div>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label>
+                                <input type="checkbox" id="optIncludeCompany" checked>
+                                <div class="option-text">
+                                    <div class="option-title" data-i18n="import.opt.includeCompany">Include company name</div>
+                                    <div class="option-desc" data-i18n="import.opt.includeCompanyDesc">Add company name to customer name (e.g., "Company - John Doe")</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="btn btn-secondary" onclick="prevStep(2)" data-i18n="import.back">Back</button>
+                        <button class="btn btn-primary" onclick="startImport()" data-i18n="import.startImport">Start Import</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 4: Import Progress & Results -->
+            <div class="wizard-panel" id="step4">
+                <div class="import-card">
+                    <!-- Progress -->
+                    <div class="progress-section" id="progressSection">
+                        <div class="progress-spinner"></div>
+                        <h2 data-i18n="import.importing">Importing...</h2>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">0 / 0</div>
+                    </div>
+                    
+                    <!-- Results -->
+                    <div class="results-section" id="resultsSection" style="display: none;">
+                        <div class="results-icon success" id="resultsIcon">✓</div>
+                        <h2 class="results-title" id="resultsTitle" data-i18n="import.complete">Import Complete!</h2>
+                        <p class="results-subtitle" id="resultsSubtitle"></p>
+                        
+                        <div class="preview-stats">
+                            <div class="stat-card success">
+                                <div class="stat-value" id="importedCount">0</div>
+                                <div class="stat-label" data-i18n="import.imported">Imported</div>
+                            </div>
+                            <div class="stat-card warning">
+                                <div class="stat-value" id="skippedCount">0</div>
+                                <div class="stat-label" data-i18n="import.skipped">Skipped</div>
+                            </div>
+                            <div class="stat-card error">
+                                <div class="stat-value" id="errorCount">0</div>
+                                <div class="stat-label" data-i18n="import.errors">Errors</div>
+                            </div>
+                        </div>
+                        
+                        <div class="error-list" id="errorList" style="display: none;"></div>
+                        
+                        <div class="button-group" style="justify-content: center;">
+                            <a href="/customers.html" class="btn btn-primary" data-i18n="import.viewCustomers">View Customers</a>
+                            <button class="btn btn-secondary" onclick="resetWizard()" data-i18n="import.importMore">Import More</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentStep = 1;
+        let selectedSource = 'gazelle';
+        let uploadedFile = null;
+        let parsedData = [];
+        
+        // Source selection
+        document.querySelectorAll('.source-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.source-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedSource = option.dataset.source;
+            });
+        });
+        
+        // File drop zone
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            if (!file.name.endsWith('.csv')) {
+                alert(window.i18n?.t('import.error.csvOnly') || 'Please upload a CSV file');
+                return;
+            }
+            
+            uploadedFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileSelected').style.display = 'flex';
+            document.getElementById('dropZone').style.display = 'none';
+            document.getElementById('previewBtn').disabled = false;
+        }
+        
+        function removeFile() {
+            uploadedFile = null;
+            fileInput.value = '';
+            document.getElementById('fileSelected').style.display = 'none';
+            document.getElementById('dropZone').style.display = 'block';
+            document.getElementById('previewBtn').disabled = true;
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        // Navigation
+        function nextStep(step) {
+            setStep(step);
+        }
+        
+        function prevStep(step) {
+            setStep(step);
+        }
+        
+        function setStep(step) {
+            currentStep = step;
+            
+            // Update step indicators
+            document.querySelectorAll('.wizard-step').forEach((el, idx) => {
+                const stepNum = idx + 1;
+                el.classList.remove('active', 'completed');
+                if (stepNum < step) {
+                    el.classList.add('completed');
+                } else if (stepNum === step) {
+                    el.classList.add('active');
+                }
+            });
+            
+            // Update connectors
+            document.querySelectorAll('.step-connector').forEach((el, idx) => {
+                el.classList.toggle('completed', idx < step - 1);
+            });
+            
+            // Show panel
+            document.querySelectorAll('.wizard-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById('step' + step).classList.add('active');
+        }
+        
+        // Preview file
+        async function previewFile() {
+            if (!uploadedFile) return;
+            
+            try {
+                const text = await uploadedFile.text();
+                parsedData = parseCSV(text);
+                
+                // Calculate stats
+                const total = parsedData.length;
+                const active = parsedData.filter(r => r.status === 'active').length;
+                const inactive = total - active;
+                const withEmail = parsedData.filter(r => r.email).length;
+                
+                document.getElementById('totalRecords').textContent = total;
+                document.getElementById('activeRecords').textContent = active;
+                document.getElementById('inactiveRecords').textContent = inactive;
+                document.getElementById('withEmail').textContent = withEmail;
+                
+                // Show preview (first 10)
+                const preview = parsedData.slice(0, 10);
+                const tbody = document.getElementById('previewBody');
+                tbody.innerHTML = preview.map(r => `
+                    <tr>
+                        <td>${escapeHtml(r.name)}</td>
+                        <td>${escapeHtml(r.email || '-')}</td>
+                        <td>${escapeHtml(r.phone || '-')}</td>
+                        <td>${escapeHtml(r.city || '-')}</td>
+                        <td><span class="status-badge ${r.status === 'active' ? 'connected' : 'disconnected'}">${r.status}</span></td>
+                    </tr>
+                `).join('');
+                
+                if (total > 10) {
+                    tbody.innerHTML += `<tr><td colspan="5" style="text-align: center; color: var(--gray-500);">... and ${total - 10} more</td></tr>`;
+                }
+                
+                nextStep(3);
+            } catch (error) {
+                console.error('Error parsing CSV:', error);
+                alert(window.i18n?.t('import.error.parse') || 'Error parsing CSV file');
+            }
+        }
+        
+        // Parse Gazelle CSV
+        function parseCSV(text) {
+            const lines = text.split('\n');
+            if (lines.length < 2) return [];
+            
+            // Parse header
+            const headers = parseCSVLine(lines[0]);
+            
+            // Find column indices
+            const cols = {
+                clientId: headers.findIndex(h => h === 'Client ID'),
+                status: headers.findIndex(h => h === 'Status'),
+                company: headers.findIndex(h => h === 'Company Name'),
+                firstName: headers.findIndex(h => h === 'Default Contact First Name'),
+                lastName: headers.findIndex(h => h === 'Default Contact Last Name'),
+                address: headers.findIndex(h => h === 'Default Contact Default Address Line 1'),
+                city: headers.findIndex(h => h === 'Default Contact Default City'),
+                postalCode: headers.findIndex(h => h === 'Default Contact Default Postal Code'),
+                email: headers.findIndex(h => h === 'Default Contact Default Email'),
+                phone: headers.findIndex(h => h === 'Default Contact Default Phone'),
+                prefNotes: headers.findIndex(h => h === 'Preference Notes'),
+                personalNotes: headers.findIndex(h => h === 'Personal Notes')
+            };
+            
+            // Parse data rows
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = parseCSVLine(line);
+                if (values.length < 5) continue;
+                
+                const firstName = getValue(values, cols.firstName) || '';
+                const lastName = getValue(values, cols.lastName) || '';
+                const company = getValue(values, cols.company) || '';
+                
+                // Build name
+                let name = `${firstName} ${lastName}`.trim();
+                if (company && name) {
+                    name = `${company} - ${name}`;
+                } else if (company) {
+                    name = company;
+                }
+                
+                if (!name) continue;
+                
+                // Combine notes
+                const prefNotes = getValue(values, cols.prefNotes) || '';
+                const personalNotes = getValue(values, cols.personalNotes) || '';
+                let notes = [prefNotes, personalNotes].filter(n => n).join('\n\n');
+                
+                data.push({
+                    gazelleId: getValue(values, cols.clientId),
+                    status: getValue(values, cols.status) || 'active',
+                    name: name,
+                    firstName: firstName,
+                    lastName: lastName,
+                    company: company,
+                    email: getValue(values, cols.email),
+                    phone: getValue(values, cols.phone),
+                    street: getValue(values, cols.address),
+                    postalCode: getValue(values, cols.postalCode),
+                    city: getValue(values, cols.city),
+                    notes: notes
+                });
+            }
+            
+            return data;
+        }
+        
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    if (inQuotes && line[i + 1] === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim());
+            return result;
+        }
+        
+        function getValue(values, index) {
+            if (index < 0 || index >= values.length) return '';
+            return values[index]?.trim() || '';
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;');
+        }
+        
+        // Start import
+        async function startImport() {
+            nextStep(4);
+            
+            const options = {
+                activeOnly: document.getElementById('optActiveOnly').checked,
+                skipDuplicates: document.getElementById('optSkipDuplicates').checked,
+                includeCompany: document.getElementById('optIncludeCompany').checked
+            };
+            
+            // Filter data based on options
+            let dataToImport = [...parsedData];
+            
+            if (options.activeOnly) {
+                dataToImport = dataToImport.filter(r => r.status === 'active');
+            }
+            
+            // Recalculate names without company if not included
+            if (!options.includeCompany) {
+                dataToImport = dataToImport.map(r => ({
+                    ...r,
+                    name: `${r.firstName} ${r.lastName}`.trim() || r.company
+                }));
+            }
+            
+            const total = dataToImport.length;
+            let imported = 0;
+            let skipped = 0;
+            let errors = [];
+            
+            document.getElementById('progressText').textContent = `0 / ${total}`;
+            
+            // Import in batches
+            const batchSize = 10;
+            for (let i = 0; i < dataToImport.length; i += batchSize) {
+                const batch = dataToImport.slice(i, i + batchSize);
+                
+                try {
+                    const response = await fetch('/api/import/gazelle', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            customers: batch,
+                            options: options
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        imported += result.imported || 0;
+                        skipped += result.skipped || 0;
+                        if (result.errors) {
+                            errors = errors.concat(result.errors);
+                        }
+                    } else {
+                        errors.push(result.error || 'Unknown error');
+                    }
+                } catch (err) {
+                    errors.push(`Batch error: ${err.message}`);
+                }
+                
+                // Update progress
+                const progress = Math.min(100, Math.round(((i + batch.length) / total) * 100));
+                document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('progressText').textContent = `${Math.min(i + batch.length, total)} / ${total}`;
+                
+                // Small delay for UI
+                await new Promise(r => setTimeout(r, 100));
+            }
+            
+            // Show results
+            showResults(imported, skipped, errors);
+        }
+        
+        function showResults(imported, skipped, errors) {
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+            
+            document.getElementById('importedCount').textContent = imported;
+            document.getElementById('skippedCount').textContent = skipped;
+            document.getElementById('errorCount').textContent = errors.length;
+            
+            const resultsIcon = document.getElementById('resultsIcon');
+            const resultsTitle = document.getElementById('resultsTitle');
+            const resultsSubtitle = document.getElementById('resultsSubtitle');
+            
+            if (errors.length === 0 && imported > 0) {
+                resultsIcon.className = 'results-icon success';
+                resultsIcon.textContent = '✓';
+                resultsTitle.textContent = window.i18n?.t('import.complete') || 'Import Complete!';
+                resultsSubtitle.textContent = window.i18n?.t('import.successMessage', { count: imported }) || `Successfully imported ${imported} customers.`;
+            } else if (imported === 0) {
+                resultsIcon.className = 'results-icon error';
+                resultsIcon.textContent = '✕';
+                resultsTitle.textContent = window.i18n?.t('import.failed') || 'Import Failed';
+                resultsSubtitle.textContent = window.i18n?.t('import.noImports') || 'No customers were imported.';
+            } else {
+                resultsIcon.className = 'results-icon success';
+                resultsIcon.textContent = '✓';
+                resultsTitle.textContent = window.i18n?.t('import.partialComplete') || 'Import Partially Complete';
+                resultsSubtitle.textContent = window.i18n?.t('import.partialMessage', { imported, errors: errors.length }) || `Imported ${imported} customers with ${errors.length} errors.`;
+            }
+            
+            // Show errors if any
+            if (errors.length > 0) {
+                const errorList = document.getElementById('errorList');
+                errorList.style.display = 'block';
+                errorList.innerHTML = errors.slice(0, 10).map(e => 
+                    `<div class="error-item">${escapeHtml(e)}</div>`
+                ).join('');
+                
+                if (errors.length > 10) {
+                    errorList.innerHTML += `<div class="error-item">... and ${errors.length - 10} more errors</div>`;
+                }
+            }
+        }
+        
+        function resetWizard() {
+            // Reset state
+            currentStep = 1;
+            uploadedFile = null;
+            parsedData = [];
+            
+            // Reset UI
+            removeFile();
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('errorList').style.display = 'none';
+            
+            // Reset checkboxes
+            document.getElementById('optActiveOnly').checked = false;
+            document.getElementById('optSkipDuplicates').checked = true;
+            document.getElementById('optIncludeCompany').checked = true;
+            
+            setStep(1);
+        }
+        
+        // Auth check
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/user');
+                const data = await response.json();
+                
+                if (!data.user) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                // Set user avatar
+                const avatar = document.getElementById('userAvatar');
+                if (data.user.picture) {
+                    avatar.src = data.user.picture;
+                } else {
+                    avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.name || data.user.email)}&background=007AFF&color=fff`;
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = '/login.html';
+            }
+        }
+        
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            if (window.i18n) {
+                window.i18n.applyTranslations();
+            }
+        });
+    </script>
+</body>
+</html>

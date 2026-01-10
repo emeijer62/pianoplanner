@@ -249,5 +249,69 @@
     "trial": "Proefperiode",
     "expired": "Verlopen",
     "canceled": "Opgezegd"
+  },
+  "import": {
+    "title": "Gegevens importeren",
+    "selectSource": "Selecteer bron",
+    "selectSourceDesc": "Kies waar je klantgegevens vandaan wilt importeren.",
+    "step": {
+      "source": "Bron",
+      "upload": "Upload",
+      "preview": "Voorbeeld",
+      "import": "Importeren"
+    },
+    "gazelle": {
+      "desc": "Piano service software"
+    },
+    "csv": {
+      "desc": "Algemeen CSV bestand"
+    },
+    "uploadFile": "Upload bestand",
+    "uploadFileDesc": "Upload je export bestand (CSV formaat).",
+    "dropFile": "Sleep je bestand hierheen",
+    "orClick": "of klik om te bladeren",
+    "previewData": "Voorbeeld bekijken",
+    "previewDesc": "Controleer de gegevens voordat je importeert.",
+    "totalRecords": "Totaal records",
+    "activeClients": "Actieve klanten",
+    "inactiveClients": "Inactieve klanten",
+    "withEmail": "Met e-mail",
+    "th": {
+      "name": "Naam",
+      "email": "E-mail",
+      "phone": "Telefoon",
+      "city": "Plaats",
+      "status": "Status"
+    },
+    "options": "Import opties",
+    "opt": {
+      "activeOnly": "Alleen actieve klanten importeren",
+      "activeOnlyDesc": "Klanten met status inactief overslaan",
+      "skipDuplicates": "Duplicaten overslaan",
+      "skipDuplicatesDesc": "Klanten met bestaande e-mailadressen overslaan",
+      "includeCompany": "Bedrijfsnaam toevoegen",
+      "includeCompanyDesc": "Bedrijfsnaam aan klantnaam toevoegen (bijv. \"Bedrijf - Jan Jansen\")"
+    },
+    "importing": "Importeren...",
+    "complete": "Import voltooid!",
+    "failed": "Import mislukt",
+    "partialComplete": "Import gedeeltelijk voltooid",
+    "successMessage": "{{count}} klanten succesvol geïmporteerd.",
+    "partialMessage": "{{imported}} klanten geïmporteerd met {{errors}} fouten.",
+    "noImports": "Er zijn geen klanten geïmporteerd.",
+    "imported": "Geïmporteerd",
+    "skipped": "Overgeslagen",
+    "errors": "Fouten",
+    "viewCustomers": "Bekijk klanten",
+    "importMore": "Meer importeren",
+    "next": "Volgende",
+    "back": "Terug",
+    "cancel": "Annuleren",
+    "preview": "Voorbeeld",
+    "startImport": "Start import",
+    "error": {
+      "csvOnly": "Upload a.u.b. een CSV bestand",
+      "parse": "Fout bij lezen van CSV bestand"
+    }
   }
 }
