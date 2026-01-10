@@ -1,6 +1,6 @@
 /**
  * Stripe Routes voor PianoPlanner
- * B2B Pricing: €30/maand excl. BTW
+ * B2B Pricing: €30/month + applicable taxes
  */
 
 const express = require('express');
