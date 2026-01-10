@@ -12,19 +12,23 @@ const createAppointment = async (userId, appointmentData) => {
     const id = uuidv4();
     const now = new Date().toISOString();
     
+    // Support both single pianoId and array of pianoIds
+    const pianoIds = appointmentData.pianoIds || (appointmentData.pianoId ? [appointmentData.pianoId] : null);
+    const pianoIdsJson = pianoIds && pianoIds.length > 0 ? JSON.stringify(pianoIds) : null;
+    
     await dbRun(`
         INSERT INTO appointments (
             id, user_id, title, description, location,
             start_time, end_time, all_day,
             customer_id, customer_name,
             service_id, service_name,
-            piano_id, piano_brand, piano_model,
+            piano_id, piano_brand, piano_model, piano_ids,
             status, color, google_event_id,
             travel_time_minutes, travel_distance_km, travel_start_time, origin_address,
             apple_event_id, apple_event_url,
             created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
         id,
         userId,
@@ -38,9 +42,10 @@ const createAppointment = async (userId, appointmentData) => {
         appointmentData.customerName || null,
         appointmentData.serviceId || null,
         appointmentData.serviceName || null,
-        appointmentData.pianoId || null,
+        appointmentData.pianoId || (pianoIds?.[0] || null), // Keep first piano for backward compatibility
         appointmentData.pianoBrand || null,
         appointmentData.pianoModel || null,
+        pianoIdsJson,
         appointmentData.status || 'scheduled',
         appointmentData.color || '#4CAF50',
         appointmentData.googleEventId || null,
@@ -140,6 +145,7 @@ const updateAppointment = async (userId, appointmentId, updates) => {
         pianoId: 'piano_id',
         pianoBrand: 'piano_brand',
         pianoModel: 'piano_model',
+        pianoIds: 'piano_ids',  // Multiple pianos support
         status: 'status',
         color: 'color',
         googleEventId: 'google_event_id',
@@ -154,6 +160,9 @@ const updateAppointment = async (userId, appointmentId, updates) => {
             fields.push(`${dbField} = ?`);
             if (jsField === 'allDay') {
                 values.push(updates[jsField] ? 1 : 0);
+            } else if (jsField === 'pianoIds') {
+                // Convert array to JSON string
+                values.push(updates[jsField] ? JSON.stringify(updates[jsField]) : null);
             } else {
                 values.push(updates[jsField]);
             }
@@ -214,6 +223,18 @@ const getAppointmentStats = async (userId) => {
 
 // Format database row naar camelCase/legacy structuur
 function formatAppointment(row) {
+    // Parse pianoIds JSON if present
+    let pianoIds = null;
+    if (row.piano_ids) {
+        try {
+            pianoIds = JSON.parse(row.piano_ids);
+        } catch (e) {
+            pianoIds = row.piano_id ? [row.piano_id] : null;
+        }
+    } else if (row.piano_id) {
+        pianoIds = [row.piano_id];
+    }
+    
     return {
         id: row.id,
         title: row.title,
@@ -229,6 +250,7 @@ function formatAppointment(row) {
         pianoId: row.piano_id,
         pianoBrand: row.piano_brand,
         pianoModel: row.piano_model,
+        pianoIds: pianoIds,  // Array of piano IDs
         status: row.status,
         color: row.color,
         googleEventId: row.google_event_id,

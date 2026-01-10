@@ -484,6 +484,13 @@ function initDatabase() {
                 console.error('Migration error use_theater_hours:', err.message);
             }
         });
+        
+        // Migratie: voeg piano_ids toe aan appointments voor meerdere piano's per afspraak (JSON array)
+        db.run(`ALTER TABLE appointments ADD COLUMN piano_ids TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error piano_ids:', err.message);
+            }
+        });
 
         console.log('✅ Database tabellen en indexen aangemaakt');
         

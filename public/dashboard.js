@@ -955,16 +955,108 @@ function populateServiceDropdown() {
     });
 }
 
+// Get service duration by piano type
+function getServiceDurationForPiano(serviceId, pianoType) {
+    const service = servicesCache.find(s => s.id === serviceId);
+    if (!service) return 60; // Default 60 min
+    
+    // If piano has a specific duration modifier based on type
+    // Vleugels (grand pianos) typically take longer
+    if (pianoType === 'grand' || pianoType === 'vleugel') {
+        return Math.round(service.duration * 1.3); // 30% more time for grand pianos
+    }
+    return service.duration || 60;
+}
+
+// Calculate total duration for selected pianos
+function calculateMultiPianoDuration() {
+    const serviceSelect = document.getElementById('event-service');
+    const serviceId = serviceSelect.value;
+    const service = servicesCache.find(s => s.id === serviceId);
+    
+    if (!service) return { total: 0, bufferBefore: 0, bufferAfter: 0, breakdown: [] };
+    
+    const checkboxes = document.querySelectorAll('#piano-checkboxes input[type="checkbox"]:checked');
+    const breakdown = [];
+    let totalDuration = 0;
+    
+    checkboxes.forEach((cb, index) => {
+        const pianoId = cb.value;
+        const piano = pianosCache.find(p => p.id === pianoId);
+        const duration = getServiceDurationForPiano(serviceId, piano?.type);
+        
+        breakdown.push({
+            pianoId,
+            piano,
+            duration,
+            isFirst: index === 0
+        });
+        totalDuration += duration;
+    });
+    
+    // Buffer only for first piano (travel + setup time)
+    const bufferBefore = breakdown.length > 0 ? (service.bufferBefore || 0) : 0;
+    const bufferAfter = breakdown.length > 0 ? (service.bufferAfter || 0) : 0;
+    
+    return {
+        total: totalDuration,
+        bufferBefore,
+        bufferAfter,
+        totalWithBuffer: totalDuration + bufferBefore + bufferAfter,
+        breakdown,
+        service
+    };
+}
+
+// Update duration display
+function updatePianoDurationDisplay() {
+    const display = document.getElementById('piano-duration-display');
+    const result = calculateMultiPianoDuration();
+    
+    if (result.breakdown.length === 0) {
+        display.textContent = '';
+        return;
+    }
+    
+    const pianoCount = result.breakdown.length;
+    let text = `${pianoCount} piano${pianoCount > 1 ? "'s" : ''} • ${result.total} min`;
+    
+    if (result.bufferBefore > 0) {
+        text += ` (+${result.bufferBefore} buffer)`;
+    }
+    
+    display.textContent = text;
+    display.style.color = pianoCount > 1 ? 'var(--apple-blue)' : 'var(--gray-500)';
+}
+
+// Update end time based on selected pianos
+function updateEndTimeForMultiplePianos() {
+    const startInput = document.getElementById('event-start');
+    const endInput = document.getElementById('event-end');
+    
+    if (!startInput.value) return;
+    
+    const result = calculateMultiPianoDuration();
+    if (result.total === 0) return;
+    
+    const startDate = new Date(startInput.value);
+    // Total time = buffer before + all piano durations + buffer after
+    const totalMinutes = result.totalWithBuffer;
+    const endDate = new Date(startDate.getTime() + totalMinutes * 60 * 1000);
+    endInput.value = formatDateTimeLocal(endDate);
+}
+
 function onCustomerChange() {
     const customerId = document.getElementById('event-customer').value;
-    const pianoSelect = document.getElementById('event-piano');
+    const pianoContainer = document.getElementById('piano-checkboxes');
     const locationInput = document.getElementById('event-location');
     const confirmationWrapper = document.getElementById('send-confirmation-wrapper');
     const confirmationLabel = document.getElementById('send-confirmation-label');
     const confirmationCheckbox = document.getElementById('send-confirmation');
     
-    // Reset piano dropdown
-    pianoSelect.innerHTML = '<option value="">-- Select piano (optional) --</option>';
+    // Reset piano checkboxes
+    pianoContainer.innerHTML = '<div class="piano-checkbox-placeholder" style="color: var(--gray-400); font-size: 13px; padding: 8px 0;">Select a customer first</div>';
+    document.getElementById('piano-duration-display').textContent = '';
     
     // Hide confirmation checkbox by default
     if (confirmationWrapper) {
@@ -975,16 +1067,40 @@ function onCustomerChange() {
     if (customerId) {
         // Filter pianos for this customer
         const customerPianos = pianosCache.filter(p => p.customerId === customerId);
-        customerPianos.forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.id;
-            option.textContent = `${p.brand || ''} ${p.model || ''} ${p.serialNumber ? '(' + p.serialNumber + ')' : ''}`.trim() || 'Piano';
-            pianoSelect.appendChild(option);
-        });
         
-        // Auto-select if only one piano
-        if (customerPianos.length === 1) {
-            pianoSelect.value = customerPianos[0].id;
+        if (customerPianos.length === 0) {
+            pianoContainer.innerHTML = '<div class="piano-checkbox-placeholder" style="color: var(--gray-400); font-size: 13px; padding: 8px 0;">No pianos registered for this customer</div>';
+        } else {
+            pianoContainer.innerHTML = '';
+            customerPianos.forEach((p, index) => {
+                const pianoName = `${p.brand || ''} ${p.model || ''}`.trim() || 'Piano';
+                const pianoDetails = [
+                    p.type === 'grand' ? '🎹 Grand' : (p.type === 'upright' ? '🎹 Upright' : ''),
+                    p.serialNumber ? `SN: ${p.serialNumber}` : ''
+                ].filter(Boolean).join(' • ');
+                
+                const item = document.createElement('label');
+                item.className = 'piano-checkbox-item';
+                item.innerHTML = `
+                    <input type="checkbox" value="${p.id}" data-type="${p.type || 'upright'}" onchange="onPianoSelectionChange(this)">
+                    <div class="piano-checkbox-info">
+                        <div class="piano-checkbox-name">${pianoName}</div>
+                        ${pianoDetails ? `<div class="piano-checkbox-details">${pianoDetails}</div>` : ''}
+                    </div>
+                    <div class="piano-checkbox-duration" style="display: none;"></div>
+                `;
+                pianoContainer.appendChild(item);
+                
+                // Auto-select first piano
+                if (index === 0) {
+                    const checkbox = item.querySelector('input');
+                    checkbox.checked = true;
+                    item.classList.add('selected');
+                }
+            });
+            
+            // Update duration display
+            updatePianoDurationDisplay();
         }
         
         // Fill location from customer address
@@ -1005,6 +1121,26 @@ function onCustomerChange() {
     updateSmartAppointmentVisibility();
 }
 
+// Handle piano checkbox selection
+function onPianoSelectionChange(checkbox) {
+    const item = checkbox.closest('.piano-checkbox-item');
+    if (checkbox.checked) {
+        item.classList.add('selected');
+    } else {
+        item.classList.remove('selected');
+    }
+    
+    updatePianoDurationDisplay();
+    updateEndTimeForMultiplePianos();
+    updateSmartAppointmentVisibility();
+}
+
+// Get selected piano IDs
+function getSelectedPianoIds() {
+    const checkboxes = document.querySelectorAll('#piano-checkboxes input[type="checkbox"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
 function onServiceChange() {
     const serviceSelect = document.getElementById('event-service');
     const selectedOption = serviceSelect.selectedOptions[0];
@@ -1018,14 +1154,24 @@ function onServiceChange() {
             titleInput.value = selectedOption.dataset.name;
         }
         
-        // Adjust end time based on service duration
-        if (startInput.value && selectedOption.dataset.duration) {
-            const duration = parseInt(selectedOption.dataset.duration);
-            const startDate = new Date(startInput.value);
-            const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
-            endInput.value = formatDateTimeLocal(endDate);
+        // Adjust end time based on selected pianos (or single service duration if no pianos)
+        if (startInput.value) {
+            const selectedPianos = getSelectedPianoIds();
+            if (selectedPianos.length > 0) {
+                // Use multi-piano calculation
+                updateEndTimeForMultiplePianos();
+            } else if (selectedOption.dataset.duration) {
+                // Fallback to single service duration
+                const duration = parseInt(selectedOption.dataset.duration);
+                const startDate = new Date(startInput.value);
+                const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
+                endInput.value = formatDateTimeLocal(endDate);
+            }
         }
     }
+    
+    // Update piano duration display (service affects duration for grand pianos)
+    updatePianoDurationDisplay();
     
     // Update smart appointment visibility
     updateSmartAppointmentVisibility();
@@ -1069,16 +1215,38 @@ async function findSmartSlot() {
         return;
     }
     
+    // Calculate multi-piano duration
+    const durationResult = calculateMultiPianoDuration();
+    const selectedPianoIds = getSelectedPianoIds();
+    const pianoCount = selectedPianoIds.length;
+    
     // Show loading
     resultDiv.style.display = 'block';
-    resultDiv.innerHTML = '<div style="text-align: center; padding: 10px; color: var(--gray-500);">🔍 Searching for available times...</div>';
+    resultDiv.innerHTML = `<div style="text-align: center; padding: 10px; color: var(--gray-500);">🔍 Searching for available times${pianoCount > 1 ? ` (${pianoCount} pianos, ${durationResult.total} min)` : ''}...</div>`;
     btn.disabled = true;
     
     try {
+        // Send multi-piano info to backend
+        const requestBody = {
+            serviceId,
+            customerId,
+            date,
+            // Multi-piano support
+            pianoIds: selectedPianoIds,
+            pianoCount: pianoCount,
+            // Override duration if multiple pianos
+            totalDuration: pianoCount > 1 ? durationResult.total : undefined,
+            // Buffer only before first piano
+            customBuffer: pianoCount > 1 ? {
+                before: durationResult.bufferBefore,
+                after: durationResult.bufferAfter
+            } : undefined
+        };
+        
         const response = await fetch('/api/booking/find-slot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ serviceId, customerId, date })
+            body: JSON.stringify(requestBody)
         });
         
         const data = await response.json();
@@ -1114,12 +1282,15 @@ async function findSmartSlot() {
                 `;
             }).join('');
             
+            // Build info text with piano count
+            const pianoInfo = data.pianoCount > 1 ? `🎹 ${data.pianoCount} pianos • ` : '';
+            
             resultDiv.innerHTML = `
                 <div style="padding: 8px 0;">
                     <div style="font-weight: 600; margin-bottom: 10px; color: #333;">
                         ✓ ${data.slots.length} ${data.slots.length === 1 ? 'option' : 'options'} found
                         <span style="font-weight: normal; font-size: 12px; color: #666; margin-left: 8px;">
-                            🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min
+                            ${pianoInfo}🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min
                         </span>
                     </div>
                     ${slotsHtml}
@@ -1132,6 +1303,7 @@ async function findSmartSlot() {
             // Fallback: enkele slot (oude formaat)
             const startTime = new Date(data.slot.appointmentStart);
             const endTime = new Date(data.slot.appointmentEnd);
+            const pianoInfo = data.pianoCount > 1 ? `🎹 ${data.pianoCount} pianos • ` : '';
             
             resultDiv.innerHTML = `
                 <div style="background: var(--success-bg, #dcfce7); border: 1px solid var(--success-color, #22c55e); border-radius: 8px; padding: 12px;">
@@ -1141,7 +1313,7 @@ async function findSmartSlot() {
                         ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                     </div>
                     <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 10px;">
-                        🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min service
+                        ${pianoInfo}🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min service
                     </div>
                     <button type="button" class="btn btn-primary" onclick="applySmartSlot('${data.slot.appointmentStart}', '${data.slot.appointmentEnd}')" style="width: 100%;">
                         Use this time
@@ -1573,7 +1745,16 @@ function closeModal() {
     document.getElementById('event-modal').style.display = 'none';
     document.getElementById('event-form').reset();
     document.getElementById('new-customer-form').style.display = 'none';
-    document.getElementById('event-piano').innerHTML = '<option value="">-- Select piano (optional) --</option>';
+    
+    // Reset piano checkboxes
+    const pianoContainer = document.getElementById('piano-checkboxes');
+    if (pianoContainer) {
+        pianoContainer.innerHTML = '<div class="piano-checkbox-placeholder" style="color: var(--gray-400); font-size: 13px; padding: 8px 0;">Select a customer first</div>';
+    }
+    const durationDisplay = document.getElementById('piano-duration-display');
+    if (durationDisplay) {
+        durationDisplay.textContent = '';
+    }
     
     // Hide confirmation checkbox
     const confirmationWrapper = document.getElementById('send-confirmation-wrapper');
@@ -1591,7 +1772,7 @@ async function handleEventSubmit(e) {
     e.preventDefault();
     
     const customerId = document.getElementById('event-customer').value;
-    const pianoId = document.getElementById('event-piano').value;
+    const selectedPianoIds = getSelectedPianoIds();
     const serviceId = document.getElementById('event-service').value;
     const title = document.getElementById('event-title').value;
     const description = document.getElementById('event-description').value;
@@ -1602,10 +1783,20 @@ async function handleEventSubmit(e) {
     
     // Get names from cache (use == for loose comparison since dropdown values are strings)
     const customer = customersCache.find(c => String(c.id) === customerId);
-    const piano = pianosCache.find(p => String(p.id) === pianoId);
     const service = servicesCache.find(s => String(s.id) === serviceId);
     
+    // Get first piano for backward compatibility
+    const firstPianoId = selectedPianoIds.length > 0 ? selectedPianoIds[0] : null;
+    const firstPiano = firstPianoId ? pianosCache.find(p => String(p.id) === firstPianoId) : null;
+    
+    // Build piano names for description
+    const selectedPianoNames = selectedPianoIds.map(id => {
+        const piano = pianosCache.find(p => String(p.id) === id);
+        return piano ? `${piano.brand || ''} ${piano.model || ''}`.trim() : 'Piano';
+    });
+    
     console.log('📋 Service lookup:', { serviceId, service, servicesCache: servicesCache.map(s => ({id: s.id, name: s.name})) });
+    console.log('🎹 Selected pianos:', selectedPianoIds, selectedPianoNames);
     
     const appointmentData = {
         title,
@@ -1615,9 +1806,10 @@ async function handleEventSubmit(e) {
         end: new Date(end).toISOString(),
         customerId: customerId || null,
         customerName: customer?.name || null,
-        pianoId: pianoId || null,
-        pianoBrand: piano?.brand || null,
-        pianoModel: piano?.model || null,
+        pianoId: firstPianoId,  // Keep first piano for backward compatibility
+        pianoBrand: firstPiano?.brand || null,
+        pianoModel: firstPiano?.model || null,
+        pianoIds: selectedPianoIds.length > 0 ? selectedPianoIds : null,  // All selected pianos
         serviceId: serviceId || null,
         serviceName: service?.name || null,
         sendConfirmation: sendConfirmation && customer?.email ? true : false

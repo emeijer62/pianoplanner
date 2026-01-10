@@ -1259,10 +1259,15 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="event-piano">Piano</label>
-                    <select id="event-piano">
-                        <option value="">-- Select piano (optional) --</option>
-                    </select>
+                    <label style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Piano's</span>
+                        <span id="piano-duration-display" style="font-size: 11px; color: var(--gray-500); font-weight: normal;"></span>
+                    </label>
+                    <div id="piano-checkboxes" class="piano-checkbox-container">
+                        <div class="piano-checkbox-placeholder" style="color: var(--gray-400); font-size: 13px; padding: 8px 0;">
+                            Select a customer first
+                        </div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="event-service">Service</label>

@@ -252,6 +252,7 @@ router.post('/', checkAppointmentLimit, async (req, res) => {
             customerId, customerName,
             serviceId, serviceName,
             pianoId, pianoBrand, pianoModel,
+            pianoIds,  // Multiple piano IDs support
             color,
             sendConfirmation  // Expliciet vinkje van gebruiker
         } = req.body;
@@ -278,10 +279,12 @@ router.post('/', checkAppointmentLimit, async (req, res) => {
             pianoId,
             pianoBrand,
             pianoModel,
+            pianoIds,  // Pass multiple piano IDs to store
             color
         });
         
-        console.log(`📅 Nieuwe afspraak: ${title} (tier: ${req.appointmentLimit?.tier || 'unknown'}, ${req.appointmentLimit?.current || '?'}/${req.appointmentLimit?.limit || '?'} dit jaar)`);
+        const pianoCountLog = pianoIds?.length > 1 ? ` (${pianoIds.length} pianos)` : '';
+        console.log(`📅 Nieuwe afspraak: ${title}${pianoCountLog} (tier: ${req.appointmentLimit?.tier || 'unknown'}, ${req.appointmentLimit?.current || '?'}/${req.appointmentLimit?.limit || '?'} dit jaar)`);
         
         // Stuur response DIRECT terug
         res.status(201).json(appointment);

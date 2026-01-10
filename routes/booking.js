@@ -501,12 +501,17 @@ router.post('/travel-time', async (req, res) => {
 /**
  * Vind eerste beschikbare tijdslot
  * POST /api/booking/find-slot
+ * Supports multi-piano appointments with combined duration
  */
 router.post('/find-slot', async (req, res) => {
     try {
-        const { serviceId, customerId, date, origin, searchMultipleDays = true } = req.body;
+        const { 
+            serviceId, customerId, date, origin, searchMultipleDays = true,
+            // Multi-piano support
+            pianoIds, pianoCount, totalDuration, customBuffer
+        } = req.body;
         
-        console.log('[SMART] Request received:', { serviceId, customerId, date, origin });
+        console.log('[SMART] Request received:', { serviceId, customerId, date, origin, pianoCount, totalDuration });
         
         // Validatie
         if (!serviceId || !date) {
@@ -518,7 +523,15 @@ router.post('/find-slot', async (req, res) => {
             return res.status(404).json({ error: 'Dienst niet gevonden' });
         }
         
-        console.log('[SMART] Service:', service.name, 'Duration:', service.duration);
+        // Use custom duration for multi-piano appointments, otherwise service duration
+        const effectiveDuration = totalDuration || service.duration;
+        
+        // For multi-piano: buffer only at start (before first piano), not between pianos
+        const effectiveBufferBefore = customBuffer?.before ?? service.bufferBefore ?? 0;
+        const effectiveBufferAfter = customBuffer?.after ?? service.bufferAfter ?? 0;
+        
+        console.log('[SMART] Service:', service.name, 'Duration:', effectiveDuration, 
+            pianoCount > 1 ? `(${pianoCount} pianos combined)` : '');
         
         // Haal bedrijfsadres op als vertrekpunt
         const companyAddress = await companyStore.getOriginAddress(req.session.user.id);
@@ -539,7 +552,7 @@ router.post('/find-slot', async (req, res) => {
         console.log('[SMART] Travel from', fromLocation, 'to', destination, '=', travelInfo.duration, 'min');
         
         // Bereken totale benodigde tijd (buffer voor + reistijd + dienst + buffer na)
-        const totalServiceTime = (service.bufferBefore || 0) + service.duration + (service.bufferAfter || 0);
+        const totalServiceTime = effectiveBufferBefore + effectiveDuration + effectiveBufferAfter;
         
         // Haal company settings op
         const companySettings = await companyStore.getSettings(req.session.user.id);
@@ -614,17 +627,18 @@ router.post('/find-slot', async (req, res) => {
             
             console.log(`[SMART] Day ${dayOffset}: ${dayName}, workHours:`, workHours);
             console.log(`[SMART] Events on ${searchDate.toISOString().split('T')[0]}:`, existingEvents.length);
-            console.log(`[SMART] Travel: ${travelInfo.duration}min, Service: ${service.duration}min, Buffer: ${service.bufferBefore || 0}/${service.bufferAfter || 0}`);
+            console.log(`[SMART] Travel: ${travelInfo.duration}min, Service: ${effectiveDuration}min${pianoCount > 1 ? ` (${pianoCount} pianos)` : ''}, Buffer: ${effectiveBufferBefore}/${effectiveBufferAfter}`);
             
             // Vind eerste beschikbare slot (met buffertijden)
+            // For multi-piano: effectiveDuration already includes all pianos combined
             const slot = findFirstAvailableSlot(
                 existingEvents,
                 travelInfo.duration,
-                service.duration,
+                effectiveDuration,
                 searchDate,
                 workHours,
-                service.bufferBefore || 0,
-                service.bufferAfter || 0
+                effectiveBufferBefore,
+                effectiveBufferAfter
             );
             
             console.log(`[SMART] Slot found:`, slot ? 'YES' : 'NO', slot?.appointmentStart);
@@ -639,7 +653,8 @@ router.post('/find-slot', async (req, res) => {
                         slotEnd: slot.slotEnd
                     },
                     foundDate: searchDate.toISOString().split('T')[0],
-                    dayOffset: dayOffset
+                    dayOffset: dayOffset,
+                    pianoCount: pianoCount || 1
                 });
             }
         }
@@ -650,9 +665,13 @@ router.post('/find-slot', async (req, res) => {
                 available: true,
                 slots: foundSlots, // Meerdere opties
                 slot: foundSlots[0].slot, // Eerste optie voor backward compatibility
-                service,
+                service: {
+                    ...service,
+                    duration: effectiveDuration // Use effective duration (may be multi-piano)
+                },
                 travelInfo,
                 totalDuration: travelInfo.duration + totalServiceTime,
+                pianoCount: pianoCount || 1,
                 searchedDate: date,
                 foundDate: foundSlots[0].foundDate,
                 daysSearched: maxDaysToSearch
