@@ -441,6 +441,9 @@ router.get('/:slug', async (req, res) => {
             services = services.filter(s => allowedIds.includes(s.id));
         }
         
+        // Sorteer diensten op prijs (hoogste eerst)
+        services.sort((a, b) => (b.price || 0) - (a.price || 0));
+        
         // Haal beschikbaarheid op (working hours)
         const availability = company?.workingHours || {
             monday: { enabled: true, start: '09:00', end: '17:00' },
