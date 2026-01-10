@@ -799,6 +799,85 @@ async function sendTestEmail(to) {
 // Initialize on module load
 initializeEmail();
 
+/**
+ * Send account approval email
+ * @param {Object} user - User object with email and name
+ * @returns {Promise<boolean>} - Success status
+ */
+async function sendApprovalEmail(user) {
+    if (!user || !user.email) {
+        console.error('sendApprovalEmail: No user or email provided');
+        return false;
+    }
+
+    const loginUrl = process.env.BASE_URL ? `${process.env.BASE_URL}/login.html` : 'https://pianoplanner.com/login.html';
+    
+    const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
+                .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+                .header { background: linear-gradient(135deg, #007AFF, #5856D6); padding: 30px; text-align: center; }
+                .header h1 { color: white; margin: 0; font-size: 24px; }
+                .content { padding: 30px; }
+                .success-badge { display: inline-block; background: #dcfce7; color: #166534; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 20px; }
+                .button { display: inline-block; background: #007AFF; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                .button:hover { background: #0056b3; }
+                .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 14px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🎹 PianoPlanner</h1>
+                </div>
+                <div class="content">
+                    <span class="success-badge">✓ Account Approved</span>
+                    <h2>Welcome${user.name ? `, ${user.name}` : ''}!</h2>
+                    <p>Great news! Your PianoPlanner account has been approved.</p>
+                    <p>You can now log in with your email address <strong>${user.email}</strong> and the password you created during registration.</p>
+                    
+                    <p style="text-align: center;">
+                        <a href="${loginUrl}" class="button">Log in to PianoPlanner</a>
+                    </p>
+                    
+                    <p>Your 14-day free trial has started. During this period you have access to all features:</p>
+                    <ul>
+                        <li>Unlimited customers & appointments</li>
+                        <li>Calendar sync (Google, Apple, Microsoft)</li>
+                        <li>Online booking page for your customers</li>
+                        <li>Smart appointment suggestions</li>
+                        <li>Email reminders</li>
+                    </ul>
+                    
+                    <p>Questions? Just reply to this email.</p>
+                </div>
+                <div class="footer">
+                    <p>© ${new Date().getFullYear()} PianoPlanner - Smart scheduling for piano technicians</p>
+                </div>
+            </div>
+        </body>
+        </html>
+    `;
+
+    try {
+        const result = await sendEmail({
+            to: user.email,
+            subject: '✓ Your PianoPlanner account has been approved!',
+            html,
+            skipBcc: true // Don't BCC admin for system emails
+        });
+        console.log(`📧 Approval email sent to ${user.email}`);
+        return result;
+    } catch (error) {
+        console.error('Error sending approval email:', error);
+        return false;
+    }
+}
+
 module.exports = {
     initializeEmail,
     isEmailConfigured,
@@ -808,5 +887,6 @@ module.exports = {
     sendAppointmentCancellation,
     sendNewBookingNotification,
     sendTestEmail,
+    sendApprovalEmail,
     getCompanyLogo
 };

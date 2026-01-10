@@ -4,6 +4,7 @@ const userStore = require('../utils/userStore');
 const auditLog = require('../utils/auditLog');
 const errorLog = require('../utils/errorLog');
 const { getDb, dbAll, dbGet, dbRun } = require('../utils/database');
+const emailService = require('../utils/emailService');
 
 // Admin credentials (uit environment)
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -144,6 +145,11 @@ router.post('/users/:userId/approve', requireAdminAuth, async (req, res) => {
             details: `User approved: ${result.user?.email}`,
             ipAddress: reqInfo.ipAddress
         });
+        
+        // Send approval email to user
+        if (result.user?.email) {
+            await emailService.sendApprovalEmail(result.user);
+        }
         
         res.json({ success: true, message: 'Gebruiker goedgekeurd', user: result.user });
     } catch (error) {
