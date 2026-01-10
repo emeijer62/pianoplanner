@@ -748,7 +748,7 @@ function renderDayView(container) {
                  ondrop="handleDrop(event, '${dateStr}', ${slot.hour})">
                 <div class="time-label">${slot.label}</div>
                 <div class="time-content">
-                    ${slotEvents.map(e => createEventElement(e)).join('')}
+                    ${slotEvents.map(e => createEventElement(e, false, slot.startMinutes)).join('')}
                 </div>
             </div>
         `;
@@ -857,7 +857,7 @@ function renderWeekView(container) {
                      ondragover="handleDragOver(event)"
                      ondragleave="handleDragLeave(event)"
                      ondrop="handleDrop(event, '${dayData.dateStr}', ${slot.hour})">
-                    ${slotEvents.map(e => createEventElement(e, true)).join('')}
+                    ${slotEvents.map(e => createEventElement(e, true, slot.startMinutes)).join('')}
                 </div>
             `;
         }
@@ -1030,7 +1030,7 @@ function getEventsForDay(date) {
     });
 }
 
-function createEventElement(event, compact = false) {
+function createEventElement(event, compact = false, slotStartMinutes = null) {
     const start = event.start.dateTime ? new Date(event.start.dateTime) : null;
     const end = event.end.dateTime ? new Date(event.end.dateTime) : null;
     // Use user's timezone for time display
@@ -1049,6 +1049,18 @@ function createEventElement(event, compact = false) {
     // Calculate slot height dynamically: base 36px for 30-min slots
     const baseSlotHeight = (slotDuration / 30) * 36;
     
+    // Calculate offset within slot for proper positioning
+    let offsetStyle = '';
+    if (slotStartMinutes !== null && start) {
+        const eventTimeInfo = getTimeInUserZone(event.start.dateTime);
+        const offsetMinutes = eventTimeInfo.totalMinutes - slotStartMinutes;
+        if (offsetMinutes > 0 && slotDuration > 30) {
+            // Calculate pixel offset based on position within slot
+            const offsetPx = (offsetMinutes / slotDuration) * baseSlotHeight;
+            offsetStyle = `margin-top: ${offsetPx}px;`;
+        }
+    }
+    
     // Check for travel time info
     const hasTravelTime = event.travelTimeMinutes && event.travelStartTime;
     let travelStr = '';
@@ -1061,7 +1073,7 @@ function createEventElement(event, compact = false) {
         // Week view - event height based on duration and current slot size
         const weekEventHeight = Math.max(baseSlotHeight - 4, slotsSpanned * baseSlotHeight - 4);
         return `
-            <div class="calendar-event" style="background: ${color}; cursor: grab; min-height: ${weekEventHeight}px; height: ${weekEventHeight}px;" 
+            <div class="calendar-event" style="background: ${color}; cursor: grab; min-height: ${weekEventHeight}px; height: ${weekEventHeight}px; ${offsetStyle}" 
                  title="${escapeHtml(event.summary || 'No title')}${hasTravelTime ? ` (🚗 ${event.travelTimeMinutes} min)` : ''}"
                  onclick="openEditModal('${event.id}')"
                  draggable="true"
@@ -1079,16 +1091,18 @@ function createEventElement(event, compact = false) {
     let travelBlock = '';
     if (hasTravelTime) {
         travelBlock = `
-            <div class="calendar-event calendar-event-travel" style="background: #90a4ae; opacity: 0.8; font-size: 0.75rem;">
+            <div class="calendar-event calendar-event-travel" style="background: #90a4ae; opacity: 0.8; font-size: 0.75rem; ${offsetStyle}">
                 <div class="calendar-event-time">${travelStr}</div>
                 <div>🚗 Travel time (${event.travelTimeMinutes} min${event.travelDistanceKm ? ', ' + event.travelDistanceKm + ' km' : ''})</div>
             </div>
         `;
+        // Clear offset for main event since travel block already has it
+        offsetStyle = '';
     }
     
     return `
         ${travelBlock}
-        <div class="calendar-event" style="background: ${color}; cursor: grab; min-height: ${dayEventHeight}px; height: ${dayEventHeight}px;" 
+        <div class="calendar-event" style="background: ${color}; cursor: grab; min-height: ${dayEventHeight}px; height: ${dayEventHeight}px; ${offsetStyle}" 
              onclick="openEditModal('${event.id}')"
              draggable="true"
              ondragstart="handleDragStart(event, '${event.id}')"
