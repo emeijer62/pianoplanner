@@ -153,6 +153,8 @@ function navigateDay(direction) {
     currentDate.setDate(currentDate.getDate() + direction);
     updateMobileHeader();
     renderCalendar();
+    // Scroll to start of day after navigation
+    scrollToStartOfDay();
 }
 
 // Automatische sync met Google Calendar
@@ -383,11 +385,19 @@ function navigateCalendar(direction) {
             break;
     }
     renderCalendar();
+    // Scroll to start of day after navigation (for day/week views)
+    if (currentView !== 'month') {
+        scrollToStartOfDay();
+    }
 }
 
 function goToToday() {
     currentDate = new Date();
     renderCalendar();
+    // For today, scroll to current time instead of start of day
+    if (currentView !== 'month') {
+        scrollToCurrentTime();
+    }
 }
 
 // ========== CALENDAR SYNC ==========
@@ -569,6 +579,26 @@ function scrollToCurrentTime() {
         // Scroll to position (with some offset to show some slots above)
         scrollContainer.scrollTop = Math.max(0, scrollPosition - slotHeight * 2);
     }
+}
+
+// Scroll calendar to start of business day (9:00 or calendarStartHour)
+function scrollToStartOfDay() {
+    const weekGrid = document.querySelector('.week-grid');
+    const timeGrid = document.querySelector('.time-grid');
+    const scrollContainer = weekGrid || timeGrid;
+    
+    if (!scrollContainer) return;
+    
+    // Scroll to 9:00 if visible, otherwise to the start hour
+    const targetHour = Math.max(9, calendarStartHour);
+    const targetSlot = targetHour - calendarStartHour;
+    const slotHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slot-height') || '36');
+    const scrollPosition = targetSlot * slotHeight;
+    
+    // Small delay to ensure DOM is rendered
+    setTimeout(() => {
+        scrollContainer.scrollTop = Math.max(0, scrollPosition);
+    }, 50);
 }
 
 // Show indicator for events outside visible hours
@@ -852,6 +882,7 @@ function goToDay(year, month, day) {
     currentView = 'day';
     document.getElementById('viewSelect').value = 'day';
     renderCalendar();
+    scrollToStartOfDay();
 }
 
 // ========== MINI MONTH CALENDAR ==========
@@ -892,6 +923,7 @@ function renderMiniCalendar() {
             currentView = 'day';
             document.getElementById('viewSelect').value = 'day';
             renderCalendar();
+            scrollToStartOfDay();
         };
 
         const num = document.createElement('div');
