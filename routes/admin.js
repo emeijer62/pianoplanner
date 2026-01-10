@@ -346,11 +346,11 @@ router.get('/users/:userId', requireAdminAuth, async (req, res) => {
             id: user.id,
             email: user.email,
             name: user.name,
-            authType: user.auth_type,
-            approvalStatus: user.approval_status || 'pending',
+            authType: user.authType,
+            approvalStatus: user.approvalStatus || 'pending',
             subscription: await userStore.getSubscriptionStatus(user.id),
-            createdAt: user.created_at,
-            updatedAt: user.updated_at
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
         };
         
         res.json(safeUser);
