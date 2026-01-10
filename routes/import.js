@@ -6,6 +6,7 @@ const express = require('express');
 const router = express.Router();
 const { authenticate } = require('../middleware/auth');
 const customerStore = require('../utils/customerStore');
+const pianoStore = require('../utils/pianoStore');
 
 /**
  * POST /api/import/gazelle
@@ -153,5 +154,135 @@ function buildNotes(customer) {
     
     return parts.join('\n\n') || null;
 }
+
+/**
+ * POST /api/import/gazelle-pianos
+ * Import pianos from Gazelle CSV data
+ */
+router.post('/gazelle-pianos', authenticate, async (req, res) => {
+    try {
+        const { pianos, options = {} } = req.body;
+        const userId = req.user.id;
+        
+        if (!pianos || !Array.isArray(pianos)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'No pianos data provided' 
+            });
+        }
+        
+        let imported = 0;
+        let skipped = 0;
+        const errors = [];
+        
+        // Get all customers to find matches by Gazelle ID
+        const allCustomers = await customerStore.getAllCustomers(userId);
+        
+        // Build lookup map: Gazelle Client ID -> Customer
+        const customerByGazelleId = new Map();
+        for (const customer of allCustomers) {
+            // Look for Gazelle ID in notes
+            if (customer.notes) {
+                const match = customer.notes.match(/Gazelle ID:\s*(cli_[a-zA-Z0-9]+)/);
+                if (match) {
+                    customerByGazelleId.set(match[1], customer);
+                }
+            }
+        }
+        
+        console.log(`Found ${customerByGazelleId.size} customers with Gazelle IDs`);
+        
+        // Process each piano
+        for (const piano of pianos) {
+            try {
+                // Validate required fields
+                if (!piano.brand || piano.brand.trim() === '') {
+                    errors.push(`Skipped piano: Missing brand`);
+                    skipped++;
+                    continue;
+                }
+                
+                // Find customer by Gazelle Client ID
+                let customerId = null;
+                let customerFound = false;
+                
+                if (piano.clientId) {
+                    const customer = customerByGazelleId.get(piano.clientId);
+                    if (customer) {
+                        customerId = customer.id;
+                        customerFound = true;
+                    }
+                }
+                
+                // Handle missing customer based on options
+                if (!customerFound && piano.clientId) {
+                    if (options.skipNoCustomer) {
+                        errors.push(`Skipped "${piano.brand} ${piano.model || ''}": Customer not found (${piano.clientId})`);
+                        skipped++;
+                        continue;
+                    }
+                    
+                    if (options.createCustomer && piano.customerName) {
+                        // Create the customer
+                        const newCustomer = await customerStore.createCustomer(userId, {
+                            name: piano.customerName,
+                            notes: `Gazelle ID: ${piano.clientId}\n\nAuto-created during piano import`
+                        });
+                        customerId = newCustomer.id;
+                        customerByGazelleId.set(piano.clientId, newCustomer);
+                    }
+                }
+                
+                // Build piano notes
+                const noteParts = [];
+                if (piano.gazelleId) {
+                    noteParts.push(`Gazelle Piano ID: ${piano.gazelleId}`);
+                }
+                if (piano.notes) {
+                    noteParts.push(piano.notes);
+                }
+                if (piano.status && piano.status !== 'active') {
+                    noteParts.push(`Status in Gazelle: ${piano.status}`);
+                }
+                
+                // Build piano data
+                const pianoData = {
+                    brand: piano.brand.trim(),
+                    model: piano.model?.trim() || null,
+                    serialNumber: piano.serialNumber?.trim() || null,
+                    year: piano.year || null,
+                    type: piano.type || 'upright',
+                    location: piano.location?.trim() || null,
+                    finish: piano.finish?.trim() || null,
+                    serviceInterval: piano.serviceInterval || 12,
+                    lastTuningDate: piano.lastTuningDate || null,
+                    notes: noteParts.join('\n\n') || null,
+                    customerId: customerId
+                };
+                
+                // Create piano
+                await pianoStore.createPiano(userId, pianoData);
+                imported++;
+                
+            } catch (err) {
+                errors.push(`Error importing "${piano.brand} ${piano.model || ''}": ${err.message}`);
+            }
+        }
+        
+        res.json({
+            success: true,
+            imported,
+            skipped,
+            errors: errors.length > 0 ? errors : undefined
+        });
+        
+    } catch (error) {
+        console.error('Piano import error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
 
 module.exports = router;
