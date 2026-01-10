@@ -1,6 +1,6 @@
 /**
  * Stripe Routes voor PianoPlanner
- * Abonnementen: €29,90/maand incl 21% BTW
+ * Abonnementen: €30/maand excl BTW (€36,30 incl 21% BTW)
  */
 
 const express = require('express');
@@ -16,10 +16,10 @@ if (process.env.STRIPE_SECRET_KEY) {
 // Prijzen configuratie
 const PRICES = {
     monthly: {
-        amount: 2990, // €29,90 in centen (incl 21% BTW)
+        amount: 3630, // €36,30 in centen (€30 excl + 21% BTW)
         currency: 'eur',
         interval: 'month',
-        name: 'PianoPlanner Go',
+        name: 'PianoPlanner Pro',
         description: 'Maandelijks abonnement - alle features'
     }
 };
