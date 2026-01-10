@@ -120,7 +120,7 @@ function renderCustomers(customers) {
     }
     
     container.innerHTML = customers.map(customer => `
-        <div class="list-item" onclick="viewCustomer('${customer.id}')">
+        <div class="list-item" data-customer-id="${customer.id}">
             <div class="list-item-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600;">
                 ${customer.name.charAt(0).toUpperCase()}
             </div>
@@ -141,6 +141,9 @@ function renderCustomers(customers) {
             </div>
         </div>
     `).join('');
+    
+    // Add scroll-aware tap handlers for mobile
+    setupCustomerTapHandlers();
 }
 
 function handleSearch(e) {
@@ -252,6 +255,45 @@ async function handleSubmit(e) {
         console.error('Error saving customer:', err);
         alert('Could not save customer. Please try again.');
     }
+}
+
+// Scroll-aware tap handler to prevent accidental navigation while scrolling
+let touchStartY = 0;
+let touchStartTime = 0;
+const SCROLL_THRESHOLD = 10; // pixels moved to count as scroll
+const TAP_TIMEOUT = 300; // max ms for a tap
+
+function setupCustomerTapHandlers() {
+    const container = document.getElementById('customers-list');
+    if (!container) return;
+    
+    container.querySelectorAll('.list-item[data-customer-id]').forEach(item => {
+        const customerId = item.dataset.customerId;
+        
+        // Touch events for mobile
+        item.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
+        }, { passive: true });
+        
+        item.addEventListener('touchend', (e) => {
+            const touchEndY = e.changedTouches[0].clientY;
+            const touchDuration = Date.now() - touchStartTime;
+            const touchDistance = Math.abs(touchEndY - touchStartY);
+            
+            // Only navigate if it was a quick tap without much movement
+            if (touchDistance < SCROLL_THRESHOLD && touchDuration < TAP_TIMEOUT) {
+                viewCustomer(customerId);
+            }
+        }, { passive: true });
+        
+        // Click for desktop (mouse)
+        item.addEventListener('click', (e) => {
+            // Skip if this was a touch event (already handled)
+            if (e.sourceCapabilities?.firesTouchEvents) return;
+            viewCustomer(customerId);
+        });
+    });
 }
 
 function viewCustomer(customerId) {
