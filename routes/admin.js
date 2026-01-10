@@ -401,8 +401,6 @@ router.post('/cleanup-appointments', requireAdminAuth, async (req, res) => {
 
 // ==================== EMAIL TEST ====================
 
-const emailService = require('../utils/emailService');
-
 // Test email endpoint (admin auth vereist)
 router.post('/test-email', requireAdminAuth, async (req, res) => {
     const { email } = req.body;
