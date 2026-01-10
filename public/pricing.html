@@ -7,10 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="icons.css?v=20260109b">
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="icons.js?v=20260109" defer></script>
     <style>
         :root {
             --white: #ffffff;
@@ -38,9 +35,7 @@
         /* Header */
         .header {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             background: rgba(255,255,255,0.9);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--gray-200);
@@ -80,9 +75,7 @@
             text-decoration: none;
         }
 
-        .nav-link:hover, .nav-link.active {
-            color: var(--blue);
-        }
+        .nav-link:hover, .nav-link.active { color: var(--blue); }
 
         .btn {
             padding: 8px 16px;
@@ -93,14 +86,8 @@
             transition: all 0.2s;
         }
 
-        .btn-primary {
-            background: var(--blue);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--blue-hover);
-        }
+        .btn-primary { background: var(--blue); color: white; }
+        .btn-primary:hover { background: var(--blue-hover); }
 
         /* Hero */
         .pricing-hero {
@@ -126,7 +113,7 @@
         /* Pricing Grid */
         .pricing-container {
             max-width: 900px;
-            margin: -20px auto 80px;
+            margin: -20px auto 60px;
             padding: 0 24px;
         }
 
@@ -151,9 +138,7 @@
             transform: translateY(-4px);
         }
 
-        .pricing-card.popular {
-            border: 2px solid var(--blue);
-        }
+        .pricing-card.popular { border: 2px solid var(--blue); }
 
         .popular-badge {
             position: absolute;
@@ -182,9 +167,7 @@
             margin-bottom: 24px;
         }
 
-        .price-container {
-            margin-bottom: 32px;
-        }
+        .price-container { margin-bottom: 32px; }
 
         .price {
             font-size: 56px;
@@ -224,13 +207,8 @@
             border-bottom: 1px solid var(--gray-100);
         }
 
-        .features-list li:last-child {
-            border-bottom: none;
-        }
-
-        .features-list li.disabled {
-            color: var(--gray-400);
-        }
+        .features-list li:last-child { border-bottom: none; }
+        .features-list li.disabled { color: var(--gray-400); }
 
         .check-icon {
             width: 22px;
@@ -241,22 +219,11 @@
             justify-content: center;
             flex-shrink: 0;
             margin-top: 1px;
+            font-size: 12px;
         }
 
-        .check-icon.green {
-            background: #e8f5e9;
-            color: var(--green);
-        }
-
-        .check-icon.gray {
-            background: var(--gray-100);
-            color: var(--gray-400);
-        }
-
-        .check-icon svg {
-            width: 12px;
-            height: 12px;
-        }
+        .check-icon.green { background: #e8f5e9; color: var(--green); }
+        .check-icon.gray { background: var(--gray-100); color: var(--gray-400); }
 
         .cta-button {
             width: 100%;
@@ -272,24 +239,28 @@
             text-align: center;
         }
 
-        .cta-button.primary {
-            background: var(--blue);
-            color: white;
-        }
+        .cta-button.primary { background: var(--blue); color: white; }
+        .cta-button.primary:hover { background: var(--blue-hover); transform: scale(1.02); }
+        .cta-button.outline { background: transparent; color: var(--gray-900); border: 1px solid var(--gray-300); }
+        .cta-button.outline:hover { background: var(--gray-50); }
 
-        .cta-button.primary:hover {
-            background: var(--blue-hover);
-            transform: scale(1.02);
-        }
-
-        .cta-button.outline {
-            background: transparent;
-            color: var(--gray-900);
-            border: 1px solid var(--gray-300);
-        }
-
-        .cta-button.outline:hover {
+        /* Server Location */
+        .server-info {
+            text-align: center;
+            padding: 24px;
             background: var(--gray-50);
+            border-radius: 16px;
+            max-width: 600px;
+            margin: 0 auto 60px;
+        }
+
+        .server-info p {
+            font-size: 14px;
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         /* FAQ */
@@ -311,15 +282,8 @@
             padding: 24px 0;
         }
 
-        .faq-question {
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .faq-answer {
-            color: var(--gray-500);
-            line-height: 1.6;
-        }
+        .faq-question { font-weight: 600; margin-bottom: 12px; }
+        .faq-answer { color: var(--gray-500); line-height: 1.6; }
 
         /* Footer */
         .footer {
@@ -328,231 +292,383 @@
             text-align: center;
         }
 
-        .footer p {
-            color: var(--gray-500);
-            font-size: 14px;
-        }
-
-        .footer a {
-            color: var(--gray-500);
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            color: var(--gray-900);
-        }
+        .footer p { color: var(--gray-500); font-size: 14px; }
+        .footer a { color: var(--gray-500); text-decoration: none; }
+        .footer a:hover { color: var(--gray-900); }
 
         /* Responsive */
         @media (max-width: 768px) {
-            html, body {
-                overflow-x: hidden;
-            }
-
-            .pricing-grid {
-                grid-template-columns: 1fr;
-                max-width: 450px;
-                margin: 0 auto;
-            }
-
-            .pricing-card.popular {
-                order: -1;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .pricing-hero h1 {
-                font-size: 28px;
-            }
-
-            .price {
-                font-size: 44px;
-            }
-
-            .pricing-card {
-                padding: 32px 24px;
-            }
+            html, body { overflow-x: hidden; }
+            .pricing-grid { grid-template-columns: 1fr; max-width: 450px; margin: 0 auto; }
+            .pricing-card.popular { order: -1; }
+            .nav-links { display: none; }
+            .pricing-hero h1 { font-size: 28px; }
+            .price { font-size: 44px; }
+            .pricing-card { padding: 32px 24px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <a href="/" class="logo">
-                <i class="icon-piano"></i> PianoPlanner
-            </a>
+            <a href="/" class="logo">🎹 PianoPlanner</a>
             <nav class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/pricing.html" class="nav-link active">Pricing</a>
+                <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="/pricing.html" class="nav-link active" data-i18n="nav.pricing">Pricing</a>
                 <a href="/login.html" class="btn btn-primary" id="loginBtn">Login</a>
             </nav>
         </div>
     </header>
 
     <main>
-        <!-- Hero -->
         <section class="pricing-hero">
-            <h1>Simple, fair pricing</h1>
-            <p>Start free. Upgrade when you're ready.</p>
+            <h1 data-i18n="pricing.title">Simple, fair pricing</h1>
+            <p data-i18n="pricing.subtitle">Start free. Upgrade when you're ready.</p>
         </section>
 
-        <!-- Pricing Cards -->
         <div class="pricing-container">
             <div class="pricing-grid">
                 <!-- Free Plan -->
                 <div class="pricing-card">
                     <h2 class="plan-name">Free</h2>
-                    <p class="plan-description">Perfect for getting started</p>
+                    <p class="plan-description" data-i18n="pricing.freeDesc">Perfect for getting started</p>
                     
                     <div class="price-container">
-                        <div class="price">
-                            <span class="price-currency">€</span>0
-                        </div>
-                        <p class="price-note">Forever free</p>
+                        <div class="price"><span class="price-currency">€</span>0</div>
+                        <p class="price-note" data-i18n="pricing.foreverFree">Forever free</p>
                     </div>
 
                     <ul class="features-list">
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Up to <strong>25 customers</strong>
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.free1">Up to <strong>25 customers</strong></span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Up to <strong>50 appointments</strong>/year
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.free2">Up to <strong>50 appointments</strong>/year</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Piano & service tracking
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.free3">Piano & service tracking</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Basic calendar view
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.free4">Basic calendar view</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Online booking page
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.free5">Online booking page</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Smart Suggestions
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.free6">Smart Suggestions</span>
                         </li>
                         <li class="disabled">
-                            <span class="check-icon gray"><i data-lucide="x"></i></span>
-                            Calendar sync (Google, Microsoft, Apple)
+                            <span class="check-icon gray">✗</span>
+                            <span data-i18n="pricing.free7">Calendar sync (Google, Microsoft, Apple)</span>
                         </li>
                     </ul>
 
-                    <a href="/login.html" class="cta-button outline">Get started free</a>
+                    <a href="/login.html" class="cta-button outline" data-i18n="pricing.getStartedFree">Get started free</a>
                 </div>
 
                 <!-- Go Plan -->
                 <div class="pricing-card popular">
-                    <span class="popular-badge">🎉 Intro Offer</span>
+                    <span class="popular-badge" data-i18n="pricing.introOffer">🎉 Intro Offer</span>
                     <h2 class="plan-name">Go</h2>
-                    <p class="plan-description">Everything you need to grow</p>
+                    <p class="plan-description" data-i18n="pricing.goDesc">Everything you need to grow</p>
                     
                     <div class="price-container">
                         <div class="price">
                             <span class="price-currency">€</span>25
-                            <span class="price-period">/month</span>
+                            <span class="price-period" data-i18n="pricing.perMonth">/month</span>
                         </div>
-                        <p class="price-note"><span style="text-decoration: line-through; color: var(--gray-400);">€30</span> Introductory price · + applicable taxes · Cancel anytime</p>
+                        <p class="price-note" data-i18n="pricing.priceNote"><span style="text-decoration: line-through; color: var(--gray-400);">€30</span> Introductory price · + applicable taxes · Cancel anytime</p>
                     </div>
 
                     <ul class="features-list">
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            <strong>Unlimited</strong> customers
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.go1"><strong>Unlimited</strong> customers</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            <strong>Unlimited</strong> appointments
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.go2"><strong>Unlimited</strong> appointments</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Piano & service tracking
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.go3">Piano & service tracking</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Calendar sync (Google, Microsoft, Apple)
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.go4">Calendar sync (Google, Microsoft, Apple)</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Online booking page for customers
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.go5">Online booking page for customers</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Smart Suggestions (AI route optimization)
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.go6">Smart Suggestions (AI route optimization)</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Theater booking (extended hours)
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.go7">Theater booking (extended hours)</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Email reminders & templates
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.go8">Email reminders & templates</span>
                         </li>
                         <li>
-                            <span class="check-icon green"><i data-lucide="check"></i></span>
-                            Own email domain (SMTP)
+                            <span class="check-icon green">✓</span>
+                            <span data-i18n="pricing.go9">Own email domain (SMTP)</span>
                         </li>
                     </ul>
 
-                    <a href="/login.html" class="cta-button primary">Start 14-day free trial</a>
+                    <a href="/login.html" class="cta-button primary" data-i18n="pricing.startTrial">Start 14-day free trial</a>
                 </div>
+            </div>
+        </div>
+
+        <!-- Server Location -->
+        <div class="pricing-container">
+            <div class="server-info">
+                <p>🇳🇱 <span data-i18n="pricing.serverLocation">Your data is stored securely on servers in the Netherlands (EU)</span></p>
             </div>
         </div>
 
         <!-- FAQ -->
         <section class="faq-section">
-            <h2>Frequently Asked Questions</h2>
+            <h2 data-i18n="pricing.faqTitle">Frequently Asked Questions</h2>
             
             <div class="faq-item">
-                <div class="faq-question">Can I try Go for free?</div>
-                <div class="faq-answer">Yes! Every new account starts with a 14-day free trial of all Go features. No credit card required. After the trial, you can choose to subscribe or continue with the Free plan.</div>
+                <div class="faq-question" data-i18n="pricing.faq1q">Can I try Go for free?</div>
+                <div class="faq-answer" data-i18n="pricing.faq1a">Yes! Every new account starts with a 14-day free trial of all Go features. No credit card required. After the trial, you can choose to subscribe or continue with the Free plan.</div>
             </div>
 
             <div class="faq-item">
-                <div class="faq-question">Can I cancel anytime?</div>
-                <div class="faq-answer">Absolutely. No long-term contracts. Cancel anytime and keep access until the end of your billing period.</div>
+                <div class="faq-question" data-i18n="pricing.faq2q">Can I cancel anytime?</div>
+                <div class="faq-answer" data-i18n="pricing.faq2a">Absolutely. No long-term contracts. Cancel anytime and keep access until the end of your billing period.</div>
             </div>
 
             <div class="faq-item">
-                <div class="faq-question">What payment methods do you accept?</div>
-                <div class="faq-answer">We accept all major credit cards, iDEAL, Bancontact, and SEPA bank transfer through our payment partner Stripe.</div>
+                <div class="faq-question" data-i18n="pricing.faq3q">What payment methods do you accept?</div>
+                <div class="faq-answer" data-i18n="pricing.faq3a">We accept all major credit cards, iDEAL, Bancontact, and SEPA bank transfer through our payment partner Stripe.</div>
             </div>
 
             <div class="faq-item">
-                <div class="faq-question">What happens to my data if I downgrade to Free?</div>
-                <div class="faq-answer">Your data is always safe. If you have more than 25 customers, you'll keep all data but won't be able to add new customers until you're under the limit or upgrade again.</div>
+                <div class="faq-question" data-i18n="pricing.faq4q">What happens to my data if I downgrade to Free?</div>
+                <div class="faq-answer" data-i18n="pricing.faq4a">Your data is always safe. If you have more than 25 customers, you'll keep all data but won't be able to add new customers until you're under the limit or upgrade again.</div>
             </div>
 
             <div class="faq-item">
-                <div class="faq-question">Is my data safe?</div>
-                <div class="faq-answer">Yes. We use encrypted connections (HTTPS), secure European servers, and never share your data with third parties. You can export or delete your data at any time.</div>
-            </div>
-
-            <div class="faq-item">
-                <div class="faq-question">Do you offer annual billing?</div>
-                <div class="faq-answer">Not yet, but it's coming soon! Annual billing will give you 2 months free (€299/year instead of €358.80).</div>
+                <div class="faq-question" data-i18n="pricing.faq5q">Is my data safe?</div>
+                <div class="faq-answer" data-i18n="pricing.faq5a">Yes. We use encrypted connections (HTTPS), secure servers in the Netherlands (EU), and never share your data with third parties. You can export or delete your data at any time.</div>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
     <footer class="footer">
         <p>&copy; 2024-2026 <a href="https://pianoinfo.com" target="_blank">PianoInfo.com</a> · PianoPlanner</p>
     </footer>
 
     <script>
-        // Check login status
+        const pricingTranslations = {
+            en: {
+                'nav.home': 'Home',
+                'nav.pricing': 'Pricing',
+                'pricing.title': 'Simple, fair pricing',
+                'pricing.subtitle': 'Start free. Upgrade when you\'re ready.',
+                'pricing.freeDesc': 'Perfect for getting started',
+                'pricing.foreverFree': 'Forever free',
+                'pricing.free1': 'Up to <strong>25 customers</strong>',
+                'pricing.free2': 'Up to <strong>50 appointments</strong>/year',
+                'pricing.free3': 'Piano & service tracking',
+                'pricing.free4': 'Basic calendar view',
+                'pricing.free5': 'Online booking page',
+                'pricing.free6': 'Smart Suggestions',
+                'pricing.free7': 'Calendar sync (Google, Microsoft, Apple)',
+                'pricing.getStartedFree': 'Get started free',
+                'pricing.introOffer': '🎉 Intro Offer',
+                'pricing.goDesc': 'Everything you need to grow',
+                'pricing.perMonth': '/month',
+                'pricing.priceNote': '<span style="text-decoration: line-through; color: var(--gray-400);">€30</span> Introductory price · + applicable taxes · Cancel anytime',
+                'pricing.go1': '<strong>Unlimited</strong> customers',
+                'pricing.go2': '<strong>Unlimited</strong> appointments',
+                'pricing.go3': 'Piano & service tracking',
+                'pricing.go4': 'Calendar sync (Google, Microsoft, Apple)',
+                'pricing.go5': 'Online booking page for customers',
+                'pricing.go6': 'Smart Suggestions (AI route optimization)',
+                'pricing.go7': 'Theater booking (extended hours)',
+                'pricing.go8': 'Email reminders & templates',
+                'pricing.go9': 'Own email domain (SMTP)',
+                'pricing.startTrial': 'Start 14-day free trial',
+                'pricing.serverLocation': 'Your data is stored securely on servers in the Netherlands (EU)',
+                'pricing.faqTitle': 'Frequently Asked Questions',
+                'pricing.faq1q': 'Can I try Go for free?',
+                'pricing.faq1a': 'Yes! Every new account starts with a 14-day free trial of all Go features. No credit card required. After the trial, you can choose to subscribe or continue with the Free plan.',
+                'pricing.faq2q': 'Can I cancel anytime?',
+                'pricing.faq2a': 'Absolutely. No long-term contracts. Cancel anytime and keep access until the end of your billing period.',
+                'pricing.faq3q': 'What payment methods do you accept?',
+                'pricing.faq3a': 'We accept all major credit cards, iDEAL, Bancontact, and SEPA bank transfer through our payment partner Stripe.',
+                'pricing.faq4q': 'What happens to my data if I downgrade to Free?',
+                'pricing.faq4a': 'Your data is always safe. If you have more than 25 customers, you\'ll keep all data but won\'t be able to add new customers until you\'re under the limit or upgrade again.',
+                'pricing.faq5q': 'Is my data safe?',
+                'pricing.faq5a': 'Yes. We use encrypted connections (HTTPS), secure servers in the Netherlands (EU), and never share your data with third parties. You can export or delete your data at any time.'
+            },
+            nl: {
+                'nav.home': 'Home',
+                'nav.pricing': 'Prijzen',
+                'pricing.title': 'Eenvoudige, eerlijke prijzen',
+                'pricing.subtitle': 'Begin gratis. Upgrade wanneer je wilt.',
+                'pricing.freeDesc': 'Perfect om te beginnen',
+                'pricing.foreverFree': 'Altijd gratis',
+                'pricing.free1': 'Tot <strong>25 klanten</strong>',
+                'pricing.free2': 'Tot <strong>50 afspraken</strong>/jaar',
+                'pricing.free3': 'Piano & service tracking',
+                'pricing.free4': 'Basis kalenderweergave',
+                'pricing.free5': 'Online boekingspagina',
+                'pricing.free6': 'Slimme Suggesties',
+                'pricing.free7': 'Agenda sync (Google, Microsoft, Apple)',
+                'pricing.getStartedFree': 'Gratis beginnen',
+                'pricing.introOffer': '🎉 Introductieprijs',
+                'pricing.goDesc': 'Alles wat je nodig hebt om te groeien',
+                'pricing.perMonth': '/maand',
+                'pricing.priceNote': '<span style="text-decoration: line-through; color: var(--gray-400);">€30</span> Introductieprijs · + BTW · Opzegbaar wanneer je wilt',
+                'pricing.go1': '<strong>Onbeperkt</strong> klanten',
+                'pricing.go2': '<strong>Onbeperkt</strong> afspraken',
+                'pricing.go3': 'Piano & service tracking',
+                'pricing.go4': 'Agenda sync (Google, Microsoft, Apple)',
+                'pricing.go5': 'Online boekingspagina voor klanten',
+                'pricing.go6': 'Slimme Suggesties (AI route optimalisatie)',
+                'pricing.go7': 'Theater boekingen (uitgebreide uren)',
+                'pricing.go8': 'E-mail herinneringen & templates',
+                'pricing.go9': 'Eigen e-maildomein (SMTP)',
+                'pricing.startTrial': 'Start 14 dagen gratis proefperiode',
+                'pricing.serverLocation': 'Je gegevens worden veilig opgeslagen op servers in Nederland (EU)',
+                'pricing.faqTitle': 'Veelgestelde vragen',
+                'pricing.faq1q': 'Kan ik Go gratis uitproberen?',
+                'pricing.faq1a': 'Ja! Elk nieuw account begint met een gratis proefperiode van 14 dagen met alle Go-functies. Geen creditcard nodig. Na de proefperiode kun je kiezen om te abonneren of door te gaan met het gratis plan.',
+                'pricing.faq2q': 'Kan ik op elk moment opzeggen?',
+                'pricing.faq2a': 'Absoluut. Geen langlopende contracten. Zeg op wanneer je wilt en behoud toegang tot het einde van je factureringsperiode.',
+                'pricing.faq3q': 'Welke betaalmethoden accepteren jullie?',
+                'pricing.faq3a': 'We accepteren alle gangbare creditcards, iDEAL, Bancontact en SEPA-overboeking via onze betaalpartner Stripe.',
+                'pricing.faq4q': 'Wat gebeurt er met mijn data als ik downgrade naar Free?',
+                'pricing.faq4a': 'Je data is altijd veilig. Als je meer dan 25 klanten hebt, behoud je alle data maar kun je geen nieuwe klanten toevoegen totdat je onder de limiet zit of weer upgradet.',
+                'pricing.faq5q': 'Is mijn data veilig?',
+                'pricing.faq5a': 'Ja. We gebruiken versleutelde verbindingen (HTTPS), beveiligde servers in Nederland (EU), en delen je gegevens nooit met derden. Je kunt je data op elk moment exporteren of verwijderen.'
+            },
+            de: {
+                'nav.home': 'Startseite',
+                'nav.pricing': 'Preise',
+                'pricing.title': 'Einfache, faire Preise',
+                'pricing.subtitle': 'Kostenlos starten. Upgraden wenn Sie bereit sind.',
+                'pricing.freeDesc': 'Perfekt zum Einstieg',
+                'pricing.foreverFree': 'Für immer kostenlos',
+                'pricing.free1': 'Bis zu <strong>25 Kunden</strong>',
+                'pricing.free2': 'Bis zu <strong>50 Termine</strong>/Jahr',
+                'pricing.free3': 'Klavier & Service-Tracking',
+                'pricing.free4': 'Basis-Kalenderansicht',
+                'pricing.free5': 'Online-Buchungsseite',
+                'pricing.free6': 'Smarte Vorschläge',
+                'pricing.free7': 'Kalender-Sync (Google, Microsoft, Apple)',
+                'pricing.getStartedFree': 'Kostenlos starten',
+                'pricing.introOffer': '🎉 Einführungspreis',
+                'pricing.goDesc': 'Alles was Sie zum Wachsen brauchen',
+                'pricing.perMonth': '/Monat',
+                'pricing.priceNote': '<span style="text-decoration: line-through; color: var(--gray-400);">€30</span> Einführungspreis · + MwSt · Jederzeit kündbar',
+                'pricing.go1': '<strong>Unbegrenzt</strong> Kunden',
+                'pricing.go2': '<strong>Unbegrenzt</strong> Termine',
+                'pricing.go3': 'Klavier & Service-Tracking',
+                'pricing.go4': 'Kalender-Sync (Google, Microsoft, Apple)',
+                'pricing.go5': 'Online-Buchungsseite für Kunden',
+                'pricing.go6': 'Smarte Vorschläge (KI-Routenoptimierung)',
+                'pricing.go7': 'Theater-Buchungen (erweiterte Zeiten)',
+                'pricing.go8': 'E-Mail-Erinnerungen & Vorlagen',
+                'pricing.go9': 'Eigene E-Mail-Domain (SMTP)',
+                'pricing.startTrial': '14 Tage kostenlos testen',
+                'pricing.serverLocation': 'Ihre Daten werden sicher auf Servern in den Niederlanden (EU) gespeichert',
+                'pricing.faqTitle': 'Häufig gestellte Fragen',
+                'pricing.faq1q': 'Kann ich Go kostenlos testen?',
+                'pricing.faq1a': 'Ja! Jedes neue Konto beginnt mit einer 14-tägigen kostenlosen Testphase aller Go-Funktionen. Keine Kreditkarte erforderlich.',
+                'pricing.faq2q': 'Kann ich jederzeit kündigen?',
+                'pricing.faq2a': 'Absolut. Keine langfristigen Verträge. Kündigen Sie jederzeit und behalten Sie den Zugang bis zum Ende Ihrer Abrechnungsperiode.',
+                'pricing.faq3q': 'Welche Zahlungsmethoden akzeptieren Sie?',
+                'pricing.faq3a': 'Wir akzeptieren alle gängigen Kreditkarten, iDEAL, Bancontact und SEPA-Überweisung über unseren Zahlungspartner Stripe.',
+                'pricing.faq4q': 'Was passiert mit meinen Daten wenn ich auf Free downgrade?',
+                'pricing.faq4a': 'Ihre Daten sind immer sicher. Wenn Sie mehr als 25 Kunden haben, behalten Sie alle Daten, können aber keine neuen Kunden hinzufügen.',
+                'pricing.faq5q': 'Sind meine Daten sicher?',
+                'pricing.faq5a': 'Ja. Wir verwenden verschlüsselte Verbindungen (HTTPS), sichere Server in den Niederlanden (EU), und teilen Ihre Daten nie mit Dritten.'
+            },
+            fr: {
+                'nav.home': 'Accueil',
+                'nav.pricing': 'Tarifs',
+                'pricing.title': 'Tarifs simples et justes',
+                'pricing.subtitle': 'Commencez gratuitement. Passez à la version supérieure quand vous êtes prêt.',
+                'pricing.freeDesc': 'Parfait pour commencer',
+                'pricing.foreverFree': 'Gratuit pour toujours',
+                'pricing.free1': 'Jusqu\'à <strong>25 clients</strong>',
+                'pricing.free2': 'Jusqu\'à <strong>50 rendez-vous</strong>/an',
+                'pricing.free3': 'Suivi piano & service',
+                'pricing.free4': 'Vue calendrier de base',
+                'pricing.free5': 'Page de réservation en ligne',
+                'pricing.free6': 'Suggestions intelligentes',
+                'pricing.free7': 'Sync calendrier (Google, Microsoft, Apple)',
+                'pricing.getStartedFree': 'Commencer gratuitement',
+                'pricing.introOffer': '🎉 Offre de lancement',
+                'pricing.goDesc': 'Tout ce dont vous avez besoin pour grandir',
+                'pricing.perMonth': '/mois',
+                'pricing.priceNote': '<span style="text-decoration: line-through; color: var(--gray-400);">€30</span> Prix de lancement · + TVA · Résiliable à tout moment',
+                'pricing.go1': 'Clients <strong>illimités</strong>',
+                'pricing.go2': 'Rendez-vous <strong>illimités</strong>',
+                'pricing.go3': 'Suivi piano & service',
+                'pricing.go4': 'Sync calendrier (Google, Microsoft, Apple)',
+                'pricing.go5': 'Page de réservation en ligne pour les clients',
+                'pricing.go6': 'Suggestions intelligentes (optimisation IA)',
+                'pricing.go7': 'Réservations théâtre (heures étendues)',
+                'pricing.go8': 'Rappels email & modèles',
+                'pricing.go9': 'Propre domaine email (SMTP)',
+                'pricing.startTrial': 'Essai gratuit de 14 jours',
+                'pricing.serverLocation': 'Vos données sont stockées en toute sécurité sur des serveurs aux Pays-Bas (UE)',
+                'pricing.faqTitle': 'Questions fréquentes',
+                'pricing.faq1q': 'Puis-je essayer Go gratuitement ?',
+                'pricing.faq1a': 'Oui ! Chaque nouveau compte commence par un essai gratuit de 14 jours de toutes les fonctionnalités Go. Pas de carte de crédit requise.',
+                'pricing.faq2q': 'Puis-je résilier à tout moment ?',
+                'pricing.faq2a': 'Absolument. Pas de contrats à long terme. Résiliez à tout moment et gardez l\'accès jusqu\'à la fin de votre période de facturation.',
+                'pricing.faq3q': 'Quels modes de paiement acceptez-vous ?',
+                'pricing.faq3a': 'Nous acceptons toutes les principales cartes de crédit, iDEAL, Bancontact et virement SEPA via notre partenaire Stripe.',
+                'pricing.faq4q': 'Que se passe-t-il avec mes données si je passe à Free ?',
+                'pricing.faq4a': 'Vos données sont toujours en sécurité. Si vous avez plus de 25 clients, vous gardez toutes les données mais ne pouvez pas ajouter de nouveaux clients.',
+                'pricing.faq5q': 'Mes données sont-elles en sécurité ?',
+                'pricing.faq5a': 'Oui. Nous utilisons des connexions cryptées (HTTPS), des serveurs sécurisés aux Pays-Bas (UE), et ne partageons jamais vos données avec des tiers.'
+            }
+        };
+
+        function getBrowserLanguage() {
+            const lang = navigator.language || navigator.userLanguage;
+            const shortLang = lang.split('-')[0];
+            return ['nl', 'de', 'fr'].includes(shortLang) ? shortLang : 'en';
+        }
+
+        function applyTranslations() {
+            const lang = getBrowserLanguage();
+            const translations = pricingTranslations[lang];
+            if (!translations) return;
+
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[key]) {
+                    el.innerHTML = translations[key];
+                }
+            });
+        }
+
         async function checkAuth() {
             try {
                 const response = await fetch('/api/user');
                 const data = await response.json();
-                
                 if (data.loggedIn) {
                     const loginBtn = document.getElementById('loginBtn');
                     loginBtn.textContent = 'Dashboard';
@@ -563,8 +679,10 @@
             }
         }
 
-        checkAuth();
-        lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTranslations();
+            checkAuth();
+        });
     </script>
 </body>
 </html>
