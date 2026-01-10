@@ -491,7 +491,7 @@
             // Action buttons
             let buttonsHTML = '';
 
-            if (sub.status === 'trialing' || sub.status === 'trial_expired' || sub.status === 'canceled' || !sub.status) {
+            if (sub.status === 'trialing' || sub.status === 'trial_expired' || sub.status === 'canceled' || sub.status === 'none' || !sub.status) {
                 buttonsHTML = `
                     <button class="btn btn-primary" onclick="startSubscription()">
                         Start subscription
