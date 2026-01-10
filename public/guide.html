@@ -423,6 +423,85 @@
             .footer {
                 padding: 24px 16px;
             }
+            
+            /* Mobile Accordion Styles */
+            .section {
+                margin-bottom: 0;
+                background: white;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                overflow: hidden;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            }
+            
+            .section h2 {
+                cursor: pointer;
+                padding: 18px 20px;
+                margin: 0;
+                font-size: 1.1rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background: white;
+                transition: background 0.2s;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .section h2:active {
+                background: #f5f7fa;
+            }
+            
+            .section h2 .section-title-text {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .section h2 .accordion-icon {
+                width: 24px;
+                height: 24px;
+                color: #999;
+                transition: transform 0.3s ease;
+                flex-shrink: 0;
+            }
+            
+            .section.open h2 .accordion-icon {
+                transform: rotate(180deg);
+            }
+            
+            .section-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease-out;
+                padding: 0 20px;
+            }
+            
+            .section.open .section-content {
+                max-height: 2000px;
+                padding: 0 20px 20px;
+                transition: max-height 0.5s ease-in;
+            }
+            
+            .section h3 {
+                margin-top: 20px;
+            }
+            
+            .section h3:first-child {
+                margin-top: 0;
+            }
+            
+            .content .intro {
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 16px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            }
+            
+            .content h1 {
+                padding: 0 4px;
+                margin-bottom: 16px;
+            }
         }
 
         /* Print */
@@ -1443,11 +1522,97 @@
     </footer>
 
     <script>
-        // Highlight active sidebar link on scroll
+        // Check if mobile
+        const isMobile = () => window.innerWidth <= 768;
+        
+        // Initialize accordion for mobile
+        function initMobileAccordion() {
+            if (!isMobile()) return;
+            
+            const sections = document.querySelectorAll('.section[id]');
+            
+            sections.forEach(section => {
+                const h2 = section.querySelector('h2');
+                if (!h2 || h2.dataset.accordionInit) return;
+                
+                h2.dataset.accordionInit = 'true';
+                
+                // Wrap h2 content in a span
+                const titleContent = h2.innerHTML;
+                h2.innerHTML = `
+                    <span class="section-title-text">${titleContent}</span>
+                    <svg class="accordion-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                `;
+                
+                // Wrap rest of content in section-content div
+                const content = document.createElement('div');
+                content.className = 'section-content';
+                
+                // Move all siblings after h2 into content div
+                let sibling = h2.nextElementSibling;
+                while (sibling) {
+                    const next = sibling.nextElementSibling;
+                    content.appendChild(sibling);
+                    sibling = next;
+                }
+                section.appendChild(content);
+                
+                // Add click handler
+                h2.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Close other sections
+                    sections.forEach(s => {
+                        if (s !== section && s.classList.contains('open')) {
+                            s.classList.remove('open');
+                        }
+                    });
+                    
+                    // Toggle this section
+                    section.classList.toggle('open');
+                    
+                    // Scroll into view if opening
+                    if (section.classList.contains('open')) {
+                        setTimeout(() => {
+                            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                    }
+                });
+            });
+            
+            // Open first section by default
+            const firstSection = document.querySelector('.section[id]');
+            if (firstSection) {
+                firstSection.classList.add('open');
+            }
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initMobileAccordion();
+            lucide.createIcons();
+        });
+        
+        // Re-check on resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (isMobile()) {
+                    initMobileAccordion();
+                }
+            }, 250);
+        });
+
+        // Highlight active sidebar link on scroll (desktop)
         const sections = document.querySelectorAll('.section[id]');
         const navLinks = document.querySelectorAll('.sidebar-link');
 
         window.addEventListener('scroll', () => {
+            if (isMobile()) return;
+            
             let current = '';
             
             sections.forEach(section => {
@@ -1465,7 +1630,7 @@
             });
         });
 
-        // Smooth scroll for sidebar links
+        // Smooth scroll for sidebar links (desktop)
         navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -1473,9 +1638,6 @@
                 target.scrollIntoView({ behavior: 'smooth' });
             });
         });
-
-        // Initialize Lucide icons
-        lucide.createIcons();
     </script>
 </body>
 </html>
