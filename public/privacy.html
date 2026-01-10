@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - PianoPlanner</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            color: #1a1a1a;
+        }
+        .header {
+            background: white;
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+        .header-buttons { display: flex; gap: 12px; }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-secondary { background: #f5f5f5; color: #1a1a1a; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .btn-primary { background: #007AFF; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .hero {
+            text-align: center;
+            padding: 60px 24px 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.6;
+        }
+        .content-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .content-card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 32px 0 16px;
+            color: #1a1a1a;
+        }
+        .content-card h2:first-child {
+            margin-top: 0;
+        }
+        .content-card p {
+            color: #444;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        .content-card ul {
+            color: #444;
+            line-height: 1.8;
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+        .content-card li {
+            margin-bottom: 8px;
+        }
+        .last-updated {
+            color: #666;
+            font-size: 14px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 40px 24px;
+            text-align: center;
+        }
+        .footer p { opacity: 0.7; font-size: 14px; }
+        .footer-links { margin-bottom: 16px; }
+        .footer-links a {
+            color: white;
+            opacity: 0.8;
+            text-decoration: none;
+            margin: 0 16px;
+            font-size: 14px;
+        }
+        .footer-links a:hover { opacity: 1; }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .content-card { padding: 24px; }
+            .header-buttons { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">🎹 PianoPlanner</a>
+            <div class="header-buttons">
+                <a href="/about.html" class="btn btn-secondary" data-i18n="privacy.about">About</a>
+                <a href="/login.html" class="btn btn-primary" data-i18n="privacy.login">Login</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1 data-i18n="privacy.title">Privacy Policy</h1>
+        <p data-i18n="privacy.subtitle">How we collect, use, and protect your data</p>
+    </section>
+
+    <section class="content-section">
+        <div class="content-card">
+            <h2 data-i18n="privacy.h1">1. Introduction</h2>
+            <p data-i18n="privacy.p1">PianoPlanner is a service of Edan Creative, located in Tilburg, Netherlands (Chamber of Commerce: 18073263). We respect your privacy and handle your personal data with care. This privacy policy explains which data we collect and how we use it.</p>
+
+            <h2 data-i18n="privacy.h2">2. Data We Collect</h2>
+            <p data-i18n="privacy.p2intro">When you use PianoPlanner, we collect the following data:</p>
+            <ul>
+                <li data-i18n="privacy.p2l1">Account information: name, email address, password (encrypted)</li>
+                <li data-i18n="privacy.p2l2">Company information: company name, address, phone number, logo</li>
+                <li data-i18n="privacy.p2l3">Customer data: names, addresses, contact details of your customers</li>
+                <li data-i18n="privacy.p2l4">Piano data: brand, model, serial numbers, service history</li>
+                <li data-i18n="privacy.p2l5">Appointments: dates, times, locations, notes</li>
+                <li data-i18n="privacy.p2l6">Payment information: processed securely via Stripe</li>
+            </ul>
+
+            <h2 data-i18n="privacy.h3">3. How We Use Your Data</h2>
+            <p data-i18n="privacy.p3intro">We use your data for:</p>
+            <ul>
+                <li data-i18n="privacy.p3l1">Providing and improving our services</li>
+                <li data-i18n="privacy.p3l2">Sending appointment confirmations and reminders</li>
+                <li data-i18n="privacy.p3l3">Processing payments</li>
+                <li data-i18n="privacy.p3l4">Customer support</li>
+                <li data-i18n="privacy.p3l5">Sending important service updates</li>
+            </ul>
+
+            <h2 data-i18n="privacy.h4">4. Data Storage and Security</h2>
+            <p data-i18n="privacy.p4">Your data is stored on secure servers within the European Union. We use SSL encryption for all data transmission. Passwords are stored using strong one-way encryption (bcrypt). We make daily backups to prevent data loss.</p>
+
+            <h2 data-i18n="privacy.h5">5. Third-Party Services</h2>
+            <p data-i18n="privacy.p5intro">We use the following third-party services:</p>
+            <ul>
+                <li data-i18n="privacy.p5l1">Stripe: for payment processing (has its own privacy policy)</li>
+                <li data-i18n="privacy.p5l2">Google Calendar: optional calendar synchronization</li>
+                <li data-i18n="privacy.p5l3">Apple iCloud: optional calendar synchronization</li>
+                <li data-i18n="privacy.p5l4">Google Maps: for address lookup and travel time calculation</li>
+            </ul>
+
+            <h2 data-i18n="privacy.h6">6. Your Rights</h2>
+            <p data-i18n="privacy.p6intro">Under the GDPR, you have the right to:</p>
+            <ul>
+                <li data-i18n="privacy.p6l1">Access your personal data</li>
+                <li data-i18n="privacy.p6l2">Correct inaccurate data</li>
+                <li data-i18n="privacy.p6l3">Delete your data ("right to be forgotten")</li>
+                <li data-i18n="privacy.p6l4">Export your data (data portability)</li>
+                <li data-i18n="privacy.p6l5">Object to data processing</li>
+            </ul>
+            <p data-i18n="privacy.p6outro">Contact us at info@pianoplanner.com to exercise these rights.</p>
+
+            <h2 data-i18n="privacy.h7">7. Cookies</h2>
+            <p data-i18n="privacy.p7">PianoPlanner uses only functional cookies necessary for the application to work (such as login sessions). We do not use tracking or advertising cookies.</p>
+
+            <h2 data-i18n="privacy.h8">8. Data Retention</h2>
+            <p data-i18n="privacy.p8">We retain your data as long as your account is active. When you delete your account, all your data will be permanently removed within 30 days. Backups are automatically overwritten within 90 days.</p>
+
+            <h2 data-i18n="privacy.h9">9. Changes to This Policy</h2>
+            <p data-i18n="privacy.p9">We may update this privacy policy from time to time. Significant changes will be communicated via email. The latest version is always available on this page.</p>
+
+            <h2 data-i18n="privacy.h10">10. Contact</h2>
+            <p data-i18n="privacy.p10">Questions about this privacy policy? Contact us at:</p>
+            <p>
+                <strong>Edan Creative</strong><br>
+                Tilburg, Nederland<br>
+                Email: info@pianoplanner.com<br>
+                KvK: 18073263
+            </p>
+
+            <p class="last-updated" data-i18n="privacy.lastUpdated">Last updated: January 2026</p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="/about.html" data-i18n="privacy.footerAbout">About</a>
+            <a href="/contact.html" data-i18n="privacy.footerContact">Contact</a>
+            <a href="/terms.html" data-i18n="privacy.footerTerms">Terms</a>
+        </div>
+        <p data-i18n="privacy.footer">© 2026 PianoPlanner. A product of Edan Creative, Tilburg, Netherlands.</p>
+    </footer>
+    
+    <script>
+        const privacyTranslations = {
+            en: {
+                'privacy.about': 'About',
+                'privacy.login': 'Login',
+                'privacy.title': 'Privacy Policy',
+                'privacy.subtitle': 'How we collect, use, and protect your data',
+                'privacy.h1': '1. Introduction',
+                'privacy.p1': 'PianoPlanner is a service of Edan Creative, located in Tilburg, Netherlands (Chamber of Commerce: 18073263). We respect your privacy and handle your personal data with care. This privacy policy explains which data we collect and how we use it.',
+                'privacy.h2': '2. Data We Collect',
+                'privacy.p2intro': 'When you use PianoPlanner, we collect the following data:',
+                'privacy.p2l1': 'Account information: name, email address, password (encrypted)',
+                'privacy.p2l2': 'Company information: company name, address, phone number, logo',
+                'privacy.p2l3': 'Customer data: names, addresses, contact details of your customers',
+                'privacy.p2l4': 'Piano data: brand, model, serial numbers, service history',
+                'privacy.p2l5': 'Appointments: dates, times, locations, notes',
+                'privacy.p2l6': 'Payment information: processed securely via Stripe',
+                'privacy.h3': '3. How We Use Your Data',
+                'privacy.p3intro': 'We use your data for:',
+                'privacy.p3l1': 'Providing and improving our services',
+                'privacy.p3l2': 'Sending appointment confirmations and reminders',
+                'privacy.p3l3': 'Processing payments',
+                'privacy.p3l4': 'Customer support',
+                'privacy.p3l5': 'Sending important service updates',
+                'privacy.h4': '4. Data Storage and Security',
+                'privacy.p4': 'Your data is stored on secure servers within the European Union. We use SSL encryption for all data transmission. Passwords are stored using strong one-way encryption (bcrypt). We make daily backups to prevent data loss.',
+                'privacy.h5': '5. Third-Party Services',
+                'privacy.p5intro': 'We use the following third-party services:',
+                'privacy.p5l1': 'Stripe: for payment processing (has its own privacy policy)',
+                'privacy.p5l2': 'Google Calendar: optional calendar synchronization',
+                'privacy.p5l3': 'Apple iCloud: optional calendar synchronization',
+                'privacy.p5l4': 'Google Maps: for address lookup and travel time calculation',
+                'privacy.h6': '6. Your Rights',
+                'privacy.p6intro': 'Under the GDPR, you have the right to:',
+                'privacy.p6l1': 'Access your personal data',
+                'privacy.p6l2': 'Correct inaccurate data',
+                'privacy.p6l3': 'Delete your data ("right to be forgotten")',
+                'privacy.p6l4': 'Export your data (data portability)',
+                'privacy.p6l5': 'Object to data processing',
+                'privacy.p6outro': 'Contact us at info@pianoplanner.com to exercise these rights.',
+                'privacy.h7': '7. Cookies',
+                'privacy.p7': 'PianoPlanner uses only functional cookies necessary for the application to work (such as login sessions). We do not use tracking or advertising cookies.',
+                'privacy.h8': '8. Data Retention',
+                'privacy.p8': 'We retain your data as long as your account is active. When you delete your account, all your data will be permanently removed within 30 days. Backups are automatically overwritten within 90 days.',
+                'privacy.h9': '9. Changes to This Policy',
+                'privacy.p9': 'We may update this privacy policy from time to time. Significant changes will be communicated via email. The latest version is always available on this page.',
+                'privacy.h10': '10. Contact',
+                'privacy.p10': 'Questions about this privacy policy? Contact us at:',
+                'privacy.lastUpdated': 'Last updated: January 2026',
+                'privacy.footerAbout': 'About',
+                'privacy.footerContact': 'Contact',
+                'privacy.footerTerms': 'Terms',
+                'privacy.footer': '© 2026 PianoPlanner. A product of Edan Creative, Tilburg, Netherlands.'
+            },
+            nl: {
+                'privacy.about': 'Over ons',
+                'privacy.login': 'Inloggen',
+                'privacy.title': 'Privacyverklaring',
+                'privacy.subtitle': 'Hoe wij uw gegevens verzamelen, gebruiken en beschermen',
+                'privacy.h1': '1. Inleiding',
+                'privacy.p1': 'PianoPlanner is een dienst van Edan Creative, gevestigd in Tilburg, Nederland (KvK: 18073263). Wij respecteren uw privacy en gaan zorgvuldig om met uw persoonsgegevens. Dit privacybeleid legt uit welke gegevens we verzamelen en hoe we deze gebruiken.',
+                'privacy.h2': '2. Gegevens die wij verzamelen',
+                'privacy.p2intro': 'Wanneer u PianoPlanner gebruikt, verzamelen wij de volgende gegevens:',
+                'privacy.p2l1': 'Accountgegevens: naam, e-mailadres, wachtwoord (versleuteld)',
+                'privacy.p2l2': 'Bedrijfsgegevens: bedrijfsnaam, adres, telefoonnummer, logo',
+                'privacy.p2l3': 'Klantgegevens: namen, adressen, contactgegevens van uw klanten',
+                'privacy.p2l4': 'Pianogegevens: merk, model, serienummers, servicegeschiedenis',
+                'privacy.p2l5': 'Afspraken: data, tijden, locaties, notities',
+                'privacy.p2l6': 'Betalingsgegevens: veilig verwerkt via Stripe',
+                'privacy.h3': '3. Hoe wij uw gegevens gebruiken',
+                'privacy.p3intro': 'Wij gebruiken uw gegevens voor:',
+                'privacy.p3l1': 'Het leveren en verbeteren van onze diensten',
+                'privacy.p3l2': 'Het versturen van afspraakbevestigingen en herinneringen',
+                'privacy.p3l3': 'Het verwerken van betalingen',
+                'privacy.p3l4': 'Klantenondersteuning',
+                'privacy.p3l5': 'Het versturen van belangrijke service-updates',
+                'privacy.h4': '4. Gegevensopslag en beveiliging',
+                'privacy.p4': 'Uw gegevens worden opgeslagen op beveiligde servers binnen de Europese Unie. We gebruiken SSL-versleuteling voor alle gegevensoverdracht. Wachtwoorden worden opgeslagen met sterke eenrichtingsversleuteling (bcrypt). We maken dagelijks back-ups om gegevensverlies te voorkomen.',
+                'privacy.h5': '5. Diensten van derden',
+                'privacy.p5intro': 'Wij gebruiken de volgende diensten van derden:',
+                'privacy.p5l1': 'Stripe: voor betalingsverwerking (heeft eigen privacybeleid)',
+                'privacy.p5l2': 'Google Calendar: optionele agendasynchronisatie',
+                'privacy.p5l3': 'Apple iCloud: optionele agendasynchronisatie',
+                'privacy.p5l4': 'Google Maps: voor adresopzoeken en reistijdberekening',
+                'privacy.h6': '6. Uw rechten',
+                'privacy.p6intro': 'Onder de AVG heeft u het recht om:',
+                'privacy.p6l1': 'Uw persoonsgegevens in te zien',
+                'privacy.p6l2': 'Onjuiste gegevens te corrigeren',
+                'privacy.p6l3': 'Uw gegevens te laten verwijderen ("recht op vergetelheid")',
+                'privacy.p6l4': 'Uw gegevens te exporteren (dataportabiliteit)',
+                'privacy.p6l5': 'Bezwaar te maken tegen gegevensverwerking',
+                'privacy.p6outro': 'Neem contact met ons op via info@pianoplanner.com om deze rechten uit te oefenen.',
+                'privacy.h7': '7. Cookies',
+                'privacy.p7': 'PianoPlanner gebruikt alleen functionele cookies die nodig zijn voor de werking van de applicatie (zoals login-sessies). We gebruiken geen tracking- of advertentiecookies.',
+                'privacy.h8': '8. Bewaartermijn',
+                'privacy.p8': 'We bewaren uw gegevens zolang uw account actief is. Wanneer u uw account verwijdert, worden al uw gegevens binnen 30 dagen permanent verwijderd. Back-ups worden automatisch overschreven binnen 90 dagen.',
+                'privacy.h9': '9. Wijzigingen in dit beleid',
+                'privacy.p9': 'We kunnen dit privacybeleid van tijd tot tijd bijwerken. Belangrijke wijzigingen worden per e-mail gecommuniceerd. De laatste versie is altijd beschikbaar op deze pagina.',
+                'privacy.h10': '10. Contact',
+                'privacy.p10': 'Vragen over dit privacybeleid? Neem contact met ons op:',
+                'privacy.lastUpdated': 'Laatst bijgewerkt: januari 2026',
+                'privacy.footerAbout': 'Over ons',
+                'privacy.footerContact': 'Contact',
+                'privacy.footerTerms': 'Voorwaarden',
+                'privacy.footer': '© 2026 PianoPlanner. Een product van Edan Creative, Tilburg, Nederland.'
+            },
+            de: {
+                'privacy.about': 'Über uns',
+                'privacy.login': 'Anmelden',
+                'privacy.title': 'Datenschutzerklärung',
+                'privacy.subtitle': 'Wie wir Ihre Daten erfassen, verwenden und schützen',
+                'privacy.h1': '1. Einleitung',
+                'privacy.p1': 'PianoPlanner ist ein Dienst von Edan Creative mit Sitz in Tilburg, Niederlande (Handelskammer: 18073263). Wir respektieren Ihre Privatsphäre und gehen sorgfältig mit Ihren persönlichen Daten um. Diese Datenschutzerklärung erklärt, welche Daten wir erfassen und wie wir sie verwenden.',
+                'privacy.h2': '2. Daten, die wir erfassen',
+                'privacy.p2intro': 'Wenn Sie PianoPlanner nutzen, erfassen wir folgende Daten:',
+                'privacy.p2l1': 'Kontoinformationen: Name, E-Mail-Adresse, Passwort (verschlüsselt)',
+                'privacy.p2l2': 'Unternehmensinformationen: Firmenname, Adresse, Telefonnummer, Logo',
+                'privacy.p2l3': 'Kundendaten: Namen, Adressen, Kontaktdaten Ihrer Kunden',
+                'privacy.p2l4': 'Klavierdaten: Marke, Modell, Seriennummern, Servicehistorie',
+                'privacy.p2l5': 'Termine: Daten, Zeiten, Orte, Notizen',
+                'privacy.p2l6': 'Zahlungsinformationen: sicher verarbeitet über Stripe',
+                'privacy.h3': '3. Wie wir Ihre Daten verwenden',
+                'privacy.p3intro': 'Wir verwenden Ihre Daten für:',
+                'privacy.p3l1': 'Bereitstellung und Verbesserung unserer Dienste',
+                'privacy.p3l2': 'Versand von Terminbestätigungen und Erinnerungen',
+                'privacy.p3l3': 'Zahlungsabwicklung',
+                'privacy.p3l4': 'Kundenbetreuung',
+                'privacy.p3l5': 'Versand wichtiger Service-Updates',
+                'privacy.h4': '4. Datenspeicherung und Sicherheit',
+                'privacy.p4': 'Ihre Daten werden auf sicheren Servern innerhalb der Europäischen Union gespeichert. Wir verwenden SSL-Verschlüsselung für alle Datenübertragungen. Passwörter werden mit starker Einwegverschlüsselung (bcrypt) gespeichert. Wir erstellen tägliche Backups, um Datenverlust zu verhindern.',
+                'privacy.h5': '5. Drittanbieterdienste',
+                'privacy.p5intro': 'Wir nutzen folgende Drittanbieterdienste:',
+                'privacy.p5l1': 'Stripe: für Zahlungsabwicklung (hat eigene Datenschutzerklärung)',
+                'privacy.p5l2': 'Google Calendar: optionale Kalendersynchronisation',
+                'privacy.p5l3': 'Apple iCloud: optionale Kalendersynchronisation',
+                'privacy.p5l4': 'Google Maps: für Adresssuche und Reisezeitberechnung',
+                'privacy.h6': '6. Ihre Rechte',
+                'privacy.p6intro': 'Nach der DSGVO haben Sie das Recht auf:',
+                'privacy.p6l1': 'Zugang zu Ihren persönlichen Daten',
+                'privacy.p6l2': 'Korrektur ungenauer Daten',
+                'privacy.p6l3': 'Löschung Ihrer Daten ("Recht auf Vergessenwerden")',
+                'privacy.p6l4': 'Export Ihrer Daten (Datenportabilität)',
+                'privacy.p6l5': 'Widerspruch gegen Datenverarbeitung',
+                'privacy.p6outro': 'Kontaktieren Sie uns unter info@pianoplanner.com, um diese Rechte auszuüben.',
+                'privacy.h7': '7. Cookies',
+                'privacy.p7': 'PianoPlanner verwendet nur funktionale Cookies, die für die Funktion der Anwendung erforderlich sind (wie Login-Sitzungen). Wir verwenden keine Tracking- oder Werbe-Cookies.',
+                'privacy.h8': '8. Datenspeicherung',
+                'privacy.p8': 'Wir bewahren Ihre Daten auf, solange Ihr Konto aktiv ist. Wenn Sie Ihr Konto löschen, werden alle Ihre Daten innerhalb von 30 Tagen dauerhaft entfernt. Backups werden automatisch innerhalb von 90 Tagen überschrieben.',
+                'privacy.h9': '9. Änderungen dieser Richtlinie',
+                'privacy.p9': 'Wir können diese Datenschutzerklärung von Zeit zu Zeit aktualisieren. Wesentliche Änderungen werden per E-Mail mitgeteilt. Die neueste Version ist immer auf dieser Seite verfügbar.',
+                'privacy.h10': '10. Kontakt',
+                'privacy.p10': 'Fragen zu dieser Datenschutzerklärung? Kontaktieren Sie uns:',
+                'privacy.lastUpdated': 'Zuletzt aktualisiert: Januar 2026',
+                'privacy.footerAbout': 'Über uns',
+                'privacy.footerContact': 'Kontakt',
+                'privacy.footerTerms': 'AGB',
+                'privacy.footer': '© 2026 PianoPlanner. Ein Produkt von Edan Creative, Tilburg, Niederlande.'
+            },
+            fr: {
+                'privacy.about': 'À propos',
+                'privacy.login': 'Connexion',
+                'privacy.title': 'Politique de confidentialité',
+                'privacy.subtitle': 'Comment nous collectons, utilisons et protégeons vos données',
+                'privacy.h1': '1. Introduction',
+                'privacy.p1': 'PianoPlanner est un service d\'Edan Creative, situé à Tilburg, Pays-Bas (Chambre de Commerce: 18073263). Nous respectons votre vie privée et traitons vos données personnelles avec soin. Cette politique de confidentialité explique quelles données nous collectons et comment nous les utilisons.',
+                'privacy.h2': '2. Données que nous collectons',
+                'privacy.p2intro': 'Lorsque vous utilisez PianoPlanner, nous collectons les données suivantes:',
+                'privacy.p2l1': 'Informations de compte: nom, adresse e-mail, mot de passe (crypté)',
+                'privacy.p2l2': 'Informations de l\'entreprise: nom de l\'entreprise, adresse, numéro de téléphone, logo',
+                'privacy.p2l3': 'Données clients: noms, adresses, coordonnées de vos clients',
+                'privacy.p2l4': 'Données des pianos: marque, modèle, numéros de série, historique de service',
+                'privacy.p2l5': 'Rendez-vous: dates, heures, lieux, notes',
+                'privacy.p2l6': 'Informations de paiement: traitées en toute sécurité via Stripe',
+                'privacy.h3': '3. Comment nous utilisons vos données',
+                'privacy.p3intro': 'Nous utilisons vos données pour:',
+                'privacy.p3l1': 'Fournir et améliorer nos services',
+                'privacy.p3l2': 'Envoyer des confirmations et rappels de rendez-vous',
+                'privacy.p3l3': 'Traiter les paiements',
+                'privacy.p3l4': 'Support client',
+                'privacy.p3l5': 'Envoyer des mises à jour de service importantes',
+                'privacy.h4': '4. Stockage et sécurité des données',
+                'privacy.p4': 'Vos données sont stockées sur des serveurs sécurisés au sein de l\'Union européenne. Nous utilisons le cryptage SSL pour toutes les transmissions de données. Les mots de passe sont stockés avec un cryptage unidirectionnel fort (bcrypt). Nous effectuons des sauvegardes quotidiennes pour éviter la perte de données.',
+                'privacy.h5': '5. Services tiers',
+                'privacy.p5intro': 'Nous utilisons les services tiers suivants:',
+                'privacy.p5l1': 'Stripe: pour le traitement des paiements (a sa propre politique de confidentialité)',
+                'privacy.p5l2': 'Google Calendar: synchronisation de calendrier optionnelle',
+                'privacy.p5l3': 'Apple iCloud: synchronisation de calendrier optionnelle',
+                'privacy.p5l4': 'Google Maps: pour la recherche d\'adresses et le calcul du temps de trajet',
+                'privacy.h6': '6. Vos droits',
+                'privacy.p6intro': 'En vertu du RGPD, vous avez le droit de:',
+                'privacy.p6l1': 'Accéder à vos données personnelles',
+                'privacy.p6l2': 'Corriger les données inexactes',
+                'privacy.p6l3': 'Supprimer vos données ("droit à l\'oubli")',
+                'privacy.p6l4': 'Exporter vos données (portabilité des données)',
+                'privacy.p6l5': 'Vous opposer au traitement des données',
+                'privacy.p6outro': 'Contactez-nous à info@pianoplanner.com pour exercer ces droits.',
+                'privacy.h7': '7. Cookies',
+                'privacy.p7': 'PianoPlanner utilise uniquement des cookies fonctionnels nécessaires au fonctionnement de l\'application (comme les sessions de connexion). Nous n\'utilisons pas de cookies de suivi ou publicitaires.',
+                'privacy.h8': '8. Conservation des données',
+                'privacy.p8': 'Nous conservons vos données tant que votre compte est actif. Lorsque vous supprimez votre compte, toutes vos données seront définitivement supprimées dans les 30 jours. Les sauvegardes sont automatiquement écrasées dans les 90 jours.',
+                'privacy.h9': '9. Modifications de cette politique',
+                'privacy.p9': 'Nous pouvons mettre à jour cette politique de confidentialité de temps en temps. Les modifications importantes seront communiquées par e-mail. La dernière version est toujours disponible sur cette page.',
+                'privacy.h10': '10. Contact',
+                'privacy.p10': 'Des questions sur cette politique de confidentialité? Contactez-nous:',
+                'privacy.lastUpdated': 'Dernière mise à jour: janvier 2026',
+                'privacy.footerAbout': 'À propos',
+                'privacy.footerContact': 'Contact',
+                'privacy.footerTerms': 'Conditions',
+                'privacy.footer': '© 2026 PianoPlanner. Un produit de Edan Creative, Tilburg, Pays-Bas.'
+            }
+        };
+
+        function getBrowserLanguage() {
+            const lang = navigator.language || navigator.userLanguage;
+            const shortLang = lang.split('-')[0];
+            return ['nl', 'de', 'fr'].includes(shortLang) ? shortLang : 'en';
+        }
+
+        function applyTranslations() {
+            const lang = getBrowserLanguage();
+            const translations = privacyTranslations[lang];
+            if (!translations) return;
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[key]) el.textContent = translations[key];
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTranslations();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

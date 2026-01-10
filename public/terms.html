@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - PianoPlanner</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            color: #1a1a1a;
+        }
+        .header {
+            background: white;
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            text-decoration: none;
+        }
+        .header-buttons { display: flex; gap: 12px; }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-secondary { background: #f5f5f5; color: #1a1a1a; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .btn-primary { background: #007AFF; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .hero {
+            text-align: center;
+            padding: 60px 24px 40px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.6;
+        }
+        .content-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 48px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .content-card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 32px 0 16px;
+            color: #1a1a1a;
+        }
+        .content-card h2:first-child {
+            margin-top: 0;
+        }
+        .content-card p {
+            color: #444;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        .content-card ul {
+            color: #444;
+            line-height: 1.8;
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+        .content-card li {
+            margin-bottom: 8px;
+        }
+        .last-updated {
+            color: #666;
+            font-size: 14px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 40px 24px;
+            text-align: center;
+        }
+        .footer p { opacity: 0.7; font-size: 14px; }
+        .footer-links { margin-bottom: 16px; }
+        .footer-links a {
+            color: white;
+            opacity: 0.8;
+            text-decoration: none;
+            margin: 0 16px;
+            font-size: 14px;
+        }
+        .footer-links a:hover { opacity: 1; }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .content-card { padding: 24px; }
+            .header-buttons { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">🎹 PianoPlanner</a>
+            <div class="header-buttons">
+                <a href="/about.html" class="btn btn-secondary" data-i18n="terms.about">About</a>
+                <a href="/login.html" class="btn btn-primary" data-i18n="terms.login">Login</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1 data-i18n="terms.title">Terms of Service</h1>
+        <p data-i18n="terms.subtitle">Terms and conditions for using PianoPlanner</p>
+    </section>
+
+    <section class="content-section">
+        <div class="content-card">
+            <h2 data-i18n="terms.h1">1. Acceptance of Terms</h2>
+            <p data-i18n="terms.p1">By creating an account or using PianoPlanner, you agree to these terms of service. If you do not agree, please do not use our service. PianoPlanner is a service of Edan Creative, Tilburg, Netherlands (Chamber of Commerce: 18073263, VAT: NL001779376B98).</p>
+
+            <h2 data-i18n="terms.h2">2. Description of Service</h2>
+            <p data-i18n="terms.p2">PianoPlanner is a cloud-based planning and customer management system specifically designed for piano technicians and tuners. The service includes appointment scheduling, customer management, piano registration, calendar synchronization, and online booking features.</p>
+
+            <h2 data-i18n="terms.h3">3. User Account</h2>
+            <p data-i18n="terms.p3intro">When creating an account, you agree to:</p>
+            <ul>
+                <li data-i18n="terms.p3l1">Provide accurate and complete information</li>
+                <li data-i18n="terms.p3l2">Keep your login credentials secure</li>
+                <li data-i18n="terms.p3l3">Notify us immediately of any unauthorized access</li>
+                <li data-i18n="terms.p3l4">Be responsible for all activities under your account</li>
+            </ul>
+
+            <h2 data-i18n="terms.h4">4. Subscription and Payment</h2>
+            <p data-i18n="terms.p4intro">PianoPlanner offers free and paid subscription plans:</p>
+            <ul>
+                <li data-i18n="terms.p4l1">Free plan: Limited features, suitable for getting started</li>
+                <li data-i18n="terms.p4l2">PianoPlanner Go: Full features, billed monthly or annually</li>
+                <li data-i18n="terms.p4l3">Payments are processed securely via Stripe</li>
+                <li data-i18n="terms.p4l4">Subscriptions renew automatically unless cancelled</li>
+                <li data-i18n="terms.p4l5">Cancellation takes effect at the end of the billing period</li>
+            </ul>
+
+            <h2 data-i18n="terms.h5">5. Your Data</h2>
+            <p data-i18n="terms.p5">You retain ownership of all data you enter into PianoPlanner. We process your data only to provide our services. You can export or delete your data at any time. See our Privacy Policy for details on data handling.</p>
+
+            <h2 data-i18n="terms.h6">6. Acceptable Use</h2>
+            <p data-i18n="terms.p6intro">You agree not to:</p>
+            <ul>
+                <li data-i18n="terms.p6l1">Use the service for illegal purposes</li>
+                <li data-i18n="terms.p6l2">Upload malicious code or attempt to hack the system</li>
+                <li data-i18n="terms.p6l3">Share your account with others</li>
+                <li data-i18n="terms.p6l4">Resell or redistribute the service</li>
+                <li data-i18n="terms.p6l5">Overload the system with excessive requests</li>
+            </ul>
+
+            <h2 data-i18n="terms.h7">7. Limitation of Liability</h2>
+            <p data-i18n="terms.p7a">PianoPlanner is provided "as is" without warranties of any kind, express or implied. We do not guarantee that the service will be uninterrupted, error-free, or completely secure.</p>
+            <p data-i18n="terms.p7b">Edan Creative shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or business opportunities.</p>
+            <p data-i18n="terms.p7c">Our total liability for any claim arising from the use of PianoPlanner shall not exceed the amount paid by you for the service in the 12 months preceding the claim.</p>
+
+            <h2 data-i18n="terms.h8">8. Service Availability</h2>
+            <p data-i18n="terms.p8">We strive for 99.9% uptime but do not guarantee uninterrupted service. We may perform maintenance with or without prior notice. We are not liable for any losses due to service unavailability.</p>
+
+            <h2 data-i18n="terms.h9">9. Data Backup</h2>
+            <p data-i18n="terms.p9">While we make daily backups, we recommend you regularly export your important data. We are not responsible for data loss, though we will make reasonable efforts to restore data from backups when possible.</p>
+
+            <h2 data-i18n="terms.h10">10. Intellectual Property</h2>
+            <p data-i18n="terms.p10">PianoPlanner, including its design, code, and features, is the intellectual property of Edan Creative. You may not copy, modify, or distribute any part of the service without written permission.</p>
+
+            <h2 data-i18n="terms.h11">11. Termination</h2>
+            <p data-i18n="terms.p11">We may terminate or suspend your account if you violate these terms or engage in behavior that harms other users or the service. Upon termination, you will have 30 days to export your data before it is deleted.</p>
+
+            <h2 data-i18n="terms.h12">12. Changes to Terms</h2>
+            <p data-i18n="terms.p12">We may modify these terms at any time. Significant changes will be communicated via email at least 30 days before taking effect. Continued use of the service after changes constitutes acceptance.</p>
+
+            <h2 data-i18n="terms.h13">13. Governing Law</h2>
+            <p data-i18n="terms.p13">These terms are governed by the laws of the Netherlands. Any disputes will be resolved in the courts of Breda, Netherlands.</p>
+
+            <h2 data-i18n="terms.h14">14. Contact</h2>
+            <p data-i18n="terms.p14">Questions about these terms? Contact us at:</p>
+            <p>
+                <strong>Edan Creative</strong><br>
+                Tilburg, Nederland<br>
+                Email: info@pianoplanner.com<br>
+                KvK: 18073263<br>
+                BTW: NL001779376B98
+            </p>
+
+            <p class="last-updated" data-i18n="terms.lastUpdated">Last updated: January 2026</p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="/about.html" data-i18n="terms.footerAbout">About</a>
+            <a href="/contact.html" data-i18n="terms.footerContact">Contact</a>
+            <a href="/privacy.html" data-i18n="terms.footerPrivacy">Privacy</a>
+        </div>
+        <p data-i18n="terms.footer">© 2026 PianoPlanner. A product of Edan Creative, Tilburg, Netherlands.</p>
+    </footer>
+    
+    <script>
+        const termsTranslations = {
+            en: {
+                'terms.about': 'About',
+                'terms.login': 'Login',
+                'terms.title': 'Terms of Service',
+                'terms.subtitle': 'Terms and conditions for using PianoPlanner',
+                'terms.h1': '1. Acceptance of Terms',
+                'terms.p1': 'By creating an account or using PianoPlanner, you agree to these terms of service. If you do not agree, please do not use our service. PianoPlanner is a service of Edan Creative, Tilburg, Netherlands (Chamber of Commerce: 18073263, VAT: NL001779376B98).',
+                'terms.h2': '2. Description of Service',
+                'terms.p2': 'PianoPlanner is a cloud-based planning and customer management system specifically designed for piano technicians and tuners. The service includes appointment scheduling, customer management, piano registration, calendar synchronization, and online booking features.',
+                'terms.h3': '3. User Account',
+                'terms.p3intro': 'When creating an account, you agree to:',
+                'terms.p3l1': 'Provide accurate and complete information',
+                'terms.p3l2': 'Keep your login credentials secure',
+                'terms.p3l3': 'Notify us immediately of any unauthorized access',
+                'terms.p3l4': 'Be responsible for all activities under your account',
+                'terms.h4': '4. Subscription and Payment',
+                'terms.p4intro': 'PianoPlanner offers free and paid subscription plans:',
+                'terms.p4l1': 'Free plan: Limited features, suitable for getting started',
+                'terms.p4l2': 'PianoPlanner Go: Full features, billed monthly or annually',
+                'terms.p4l3': 'Payments are processed securely via Stripe',
+                'terms.p4l4': 'Subscriptions renew automatically unless cancelled',
+                'terms.p4l5': 'Cancellation takes effect at the end of the billing period',
+                'terms.h5': '5. Your Data',
+                'terms.p5': 'You retain ownership of all data you enter into PianoPlanner. We process your data only to provide our services. You can export or delete your data at any time. See our Privacy Policy for details on data handling.',
+                'terms.h6': '6. Acceptable Use',
+                'terms.p6intro': 'You agree not to:',
+                'terms.p6l1': 'Use the service for illegal purposes',
+                'terms.p6l2': 'Upload malicious code or attempt to hack the system',
+                'terms.p6l3': 'Share your account with others',
+                'terms.p6l4': 'Resell or redistribute the service',
+                'terms.p6l5': 'Overload the system with excessive requests',
+                'terms.h7': '7. Limitation of Liability',
+                'terms.p7a': 'PianoPlanner is provided "as is" without warranties of any kind, express or implied. We do not guarantee that the service will be uninterrupted, error-free, or completely secure.',
+                'terms.p7b': 'Edan Creative shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or business opportunities.',
+                'terms.p7c': 'Our total liability for any claim arising from the use of PianoPlanner shall not exceed the amount paid by you for the service in the 12 months preceding the claim.',
+                'terms.h8': '8. Service Availability',
+                'terms.p8': 'We strive for 99.9% uptime but do not guarantee uninterrupted service. We may perform maintenance with or without prior notice. We are not liable for any losses due to service unavailability.',
+                'terms.h9': '9. Data Backup',
+                'terms.p9': 'While we make daily backups, we recommend you regularly export your important data. We are not responsible for data loss, though we will make reasonable efforts to restore data from backups when possible.',
+                'terms.h10': '10. Intellectual Property',
+                'terms.p10': 'PianoPlanner, including its design, code, and features, is the intellectual property of Edan Creative. You may not copy, modify, or distribute any part of the service without written permission.',
+                'terms.h11': '11. Termination',
+                'terms.p11': 'We may terminate or suspend your account if you violate these terms or engage in behavior that harms other users or the service. Upon termination, you will have 30 days to export your data before it is deleted.',
+                'terms.h12': '12. Changes to Terms',
+                'terms.p12': 'We may modify these terms at any time. Significant changes will be communicated via email at least 30 days before taking effect. Continued use of the service after changes constitutes acceptance.',
+                'terms.h13': '13. Governing Law',
+                'terms.p13': 'These terms are governed by the laws of the Netherlands. Any disputes will be resolved in the courts of Breda, Netherlands.',
+                'terms.h14': '14. Contact',
+                'terms.p14': 'Questions about these terms? Contact us at:',
+                'terms.lastUpdated': 'Last updated: January 2026',
+                'terms.footerAbout': 'About',
+                'terms.footerContact': 'Contact',
+                'terms.footerPrivacy': 'Privacy',
+                'terms.footer': '© 2026 PianoPlanner. A product of Edan Creative, Tilburg, Netherlands.'
+            },
+            nl: {
+                'terms.about': 'Over ons',
+                'terms.login': 'Inloggen',
+                'terms.title': 'Algemene Voorwaarden',
+                'terms.subtitle': 'Voorwaarden voor het gebruik van PianoPlanner',
+                'terms.h1': '1. Acceptatie van voorwaarden',
+                'terms.p1': 'Door een account aan te maken of PianoPlanner te gebruiken, gaat u akkoord met deze algemene voorwaarden. Als u niet akkoord gaat, gebruik dan onze dienst niet. PianoPlanner is een dienst van Edan Creative, Tilburg, Nederland (KvK: 18073263, BTW: NL001779376B98).',
+                'terms.h2': '2. Beschrijving van de dienst',
+                'terms.p2': 'PianoPlanner is een cloudgebaseerd plannings- en klantbeheersysteem speciaal ontworpen voor pianotechnici en -stemmers. De dienst omvat afspraakplanning, klantbeheer, pianoregistratie, agendasynchronisatie en online boekingsfuncties.',
+                'terms.h3': '3. Gebruikersaccount',
+                'terms.p3intro': 'Bij het aanmaken van een account gaat u akkoord met:',
+                'terms.p3l1': 'Het verstrekken van nauwkeurige en volledige informatie',
+                'terms.p3l2': 'Het veilig houden van uw inloggegevens',
+                'terms.p3l3': 'Het direct melden van ongeautoriseerde toegang',
+                'terms.p3l4': 'Verantwoordelijk zijn voor alle activiteiten onder uw account',
+                'terms.h4': '4. Abonnement en betaling',
+                'terms.p4intro': 'PianoPlanner biedt gratis en betaalde abonnementen:',
+                'terms.p4l1': 'Gratis plan: Beperkte functies, geschikt om te starten',
+                'terms.p4l2': 'PianoPlanner Go: Volledige functies, maandelijks of jaarlijks gefactureerd',
+                'terms.p4l3': 'Betalingen worden veilig verwerkt via Stripe',
+                'terms.p4l4': 'Abonnementen worden automatisch verlengd tenzij opgezegd',
+                'terms.p4l5': 'Opzegging gaat in aan het einde van de factureringsperiode',
+                'terms.h5': '5. Uw gegevens',
+                'terms.p5': 'U behoudt eigendom van alle gegevens die u in PianoPlanner invoert. Wij verwerken uw gegevens alleen om onze diensten te leveren. U kunt uw gegevens op elk moment exporteren of verwijderen. Zie ons Privacybeleid voor details over gegevensverwerking.',
+                'terms.h6': '6. Acceptabel gebruik',
+                'terms.p6intro': 'U gaat ermee akkoord om niet:',
+                'terms.p6l1': 'De dienst te gebruiken voor illegale doeleinden',
+                'terms.p6l2': 'Schadelijke code te uploaden of het systeem te hacken',
+                'terms.p6l3': 'Uw account te delen met anderen',
+                'terms.p6l4': 'De dienst door te verkopen of te herverdelen',
+                'terms.p6l5': 'Het systeem te overbelasten met buitensporige verzoeken',
+                'terms.h7': '7. Beperking van aansprakelijkheid',
+                'terms.p7a': 'PianoPlanner wordt geleverd "zoals het is" zonder enige garantie, expliciet of impliciet. Wij garanderen niet dat de dienst ononderbroken, foutloos of volledig veilig zal zijn.',
+                'terms.p7b': 'Edan Creative is niet aansprakelijk voor indirecte, incidentele, speciale, gevolg- of punitieve schade, inclusief maar niet beperkt tot verlies van winst, gegevens of zakelijke kansen.',
+                'terms.p7c': 'Onze totale aansprakelijkheid voor enige claim voortvloeiend uit het gebruik van PianoPlanner is beperkt tot het bedrag dat u in de 12 maanden voorafgaand aan de claim voor de dienst heeft betaald.',
+                'terms.h8': '8. Beschikbaarheid van de dienst',
+                'terms.p8': 'We streven naar 99,9% uptime maar garanderen geen ononderbroken dienstverlening. We kunnen onderhoud uitvoeren met of zonder voorafgaande kennisgeving. We zijn niet aansprakelijk voor verliezen door onbeschikbaarheid van de dienst.',
+                'terms.h9': '9. Gegevensback-up',
+                'terms.p9': 'Hoewel we dagelijks back-ups maken, raden we u aan regelmatig uw belangrijke gegevens te exporteren. We zijn niet verantwoordelijk voor gegevensverlies, maar we zullen redelijke inspanningen leveren om gegevens uit back-ups te herstellen wanneer mogelijk.',
+                'terms.h10': '10. Intellectueel eigendom',
+                'terms.p10': 'PianoPlanner, inclusief het ontwerp, de code en de functies, is intellectueel eigendom van Edan Creative. U mag geen enkel deel van de dienst kopiëren, wijzigen of distribueren zonder schriftelijke toestemming.',
+                'terms.h11': '11. Beëindiging',
+                'terms.p11': 'We kunnen uw account beëindigen of opschorten als u deze voorwaarden schendt of gedrag vertoont dat andere gebruikers of de dienst schaadt. Na beëindiging heeft u 30 dagen om uw gegevens te exporteren voordat deze worden verwijderd.',
+                'terms.h12': '12. Wijzigingen in voorwaarden',
+                'terms.p12': 'We kunnen deze voorwaarden op elk moment wijzigen. Belangrijke wijzigingen worden minstens 30 dagen van tevoren per e-mail gecommuniceerd. Voortgezet gebruik van de dienst na wijzigingen betekent acceptatie.',
+                'terms.h13': '13. Toepasselijk recht',
+                'terms.p13': 'Deze voorwaarden vallen onder Nederlands recht. Geschillen worden beslecht door de rechtbank te Breda, Nederland.',
+                'terms.h14': '14. Contact',
+                'terms.p14': 'Vragen over deze voorwaarden? Neem contact met ons op:',
+                'terms.lastUpdated': 'Laatst bijgewerkt: januari 2026',
+                'terms.footerAbout': 'Over ons',
+                'terms.footerContact': 'Contact',
+                'terms.footerPrivacy': 'Privacy',
+                'terms.footer': '© 2026 PianoPlanner. Een product van Edan Creative, Tilburg, Nederland.'
+            },
+            de: {
+                'terms.about': 'Über uns',
+                'terms.login': 'Anmelden',
+                'terms.title': 'Allgemeine Geschäftsbedingungen',
+                'terms.subtitle': 'Bedingungen für die Nutzung von PianoPlanner',
+                'terms.h1': '1. Annahme der Bedingungen',
+                'terms.p1': 'Durch das Erstellen eines Kontos oder die Nutzung von PianoPlanner stimmen Sie diesen Geschäftsbedingungen zu. Wenn Sie nicht zustimmen, nutzen Sie bitte unseren Dienst nicht. PianoPlanner ist ein Dienst von Edan Creative, Tilburg, Niederlande (Handelskammer: 18073263, USt-IdNr.: NL001779376B98).',
+                'terms.h2': '2. Beschreibung des Dienstes',
+                'terms.p2': 'PianoPlanner ist ein cloudbasiertes Planungs- und Kundenverwaltungssystem, das speziell für Klaviertechniker und -stimmer entwickelt wurde. Der Dienst umfasst Terminplanung, Kundenverwaltung, Klavierregistrierung, Kalendersynchronisation und Online-Buchungsfunktionen.',
+                'terms.h3': '3. Benutzerkonto',
+                'terms.p3intro': 'Bei der Kontoerstellung stimmen Sie zu:',
+                'terms.p3l1': 'Genaue und vollständige Informationen anzugeben',
+                'terms.p3l2': 'Ihre Anmeldedaten sicher aufzubewahren',
+                'terms.p3l3': 'Uns sofort über unbefugten Zugriff zu informieren',
+                'terms.p3l4': 'Für alle Aktivitäten unter Ihrem Konto verantwortlich zu sein',
+                'terms.h4': '4. Abonnement und Zahlung',
+                'terms.p4intro': 'PianoPlanner bietet kostenlose und kostenpflichtige Abonnements:',
+                'terms.p4l1': 'Kostenloser Plan: Eingeschränkte Funktionen, geeignet zum Einstieg',
+                'terms.p4l2': 'PianoPlanner Go: Volle Funktionen, monatlich oder jährlich abgerechnet',
+                'terms.p4l3': 'Zahlungen werden sicher über Stripe abgewickelt',
+                'terms.p4l4': 'Abonnements verlängern sich automatisch, sofern nicht gekündigt',
+                'terms.p4l5': 'Kündigung wird am Ende des Abrechnungszeitraums wirksam',
+                'terms.h5': '5. Ihre Daten',
+                'terms.p5': 'Sie behalten das Eigentum an allen Daten, die Sie in PianoPlanner eingeben. Wir verarbeiten Ihre Daten nur zur Erbringung unserer Dienste. Sie können Ihre Daten jederzeit exportieren oder löschen. Details zur Datenverarbeitung finden Sie in unserer Datenschutzerklärung.',
+                'terms.h6': '6. Akzeptable Nutzung',
+                'terms.p6intro': 'Sie stimmen zu, Folgendes zu unterlassen:',
+                'terms.p6l1': 'Den Dienst für illegale Zwecke zu nutzen',
+                'terms.p6l2': 'Schädlichen Code hochzuladen oder das System zu hacken',
+                'terms.p6l3': 'Ihr Konto mit anderen zu teilen',
+                'terms.p6l4': 'Den Dienst weiterzuverkaufen oder weiterzuverbreiten',
+                'terms.p6l5': 'Das System mit übermäßigen Anfragen zu überlasten',
+                'terms.h7': '7. Haftungsbeschränkung',
+                'terms.p7a': 'PianoPlanner wird "wie besehen" ohne jegliche Garantien, ausdrücklich oder stillschweigend, bereitgestellt. Wir garantieren nicht, dass der Dienst ununterbrochen, fehlerfrei oder vollständig sicher sein wird.',
+                'terms.p7b': 'Edan Creative haftet nicht für indirekte, zufällige, besondere, Folge- oder Strafschäden, einschließlich aber nicht beschränkt auf entgangene Gewinne, Daten oder Geschäftsmöglichkeiten.',
+                'terms.p7c': 'Unsere Gesamthaftung für Ansprüche aus der Nutzung von PianoPlanner ist auf den Betrag begrenzt, den Sie in den 12 Monaten vor dem Anspruch für den Dienst bezahlt haben.',
+                'terms.h8': '8. Dienstverfügbarkeit',
+                'terms.p8': 'Wir streben eine Verfügbarkeit von 99,9% an, garantieren jedoch keinen ununterbrochenen Dienst. Wir können Wartungsarbeiten mit oder ohne Vorankündigung durchführen. Wir haften nicht für Verluste aufgrund von Dienst-Nichtverfügbarkeit.',
+                'terms.h9': '9. Datensicherung',
+                'terms.p9': 'Obwohl wir tägliche Backups erstellen, empfehlen wir Ihnen, Ihre wichtigen Daten regelmäßig zu exportieren. Wir sind nicht für Datenverluste verantwortlich, werden aber angemessene Anstrengungen unternehmen, um Daten aus Backups wiederherzustellen, wenn möglich.',
+                'terms.h10': '10. Geistiges Eigentum',
+                'terms.p10': 'PianoPlanner, einschließlich Design, Code und Funktionen, ist geistiges Eigentum von Edan Creative. Sie dürfen keinen Teil des Dienstes ohne schriftliche Genehmigung kopieren, ändern oder verbreiten.',
+                'terms.h11': '11. Kündigung',
+                'terms.p11': 'Wir können Ihr Konto kündigen oder sperren, wenn Sie gegen diese Bedingungen verstoßen oder Verhalten zeigen, das anderen Benutzern oder dem Dienst schadet. Nach der Kündigung haben Sie 30 Tage Zeit, Ihre Daten zu exportieren, bevor sie gelöscht werden.',
+                'terms.h12': '12. Änderungen der Bedingungen',
+                'terms.p12': 'Wir können diese Bedingungen jederzeit ändern. Wesentliche Änderungen werden mindestens 30 Tage vor Inkrafttreten per E-Mail mitgeteilt. Die fortgesetzte Nutzung des Dienstes nach Änderungen gilt als Zustimmung.',
+                'terms.h13': '13. Anwendbares Recht',
+                'terms.p13': 'Diese Bedingungen unterliegen niederländischem Recht. Streitigkeiten werden vor den Gerichten in Breda, Niederlande, entschieden.',
+                'terms.h14': '14. Kontakt',
+                'terms.p14': 'Fragen zu diesen Bedingungen? Kontaktieren Sie uns:',
+                'terms.lastUpdated': 'Zuletzt aktualisiert: Januar 2026',
+                'terms.footerAbout': 'Über uns',
+                'terms.footerContact': 'Kontakt',
+                'terms.footerPrivacy': 'Datenschutz',
+                'terms.footer': '© 2026 PianoPlanner. Ein Produkt von Edan Creative, Tilburg, Niederlande.'
+            },
+            fr: {
+                'terms.about': 'À propos',
+                'terms.login': 'Connexion',
+                'terms.title': 'Conditions d\'utilisation',
+                'terms.subtitle': 'Conditions générales d\'utilisation de PianoPlanner',
+                'terms.h1': '1. Acceptation des conditions',
+                'terms.p1': 'En créant un compte ou en utilisant PianoPlanner, vous acceptez ces conditions d\'utilisation. Si vous n\'êtes pas d\'accord, veuillez ne pas utiliser notre service. PianoPlanner est un service d\'Edan Creative, Tilburg, Pays-Bas (Chambre de Commerce: 18073263, TVA: NL001779376B98).',
+                'terms.h2': '2. Description du service',
+                'terms.p2': 'PianoPlanner est un système de planification et de gestion des clients basé sur le cloud, spécialement conçu pour les techniciens et accordeurs de piano. Le service comprend la planification des rendez-vous, la gestion des clients, l\'enregistrement des pianos, la synchronisation du calendrier et les fonctionnalités de réservation en ligne.',
+                'terms.h3': '3. Compte utilisateur',
+                'terms.p3intro': 'En créant un compte, vous acceptez de:',
+                'terms.p3l1': 'Fournir des informations exactes et complètes',
+                'terms.p3l2': 'Garder vos identifiants de connexion sécurisés',
+                'terms.p3l3': 'Nous informer immédiatement de tout accès non autorisé',
+                'terms.p3l4': 'Être responsable de toutes les activités sous votre compte',
+                'terms.h4': '4. Abonnement et paiement',
+                'terms.p4intro': 'PianoPlanner propose des abonnements gratuits et payants:',
+                'terms.p4l1': 'Plan gratuit: Fonctionnalités limitées, adapté pour commencer',
+                'terms.p4l2': 'PianoPlanner Go: Fonctionnalités complètes, facturé mensuellement ou annuellement',
+                'terms.p4l3': 'Les paiements sont traités de manière sécurisée via Stripe',
+                'terms.p4l4': 'Les abonnements se renouvellent automatiquement sauf annulation',
+                'terms.p4l5': 'L\'annulation prend effet à la fin de la période de facturation',
+                'terms.h5': '5. Vos données',
+                'terms.p5': 'Vous conservez la propriété de toutes les données que vous saisissez dans PianoPlanner. Nous traitons vos données uniquement pour fournir nos services. Vous pouvez exporter ou supprimer vos données à tout moment. Consultez notre Politique de confidentialité pour les détails sur le traitement des données.',
+                'terms.h6': '6. Utilisation acceptable',
+                'terms.p6intro': 'Vous acceptez de ne pas:',
+                'terms.p6l1': 'Utiliser le service à des fins illégales',
+                'terms.p6l2': 'Télécharger du code malveillant ou tenter de pirater le système',
+                'terms.p6l3': 'Partager votre compte avec d\'autres',
+                'terms.p6l4': 'Revendre ou redistribuer le service',
+                'terms.p6l5': 'Surcharger le système avec des requêtes excessives',
+                'terms.h7': '7. Limitation de responsabilité',
+                'terms.p7a': 'PianoPlanner est fourni "tel quel" sans garanties d\'aucune sorte, expresses ou implicites. Nous ne garantissons pas que le service sera ininterrompu, sans erreur ou complètement sécurisé.',
+                'terms.p7b': 'Edan Creative ne sera pas responsable des dommages indirects, accessoires, spéciaux, consécutifs ou punitifs, y compris mais sans s\'y limiter, la perte de profits, de données ou d\'opportunités commerciales.',
+                'terms.p7c': 'Notre responsabilité totale pour toute réclamation découlant de l\'utilisation de PianoPlanner ne dépassera pas le montant que vous avez payé pour le service au cours des 12 mois précédant la réclamation.',
+                'terms.h8': '8. Disponibilité du service',
+                'terms.p8': 'Nous visons une disponibilité de 99,9% mais ne garantissons pas un service ininterrompu. Nous pouvons effectuer une maintenance avec ou sans préavis. Nous ne sommes pas responsables des pertes dues à l\'indisponibilité du service.',
+                'terms.h9': '9. Sauvegarde des données',
+                'terms.p9': 'Bien que nous effectuions des sauvegardes quotidiennes, nous vous recommandons d\'exporter régulièrement vos données importantes. Nous ne sommes pas responsables de la perte de données, mais nous ferons des efforts raisonnables pour restaurer les données à partir des sauvegardes si possible.',
+                'terms.h10': '10. Propriété intellectuelle',
+                'terms.p10': 'PianoPlanner, y compris sa conception, son code et ses fonctionnalités, est la propriété intellectuelle d\'Edan Creative. Vous ne pouvez pas copier, modifier ou distribuer une partie du service sans autorisation écrite.',
+                'terms.h11': '11. Résiliation',
+                'terms.p11': 'Nous pouvons résilier ou suspendre votre compte si vous violez ces conditions ou adoptez un comportement qui nuit aux autres utilisateurs ou au service. Après la résiliation, vous aurez 30 jours pour exporter vos données avant leur suppression.',
+                'terms.h12': '12. Modifications des conditions',
+                'terms.p12': 'Nous pouvons modifier ces conditions à tout moment. Les modifications importantes seront communiquées par e-mail au moins 30 jours avant leur entrée en vigueur. L\'utilisation continue du service après les modifications constitue une acceptation.',
+                'terms.h13': '13. Droit applicable',
+                'terms.p13': 'Ces conditions sont régies par le droit néerlandais. Tout litige sera résolu devant les tribunaux de Breda, Pays-Bas.',
+                'terms.h14': '14. Contact',
+                'terms.p14': 'Des questions sur ces conditions? Contactez-nous:',
+                'terms.lastUpdated': 'Dernière mise à jour: janvier 2026',
+                'terms.footerAbout': 'À propos',
+                'terms.footerContact': 'Contact',
+                'terms.footerPrivacy': 'Confidentialité',
+                'terms.footer': '© 2026 PianoPlanner. Un produit de Edan Creative, Tilburg, Pays-Bas.'
+            }
+        };
+
+        function getBrowserLanguage() {
+            const lang = navigator.language || navigator.userLanguage;
+            const shortLang = lang.split('-')[0];
+            return ['nl', 'de', 'fr'].includes(shortLang) ? shortLang : 'en';
+        }
+
+        function applyTranslations() {
+            const lang = getBrowserLanguage();
+            const translations = termsTranslations[lang];
+            if (!translations) return;
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[key]) el.textContent = translations[key];
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTranslations();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
