@@ -186,9 +186,108 @@
         opacity: 0.5;
     }
     
+    /* iOS Mobile Header - Date Navigation */
+    .ios-mobile-header {
+        display: flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: rgba(249, 249, 249, 0.94);
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+        border-bottom: 0.5px solid var(--ios-separator);
+        padding-top: var(--safe-area-top);
+        height: calc(44px + var(--safe-area-top));
+        align-items: center;
+        justify-content: space-between;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    
+    .ios-mobile-header-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: var(--ios-text-primary);
+        text-align: center;
+        flex: 1;
+    }
+    
+    .ios-mobile-header-btn {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: var(--ios-blue);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        border-radius: 50%;
+    }
+    
+    .ios-mobile-header-btn:active {
+        background: rgba(0, 122, 255, 0.1);
+    }
+    
+    .ios-mobile-header-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+    
+    /* Quick Actions Bar */
+    .ios-quick-actions {
+        display: flex !important;
+        gap: 8px;
+        padding: 8px 16px;
+        margin-top: calc(44px + var(--safe-area-top));
+        background: var(--ios-bg-grouped);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    
+    .ios-quick-actions::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .ios-quick-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 16px;
+        background: var(--ios-bg-primary);
+        border: none;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ios-blue);
+        white-space: nowrap;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .ios-quick-action-btn:active {
+        transform: scale(0.97);
+        opacity: 0.8;
+    }
+    
+    .ios-quick-action-btn.primary {
+        background: var(--ios-blue);
+        color: white;
+    }
+    
+    .ios-quick-action-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+    
     /* Main Content Adjustment */
     .dashboard {
-        padding-top: calc(44px + var(--safe-area-top) + 12px) !important;
+        padding-top: calc(44px + var(--safe-area-top) + 60px) !important;
         padding-bottom: calc(var(--ios-tab-bar-height) + 12px) !important;
         padding-left: var(--ios-spacing-md) !important;
         padding-right: var(--ios-spacing-md) !important;
@@ -196,6 +295,24 @@
         min-height: 100vh;
         overflow: auto !important;
         background: var(--ios-bg-grouped) !important;
+    }
+    
+    /* Hide desktop header elements on mobile */
+    .dashboard-header,
+    .header-actions,
+    .cockpit-grid .left-panel,
+    .cockpit-grid .right-panel {
+        display: none !important;
+    }
+    
+    /* Full width calendar on mobile */
+    .cockpit-grid {
+        display: block !important;
+    }
+    
+    .center-panel {
+        width: 100% !important;
+        max-width: 100% !important;
     }
     
     /* iOS Card Style */

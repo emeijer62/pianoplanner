@@ -1854,6 +1854,19 @@
     </nav>
     
     <!-- iOS FAB for new appointment (Mobile Only) -->
-    <button class="ios-fab" onclick="openAddModal()" aria-label="New Appointment">+</button>
+    <button class="ios-fab" onclick="openModal()" aria-label="New Appointment">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    </button>
+    
+    <!-- Mobile Header with date navigation -->
+    <div class="ios-mobile-header" id="mobileHeader">
+        <button class="ios-mobile-header-btn left" onclick="navigateDay(-1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div class="ios-mobile-header-title" id="mobileHeaderTitle">Vandaag</div>
+        <button class="ios-mobile-header-btn right" onclick="navigateDay(1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+    </div>
 </body>
 </html>

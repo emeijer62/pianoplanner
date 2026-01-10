@@ -91,6 +91,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update mini calendar day names based on language
         updateMiniDayNames();
         
+        // Initialize mobile header
+        updateMobileHeader();
+        
         // Load data
         await Promise.all([
             loadAllEvents(),
@@ -119,6 +122,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('add-event-btn').addEventListener('click', openModal);
     document.getElementById('event-form').addEventListener('submit', handleEventSubmit);
 });
+
+// Mobile header date display
+function updateMobileHeader() {
+    const titleEl = document.getElementById('mobileHeaderTitle');
+    if (!titleEl) return;
+    
+    const today = new Date();
+    const isToday = selectedDate.toDateString() === today.toDateString();
+    
+    const options = { weekday: 'short', day: 'numeric', month: 'short' };
+    const dateStr = selectedDate.toLocaleDateString(i18n?.currentLang === 'nl' ? 'nl-NL' : 'en-US', options);
+    
+    if (isToday) {
+        titleEl.textContent = (i18n?.currentLang === 'nl' ? 'Vandaag' : 'Today') + ', ' + dateStr;
+    } else {
+        titleEl.textContent = dateStr;
+    }
+}
+
+// Navigate day (for mobile header)
+function navigateDay(direction) {
+    selectedDate.setDate(selectedDate.getDate() + direction);
+    updateMobileHeader();
+    renderCalendar();
+}
 
 // Automatische sync met Google Calendar
 async function autoSyncCalendar() {
