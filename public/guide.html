@@ -559,6 +559,9 @@
             <div class="sidebar-title">Pianos & Service</div>
             <a href="#piano-service" class="sidebar-link">Service History</a>
             <a href="#slot-duration" class="sidebar-link">Calendar Slot Duration</a>
+
+            <div class="sidebar-title">Data Management</div>
+            <a href="#import-data" class="sidebar-link">Import Data</a>
         </nav>
 
         <!-- Main Content -->
@@ -1500,6 +1503,89 @@
                 <p>
                     Your preference is saved automatically and will be remembered next time you visit.
                 </p>
+            </section>
+
+            <!-- DATA IMPORT -->
+            <section id="import-data" class="section">
+                <h2><span class="icon"><i data-lucide="upload" style="width: 24px; height: 24px;"></i></span> Import Data</h2>
+                <p>
+                    Switching from another piano service management system? PianoPlanner makes it easy to import 
+                    your existing customers and pianos.
+                </p>
+
+                <h3>What can you import?</h3>
+                <ul>
+                    <li><strong>Customers</strong> - Names, addresses, phone numbers, email addresses</li>
+                    <li><strong>Pianos</strong> - Brand, model, serial number, year, type, location</li>
+                    <li><strong>Service history</strong> - Last tuning dates are preserved</li>
+                </ul>
+
+                <div class="callout callout-info">
+                    <div class="callout-title"><i data-lucide="lightbulb" style="width: 18px; height: 18px;"></i> Important</div>
+                    <p>
+                        Always import customers <strong>first</strong>, then pianos. This way pianos are automatically linked to the correct customer.
+                    </p>
+                </div>
+
+                <h3>How to import</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-title">Export from your current system</div>
+                        <p>Export your clients and/or pianos as CSV files from your current software.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Go to Import</div>
+                        <p>Navigate to <a href="/import.html">Settings → Import Data</a> or go directly to the import page.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Select what to import</div>
+                        <p>Choose whether you want to import Customers or Pianos.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Upload the CSV file</div>
+                        <p>Drag and drop your file or click to browse. The system will automatically detect the columns.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Preview and configure</div>
+                        <p>Check the preview table and set options like "Skip duplicates" or "Active clients only".</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-title">Start import</div>
+                        <p>Click "Start Import" and wait for the process to complete.</p>
+                    </div>
+                </div>
+
+                <h3>Import options</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Option</th>
+                            <th>What does it do?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Active only</strong></td>
+                            <td>Only import customers/pianos marked as active</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Skip duplicates</strong></td>
+                            <td>Skip customers that already exist (based on email)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Include company name</strong></td>
+                            <td>Add company name to customer name</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="callout callout-warning">
+                    <div class="callout-title"><i data-lucide="alert-triangle" style="width: 18px; height: 18px;"></i> Undo Import</div>
+                    <p>
+                        Made a mistake? After importing, you'll see an "Undo Import" button that lets you 
+                        remove all records from that import batch at once.
+                    </p>
+                </div>
             </section>
 
             <!-- Need Help -->

@@ -262,8 +262,8 @@
       "preview": "Preview",
       "import": "Import"
     },
-    "gazelle": {
-      "desc": "Piano service management"
+    "external": {
+      "desc": "Piano service software"
     },
     "csv": {
       "desc": "Generic CSV file"
