@@ -104,16 +104,7 @@ router.post('/create-checkout-session', requireAuth, requireStripe, async (req, 
                 metadata: {
                     userId: user.id
                 }
-            },
-            // BTW automatisch toevoegen
-            automatic_tax: {
-                enabled: true
-            },
-            tax_id_collection: {
-                enabled: true
-            },
-            // Klantgegevens verzamelen voor BTW
-            billing_address_collection: 'required'
+            }
         });
 
         res.json({ url: session.url });
