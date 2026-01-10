@@ -1731,7 +1731,7 @@ async function deleteCurrentAppointment() {
         // Instantly remove from UI (optimistic update)
         const deletedId = editingAppointmentId;
         allEvents = allEvents.filter(e => e.id !== deletedId);
-        closeModal();
+        closeModal(true);  // Force close after delete action
         renderCalendar();
         
         // Then delete on server
@@ -1755,8 +1755,32 @@ async function deleteCurrentAppointment() {
     }
 }
 
-function closeModal() {
-    document.getElementById('event-modal').style.display = 'none';
+function closeModal(force = false) {
+    const modal = document.getElementById('event-modal');
+    
+    // Don't close if already closed
+    if (modal.style.display === 'none' || modal.style.display === '') {
+        return;
+    }
+    
+    // If not forced, check if user is actively typing (protection against accidental close)
+    if (!force) {
+        const activeEl = document.activeElement;
+        const isTyping = activeEl && (
+            activeEl.tagName === 'INPUT' || 
+            activeEl.tagName === 'TEXTAREA' || 
+            activeEl.tagName === 'SELECT'
+        );
+        const isInModal = modal.contains(activeEl);
+        
+        // If user is typing inside the modal, don't close (unless pressing X or submitting)
+        if (isTyping && isInModal) {
+            console.log('Modal close prevented - user is typing');
+            return;
+        }
+    }
+    
+    modal.style.display = 'none';
     document.getElementById('event-form').reset();
     document.getElementById('new-customer-form').style.display = 'none';
     
@@ -1858,7 +1882,7 @@ async function handleEventSubmit(e) {
             }
         }
         
-        closeModal();
+        closeModal(true);  // Force close after successful save
         await loadAllEvents();
         renderCalendar();
         
@@ -1954,12 +1978,34 @@ function formatDateTimeLocal(date) {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-// Close modal on outside click
+// Close modal on outside click - with protection against accidental closes
+let modalCloseProtection = false;
+
 document.getElementById('event-modal')?.addEventListener('click', (e) => {
-    if (e.target.id === 'event-modal') {
-        closeModal();
+    // Only close if clicking directly on the backdrop (not on modal content)
+    if (e.target.id === 'event-modal' && !modalCloseProtection) {
+        closeModal(true);  // Force close - user clicked outside
     }
 });
+
+// Prevent modal close during form interactions (dropdown open, autocomplete, etc.)
+document.getElementById('event-modal')?.addEventListener('mousedown', (e) => {
+    // If user is interacting with form elements, protect against accidental close
+    const isFormElement = e.target.closest('select, input, textarea, .autocomplete-suggestions, button, label');
+    if (isFormElement) {
+        modalCloseProtection = true;
+        setTimeout(() => { modalCloseProtection = false; }, 300);
+    }
+});
+
+// Also protect on touchstart for mobile
+document.getElementById('event-modal')?.addEventListener('touchstart', (e) => {
+    const isFormElement = e.target.closest('select, input, textarea, .autocomplete-suggestions, button, label');
+    if (isFormElement) {
+        modalCloseProtection = true;
+        setTimeout(() => { modalCloseProtection = false; }, 300);
+    }
+}, { passive: true });
 
 // Close modal on Escape key + Arrow key navigation
 document.addEventListener('keydown', (e) => {
@@ -1971,7 +2017,7 @@ document.addEventListener('keydown', (e) => {
                         document.querySelector('.ios-modal.active');
     
     if (e.key === 'Escape') {
-        closeModal();
+        closeModal(true);  // Force close on Escape - user explicitly wants to close
     }
     
     // Arrow key navigation for calendar (only when not in input and no modal)

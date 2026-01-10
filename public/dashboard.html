@@ -1208,7 +1208,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>New Appointment</h2>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <button class="modal-close" onclick="closeModal(true)">&times;</button>
             </div>
             <form id="event-form">
                 <div class="form-group">
@@ -1330,7 +1330,7 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" id="delete-appointment-btn" class="btn btn-danger" onclick="deleteCurrentAppointment()" style="display: none; margin-right: auto;">Delete</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal(true)">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
