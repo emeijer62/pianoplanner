@@ -569,7 +569,115 @@
             }
             
             .pianos-container {
+                padding: 16px;
                 padding-bottom: calc(83px + 20px) !important;
+            }
+            
+            /* Hide table header on mobile */
+            .pianos-table thead {
+                display: none;
+            }
+            
+            /* Transform table rows to cards on mobile */
+            .pianos-table,
+            .pianos-table tbody {
+                display: block;
+            }
+            
+            .pianos-table tr {
+                display: flex;
+                flex-wrap: wrap;
+                padding: 16px;
+                border-bottom: 1px solid var(--gray-100);
+                gap: 8px;
+                align-items: flex-start;
+            }
+            
+            .pianos-table tr:last-child {
+                border-bottom: none;
+            }
+            
+            .pianos-table td {
+                display: block;
+                padding: 0;
+                border: none;
+            }
+            
+            /* Brand - full width, larger */
+            .pianos-table td.piano-brand-cell {
+                width: 100%;
+                font-size: 17px;
+                font-weight: 600;
+                order: 1;
+            }
+            
+            /* Model - inline */
+            .pianos-table td.piano-model-cell {
+                font-size: 14px;
+                color: var(--gray-500);
+                order: 2;
+            }
+            
+            /* Type badge */
+            .pianos-table td.piano-type-cell {
+                order: 3;
+                margin-left: auto;
+            }
+            
+            /* Customer - full width */
+            .pianos-table td.piano-customer-cell {
+                width: 100%;
+                order: 4;
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px solid var(--gray-100);
+            }
+            
+            .pianos-table td.piano-customer-cell .customer-link {
+                font-size: 14px;
+            }
+            
+            /* Last tuning - full width */
+            .pianos-table td.piano-service-cell {
+                width: 100%;
+                order: 5;
+                font-size: 13px;
+                margin-top: 4px;
+            }
+            
+            /* Action buttons - full width */
+            .pianos-table td.piano-actions-cell {
+                width: 100%;
+                order: 6;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid var(--gray-100);
+            }
+            
+            .pianos-table .action-buttons {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            .pianos-table .action-buttons .btn-icon {
+                flex: 1;
+                width: auto;
+                height: 40px;
+                font-size: 13px;
+                gap: 6px;
+            }
+            
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            
+            .stat-badge {
+                padding: 16px;
+            }
+            
+            .stat-badge .number {
+                font-size: 28px;
             }
         }
     </style>
@@ -924,18 +1032,14 @@
 
                 return `
                     <tr>
-                        <td>
-                            <div class="piano-brand-cell">${piano.brand || '-'}</div>
-                        </td>
-                        <td>
-                            <span class="piano-model-cell">${piano.model || '-'}</span>
-                        </td>
-                        <td>
+                        <td class="piano-brand-cell">${piano.brand || '-'}</td>
+                        <td class="piano-model-cell">${piano.model || '-'}</td>
+                        <td class="piano-type-cell">
                             <span class="piano-type-badge ${piano.type}">${typeLabels[piano.type] || '-'}</span>
                         </td>
-                        <td>${customerCell}</td>
-                        <td>${serviceStatus}</td>
-                        <td>
+                        <td class="piano-customer-cell">${customerCell}</td>
+                        <td class="piano-service-cell">${serviceStatus}</td>
+                        <td class="piano-actions-cell">
                             <div class="action-buttons">
                                 <button class="btn-icon edit" onclick="editPiano('${piano.id}')" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg></button>
                                 <button class="btn-icon delete" onclick="deletePianoDirectly('${piano.id}', event)" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></button>
