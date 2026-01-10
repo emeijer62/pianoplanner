@@ -2,8 +2,10 @@
 
 let selectedService = null;
 let selectedCustomer = null;
+let selectedPianos = [];
 let foundSlot = null;
 let searchTimeout = null;
+let allPianos = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Check login
@@ -14,8 +16,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // Load services
+    // Load services and pianos
     await loadServices();
+    await loadAllPianos();
     
     // Event listeners
     document.getElementById('customer-search').addEventListener('input', handleCustomerSearch);
@@ -23,6 +26,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('find-slot-btn').addEventListener('click', findAvailableSlot);
     document.getElementById('back-to-date-btn').addEventListener('click', () => showStep('step-datetime'));
     document.getElementById('confirm-booking-btn').addEventListener('click', confirmBooking);
+    document.getElementById('skip-piano-btn').addEventListener('click', skipPianoSelection);
+    document.getElementById('continue-piano-btn').addEventListener('click', continueToPianoSelection);
     
     // Set default date to today
     const today = new Date().toISOString().split('T')[0];
@@ -36,6 +41,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         await preselectCustomer(preselectedCustomerId);
     }
 });
+
+// Load all pianos
+async function loadAllPianos() {
+    try {
+        const response = await fetch('/api/pianos');
+        const data = await response.json();
+        allPianos = Array.isArray(data) ? data : (data.pianos || []);
+    } catch (err) {
+        console.error('Error loading pianos:', err);
+        allPianos = [];
+    }
+}
 
 async function loadServices() {
     try {
@@ -75,10 +92,9 @@ function selectService(serviceId) {
     // Store selection
     selectedService = window.servicesData.find(s => s.id === serviceId);
     
-    // If customer is already preselected, skip to date step
+    // If customer is already preselected, go to piano selection
     if (selectedCustomer) {
-        updateSelectedInfo();
-        showStep('step-datetime');
+        showPianoSelectionStep();
     } else {
         // Go to customer step
         showStep('step-customer');
@@ -180,9 +196,8 @@ async function selectExistingCustomer(customerId) {
         document.getElementById('search-results').classList.remove('active');
         document.getElementById('customer-search').value = selectedCustomer.name;
         
-        // Go to next step
-        updateSelectedInfo();
-        showStep('step-datetime');
+        // Go to piano selection step
+        showPianoSelectionStep();
         
     } catch (err) {
         console.error('Error selecting customer:', err);
@@ -212,9 +227,8 @@ async function handleCustomerSubmit(e) {
         
         selectedCustomer = await response.json();
         
-        // Go to next step
-        updateSelectedInfo();
-        showStep('step-datetime');
+        // Go to piano selection step (for new customer there won't be pianos, but they can skip)
+        showPianoSelectionStep();
         
     } catch (err) {
         console.error('Error saving customer:', err);
@@ -222,11 +236,108 @@ async function handleCustomerSubmit(e) {
     }
 }
 
+// Show piano selection step
+function showPianoSelectionStep() {
+    // Find pianos for this customer
+    const customerPianos = allPianos.filter(p => p.customerId === selectedCustomer.id);
+    const container = document.getElementById('piano-selection');
+    
+    selectedPianos = []; // Reset
+    
+    if (customerPianos.length === 0) {
+        container.innerHTML = `
+            <div class="no-pianos-message">
+                <p>🎹 No pianos registered for this customer yet.</p>
+                <p style="font-size: 13px; margin-top: 8px;">You can add pianos later on the Pianos page.</p>
+            </div>
+        `;
+        document.getElementById('continue-piano-btn').style.display = 'none';
+        document.getElementById('skip-piano-btn').textContent = 'Continue without piano →';
+    } else {
+        container.innerHTML = customerPianos.map((piano, index) => {
+            const pianoName = `${piano.brand || ''} ${piano.model || ''}`.trim() || 'Piano';
+            const typeLabel = piano.type === 'grand' ? 'Grand' : (piano.type === 'upright' ? 'Upright' : 'Digital');
+            return `
+                <label class="piano-option" onclick="togglePianoSelection(this, '${piano.id}')">
+                    <input type="checkbox" value="${piano.id}" ${index === 0 ? 'checked' : ''}>
+                    <div class="piano-option-info">
+                        <div class="piano-option-name">${escapeHtml(pianoName)}</div>
+                        <div class="piano-option-details">
+                            ${piano.serialNumber ? 'SN: ' + piano.serialNumber : ''}
+                            ${piano.year ? ' • ' + piano.year : ''}
+                        </div>
+                    </div>
+                    <span class="piano-option-badge ${piano.type || 'upright'}">${typeLabel}</span>
+                </label>
+            `;
+        }).join('');
+        
+        // Auto-select first piano
+        if (customerPianos.length > 0) {
+            selectedPianos = [customerPianos[0].id];
+            document.querySelector('.piano-option').classList.add('selected');
+        }
+        
+        document.getElementById('continue-piano-btn').style.display = 'inline-flex';
+        document.getElementById('continue-piano-btn').disabled = selectedPianos.length === 0;
+        document.getElementById('skip-piano-btn').textContent = 'Skip (no piano)';
+    }
+    
+    showStep('step-piano');
+}
+
+// Toggle piano selection
+function togglePianoSelection(element, pianoId) {
+    const checkbox = element.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    
+    if (checkbox.checked) {
+        element.classList.add('selected');
+        if (!selectedPianos.includes(pianoId)) {
+            selectedPianos.push(pianoId);
+        }
+    } else {
+        element.classList.remove('selected');
+        selectedPianos = selectedPianos.filter(id => id !== pianoId);
+    }
+    
+    // Update continue button state
+    document.getElementById('continue-piano-btn').disabled = selectedPianos.length === 0;
+}
+
+// Skip piano selection
+function skipPianoSelection() {
+    selectedPianos = [];
+    updateSelectedInfo();
+    showStep('step-datetime');
+}
+
+// Continue from piano selection
+function continueToPianoSelection() {
+    updateSelectedInfo();
+    showStep('step-datetime');
+}
+
 function updateSelectedInfo() {
     document.getElementById('selected-service-name').textContent = selectedService.name;
     document.getElementById('selected-service-duration').textContent = selectedService.duration + ' min';
     document.getElementById('selected-customer-name').textContent = selectedCustomer.name;
     document.getElementById('selected-customer-city').textContent = selectedCustomer.address.city || '';
+    
+    // Show selected pianos
+    const pianosInfo = document.getElementById('selected-pianos-info');
+    const pianosText = document.getElementById('selected-pianos-text');
+    
+    if (selectedPianos.length > 0) {
+        const pianoNames = selectedPianos.map(id => {
+            const piano = allPianos.find(p => p.id === id);
+            return piano ? `${piano.brand || ''} ${piano.model || ''}`.trim() : 'Piano';
+        });
+        pianosText.textContent = pianoNames.join(', ');
+        pianosInfo.style.display = 'block';
+    } else {
+        pianosInfo.style.display = 'none';
+    }
 }
 
 async function findAvailableSlot() {
@@ -390,6 +501,20 @@ function proceedToConfirm() {
         `${selectedService.name} (${selectedService.duration} min)`;
     document.getElementById('confirm-customer').textContent = 
         `${selectedCustomer.name}`;
+    
+    // Show piano if selected
+    const pianoRow = document.getElementById('confirm-piano-row');
+    if (selectedPianos.length > 0) {
+        const pianoNames = selectedPianos.map(id => {
+            const piano = allPianos.find(p => p.id === id);
+            return piano ? `${piano.brand || ''} ${piano.model || ''}`.trim() : 'Piano';
+        });
+        document.getElementById('confirm-piano').textContent = pianoNames.join(', ');
+        pianoRow.style.display = 'flex';
+    } else {
+        pianoRow.style.display = 'none';
+    }
+    
     document.getElementById('confirm-location').textContent = 
         `${selectedCustomer.address.street || ''} ${selectedCustomer.address.postalCode || ''} ${selectedCustomer.address.city || ''}`.trim() || 'No address';
     document.getElementById('confirm-travel').textContent = 
@@ -415,6 +540,8 @@ async function confirmBooking() {
             body: JSON.stringify({
                 serviceId: selectedService.id,
                 customerId: selectedCustomer.id,
+                pianoId: selectedPianos.length > 0 ? selectedPianos[0] : null,
+                pianoIds: selectedPianos,
                 appointmentStart: foundSlot.slot.appointmentStart,
                 notes: document.getElementById('booking-notes').value
             })
