@@ -1184,3 +1184,65 @@
         background: var(--ios-bg-primary);
     }
 }
+
+/* ============================================
+   Customers List - Mobile Fix
+   ============================================ */
+@media (max-width: 768px) {
+    /* Fix customer list items for mobile - stack buttons below content */
+    #customers-list .list-item {
+        flex-wrap: wrap;
+        padding: 16px;
+        gap: 12px;
+    }
+    
+    #customers-list .list-item-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+        border-radius: 12px;
+    }
+    
+    #customers-list .list-item-content {
+        flex: 1;
+        min-width: calc(100% - 70px);
+    }
+    
+    #customers-list .list-item-title {
+        font-size: 17px;
+        font-weight: 600;
+    }
+    
+    #customers-list .list-item-subtitle {
+        font-size: 14px;
+        color: #666;
+        margin-top: 4px;
+        line-height: 1.4;
+    }
+    
+    /* Buttons row - full width below content */
+    #customers-list .list-item-meta {
+        width: 100%;
+        margin-top: 4px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    #customers-list .list-item-meta > div {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-start;
+    }
+    
+    #customers-list .list-item-meta .btn {
+        flex: 1;
+        justify-content: center;
+        padding: 10px 12px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    #customers-list .list-item-meta .btn-small {
+        min-height: 36px;
+    }
+}
