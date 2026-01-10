@@ -1165,6 +1165,12 @@ function findOptimalSlotsForDay(options) {
             const aptStartMinutes = aptStart.getHours() * 60 + aptStart.getMinutes();
             const aptEndMinutes = aptEnd.getHours() * 60 + aptEnd.getMinutes();
             
+            // Skip afspraken die buiten de werkuren vallen
+            // Deze moeten niet gebruikt worden om slots bij te plannen
+            if (aptStartMinutes < dayStartMinutes || aptEndMinutes > dayEndMinutes) {
+                continue; // Afspraak valt (deels) buiten werkuren, skip
+            }
+            
             // Slot VOOR deze afspraak
             const beforeSlotEnd = aptStartMinutes - defaultTravelTime;
             const beforeSlotStart = beforeSlotEnd - service.duration;

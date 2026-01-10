@@ -371,12 +371,26 @@ const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, dat
     // Totale benodigde tijd = reistijd + buffer voor + dienst + buffer na
     const totalNeeded = travelTime + bufferBefore + serviceDuration + bufferAfter;
     
-    // Sorteer events op starttijd
+    // Sorteer events op starttijd en filter alleen events die BINNEN werkuren vallen
+    // Events buiten werkuren (avond/weekend) moeten niet verhinderen dat we een slot vinden
     const sortedEvents = existingEvents
         .filter(e => e.start.dateTime) // Alleen events met tijd
         .map(e => ({
             start: new Date(e.start.dateTime),
             end: new Date(e.end.dateTime)
+        }))
+        .filter(e => {
+            // Alleen events die (deels) binnen werkuren vallen
+            // Een event valt buiten werkuren als het geheel voor dayStart begint EN eindigt
+            // OF geheel na dayEnd begint
+            const eventEndsBeforeWorkday = e.end <= dayStart;
+            const eventStartsAfterWorkday = e.start >= dayEnd;
+            return !eventEndsBeforeWorkday && !eventStartsAfterWorkday;
+        })
+        .map(e => ({
+            // Clip events aan werkuren zodat avond-events niet de hele dag blokkeren
+            start: e.start < dayStart ? dayStart : e.start,
+            end: e.end > dayEnd ? dayEnd : e.end
         }))
         .sort((a, b) => a.start - b.start);
     
