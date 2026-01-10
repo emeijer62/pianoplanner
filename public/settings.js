@@ -2157,6 +2157,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadCalendarFeedSettings();
         loadEmailTemplates();
         initExportDates();
+        loadCalendarDisplaySettings();
         
         // Event listeners
         document.getElementById('companyForm').addEventListener('submit', saveCompanySettings);
@@ -2199,3 +2200,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 });
+
+// ========== CALENDAR DISPLAY SETTINGS ==========
+
+function loadCalendarDisplaySettings() {
+    // Load from localStorage (these are user preferences, not server-side)
+    const startHour = localStorage.getItem('calendarStartHour') || '8';
+    const endHour = localStorage.getItem('calendarEndHour') || '18';
+    
+    const startSelect = document.getElementById('calendar-start-hour');
+    const endSelect = document.getElementById('calendar-end-hour');
+    
+    if (startSelect) startSelect.value = startHour;
+    if (endSelect) endSelect.value = endHour;
+}
+
+function saveCalendarDisplaySettings() {
+    const startHour = document.getElementById('calendar-start-hour').value;
+    const endHour = document.getElementById('calendar-end-hour').value;
+    
+    // Validate: end must be after start
+    if (parseInt(endHour) <= parseInt(startHour)) {
+        showAlert('End hour must be after start hour', 'error');
+        return;
+    }
+    
+    localStorage.setItem('calendarStartHour', startHour);
+    localStorage.setItem('calendarEndHour', endHour);
+    
+    showAlert('Calendar display settings saved!', 'success');
+}

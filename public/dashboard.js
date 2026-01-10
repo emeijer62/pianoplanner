@@ -8,6 +8,10 @@ let currentDate = new Date();
 let miniMonthDate = new Date();
 let slotDuration = parseInt(localStorage.getItem('calendarSlotDuration') || '60'); // 60 or 90 minutes
 
+// Calendar display hours (configurable in settings)
+let calendarStartHour = parseInt(localStorage.getItem('calendarStartHour') || '8');
+let calendarEndHour = parseInt(localStorage.getItem('calendarEndHour') || '18');
+
 // Dynamic i18n calendar arrays - will be populated from i18n
 const getMonths = () => i18n?.translations?.calendar?.months || ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const getMonthsShort = () => i18n?.translations?.calendar?.monthsShort || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -534,6 +538,108 @@ function renderCalendar() {
     }
 
     renderMiniCalendar();
+    
+    // Auto-scroll to current time or first event (for day/week views)
+    if (currentView !== 'month') {
+        scrollToCurrentTime();
+    }
+    
+    // Show indicator for events outside visible hours
+    showOutsideHoursIndicator();
+}
+
+// Scroll calendar to current time or first event
+function scrollToCurrentTime() {
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Find the scrollable container
+    const weekGrid = document.querySelector('.week-grid');
+    const timeGrid = document.querySelector('.time-grid');
+    const scrollContainer = weekGrid || timeGrid;
+    
+    if (!scrollContainer) return;
+    
+    // If current time is within visible hours, scroll to it
+    if (currentHour >= calendarStartHour && currentHour < calendarEndHour) {
+        const targetSlot = currentHour - calendarStartHour;
+        const slotHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slot-height') || '36');
+        const scrollPosition = targetSlot * slotHeight;
+        
+        // Scroll to position (with some offset to show some slots above)
+        scrollContainer.scrollTop = Math.max(0, scrollPosition - slotHeight * 2);
+    }
+}
+
+// Show indicator for events outside visible hours
+function showOutsideHoursIndicator() {
+    // Remove existing indicators
+    document.querySelectorAll('.outside-hours-indicator').forEach(el => el.remove());
+    
+    // Get events for the current view period
+    let eventsToCheck = [];
+    if (currentView === 'day') {
+        eventsToCheck = getEventsForDay(currentDate);
+    } else if (currentView === 'week') {
+        const weekStart = getWeekStart(currentDate);
+        for (let i = 0; i < 7; i++) {
+            const day = new Date(weekStart);
+            day.setDate(day.getDate() + i);
+            eventsToCheck = eventsToCheck.concat(getEventsForDay(day));
+        }
+    } else {
+        return; // No indicator for month view
+    }
+    
+    // Check for events outside visible hours
+    const beforeEvents = [];
+    const afterEvents = [];
+    
+    eventsToCheck.forEach(event => {
+        const start = event.start.dateTime ? new Date(event.start.dateTime) : null;
+        if (!start) return;
+        
+        const eventHour = start.getHours();
+        const eventMinutes = eventHour * 60 + start.getMinutes();
+        
+        if (eventMinutes < calendarStartHour * 60) {
+            beforeEvents.push(event);
+        } else if (eventMinutes >= calendarEndHour * 60) {
+            afterEvents.push(event);
+        }
+    });
+    
+    // Add indicators if there are events outside hours
+    const calendarContent = document.getElementById('calendarContent');
+    if (!calendarContent) return;
+    
+    if (beforeEvents.length > 0) {
+        const indicator = document.createElement('div');
+        indicator.className = 'outside-hours-indicator outside-hours-before';
+        indicator.innerHTML = `
+            <span>↑ ${beforeEvents.length} appointment${beforeEvents.length > 1 ? 's' : ''} before ${calendarStartHour}:00</span>
+        `;
+        indicator.onclick = () => {
+            // Temporarily expand hours to show earlier events
+            calendarStartHour = Math.min(calendarStartHour, 5);
+            renderCalendar();
+        };
+        calendarContent.insertBefore(indicator, calendarContent.firstChild);
+    }
+    
+    if (afterEvents.length > 0) {
+        const indicator = document.createElement('div');
+        indicator.className = 'outside-hours-indicator outside-hours-after';
+        indicator.innerHTML = `
+            <span>↓ ${afterEvents.length} appointment${afterEvents.length > 1 ? 's' : ''} after ${calendarEndHour}:00</span>
+        `;
+        indicator.onclick = () => {
+            // Temporarily expand hours to show later events
+            calendarEndHour = Math.max(calendarEndHour, 22);
+            renderCalendar();
+        };
+        calendarContent.appendChild(indicator);
+    }
 }
 
 function renderDayView(container) {
@@ -577,11 +683,12 @@ function renderDayView(container) {
     container.innerHTML = html;
 }
 
-// Generate time slots based on slot duration setting
+// Generate time slots based on slot duration setting and configured work hours
 function generateTimeSlots() {
     const slots = [];
-    const startHour = 6;
-    const endHour = 22;
+    // Use configured hours from settings (stored in localStorage)
+    const startHour = calendarStartHour;
+    const endHour = calendarEndHour;
     
     for (let minutes = startHour * 60; minutes < endHour * 60; minutes += slotDuration) {
         const hour = Math.floor(minutes / 60);

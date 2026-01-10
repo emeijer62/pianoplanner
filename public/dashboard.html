@@ -434,6 +434,39 @@
             font-size: 0.8rem;
         }
         
+        /* Outside hours indicator */
+        .outside-hours-indicator {
+            background: linear-gradient(135deg, #fef3cd 0%, #fff3cd 100%);
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #856404;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .outside-hours-indicator:hover {
+            background: linear-gradient(135deg, #ffc107 0%, #ffca28 100%);
+            color: #000;
+        }
+        
+        .outside-hours-before {
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 0;
+        }
+        
+        .outside-hours-after {
+            border-radius: 0 0 8px 8px;
+            margin-top: 0;
+        }
+        
         .time-grid {
             flex: 1;
             overflow-y: auto;

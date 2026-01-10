@@ -976,6 +976,58 @@
                 </div>
             </div>
             
+            <!-- Calendar Display Settings Card -->
+            <div class="settings-card expanded" id="display-card">
+                <div class="settings-card-header" onclick="toggleCard('display-card')">
+                    <div class="settings-card-title">
+                        <i data-lucide="layout-grid" class="card-icon" style="width: 18px; height: 18px;"></i>
+                        Calendar Display
+                    </div>
+                    <div class="settings-card-status">
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <p style="color: var(--gray-500); margin-bottom: 16px;">
+                        Configure which hours to show in your calendar view.
+                    </p>
+                    
+                    <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: end; margin-bottom: 16px;">
+                        <div class="form-group" style="margin: 0; flex: 1; min-width: 120px;">
+                            <label for="calendar-start-hour" style="font-size: 13px;">Start hour</label>
+                            <select id="calendar-start-hour" style="width: 100%; padding: 10px;">
+                                <option value="5">05:00</option>
+                                <option value="6">06:00</option>
+                                <option value="7">07:00</option>
+                                <option value="8" selected>08:00</option>
+                                <option value="9">09:00</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin: 0; flex: 1; min-width: 120px;">
+                            <label for="calendar-end-hour" style="font-size: 13px;">End hour</label>
+                            <select id="calendar-end-hour" style="width: 100%; padding: 10px;">
+                                <option value="17">17:00</option>
+                                <option value="18" selected>18:00</option>
+                                <option value="19">19:00</option>
+                                <option value="20">20:00</option>
+                                <option value="21">21:00</option>
+                                <option value="22">22:00</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="saveCalendarDisplaySettings()">
+                            Save
+                        </button>
+                    </div>
+                    
+                    <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; font-size: 13px; color: var(--gray-600);">
+                        <i data-lucide="info" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i>
+                        Appointments outside these hours will show an indicator at the top/bottom of the calendar.
+                    </div>
+                </div>
+            </div>
+            
             <!-- Microsoft Calendar Card -->
             <div class="settings-card" id="microsoft-card">
                 <div class="settings-card-header" onclick="toggleCard('microsoft-card')">
