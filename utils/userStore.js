@@ -701,7 +701,7 @@ const createUserByAdmin = async ({ email, name, password, approvalStatus, plan, 
     }
 };
 
-const updateUserByAdmin = async (userId, { email, name, password }) => {
+const updateUserByAdmin = async (userId, { email, name, password, approvalStatus }) => {
     try {
         const user = await getUser(userId);
         if (!user) {
@@ -717,6 +717,11 @@ const updateUserByAdmin = async (userId, { email, name, password }) => {
         // Update password if provided
         if (password) {
             updates.password_hash = await hashPassword(password);
+        }
+        
+        // Update approval status if provided
+        if (approvalStatus) {
+            updates.approval_status = approvalStatus;
         }
         
         const fields = Object.keys(updates).map(k => `${k} = ?`).join(', ');
@@ -931,7 +936,7 @@ function formatUser(row) {
         tokens: tokens,
         passwordHash: row.password_hash,
         authType: row.auth_type || 'google',
-        approvalStatus: row.approval_status || 'approved',
+        approvalStatus: row.approval_status || 'pending',
         subscriptionStatus: row.subscription_status || 'trial',
         subscriptionId: row.subscription_id,
         subscriptionEndsAt: row.subscription_ends_at,

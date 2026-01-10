@@ -1273,6 +1273,14 @@
                     <input type="email" id="edit-email" placeholder="email@example.com">
                 </div>
                 <div class="form-group">
+                    <label>Approval Status</label>
+                    <select id="edit-approval-status">
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>New Password</label>
                     <input type="password" id="edit-password" placeholder="Leave empty to keep current" minlength="6">
                     <small style="color: var(--text-muted); font-size: 0.75rem;">Leave empty to keep current password</small>
@@ -1658,6 +1666,7 @@
                 document.getElementById('edit-user-id').value = userId;
                 document.getElementById('edit-name').value = user.name || '';
                 document.getElementById('edit-email').value = user.email || '';
+                document.getElementById('edit-approval-status').value = user.approvalStatus || 'pending';
                 document.getElementById('edit-password').value = '';
                 document.getElementById('edit-modal').classList.add('active');
             } catch (error) {
@@ -1676,9 +1685,10 @@
             const userId = document.getElementById('edit-user-id').value;
             const name = document.getElementById('edit-name').value;
             const email = document.getElementById('edit-email').value;
+            const approvalStatus = document.getElementById('edit-approval-status').value;
             const password = document.getElementById('edit-password').value;
             
-            const updateData = { name, email };
+            const updateData = { name, email, approvalStatus };
             if (password) {
                 updateData.password = password;
             }

@@ -295,7 +295,7 @@ router.post('/users', requireAdminAuth, async (req, res) => {
 router.put('/users/:userId', requireAdminAuth, async (req, res) => {
     try {
         const { userId } = req.params;
-        const { email, name, password } = req.body;
+        const { email, name, password, approvalStatus } = req.body;
         
         // Check of gebruiker bestaat
         const user = await userStore.getUser(userId);
@@ -315,7 +315,8 @@ router.put('/users/:userId', requireAdminAuth, async (req, res) => {
         const result = await userStore.updateUserByAdmin(userId, {
             email: email || user.email,
             name: name !== undefined ? name : user.name,
-            password: password || null // null = niet wijzigen
+            password: password || null, // null = niet wijzigen
+            approvalStatus: approvalStatus || null // null = niet wijzigen
         });
         
         if (result.error) {
@@ -346,7 +347,7 @@ router.get('/users/:userId', requireAdminAuth, async (req, res) => {
             email: user.email,
             name: user.name,
             authType: user.auth_type,
-            approvalStatus: user.approval_status || 'approved',
+            approvalStatus: user.approval_status || 'pending',
             subscription: await userStore.getSubscriptionStatus(user.id),
             createdAt: user.created_at,
             updatedAt: user.updated_at
