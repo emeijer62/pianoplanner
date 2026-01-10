@@ -12,6 +12,47 @@ let slotDuration = parseInt(localStorage.getItem('calendarSlotDuration') || '60'
 let calendarStartHour = parseInt(localStorage.getItem('calendarStartHour') || '8');
 let calendarEndHour = parseInt(localStorage.getItem('calendarEndHour') || '18');
 
+// User timezone (defaults to Europe/Amsterdam)
+let userTimeZone = localStorage.getItem('userTimeZone') || 'Europe/Amsterdam';
+
+/**
+ * Get hours and minutes from a date string in the user's timezone
+ * This ensures consistent display regardless of browser timezone
+ */
+function getTimeInUserZone(dateString) {
+    const date = new Date(dateString);
+    // Use Intl.DateTimeFormat to get time in user's timezone
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: userTimeZone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+    const parts = formatter.formatToParts(date);
+    const hour = parseInt(parts.find(p => p.type === 'hour').value);
+    const minute = parseInt(parts.find(p => p.type === 'minute').value);
+    return { hour, minute, totalMinutes: hour * 60 + minute };
+}
+
+/**
+ * Get date parts in user's timezone
+ */
+function getDateInUserZone(dateString) {
+    const date = new Date(dateString);
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+        timeZone: userTimeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+    const parts = formatter.formatToParts(date);
+    return {
+        year: parseInt(parts.find(p => p.type === 'year').value),
+        month: parseInt(parts.find(p => p.type === 'month').value) - 1,
+        day: parseInt(parts.find(p => p.type === 'day').value)
+    };
+}
+
 // Dynamic i18n calendar arrays - will be populated from i18n
 const getMonths = () => i18n?.translations?.calendar?.months || ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const getMonthsShort = () => i18n?.translations?.calendar?.monthsShort || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -82,6 +123,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentUser = data.user;
         isAdmin = data.isAdmin || false;
         subscription = data.subscription;
+        
+        // Load user's timezone preference
+        if (data.user?.timezone) {
+            userTimeZone = data.user.timezone;
+            localStorage.setItem('userTimeZone', userTimeZone);
+        }
         
         // Check subscription access - redirect to billing if no access
         if (subscription && !subscription.hasAccess) {
@@ -625,12 +672,11 @@ function showOutsideHoursIndicator() {
     const afterEvents = [];
     
     eventsToCheck.forEach(event => {
-        const start = event.start.dateTime ? new Date(event.start.dateTime) : null;
+        const start = event.start.dateTime ? event.start.dateTime : null;
         if (!start) return;
         
-        const eventHour = start.getHours();
-        const eventMinutes = eventHour * 60 + start.getMinutes();
-        
+        const { hour: eventHour, minute: eventMinute, totalMinutes: eventMinutes } = getTimeInUserZone(start);
+
         if (eventMinutes < calendarStartHour * 60) {
             beforeEvents.push(event);
         } else if (eventMinutes >= calendarEndHour * 60) {
@@ -689,9 +735,9 @@ function renderDayView(container) {
     
     for (const slot of slots) {
         const slotEvents = dayEvents.filter(e => {
-            const eventTime = new Date(e.start.dateTime || e.start.date);
-            const eventMinutes = eventTime.getHours() * 60 + eventTime.getMinutes();
-            return eventMinutes >= slot.startMinutes && eventMinutes < slot.endMinutes;
+            if (!e.start.dateTime && !e.start.date) return false;
+            const timeInfo = getTimeInUserZone(e.start.dateTime || e.start.date);
+            return timeInfo.totalMinutes >= slot.startMinutes && timeInfo.totalMinutes < slot.endMinutes;
         });
         
         html += `
@@ -800,8 +846,8 @@ function renderWeekView(container) {
         // Then each day's slot for this time
         for (const dayData of weekDays) {
             const slotEvents = dayData.events.filter(e => {
-                const start = new Date(e.start.dateTime || e.start.date);
-                const eventMinutes = start.getHours() * 60 + start.getMinutes();
+                if (!e.start.dateTime && !e.start.date) return false;
+                const { totalMinutes: eventMinutes } = getTimeInUserZone(e.start.dateTime || e.start.date);
                 return eventMinutes >= slot.startMinutes && eventMinutes < slot.endMinutes;
             });
             
@@ -987,8 +1033,8 @@ function getEventsForDay(date) {
 function createEventElement(event, compact = false) {
     const start = event.start.dateTime ? new Date(event.start.dateTime) : null;
     const end = event.end.dateTime ? new Date(event.end.dateTime) : null;
-    // Use user's browser locale for time format
-    const timeStr = start ? start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '';
+    // Use user's timezone for time display
+    const timeStr = start ? start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone }) : '';
     const color = getEventColor(event);
     
     // Calculate event duration in minutes
@@ -1008,7 +1054,7 @@ function createEventElement(event, compact = false) {
     let travelStr = '';
     if (hasTravelTime) {
         const travelStart = new Date(event.travelStartTime);
-        travelStr = travelStart.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        travelStr = travelStart.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone });
     }
     
     if (compact) {
@@ -1442,8 +1488,8 @@ async function findSmartSlot() {
                                     ${isFirstChoice ? '⭐ ' : ''}${startTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
                                 </div>
                                 <div style="font-size: 14px; color: #666;">
-                                    ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} - 
-                                    ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                    ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })} - 
+                                    ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })}
                                 </div>
                             </div>
                             <div style="color: var(--primary-color, #007AFF); font-size: 20px;">→</div>
@@ -1479,8 +1525,8 @@ async function findSmartSlot() {
                 <div style="background: var(--success-bg, #dcfce7); border: 1px solid var(--success-color, #22c55e); border-radius: 8px; padding: 12px;">
                     <div style="font-weight: 600; color: var(--success-color, #22c55e); margin-bottom: 8px;">
                         ✓ Available: ${startTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })} 
-                        ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} - 
-                        ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                        ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })} - 
+                        ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })}
                     </div>
                     <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 10px;">
                         ${pianoInfo}🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min service

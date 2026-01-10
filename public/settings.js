@@ -117,6 +117,9 @@ async function loadTimezone() {
             const friendlyName = timezone.split('/').pop().replace('_', ' ');
             timezoneBadge.textContent = friendlyName;
         }
+        
+        // Also save to localStorage for cross-page usage
+        localStorage.setItem('userTimeZone', timezone);
     } catch (error) {
         console.error('Error loading timezone:', error);
     }
@@ -187,6 +190,9 @@ async function saveTimezone() {
             const friendlyName = timezone.split('/').pop().replace('_', ' ');
             timezoneBadge.textContent = friendlyName;
         }
+        
+        // Also save to localStorage for cross-page usage
+        localStorage.setItem('userTimeZone', timezone);
         
         showAlert('🌍 Timezone saved!', 'success');
         
