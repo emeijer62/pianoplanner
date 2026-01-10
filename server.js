@@ -289,6 +289,102 @@ app.post('/api/beta-signup', async (req, res) => {
     }
 });
 
+// Contact form (public, no auth required)
+app.post('/api/contact', async (req, res) => {
+    try {
+        const { name, email, subject, message } = req.body;
+        
+        if (!name || !email || !subject || !message) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+        
+        // Subject translations for notification email
+        const subjectLabels = {
+            'general': 'General Question',
+            'support': 'Technical Support',
+            'billing': 'Billing & Subscription',
+            'feature': 'Feature Request',
+            'feedback': 'Feedback',
+            'other': 'Other'
+        };
+        
+        console.log(`📬 Contact form: ${name} <${email}> - ${subjectLabels[subject] || subject}`);
+        
+        // Send notification email (fire-and-forget)
+        setImmediate(async () => {
+            try {
+                const html = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="utf-8">
+                        <style>
+                            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+                            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                            .header { background: linear-gradient(135deg, #0071e3 0%, #5856d6 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
+                            .content { background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px; }
+                            .detail-card { background: white; border-radius: 12px; padding: 24px; margin: 20px 0; }
+                            .detail-row { padding: 12px 0; border-bottom: 1px solid #e5e5e5; }
+                            .detail-row:last-child { border-bottom: none; }
+                            .label { color: #86868b; font-size: 14px; }
+                            .value { font-weight: 500; color: #1d1d1f; }
+                            .badge { background: #007aff; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+                            .message-box { background: white; border-radius: 12px; padding: 20px; margin-top: 20px; white-space: pre-wrap; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h1>📬 New Contact Form Message</h1>
+                            </div>
+                            <div class="content">
+                                <span class="badge">${subjectLabels[subject] || subject}</span>
+                                <div class="detail-card">
+                                    <div class="detail-row">
+                                        <div class="label">Name</div>
+                                        <div class="value">${name}</div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <div class="label">Email</div>
+                                        <div class="value"><a href="mailto:${email}">${email}</a></div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <div class="label">Subject</div>
+                                        <div class="value">${subjectLabels[subject] || subject}</div>
+                                    </div>
+                                </div>
+                                <h3>Message:</h3>
+                                <div class="message-box">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                await emailService.sendMail({
+                    to: process.env.CONTACT_EMAIL || process.env.SMTP_USER,
+                    subject: `[PianoPlanner Contact] ${subjectLabels[subject] || subject} - ${name}`,
+                    html: html,
+                    replyTo: email
+                });
+            } catch (emailError) {
+                console.error('Contact form email error:', emailError.message);
+            }
+        });
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Contact form error:', error);
+        res.status(500).json({ error: 'Could not send message' });
+    }
+});
+
 // Publieke boekingspagina route (serve book.html voor /book/:slug)
 app.get('/book/:slug', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'book.html'));
