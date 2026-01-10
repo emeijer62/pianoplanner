@@ -480,8 +480,8 @@
                 <i class="icon-piano"></i> PianoPlanner
             </a>
             <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/pricing.html" class="nav-link">Pricing</a>
+                <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="/pricing.html" class="nav-link" data-i18n="pricing.title">Pricing</a>
             </div>
         </div>
     </nav>
@@ -490,7 +490,7 @@
         <div class="login-container">
             <div class="login-header">
                 <span class="login-icon"><i data-lucide="piano" style="width: 56px; height: 56px;"></i></span>
-                <h1>Welcome</h1>
+                <h1 data-i18n="login.welcome">Welcome</h1>
                 <p data-i18n="app.tagline">Smart scheduling for piano technicians</p>
             </div>
             
@@ -501,7 +501,7 @@
             <!-- Login/Beta Tabs -->
             <div class="tabs" id="auth-tabs">
                 <button class="tab active" onclick="showTab('login')" data-i18n="login.title">Log in</button>
-                <button class="tab" onclick="showTab('beta')">Join Beta</button>
+                <button class="tab" onclick="showTab('beta')" data-i18n="login.joinBeta">Join Beta</button>
             </div>
             
             <div class="card">
@@ -519,7 +519,7 @@
                         <div class="form-row" style="display: flex; justify-content: space-between; align-items: center;">
                             <div style="display: flex; align-items: center; gap: 6px;">
                                 <input type="checkbox" id="remember-me">
-                                <label for="remember-me">Remember me</label>
+                                <label for="remember-me" data-i18n="login.rememberMe">Remember me</label>
                             </div>
                             <a href="#" onclick="showForgotPassword(); return false;" style="font-size: 13px; color: var(--blue); text-decoration: none;" data-i18n="login.forgotPassword">Forgot password?</a>
                         </div>
@@ -528,16 +528,16 @@
                     
                     <!-- Forgot Password Form (hidden by default) -->
                     <form id="forgot-form" style="display: none;" onsubmit="handleForgotPassword(event)">
-                        <p style="font-size: 14px; color: var(--gray-500); margin-bottom: 16px;">
-                            Voer je email in. Je ontvangt een link om je wachtwoord te resetten.
+                        <p style="font-size: 14px; color: var(--gray-500); margin-bottom: 16px;" data-i18n="login.forgotDesc">
+                            Enter your email. You will receive a link to reset your password.
                         </p>
                         <div class="form-group">
-                            <label for="forgot-email">Email</label>
+                            <label for="forgot-email" data-i18n="login.email">Email</label>
                             <input type="email" id="forgot-email" placeholder="your@email.com" required>
                         </div>
-                        <button type="submit" class="btn btn-primary" id="forgot-btn">Verstuur reset link</button>
+                        <button type="submit" class="btn btn-primary" id="forgot-btn" data-i18n="login.sendResetLink">Send reset link</button>
                         <p style="text-align: center; margin-top: 16px;">
-                            <a href="#" onclick="hideForgotPassword(); return false;" style="font-size: 13px; color: var(--blue); text-decoration: none;">← Terug naar inloggen</a>
+                            <a href="#" onclick="hideForgotPassword(); return false;" style="font-size: 13px; color: var(--blue); text-decoration: none;" data-i18n="login.backToLogin">← Back to login</a>
                         </p>
                     </form>
                     
@@ -554,38 +554,38 @@
                     </a>
                     
                     <p class="footer-text">
-                        New here? <a href="#" onclick="showTab('beta'); return false;">Join the beta →</a>
+                        <span data-i18n="login.noAccount">New here?</span> <a href="#" onclick="showTab('beta'); return false;" data-i18n="login.joinBetaLink">Join the beta →</a>
                     </p>
                 </div>
                 
                 <!-- Beta Signup Form -->
                 <div id="beta-panel" class="form-panel">
                     <div class="beta-badge">
-                        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> Beta Access
+                        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> <span data-i18n="login.betaAccess">Beta Access</span>
                     </div>
                     
                     <div class="beta-info">
-                        <p>Join our beta program and get <strong>14 days free access</strong> to all features. Help shape the future of PianoPlanner!</p>
+                        <p data-i18n="login.betaDesc">Join our beta program and get <strong>14 days free access</strong> to all features. Help shape the future of PianoPlanner!</p>
                     </div>
                     
                     <form onsubmit="handleBetaSignup(event)">
                         <div class="form-group">
                             <label for="beta-name" data-i18n="login.name">Your name</label>
-                            <input type="text" id="beta-name" placeholder="John Smith" required>
+                            <input type="text" id="beta-name" data-i18n-placeholder="login.namePlaceholder" placeholder="John Smith" required>
                         </div>
                         <div class="form-group">
                             <label for="beta-email" data-i18n="login.email">Email</label>
                             <input type="email" id="beta-email" placeholder="your@email.com" required>
                         </div>
                         <div class="form-group">
-                            <label for="beta-password">Password</label>
-                            <input type="password" id="beta-password" placeholder="Min. 8 characters" required minlength="8">
+                            <label for="beta-password" data-i18n="login.password">Password</label>
+                            <input type="password" id="beta-password" data-i18n-placeholder="login.passwordMin" placeholder="Min. 8 characters" required minlength="8">
                         </div>
                         <div class="form-group">
-                            <label for="beta-company">Company name (optional)</label>
+                            <label for="beta-company" data-i18n="login.companyOptional">Company name (optional)</label>
                             <input type="text" id="beta-company" placeholder="Piano Services Inc.">
                         </div>
-                        <button type="submit" class="btn btn-primary" id="beta-btn">
+                        <button type="submit" class="btn btn-primary" id="beta-btn" data-i18n="login.createAccount">
                             Create Account
                         </button>
                     </form>
@@ -599,11 +599,11 @@
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
-                        <span>Sign up with Google</span>
+                        <span data-i18n="login.signupWithGoogle">Sign up with Google</span>
                     </a>
                     
                     <p class="footer-text">
-                        Already have an account? <a href="#" onclick="showTab('login'); return false;">Log in →</a>
+                        <span data-i18n="login.alreadyHaveAccount">Already have an account?</span> <a href="#" onclick="showTab('login'); return false;" data-i18n="login.loginLink">Log in →</a>
                     </p>
                 </div>
                 
