@@ -1564,20 +1564,20 @@
         // Auth check
         async function checkAuth() {
             try {
-                const response = await fetch('/api/auth/user');
+                const response = await fetch('/api/user');
                 const data = await response.json();
                 
-                if (!data.user) {
+                if (!data.loggedIn) {
                     window.location.href = '/login.html';
                     return;
                 }
                 
                 // Set user avatar
                 const avatar = document.getElementById('userAvatar');
-                if (data.user.picture) {
+                if (data.user?.picture) {
                     avatar.src = data.user.picture;
                 } else {
-                    avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.name || data.user.email)}&background=007AFF&color=fff`;
+                    avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user?.name || data.user?.email || 'User')}&background=007AFF&color=fff`;
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
