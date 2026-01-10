@@ -593,11 +593,14 @@ const startTrial = async (userId) => {
 
 // ==================== APPROVAL ====================
 
-const approveUser = async (userId) => {
+const approveUser = async (userId, approvedBy = null) => {
     await dbRun(`
         UPDATE users SET approval_status = 'approved', updated_at = ? WHERE id = ?
     `, [new Date().toISOString(), userId]);
-    return getUser(userId);
+    
+    const user = await getUser(userId);
+    console.log(`✅ User approved: ${user?.email}, approval_status: ${user?.approvalStatus}`);
+    return { user };
 };
 
 const rejectUser = async (userId) => {
