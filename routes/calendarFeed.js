@@ -151,7 +151,7 @@ router.get('/:token.ics', async (req, res) => {
 
         // Find user by feed token
         const user = await dbGet(
-            'SELECT id, name, email FROM users WHERE calendar_feed_token = ?',
+            'SELECT id, name, email, calendar_feed_start_date, calendar_feed_months_ahead FROM users WHERE calendar_feed_token = ?',
             [token]
         );
 
@@ -159,17 +159,24 @@ router.get('/:token.ics', async (req, res) => {
             return res.status(404).send('Calendar feed not found');
         }
 
-        // Get all appointments for this user (future and recent past - 30 days)
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        // Determine date range based on user settings
+        let startDate;
+        if (user.calendar_feed_start_date) {
+            startDate = new Date(user.calendar_feed_start_date);
+        } else {
+            // Default: 30 days ago
+            startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30);
+        }
         
-        const oneYearFromNow = new Date();
-        oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+        const monthsAhead = user.calendar_feed_months_ahead || 12;
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + monthsAhead);
 
         const appointments = await appointmentStore.getAppointmentsByDateRange(
             user.id,
-            thirtyDaysAgo.toISOString(),
-            oneYearFromNow.toISOString()
+            startDate.toISOString(),
+            endDate.toISOString()
         );
 
         // Generate calendar name
@@ -222,7 +229,7 @@ router.get('/settings', requireAuth, async (req, res) => {
         }
 
         const user = await dbGet(
-            'SELECT calendar_feed_token FROM users WHERE id = ?',
+            'SELECT calendar_feed_token, calendar_feed_start_date, calendar_feed_months_ahead FROM users WHERE id = ?',
             [userId]
         );
 
@@ -241,6 +248,8 @@ router.get('/settings', requireAuth, async (req, res) => {
         res.json({
             enabled: hasToken,
             feedUrl,
+            syncStartDate: user.calendar_feed_start_date || null,
+            syncMonthsAhead: user.calendar_feed_months_ahead || 12
         });
     } catch (error) {
         console.error('Get feed settings error:', error);
@@ -250,6 +259,40 @@ router.get('/settings', requireAuth, async (req, res) => {
             feedUrl: null,
             error: 'Could not load settings'
         });
+    }
+});
+
+/**
+ * PUT /api/calendar-feed/settings
+ * Update sync range settings
+ */
+router.put('/settings', requireAuth, async (req, res) => {
+    try {
+        const userId = req.session.user.id;
+        const { syncStartDate, syncMonthsAhead } = req.body;
+
+        // Ensure columns exist
+        await dbRun(`
+            ALTER TABLE users ADD COLUMN calendar_feed_start_date TEXT
+        `).catch(() => {});
+        await dbRun(`
+            ALTER TABLE users ADD COLUMN calendar_feed_months_ahead INTEGER DEFAULT 12
+        `).catch(() => {});
+
+        await dbRun(
+            'UPDATE users SET calendar_feed_start_date = ?, calendar_feed_months_ahead = ? WHERE id = ?',
+            [syncStartDate || null, syncMonthsAhead || 12, userId]
+        );
+
+        console.log(`📅 Calendar feed range updated for user ${req.session.user.email}: ${syncStartDate} + ${syncMonthsAhead} months`);
+
+        res.json({
+            success: true,
+            message: 'Sync range updated'
+        });
+    } catch (error) {
+        console.error('Update feed settings error:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 

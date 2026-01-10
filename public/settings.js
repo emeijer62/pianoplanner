@@ -1880,6 +1880,9 @@ function updateCalendarFeedUI(data) {
     const regenerateBtn = document.getElementById('feed-regenerate-btn');
     const securityNote = document.getElementById('feed-security-note');
     const badge = document.getElementById('feed-status-badge');
+    const rangeSettings = document.getElementById('feed-range-settings');
+    const startDateInput = document.getElementById('feed-start-date');
+    const monthsAheadSelect = document.getElementById('feed-months-ahead');
     
     if (data.enabled && data.feedUrl) {
         // Feed is active
@@ -1888,6 +1891,7 @@ function updateCalendarFeedUI(data) {
         if (urlDisplay) urlDisplay.style.display = 'block';
         if (urlInput) urlInput.value = data.feedUrl;
         if (instructions) instructions.style.display = 'block';
+        if (rangeSettings) rangeSettings.style.display = 'block';
         if (enableBtn) enableBtn.style.display = 'none';
         if (disableBtn) disableBtn.style.display = 'inline-flex';
         if (regenerateBtn) regenerateBtn.style.display = 'inline-flex';
@@ -1896,12 +1900,26 @@ function updateCalendarFeedUI(data) {
             badge.textContent = 'Active';
             badge.className = 'status-badge connected';
         }
+        
+        // Populate range settings
+        if (startDateInput && data.syncStartDate) {
+            startDateInput.value = data.syncStartDate;
+        } else if (startDateInput && !data.syncStartDate) {
+            // Default: 30 days ago
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+        }
+        if (monthsAheadSelect && data.syncMonthsAhead) {
+            monthsAheadSelect.value = data.syncMonthsAhead;
+        }
     } else {
         // Feed is inactive
         if (statusEl) statusEl.className = 'sync-status disconnected';
         if (statusText) statusText.textContent = '⏸️ Feed is inactive';
         if (urlDisplay) urlDisplay.style.display = 'none';
         if (instructions) instructions.style.display = 'none';
+        if (rangeSettings) rangeSettings.style.display = 'none';
         if (enableBtn) enableBtn.style.display = 'inline-flex';
         if (disableBtn) disableBtn.style.display = 'none';
         if (regenerateBtn) regenerateBtn.style.display = 'none';
@@ -1910,6 +1928,33 @@ function updateCalendarFeedUI(data) {
             badge.textContent = 'Inactive';
             badge.className = 'status-badge disconnected';
         }
+    }
+}
+
+async function saveFeedRangeSettings() {
+    const startDate = document.getElementById('feed-start-date').value;
+    const monthsAhead = document.getElementById('feed-months-ahead').value;
+    
+    try {
+        const response = await fetch('/api/calendar-feed/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                syncStartDate: startDate,
+                syncMonthsAhead: parseInt(monthsAhead)
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert('Sync range saved. Calendar apps will update on next refresh.', 'success');
+        } else {
+            throw new Error(data.error || 'Could not save settings');
+        }
+    } catch (error) {
+        console.error('Save feed range error:', error);
+        showAlert('Could not save range: ' + error.message, 'error');
     }
 }
 
