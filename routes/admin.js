@@ -79,15 +79,15 @@ router.get('/users', requireAdminAuth, async (req, res) => {
             id: user.id,
             email: user.email,
             name: user.name,
-            authType: user.auth_type,
-            approvalStatus: user.approval_status || 'approved',
+            authType: user.authType,
+            approvalStatus: user.approvalStatus || 'pending',
             subscription: await userStore.getSubscriptionStatus(user.id),
-            createdAt: user.created_at,
-            approvedAt: user.approved_at,
-            approvedBy: user.approved_by,
-            rejectedAt: user.rejected_at,
-            rejectedBy: user.rejected_by,
-            rejectionReason: user.rejection_reason
+            createdAt: user.createdAt,
+            approvedAt: user.approvedAt,
+            approvedBy: user.approvedBy,
+            rejectedAt: user.rejectedAt,
+            rejectedBy: user.rejectedBy,
+            rejectionReason: user.rejectionReason
         })));
         
         res.json(safeUsers);
@@ -458,7 +458,7 @@ router.get('/dashboard/stats', requireAdminAuth, async (req, res) => {
         let active = 0, trial = 0, expired = 0, pending = 0;
         
         for (const user of users) {
-            if (user.approval_status === 'pending') {
+            if (user.approvalStatus === 'pending') {
                 pending++;
                 continue;
             }
