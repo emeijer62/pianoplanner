@@ -420,6 +420,8 @@
 
             statusBadge.className = `status-badge ${badgeClass}`;
             statusBadge.textContent = badgeText;
+            // Remove i18n attribute so it doesn't get overwritten
+            statusBadge.removeAttribute('data-i18n');
 
             // Plan details
             let detailsHTML = '';
