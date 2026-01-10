@@ -558,11 +558,9 @@ function renderCalendar() {
     showOutsideHoursIndicator();
 }
 
-// Scroll calendar to current time or first event
+// Scroll calendar to start of business day (8:00)
+// This ensures morning appointments are visible when loading the calendar
 function scrollToCurrentTime() {
-    const now = new Date();
-    const currentHour = now.getHours();
-    
     // Find the scrollable container
     const weekGrid = document.querySelector('.week-grid');
     const timeGrid = document.querySelector('.time-grid');
@@ -570,15 +568,16 @@ function scrollToCurrentTime() {
     
     if (!scrollContainer) return;
     
-    // If current time is within visible hours, scroll to it
-    if (currentHour >= calendarStartHour && currentHour < calendarEndHour) {
-        const targetSlot = currentHour - calendarStartHour;
-        const slotHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slot-height') || '36');
-        const scrollPosition = targetSlot * slotHeight;
-        
-        // Scroll to position (with some offset to show some slots above)
-        scrollContainer.scrollTop = Math.max(0, scrollPosition - slotHeight * 2);
-    }
+    // Always scroll to 8:00 so 9:00 appointments are fully visible
+    const targetHour = Math.max(8, calendarStartHour);
+    const targetSlot = targetHour - calendarStartHour;
+    const slotHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--slot-height') || '36');
+    const scrollPosition = targetSlot * slotHeight;
+    
+    // Small delay to ensure DOM is fully rendered
+    setTimeout(() => {
+        scrollContainer.scrollTop = Math.max(0, scrollPosition);
+    }, 50);
 }
 
 // Scroll calendar to start of business day (9:00 or calendarStartHour)
