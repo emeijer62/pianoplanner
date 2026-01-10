@@ -19,6 +19,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadServices();
     await checkTheaterHoursEnabled();
     
+    // Check if we should open edit modal from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+        openModal(editId);
+        // Clean up URL
+        window.history.replaceState({}, document.title, '/customers.html');
+    }
+    
     // Event listeners
     document.getElementById('add-customer-btn').addEventListener('click', () => openModal());
     document.getElementById('customer-form').addEventListener('submit', handleSubmit);
