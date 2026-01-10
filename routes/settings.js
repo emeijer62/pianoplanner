@@ -10,7 +10,9 @@ const { requireAuth, requireAdmin } = require('../middleware/auth');
 // Haal bedrijfsinstellingen op
 router.get('/company', requireAuth, async (req, res) => {
     try {
+        console.log('📤 GET /company - User:', req.session.user.id, req.session.user.email);
         const settings = await companyStore.getSettings(req.session.user.id);
+        console.log('📤 Returning settings:', JSON.stringify(settings, null, 2));
         res.json(settings);
     } catch (error) {
         console.error('Error getting company settings:', error);
@@ -21,6 +23,9 @@ router.get('/company', requireAuth, async (req, res) => {
 // Update bedrijfsinstellingen
 router.put('/company', requireAuth, async (req, res) => {
     try {
+        console.log('📥 PUT /company - User:', req.session.user.id, req.session.user.email);
+        console.log('📥 Request body:', JSON.stringify(req.body, null, 2));
+        
         const { 
             name, ownerName, owner, email, phone, 
             street, postalCode, city, country, 
@@ -119,6 +124,7 @@ router.put('/company', requireAuth, async (req, res) => {
             theaterHoursEnabled: theaterHoursEnabled || false
         });
         
+        console.log('💾 Saved settings result:', JSON.stringify(settings, null, 2));
         res.json(settings);
     } catch (error) {
         console.error('Error saving company settings:', error.message, error.stack);
