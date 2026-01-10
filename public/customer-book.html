@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boek je afspraak</title>
+    <title>Book your appointment</title>
     <link rel="stylesheet" href="/apple-style.css">
     <link rel="stylesheet" href="/icons.css?v=20260109b">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -611,7 +611,7 @@
         <!-- Loading state -->
         <div id="loadingScreen" class="loading">
             <div class="spinner"></div>
-            <p>Laden...</p>
+            <p data-i18n="book.loading">Loading...</p>
         </div>
         
         <!-- Error state -->
@@ -619,9 +619,9 @@
             <div class="error-icon">
                 <i data-lucide="x"></i>
             </div>
-            <h2 class="success-title">Link niet gevonden</h2>
-            <p class="success-text" id="errorMessage">
-                Deze boekingslink is niet meer geldig of bestaat niet.
+            <h2 class="success-title" data-i18n="book.linkNotFound">Link not found</h2>
+            <p class="success-text" id="errorMessage" data-i18n="book.linkInvalid">
+                This booking link is no longer valid or does not exist.
             </p>
         </div>
         
@@ -630,9 +630,9 @@
             <div class="success-icon">
                 <i data-lucide="check"></i>
             </div>
-            <h2 class="success-title">Afspraak geboekt!</h2>
-            <p class="success-text">
-                Je ontvangt een bevestiging per e-mail.
+            <h2 class="success-title" data-i18n="book.booked">Appointment booked!</h2>
+            <p class="success-text" data-i18n="book.confirmEmail">
+                You will receive a confirmation by email.
             </p>
             <div class="appointment-summary" id="appointmentSummary">
                 <!-- Filled by JS -->
@@ -648,7 +648,7 @@
                 </div>
                 <h1 class="business-name" id="businessName">Piano Service</h1>
                 <p class="welcome-text">
-                    Welkom <span class="customer-name" id="customerName">Klant</span>, plan hier je afspraak
+                    <span data-i18n="book.welcome">Welcome</span> <span class="customer-name" id="customerName">Customer</span>, <span data-i18n="book.planHere">book your appointment here</span>
                 </p>
             </div>
             
@@ -656,10 +656,10 @@
             <div class="card">
                 <h2 class="card-title">
                     <i data-lucide="wrench"></i>
-                    Kies een dienst
+                    <span data-i18n="book.chooseService">Choose a service</span>
                 </h2>
                 <div id="serviceList">
-                    <!-- Services worden hier geladen -->
+                    <!-- Services loaded here -->
                 </div>
             </div>
             
@@ -667,10 +667,10 @@
             <div class="card" id="pianoCard" style="display: none;">
                 <h2 class="card-title">
                     <i data-lucide="music"></i>
-                    Selecteer je piano
+                    <span data-i18n="book.selectPiano">Select your piano</span>
                 </h2>
                 <div id="pianoList">
-                    <!-- Pianos worden hier geladen -->
+                    <!-- Pianos loaded here -->
                 </div>
             </div>
             
@@ -678,19 +678,19 @@
             <div class="card" id="suggestionsCard" style="display: none;">
                 <h2 class="card-title">
                     <i data-lucide="sparkles"></i>
-                    Beschikbare momenten
+                    <span data-i18n="book.availableTimes">Available times</span>
                 </h2>
-                <p class="suggestions-subtitle">Kies één van de voorgestelde tijdslots:</p>
+                <p class="suggestions-subtitle" data-i18n="book.chooseSuggested">Choose one of the suggested time slots:</p>
                 <div id="suggestionsLoading" class="suggestions-loading" style="display: none;">
                     <div class="spinner"></div>
-                    <p>Beschikbaarheid checken...</p>
+                    <p data-i18n="book.checkingAvailability">Checking availability...</p>
                 </div>
                 <div id="suggestionsList" class="suggestions-list">
-                    <!-- Suggestions worden hier geladen -->
+                    <!-- Suggestions loaded here -->
                 </div>
                 <button type="button" class="manual-time-btn" id="manualTimeBtn">
                     <i data-lucide="clock"></i>
-                    Ander tijdstip kiezen
+                    <span data-i18n="book.otherTime">Choose another time</span>
                 </button>
             </div>
             
@@ -698,21 +698,21 @@
             <div class="card" id="manualTimeCard" style="display: none;">
                 <h2 class="card-title">
                     <i data-lucide="calendar"></i>
-                    Kies datum & tijd
+                    <span data-i18n="book.chooseDateTime">Choose date & time</span>
                 </h2>
                 <div class="datetime-row">
                     <div class="form-group">
-                        <label>Datum</label>
+                        <label data-i18n="book.date">Date</label>
                         <input type="date" id="dateInput" required>
                     </div>
                     <div class="form-group">
-                        <label>Tijd</label>
+                        <label data-i18n="book.time">Time</label>
                         <input type="time" id="timeInput" required>
                     </div>
                 </div>
                 <button type="button" class="back-to-suggestions-btn" id="backToSuggestionsBtn">
                     <i data-lucide="arrow-left"></i>
-                    Terug naar suggesties
+                    <span data-i18n="book.backToSuggestions">Back to suggestions</span>
                 </button>
             </div>
             
@@ -720,15 +720,15 @@
             <div class="card">
                 <h2 class="card-title">
                     <i data-lucide="message-square"></i>
-                    Opmerkingen (optioneel)
+                    <span data-i18n="book.notesOptional">Notes (optional)</span>
                 </h2>
-                <textarea id="notesInput" placeholder="Bijzonderheden over je piano of afspraak..."></textarea>
+                <textarea id="notesInput" data-i18n-placeholder="book.notesPlaceholder" placeholder="Details about your piano or appointment..."></textarea>
             </div>
             
             <!-- Submit -->
             <button type="button" class="submit-btn" id="submitBtn" disabled>
                 <i data-lucide="check-circle"></i>
-                Afspraak boeken
+                <span data-i18n="book.bookAppointment">Book appointment</span>
             </button>
             
             <!-- Contact info -->
@@ -740,6 +740,179 @@
     
     <script src="/icons.js?v=20260109"></script>
     <script>
+        // Translations
+        const bookTranslations = {
+            en: {
+                'book.loading': 'Loading...',
+                'book.linkNotFound': 'Link not found',
+                'book.linkInvalid': 'This booking link is no longer valid or does not exist.',
+                'book.booked': 'Appointment booked!',
+                'book.confirmEmail': 'You will receive a confirmation by email.',
+                'book.welcome': 'Welcome',
+                'book.planHere': 'book your appointment here',
+                'book.chooseService': 'Choose a service',
+                'book.selectPiano': 'Select your piano',
+                'book.availableTimes': 'Available times',
+                'book.chooseSuggested': 'Choose one of the suggested time slots:',
+                'book.checkingAvailability': 'Checking availability...',
+                'book.otherTime': 'Choose another time',
+                'book.chooseDateTime': 'Choose date & time',
+                'book.date': 'Date',
+                'book.time': 'Time',
+                'book.backToSuggestions': 'Back to suggestions',
+                'book.notesOptional': 'Notes (optional)',
+                'book.notesPlaceholder': 'Details about your piano or appointment...',
+                'book.bookAppointment': 'Book appointment',
+                'book.contact': 'Questions? Contact us:',
+                'book.minutes': 'minutes',
+                'book.recommended': 'Recommended',
+                'book.alternative': 'Alternative',
+                'book.noSlots': 'No available times found.',
+                'book.chooseManually': 'Choose a date and time manually.',
+                'book.processing': 'Processing...',
+                'book.error': 'Something went wrong:',
+                'book.service': 'Service',
+                'book.dateLabel': 'Date',
+                'book.timeLabel': 'Time',
+                'book.piano': 'Piano'
+            },
+            nl: {
+                'book.loading': 'Laden...',
+                'book.linkNotFound': 'Link niet gevonden',
+                'book.linkInvalid': 'Deze boekingslink is niet meer geldig of bestaat niet.',
+                'book.booked': 'Afspraak geboekt!',
+                'book.confirmEmail': 'Je ontvangt een bevestiging per e-mail.',
+                'book.welcome': 'Welkom',
+                'book.planHere': 'plan hier je afspraak',
+                'book.chooseService': 'Kies een dienst',
+                'book.selectPiano': 'Selecteer je piano',
+                'book.availableTimes': 'Beschikbare momenten',
+                'book.chooseSuggested': 'Kies één van de voorgestelde tijdslots:',
+                'book.checkingAvailability': 'Beschikbaarheid checken...',
+                'book.otherTime': 'Ander tijdstip kiezen',
+                'book.chooseDateTime': 'Kies datum & tijd',
+                'book.date': 'Datum',
+                'book.time': 'Tijd',
+                'book.backToSuggestions': 'Terug naar suggesties',
+                'book.notesOptional': 'Opmerkingen (optioneel)',
+                'book.notesPlaceholder': 'Bijzonderheden over je piano of afspraak...',
+                'book.bookAppointment': 'Afspraak boeken',
+                'book.contact': 'Vragen? Neem contact op:',
+                'book.minutes': 'minuten',
+                'book.recommended': 'Aanbevolen',
+                'book.alternative': 'Alternatief',
+                'book.noSlots': 'Geen beschikbare momenten gevonden.',
+                'book.chooseManually': 'Kies handmatig een datum en tijd.',
+                'book.processing': 'Bezig...',
+                'book.error': 'Er ging iets mis:',
+                'book.service': 'Dienst',
+                'book.dateLabel': 'Datum',
+                'book.timeLabel': 'Tijd',
+                'book.piano': 'Piano'
+            },
+            de: {
+                'book.loading': 'Laden...',
+                'book.linkNotFound': 'Link nicht gefunden',
+                'book.linkInvalid': 'Dieser Buchungslink ist nicht mehr gültig oder existiert nicht.',
+                'book.booked': 'Termin gebucht!',
+                'book.confirmEmail': 'Sie erhalten eine Bestätigung per E-Mail.',
+                'book.welcome': 'Willkommen',
+                'book.planHere': 'buchen Sie hier Ihren Termin',
+                'book.chooseService': 'Wählen Sie einen Service',
+                'book.selectPiano': 'Wählen Sie Ihr Klavier',
+                'book.availableTimes': 'Verfügbare Zeiten',
+                'book.chooseSuggested': 'Wählen Sie einen der vorgeschlagenen Zeitslots:',
+                'book.checkingAvailability': 'Verfügbarkeit prüfen...',
+                'book.otherTime': 'Andere Zeit wählen',
+                'book.chooseDateTime': 'Datum & Zeit wählen',
+                'book.date': 'Datum',
+                'book.time': 'Zeit',
+                'book.backToSuggestions': 'Zurück zu Vorschlägen',
+                'book.notesOptional': 'Anmerkungen (optional)',
+                'book.notesPlaceholder': 'Details zu Ihrem Klavier oder Termin...',
+                'book.bookAppointment': 'Termin buchen',
+                'book.contact': 'Fragen? Kontaktieren Sie uns:',
+                'book.minutes': 'Minuten',
+                'book.recommended': 'Empfohlen',
+                'book.alternative': 'Alternative',
+                'book.noSlots': 'Keine verfügbaren Zeiten gefunden.',
+                'book.chooseManually': 'Wählen Sie Datum und Zeit manuell.',
+                'book.processing': 'Verarbeiten...',
+                'book.error': 'Etwas ist schiefgelaufen:',
+                'book.service': 'Service',
+                'book.dateLabel': 'Datum',
+                'book.timeLabel': 'Zeit',
+                'book.piano': 'Klavier'
+            },
+            fr: {
+                'book.loading': 'Chargement...',
+                'book.linkNotFound': 'Lien non trouvé',
+                'book.linkInvalid': 'Ce lien de réservation n\'est plus valide ou n\'existe pas.',
+                'book.booked': 'Rendez-vous réservé !',
+                'book.confirmEmail': 'Vous recevrez une confirmation par email.',
+                'book.welcome': 'Bienvenue',
+                'book.planHere': 'réservez votre rendez-vous ici',
+                'book.chooseService': 'Choisissez un service',
+                'book.selectPiano': 'Sélectionnez votre piano',
+                'book.availableTimes': 'Créneaux disponibles',
+                'book.chooseSuggested': 'Choisissez l\'un des créneaux suggérés :',
+                'book.checkingAvailability': 'Vérification de la disponibilité...',
+                'book.otherTime': 'Choisir un autre horaire',
+                'book.chooseDateTime': 'Choisir date & heure',
+                'book.date': 'Date',
+                'book.time': 'Heure',
+                'book.backToSuggestions': 'Retour aux suggestions',
+                'book.notesOptional': 'Notes (optionnel)',
+                'book.notesPlaceholder': 'Détails sur votre piano ou rendez-vous...',
+                'book.bookAppointment': 'Réserver le rendez-vous',
+                'book.contact': 'Questions ? Contactez-nous :',
+                'book.minutes': 'minutes',
+                'book.recommended': 'Recommandé',
+                'book.alternative': 'Alternative',
+                'book.noSlots': 'Aucun créneau disponible trouvé.',
+                'book.chooseManually': 'Choisissez une date et une heure manuellement.',
+                'book.processing': 'Traitement...',
+                'book.error': 'Une erreur s\'est produite :',
+                'book.service': 'Service',
+                'book.dateLabel': 'Date',
+                'book.timeLabel': 'Heure',
+                'book.piano': 'Piano'
+            }
+        };
+
+        // Get browser language
+        function getBrowserLanguage() {
+            const lang = navigator.language || navigator.userLanguage;
+            const shortLang = lang.split('-')[0];
+            return ['nl', 'de', 'fr'].includes(shortLang) ? shortLang : 'en';
+        }
+
+        const currentLang = getBrowserLanguage();
+        const t = bookTranslations[currentLang];
+
+        // Get locale for date formatting
+        function getDateLocale() {
+            const locales = { en: 'en-GB', nl: 'nl-NL', de: 'de-DE', fr: 'fr-FR' };
+            return locales[currentLang] || 'en-GB';
+        }
+
+        function applyTranslations() {
+            document.documentElement.lang = currentLang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.textContent = t[key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (t[key]) el.placeholder = t[key];
+            });
+            // Update title
+            document.title = currentLang === 'nl' ? 'Boek je afspraak' : 
+                            currentLang === 'de' ? 'Termin buchen' : 
+                            currentLang === 'fr' ? 'Réservez votre rendez-vous' : 
+                            'Book your appointment';
+        }
+        
         // Get token from URL
         const pathParts = window.location.pathname.split('/');
         const token = pathParts[pathParts.length - 1];
@@ -811,7 +984,7 @@
                         <span class="service-name">${service.name}</span>
                         ${service.price ? `<span class="service-price">€${service.price}</span>` : ''}
                     </div>
-                    <div class="service-meta">${service.duration} minuten</div>
+                    <div class="service-meta">${service.duration} ${t['book.minutes']}</div>
                     ${service.description ? `<div class="service-description">${service.description}</div>` : ''}
                 </label>
             `).join('');
@@ -882,7 +1055,7 @@
                 contactParts.push(`<a href="mailto:${bookingData.business.email}">${bookingData.business.email}</a>`);
             }
             if (contactParts.length > 0) {
-                contactInfo.innerHTML = `Vragen? Neem contact op: ${contactParts.join(' • ')}`;
+                contactInfo.innerHTML = `${t['book.contact']} ${contactParts.join(' • ')}`;
             }
             
             // Manual time form validation
@@ -946,7 +1119,7 @@
                 suggestionsList.innerHTML = `
                     <div class="no-suggestions">
                         <i data-lucide="calendar-x"></i>
-                        <p>Geen beschikbare momenten gevonden.<br>Kies handmatig een datum en tijd.</p>
+                        <p>${t['book.noSlots']}<br>${t['book.chooseManually']}</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -955,7 +1128,7 @@
             
             suggestionsList.innerHTML = suggestions.map((slot, index) => {
                 const date = new Date(slot.date);
-                const dateStr = date.toLocaleDateString('nl-NL', { 
+                const dateStr = date.toLocaleDateString(getDateLocale(), { 
                     weekday: 'long', 
                     day: 'numeric', 
                     month: 'long' 
@@ -964,9 +1137,9 @@
                 // Determine badge
                 let badge = '';
                 if (index === 0) {
-                    badge = '<span class="suggestion-badge">Aanbevolen</span>';
+                    badge = `<span class="suggestion-badge">${t['book.recommended']}</span>`;
                 } else if (slot.isAlternativeDay) {
-                    badge = '<span class="suggestion-badge next">Alternatief</span>';
+                    badge = `<span class="suggestion-badge next">${t['book.alternative']}</span>`;
                 }
                 
                 // Determine icon color based on whether it's preferred or alternative
@@ -979,7 +1152,7 @@
                         </div>
                         <div class="suggestion-content">
                             <div class="suggestion-date">${dateStr}</div>
-                            <div class="suggestion-time">${slot.time} uur</div>
+                            <div class="suggestion-time">${slot.time}</div>
                         </div>
                         ${badge}
                     </div>
@@ -1036,7 +1209,7 @@
             if (submitBtn.disabled) return;
             
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner" style="width: 20px; height: 20px; margin: 0;"></span> Bezig...';
+            submitBtn.innerHTML = `<span class="spinner" style="width: 20px; height: 20px; margin: 0;"></span> ${t['book.processing']}`;
             
             // Determine date and time based on selection mode
             let date, time;
@@ -1071,9 +1244,9 @@
                 
             } catch (error) {
                 console.error('Booking error:', error);
-                alert('Er ging iets mis: ' + error.message);
+                alert(t['book.error'] + ' ' + error.message);
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i data-lucide="check-circle"></i> Afspraak boeken';
+                submitBtn.innerHTML = `<i data-lucide="check-circle"></i> ${t['book.bookAppointment']}`;
                 lucide.createIcons();
             }
         }
@@ -1086,7 +1259,7 @@
             const piano = selectedPiano ? bookingData.pianos.find(p => p.id == selectedPiano) : null;
             
             const dateObj = new Date(date);
-            const dateStr = dateObj.toLocaleDateString('nl-NL', { 
+            const dateStr = dateObj.toLocaleDateString(getDateLocale(), { 
                 weekday: 'long', 
                 day: 'numeric', 
                 month: 'long' 
@@ -1094,20 +1267,20 @@
             
             document.getElementById('appointmentSummary').innerHTML = `
                 <div class="summary-row">
-                    <span class="summary-label">Dienst</span>
+                    <span class="summary-label">${t['book.service']}</span>
                     <span>${service.name}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">Datum</span>
+                    <span class="summary-label">${t['book.dateLabel']}</span>
                     <span>${dateStr}</span>
                 </div>
                 <div class="summary-row">
-                    <span class="summary-label">Tijd</span>
+                    <span class="summary-label">${t['book.timeLabel']}</span>
                     <span>${time}</span>
                 </div>
                 ${piano ? `
                 <div class="summary-row">
-                    <span class="summary-label">Piano</span>
+                    <span class="summary-label">${t['book.piano']}</span>
                     <span>${piano.brand} ${piano.model || ''}</span>
                 </div>
                 ` : ''}
@@ -1117,6 +1290,7 @@
         }
         
         // Start
+        applyTranslations();
         init();
     </script>
 </body>

@@ -1,26 +1,19 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Over PianoPlanner - De complete oplossing voor pianotechnici</title>
-    <link rel="stylesheet" href="/styles.css">
+    <title>About PianoPlanner</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
             min-height: 100vh;
             color: #1a1a1a;
         }
-
-        /* Header */
         .header {
             background: white;
             padding: 16px 24px;
@@ -29,7 +22,6 @@
             top: 0;
             z-index: 100;
         }
-
         .header-content {
             max-width: 1200px;
             margin: 0 auto;
@@ -37,7 +29,6 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .logo {
             display: flex;
             align-items: center;
@@ -47,16 +38,7 @@
             color: #1a1a1a;
             text-decoration: none;
         }
-
-        .logo-icon {
-            font-size: 2rem;
-        }
-
-        .header-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
+        .header-buttons { display: flex; gap: 12px; }
         .btn {
             padding: 10px 20px;
             border-radius: 8px;
@@ -67,33 +49,16 @@
             cursor: pointer;
             font-size: 14px;
         }
-
-        .btn-secondary {
-            background: #f5f5f5;
-            color: #1a1a1a;
-        }
-
-        .btn-secondary:hover {
-            background: #e8e8e8;
-        }
-
-        .btn-primary {
-            background: #007AFF;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #0056b3;
-        }
-
-        /* Hero Section */
+        .btn-secondary { background: #f5f5f5; color: #1a1a1a; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        .btn-primary { background: #007AFF; color: white; }
+        .btn-primary:hover { background: #0056b3; }
         .hero {
             text-align: center;
             padding: 80px 24px 60px;
             max-width: 900px;
             margin: 0 auto;
         }
-
         .hero h1 {
             font-size: 3rem;
             font-weight: 700;
@@ -103,7 +68,6 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
         .hero p {
             font-size: 1.25rem;
             color: #666;
@@ -111,14 +75,11 @@
             max-width: 700px;
             margin: 0 auto;
         }
-
-        /* Features Grid */
         .features-section {
             max-width: 1200px;
             margin: 0 auto;
             padding: 40px 24px 80px;
         }
-
         .section-title {
             text-align: center;
             font-size: 2rem;
@@ -126,13 +87,11 @@
             margin-bottom: 48px;
             color: #1a1a1a;
         }
-
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 24px;
         }
-
         .feature-card {
             background: white;
             border-radius: 16px;
@@ -140,35 +99,23 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             transition: all 0.3s ease;
         }
-
         .feature-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 16px;
-        }
-
+        .feature-icon { font-size: 2.5rem; margin-bottom: 16px; }
         .feature-card h3 {
             font-size: 1.25rem;
             font-weight: 600;
             margin-bottom: 12px;
             color: #1a1a1a;
         }
-
         .feature-card p {
             color: #666;
             line-height: 1.6;
             margin-bottom: 16px;
         }
-
-        .feature-list {
-            list-style: none;
-            padding: 0;
-        }
-
+        .feature-list { list-style: none; padding: 0; }
         .feature-list li {
             padding: 8px 0;
             padding-left: 28px;
@@ -176,7 +123,6 @@
             color: #444;
             font-size: 14px;
         }
-
         .feature-list li::before {
             content: "";
             position: absolute;
@@ -188,55 +134,37 @@
             background-size: contain;
             background-repeat: no-repeat;
         }
-
-        /* Highlights Section */
         .highlights {
             background: white;
             padding: 80px 24px;
         }
-
         .highlights-content {
             max-width: 1200px;
             margin: 0 auto;
         }
-
         .highlights-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 32px;
             text-align: center;
         }
-
         @media (max-width: 768px) {
-            .highlights-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            .highlights-grid { grid-template-columns: repeat(2, 1fr); }
         }
-
-        .highlight-item {
-            padding: 24px;
-        }
-
+        .highlight-item { padding: 24px; }
         .highlight-number {
             font-size: 3rem;
             font-weight: 700;
             color: #007AFF;
             margin-bottom: 8px;
         }
-
-        .highlight-label {
-            color: #666;
-            font-size: 14px;
-        }
-
-        /* Languages Section */
+        .highlight-label { color: #666; font-size: 14px; }
         .languages-section {
             max-width: 1200px;
             margin: 0 auto;
             padding: 60px 24px;
             text-align: center;
         }
-
         .languages-grid {
             display: flex;
             justify-content: center;
@@ -244,7 +172,6 @@
             margin-top: 32px;
             flex-wrap: wrap;
         }
-
         .language-badge {
             background: white;
             padding: 16px 32px;
@@ -255,24 +182,14 @@
             align-items: center;
             gap: 12px;
         }
-
-        .language-flag {
-            font-size: 1.5rem;
-        }
-
-        /* CTA Section */
+        .language-flag { font-size: 1.5rem; }
         .cta-section {
             background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
             padding: 80px 24px;
             text-align: center;
             color: white;
         }
-
-        .cta-section h2 {
-            font-size: 2.5rem;
-            margin-bottom: 16px;
-        }
-
+        .cta-section h2 { font-size: 2.5rem; margin-bottom: 16px; }
         .cta-section p {
             font-size: 1.1rem;
             opacity: 0.9;
@@ -281,7 +198,6 @@
             margin-left: auto;
             margin-right: auto;
         }
-
         .btn-white {
             background: white;
             color: #007AFF;
@@ -289,243 +205,514 @@
             font-size: 1rem;
             font-weight: 600;
         }
-
-        .btn-white:hover {
-            background: #f5f5f5;
-        }
-
-        /* Footer */
+        .btn-white:hover { background: #f5f5f5; }
         .footer {
             background: #1a1a1a;
             color: white;
             padding: 40px 24px;
             text-align: center;
         }
-
-        .footer p {
-            opacity: 0.7;
-            font-size: 14px;
-        }
-
-        /* Responsive */
+        .footer p { opacity: 0.7; font-size: 14px; }
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .section-title {
-                font-size: 1.5rem;
-            }
+            .hero h1 { font-size: 2rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .section-title { font-size: 1.5rem; }
+            .header-buttons { display: none; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <a href="/" class="logo">
-                <i class="icon-piano"></i> PianoPlanner
-            </a>
+            <a href="/" class="logo">🎹 PianoPlanner</a>
             <div class="header-buttons">
-                <a href="/login.html" class="btn btn-secondary">Inloggen</a>
-                <a href="/login.html" class="btn btn-primary">Gratis proberen</a>
+                <a href="/login.html" class="btn btn-secondary" data-i18n="about.login">Login</a>
+                <a href="/login.html" class="btn btn-primary" data-i18n="about.tryFree">Try Free</a>
             </div>
         </div>
     </header>
 
-    <!-- Hero -->
     <section class="hero">
-        <h1>De complete oplossing voor pianotechnici</h1>
-        <p>PianoPlanner is speciaal ontwikkeld voor pianostemmers en -technici. Beheer uw klanten, piano's en afspraken op één plek. Bespaar tijd, verhoog uw productiviteit en bied uw klanten een professionele service.</p>
+        <h1 data-i18n="about.heroTitle">The complete solution for piano technicians</h1>
+        <p data-i18n="about.heroDesc">PianoPlanner is specially designed for piano tuners and technicians. Manage your customers, pianos and appointments in one place. Save time, increase productivity and offer your customers professional service.</p>
     </section>
 
-    <!-- Features -->
     <section class="features-section">
-        <h2 class="section-title">Alles wat u nodig heeft</h2>
+        <h2 class="section-title" data-i18n="about.featuresTitle">Everything you need</h2>
         
         <div class="features-grid">
-            <!-- Afspraken -->
             <div class="feature-card">
                 <div class="feature-icon"><i data-lucide="calendar" style="width: 32px; height: 32px; color: #007aff;"></i></div>
-                <h3>Afspraken & Planning</h3>
-                <p>Efficiënt uw werkdag plannen met slimme routeoptimalisatie.</p>
+                <h3 data-i18n="about.f1Title">Appointments & Planning</h3>
+                <p data-i18n="about.f1Desc">Efficiently plan your workday with smart route optimization.</p>
                 <ul class="feature-list">
-                    <li>Kalenderweergave (dag/week/maand)</li>
-                    <li>Reistijd berekening tussen afspraken</li>
-                    <li>Automatische herinneringen via email</li>
-                    <li>Bevestigingsmails naar klanten</li>
-                    <li>Drag & drop afspraken verplaatsen</li>
+                    <li data-i18n="about.f1l1">Calendar view (day/week/month)</li>
+                    <li data-i18n="about.f1l2">Travel time calculation between appointments</li>
+                    <li data-i18n="about.f1l3">Automatic email reminders</li>
+                    <li data-i18n="about.f1l4">Confirmation emails to customers</li>
+                    <li data-i18n="about.f1l5">Drag & drop appointments</li>
                 </ul>
             </div>
 
-            <!-- Klanten -->
             <div class="feature-card">
                 <div class="feature-icon"><i data-lucide="users" style="width: 32px; height: 32px; color: #007aff;"></i></div>
-                <h3>Klantenbeheer</h3>
-                <p>Al uw klantgegevens overzichtelijk op één plek.</p>
+                <h3 data-i18n="about.f2Title">Customer Management</h3>
+                <p data-i18n="about.f2Desc">All your customer data clearly organized in one place.</p>
                 <ul class="feature-list">
-                    <li>Volledige klanthistorie</li>
-                    <li>Zoeken en filteren</li>
-                    <li>Duplicaat-detectie en samenvoegen</li>
-                    <li>Adres met Google Maps integratie</li>
-                    <li>Notities en contactgegevens</li>
+                    <li data-i18n="about.f2l1">Complete customer history</li>
+                    <li data-i18n="about.f2l2">Search and filter</li>
+                    <li data-i18n="about.f2l3">Duplicate detection and merging</li>
+                    <li data-i18n="about.f2l4">Address with Google Maps integration</li>
+                    <li data-i18n="about.f2l5">Notes and contact details</li>
                 </ul>
             </div>
 
-            <!-- Piano's -->
             <div class="feature-card">
                 <div class="feature-icon"><i data-lucide="piano" style="width: 32px; height: 32px; color: #007aff;"></i></div>
-                <h3>Piano Registratie</h3>
-                <p>Houd alle piano's van uw klanten bij met complete service historie.</p>
+                <h3 data-i18n="about.f3Title">Piano Registration</h3>
+                <p data-i18n="about.f3Desc">Track all your customers' pianos with complete service history.</p>
                 <ul class="feature-list">
-                    <li>Merk, model, serienummer, bouwjaar</li>
-                    <li>Type: vleugel, staand</li>
-                    <li>Servicegeschiedenis bijhouden</li>
-                    <li>Service interval instellen</li>
-                    <li>Waarschuwing wanneer service nodig is</li>
+                    <li data-i18n="about.f3l1">Brand, model, serial number, year</li>
+                    <li data-i18n="about.f3l2">Type: grand piano, upright</li>
+                    <li data-i18n="about.f3l3">Service history tracking</li>
+                    <li data-i18n="about.f3l4">Service interval settings</li>
+                    <li data-i18n="about.f3l5">Alert when service is due</li>
                 </ul>
             </div>
 
-            <!-- Email -->
             <div class="feature-card">
                 <div class="feature-icon"><i data-lucide="mail" style="width: 32px; height: 32px; color: #007aff;"></i></div>
-                <h3>Email & Communicatie</h3>
-                <p>Professionele communicatie met uw klanten.</p>
+                <h3 data-i18n="about.f4Title">Email & Communication</h3>
+                <p data-i18n="about.f4Desc">Professional communication with your customers.</p>
                 <ul class="feature-list">
-                    <li>Eigen SMTP server configureren</li>
-                    <li>Aanpasbare email templates</li>
-                    <li>Automatische bevestigingsmails</li>
-                    <li>Afspraak herinneringen</li>
-                    <li>Test emails versturen</li>
+                    <li data-i18n="about.f4l1">Configure your own SMTP server</li>
+                    <li data-i18n="about.f4l2">Customizable email templates</li>
+                    <li data-i18n="about.f4l3">Automatic confirmation emails</li>
+                    <li data-i18n="about.f4l4">Appointment reminders</li>
+                    <li data-i18n="about.f4l5">Send test emails</li>
                 </ul>
             </div>
 
-            <!-- Kalender Sync -->
             <div class="feature-card">
                 <div class="feature-icon"><i data-lucide="refresh-cw" style="width: 32px; height: 32px; color: #007aff;"></i></div>
-                <h3>Kalender Synchronisatie</h3>
-                <p>Naadloze integratie met uw bestaande kalenders.</p>
+                <h3 data-i18n="about.f5Title">Calendar Sync</h3>
+                <p data-i18n="about.f5Desc">Seamless integration with your existing calendars.</p>
                 <ul class="feature-list">
-                    <li>Google Calendar (2-weg sync)</li>
-                    <li>Apple Calendar / iCloud sync</li>
-                    <li>iCal feed voor abonnement</li>
-                    <li>Reistijd automatisch in events</li>
-                    <li>Synchroniseer met elk apparaat</li>
+                    <li data-i18n="about.f5l1">Google Calendar (2-way sync)</li>
+                    <li data-i18n="about.f5l2">Apple Calendar / iCloud sync</li>
+                    <li data-i18n="about.f5l3">iCal feed for subscription</li>
+                    <li data-i18n="about.f5l4">Travel time in events</li>
+                    <li data-i18n="about.f5l5">Sync with any device</li>
                 </ul>
             </div>
 
-            <!-- Online Boeken -->
             <div class="feature-card">
                 <div class="feature-icon"><i data-lucide="globe" style="width: 32px; height: 32px; color: #007aff;"></i></div>
-                <h3>Online Boeken</h3>
-                <p>Laat klanten zelf online een afspraak maken.</p>
+                <h3 data-i18n="about.f6Title">Online Booking</h3>
+                <p data-i18n="about.f6Desc">Let customers book appointments online themselves.</p>
                 <ul class="feature-list">
-                    <li>Eigen publieke boekingspagina</li>
-                    <li>Aangepaste URL met uw naam</li>
-                    <li>Beschikbaarheid zelf instellen</li>
-                    <li>Automatische bevestiging</li>
-                    <li>24/7 bereikbaar voor klanten</li>
+                    <li data-i18n="about.f6l1">Your own public booking page</li>
+                    <li data-i18n="about.f6l2">Custom URL with your name</li>
+                    <li data-i18n="about.f6l3">Set your own availability</li>
+                    <li data-i18n="about.f6l4">Automatic confirmation</li>
+                    <li data-i18n="about.f6l5">24/7 accessible for customers</li>
                 </ul>
             </div>
 
-            <!-- Instellingen -->
             <div class="feature-card">
                 <div class="feature-icon"><i data-lucide="settings" style="width: 32px; height: 32px; color: #007aff;"></i></div>
-                <h3>Flexibele Instellingen</h3>
-                <p>Pas PianoPlanner aan naar uw wensen.</p>
+                <h3 data-i18n="about.f7Title">Flexible Settings</h3>
+                <p data-i18n="about.f7Desc">Customize PianoPlanner to your needs.</p>
                 <ul class="feature-list">
-                    <li>Bedrijfsgegevens en logo</li>
-                    <li>Werkdagen en werktijden</li>
-                    <li>Tijdzone instelling</li>
-                    <li>Diensten en prijzen beheren</li>
-                    <li>Reistijd voorkeuren</li>
+                    <li data-i18n="about.f7l1">Company details and logo</li>
+                    <li data-i18n="about.f7l2">Working days and hours</li>
+                    <li data-i18n="about.f7l3">Timezone settings</li>
+                    <li data-i18n="about.f7l4">Manage services and prices</li>
+                    <li data-i18n="about.f7l5">Travel time preferences</li>
                 </ul>
             </div>
 
-            <!-- Beveiliging -->
             <div class="feature-card">
                 <div class="feature-icon"><i data-lucide="shield-check" style="width: 32px; height: 32px; color: #007aff;"></i></div>
-                <h3>Veilig & Betrouwbaar</h3>
-                <p>Uw gegevens zijn veilig bij ons.</p>
+                <h3 data-i18n="about.f8Title">Safe & Reliable</h3>
+                <p data-i18n="about.f8Desc">Your data is safe with us.</p>
                 <ul class="feature-list">
-                    <li>Google login (OAuth)</li>
-                    <li>Email/wachtwoord login</li>
-                    <li>Versleutelde verbindingen (SSL)</li>
-                    <li>Dagelijkse backups</li>
-                    <li>AVG-compliant</li>
+                    <li data-i18n="about.f8l1">Google login (OAuth)</li>
+                    <li data-i18n="about.f8l2">Email/password login</li>
+                    <li data-i18n="about.f8l3">Encrypted connections (SSL)</li>
+                    <li data-i18n="about.f8l4">Daily backups</li>
+                    <li data-i18n="about.f8l5">GDPR compliant</li>
                 </ul>
             </div>
         </div>
     </section>
 
-    <!-- Highlights -->
     <section class="highlights">
         <div class="highlights-content">
-            <h2 class="section-title">PianoPlanner in cijfers</h2>
+            <h2 class="section-title" data-i18n="about.numbersTitle">PianoPlanner in numbers</h2>
             <div class="highlights-grid">
                 <div class="highlight-item">
                     <div class="highlight-number">∞</div>
-                    <div class="highlight-label">Onbeperkt klanten</div>
+                    <div class="highlight-label" data-i18n="about.unlimited1">Unlimited customers</div>
                 </div>
                 <div class="highlight-item">
                     <div class="highlight-number">∞</div>
-                    <div class="highlight-label">Onbeperkt piano's</div>
+                    <div class="highlight-label" data-i18n="about.unlimited2">Unlimited pianos</div>
                 </div>
                 <div class="highlight-item">
                     <div class="highlight-number">∞</div>
-                    <div class="highlight-label">Onbeperkt afspraken</div>
+                    <div class="highlight-label" data-i18n="about.unlimited3">Unlimited appointments</div>
                 </div>
                 <div class="highlight-item">
                     <div class="highlight-number">24/7</div>
-                    <div class="highlight-label">Online toegang</div>
+                    <div class="highlight-label" data-i18n="about.online">Online access</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Languages -->
     <section class="languages-section">
-        <h2 class="section-title">Beschikbaar in meerdere talen</h2>
-        <p style="color: #666; margin-bottom: 8px;">Uw taalvoorkeur wordt opgeslagen in uw account</p>
+        <h2 class="section-title" data-i18n="about.langTitle">Available in multiple languages</h2>
+        <p style="color: #666; margin-bottom: 8px;" data-i18n="about.langDesc">Your language preference is saved in your account</p>
         <div class="languages-grid">
-            <div class="language-badge">
-                <span class="language-flag">🇳🇱</span>
-                <span>Nederlands</span>
-            </div>
-            <div class="language-badge">
-                <span class="language-flag">🇬🇧</span>
-                <span>English</span>
-            </div>
-            <div class="language-badge">
-                <span class="language-flag">🇩🇪</span>
-                <span>Deutsch</span>
-            </div>
-            <div class="language-badge">
-                <span class="language-flag">🇫🇷</span>
-                <span>Français</span>
-            </div>
+            <div class="language-badge"><span class="language-flag">🇳🇱</span><span>Nederlands</span></div>
+            <div class="language-badge"><span class="language-flag">🇬🇧</span><span>English</span></div>
+            <div class="language-badge"><span class="language-flag">🇩🇪</span><span>Deutsch</span></div>
+            <div class="language-badge"><span class="language-flag">🇫🇷</span><span>Français</span></div>
         </div>
     </section>
 
-    <!-- CTA -->
     <section class="cta-section">
-        <h2>Klaar om te beginnen?</h2>
-        <p>Probeer PianoPlanner gratis uit en ontdek hoe het uw werk als pianotechnicus eenvoudiger maakt.</p>
-        <a href="/login.html" class="btn btn-white">Start gratis proefperiode</a>
+        <h2 data-i18n="about.ctaTitle">Ready to get started?</h2>
+        <p data-i18n="about.ctaDesc">Try PianoPlanner for free and discover how it makes your work as a piano technician easier.</p>
+        <a href="/login.html" class="btn btn-white" data-i18n="about.ctaBtn">Start free trial</a>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
-        <p>© 2026 PianoPlanner. Speciaal ontwikkeld voor pianotechnici.</p>
+        <p data-i18n="about.footer">© 2026 PianoPlanner. Specially developed for piano technicians.</p>
     </footer>
     
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+        const aboutTranslations = {
+            en: {
+                'about.login': 'Login',
+                'about.tryFree': 'Try Free',
+                'about.heroTitle': 'The complete solution for piano technicians',
+                'about.heroDesc': 'PianoPlanner is specially designed for piano tuners and technicians. Manage your customers, pianos and appointments in one place. Save time, increase productivity and offer your customers professional service.',
+                'about.featuresTitle': 'Everything you need',
+                'about.f1Title': 'Appointments & Planning',
+                'about.f1Desc': 'Efficiently plan your workday with smart route optimization.',
+                'about.f1l1': 'Calendar view (day/week/month)',
+                'about.f1l2': 'Travel time calculation between appointments',
+                'about.f1l3': 'Automatic email reminders',
+                'about.f1l4': 'Confirmation emails to customers',
+                'about.f1l5': 'Drag & drop appointments',
+                'about.f2Title': 'Customer Management',
+                'about.f2Desc': 'All your customer data clearly organized in one place.',
+                'about.f2l1': 'Complete customer history',
+                'about.f2l2': 'Search and filter',
+                'about.f2l3': 'Duplicate detection and merging',
+                'about.f2l4': 'Address with Google Maps integration',
+                'about.f2l5': 'Notes and contact details',
+                'about.f3Title': 'Piano Registration',
+                'about.f3Desc': 'Track all your customers\' pianos with complete service history.',
+                'about.f3l1': 'Brand, model, serial number, year',
+                'about.f3l2': 'Type: grand piano, upright',
+                'about.f3l3': 'Service history tracking',
+                'about.f3l4': 'Service interval settings',
+                'about.f3l5': 'Alert when service is due',
+                'about.f4Title': 'Email & Communication',
+                'about.f4Desc': 'Professional communication with your customers.',
+                'about.f4l1': 'Configure your own SMTP server',
+                'about.f4l2': 'Customizable email templates',
+                'about.f4l3': 'Automatic confirmation emails',
+                'about.f4l4': 'Appointment reminders',
+                'about.f4l5': 'Send test emails',
+                'about.f5Title': 'Calendar Sync',
+                'about.f5Desc': 'Seamless integration with your existing calendars.',
+                'about.f5l1': 'Google Calendar (2-way sync)',
+                'about.f5l2': 'Apple Calendar / iCloud sync',
+                'about.f5l3': 'iCal feed for subscription',
+                'about.f5l4': 'Travel time in events',
+                'about.f5l5': 'Sync with any device',
+                'about.f6Title': 'Online Booking',
+                'about.f6Desc': 'Let customers book appointments online themselves.',
+                'about.f6l1': 'Your own public booking page',
+                'about.f6l2': 'Custom URL with your name',
+                'about.f6l3': 'Set your own availability',
+                'about.f6l4': 'Automatic confirmation',
+                'about.f6l5': '24/7 accessible for customers',
+                'about.f7Title': 'Flexible Settings',
+                'about.f7Desc': 'Customize PianoPlanner to your needs.',
+                'about.f7l1': 'Company details and logo',
+                'about.f7l2': 'Working days and hours',
+                'about.f7l3': 'Timezone settings',
+                'about.f7l4': 'Manage services and prices',
+                'about.f7l5': 'Travel time preferences',
+                'about.f8Title': 'Safe & Reliable',
+                'about.f8Desc': 'Your data is safe with us.',
+                'about.f8l1': 'Google login (OAuth)',
+                'about.f8l2': 'Email/password login',
+                'about.f8l3': 'Encrypted connections (SSL)',
+                'about.f8l4': 'Daily backups',
+                'about.f8l5': 'GDPR compliant',
+                'about.numbersTitle': 'PianoPlanner in numbers',
+                'about.unlimited1': 'Unlimited customers',
+                'about.unlimited2': 'Unlimited pianos',
+                'about.unlimited3': 'Unlimited appointments',
+                'about.online': 'Online access',
+                'about.langTitle': 'Available in multiple languages',
+                'about.langDesc': 'Your language preference is saved in your account',
+                'about.ctaTitle': 'Ready to get started?',
+                'about.ctaDesc': 'Try PianoPlanner for free and discover how it makes your work as a piano technician easier.',
+                'about.ctaBtn': 'Start free trial',
+                'about.footer': '© 2026 PianoPlanner. Specially developed for piano technicians.'
+            },
+            nl: {
+                'about.login': 'Inloggen',
+                'about.tryFree': 'Gratis proberen',
+                'about.heroTitle': 'De complete oplossing voor pianotechnici',
+                'about.heroDesc': 'PianoPlanner is speciaal ontwikkeld voor pianostemmers en -technici. Beheer uw klanten, piano\'s en afspraken op één plek. Bespaar tijd, verhoog uw productiviteit en bied uw klanten een professionele service.',
+                'about.featuresTitle': 'Alles wat u nodig heeft',
+                'about.f1Title': 'Afspraken & Planning',
+                'about.f1Desc': 'Efficiënt uw werkdag plannen met slimme routeoptimalisatie.',
+                'about.f1l1': 'Kalenderweergave (dag/week/maand)',
+                'about.f1l2': 'Reistijd berekening tussen afspraken',
+                'about.f1l3': 'Automatische herinneringen via email',
+                'about.f1l4': 'Bevestigingsmails naar klanten',
+                'about.f1l5': 'Drag & drop afspraken verplaatsen',
+                'about.f2Title': 'Klantenbeheer',
+                'about.f2Desc': 'Al uw klantgegevens overzichtelijk op één plek.',
+                'about.f2l1': 'Volledige klanthistorie',
+                'about.f2l2': 'Zoeken en filteren',
+                'about.f2l3': 'Duplicaat-detectie en samenvoegen',
+                'about.f2l4': 'Adres met Google Maps integratie',
+                'about.f2l5': 'Notities en contactgegevens',
+                'about.f3Title': 'Piano Registratie',
+                'about.f3Desc': 'Houd alle piano\'s van uw klanten bij met complete service historie.',
+                'about.f3l1': 'Merk, model, serienummer, bouwjaar',
+                'about.f3l2': 'Type: vleugel, piano',
+                'about.f3l3': 'Servicegeschiedenis bijhouden',
+                'about.f3l4': 'Service interval instellen',
+                'about.f3l5': 'Waarschuwing wanneer service nodig is',
+                'about.f4Title': 'Email & Communicatie',
+                'about.f4Desc': 'Professionele communicatie met uw klanten.',
+                'about.f4l1': 'Eigen SMTP server configureren',
+                'about.f4l2': 'Aanpasbare email templates',
+                'about.f4l3': 'Automatische bevestigingsmails',
+                'about.f4l4': 'Afspraak herinneringen',
+                'about.f4l5': 'Test emails versturen',
+                'about.f5Title': 'Kalender Synchronisatie',
+                'about.f5Desc': 'Naadloze integratie met uw bestaande kalenders.',
+                'about.f5l1': 'Google Calendar (2-weg sync)',
+                'about.f5l2': 'Apple Calendar / iCloud sync',
+                'about.f5l3': 'iCal feed voor abonnement',
+                'about.f5l4': 'Reistijd automatisch in events',
+                'about.f5l5': 'Synchroniseer met elk apparaat',
+                'about.f6Title': 'Online Boeken',
+                'about.f6Desc': 'Laat klanten zelf online een afspraak maken.',
+                'about.f6l1': 'Eigen publieke boekingspagina',
+                'about.f6l2': 'Aangepaste URL met uw naam',
+                'about.f6l3': 'Beschikbaarheid zelf instellen',
+                'about.f6l4': 'Automatische bevestiging',
+                'about.f6l5': '24/7 bereikbaar voor klanten',
+                'about.f7Title': 'Flexibele Instellingen',
+                'about.f7Desc': 'Pas PianoPlanner aan naar uw wensen.',
+                'about.f7l1': 'Bedrijfsgegevens en logo',
+                'about.f7l2': 'Werkdagen en werktijden',
+                'about.f7l3': 'Tijdzone instelling',
+                'about.f7l4': 'Diensten en prijzen beheren',
+                'about.f7l5': 'Reistijd voorkeuren',
+                'about.f8Title': 'Veilig & Betrouwbaar',
+                'about.f8Desc': 'Uw gegevens zijn veilig bij ons.',
+                'about.f8l1': 'Google login (OAuth)',
+                'about.f8l2': 'Email/wachtwoord login',
+                'about.f8l3': 'Versleutelde verbindingen (SSL)',
+                'about.f8l4': 'Dagelijkse backups',
+                'about.f8l5': 'AVG-compliant',
+                'about.numbersTitle': 'PianoPlanner in cijfers',
+                'about.unlimited1': 'Onbeperkt klanten',
+                'about.unlimited2': 'Onbeperkt piano\'s',
+                'about.unlimited3': 'Onbeperkt afspraken',
+                'about.online': 'Online toegang',
+                'about.langTitle': 'Beschikbaar in meerdere talen',
+                'about.langDesc': 'Uw taalvoorkeur wordt opgeslagen in uw account',
+                'about.ctaTitle': 'Klaar om te beginnen?',
+                'about.ctaDesc': 'Probeer PianoPlanner gratis uit en ontdek hoe het uw werk als pianotechnicus eenvoudiger maakt.',
+                'about.ctaBtn': 'Start gratis proefperiode',
+                'about.footer': '© 2026 PianoPlanner. Speciaal ontwikkeld voor pianotechnici.'
+            },
+            de: {
+                'about.login': 'Anmelden',
+                'about.tryFree': 'Kostenlos testen',
+                'about.heroTitle': 'Die komplette Lösung für Klaviertechniker',
+                'about.heroDesc': 'PianoPlanner wurde speziell für Klavierstimmer und -techniker entwickelt. Verwalten Sie Ihre Kunden, Klaviere und Termine an einem Ort. Sparen Sie Zeit, steigern Sie Ihre Produktivität.',
+                'about.featuresTitle': 'Alles was Sie brauchen',
+                'about.f1Title': 'Termine & Planung',
+                'about.f1Desc': 'Planen Sie Ihren Arbeitstag effizient mit smarter Routenoptimierung.',
+                'about.f1l1': 'Kalenderansicht (Tag/Woche/Monat)',
+                'about.f1l2': 'Fahrtzeitberechnung zwischen Terminen',
+                'about.f1l3': 'Automatische E-Mail-Erinnerungen',
+                'about.f1l4': 'Bestätigungsmails an Kunden',
+                'about.f1l5': 'Drag & Drop Termine',
+                'about.f2Title': 'Kundenverwaltung',
+                'about.f2Desc': 'Alle Kundendaten übersichtlich an einem Ort.',
+                'about.f2l1': 'Vollständige Kundenhistorie',
+                'about.f2l2': 'Suchen und Filtern',
+                'about.f2l3': 'Duplikaterkennung und Zusammenführen',
+                'about.f2l4': 'Adresse mit Google Maps Integration',
+                'about.f2l5': 'Notizen und Kontaktdaten',
+                'about.f3Title': 'Klavier-Registrierung',
+                'about.f3Desc': 'Verfolgen Sie alle Klaviere Ihrer Kunden mit kompletter Servicehistorie.',
+                'about.f3l1': 'Marke, Modell, Seriennummer, Baujahr',
+                'about.f3l2': 'Typ: Flügel, Klavier',
+                'about.f3l3': 'Servicehistorie verfolgen',
+                'about.f3l4': 'Service-Intervall einstellen',
+                'about.f3l5': 'Warnung wenn Service fällig',
+                'about.f4Title': 'E-Mail & Kommunikation',
+                'about.f4Desc': 'Professionelle Kommunikation mit Ihren Kunden.',
+                'about.f4l1': 'Eigenen SMTP-Server konfigurieren',
+                'about.f4l2': 'Anpassbare E-Mail-Vorlagen',
+                'about.f4l3': 'Automatische Bestätigungsmails',
+                'about.f4l4': 'Termin-Erinnerungen',
+                'about.f4l5': 'Test-E-Mails senden',
+                'about.f5Title': 'Kalender-Synchronisation',
+                'about.f5Desc': 'Nahtlose Integration mit Ihren bestehenden Kalendern.',
+                'about.f5l1': 'Google Calendar (2-Wege-Sync)',
+                'about.f5l2': 'Apple Calendar / iCloud Sync',
+                'about.f5l3': 'iCal-Feed für Abonnement',
+                'about.f5l4': 'Fahrtzeit in Events',
+                'about.f5l5': 'Sync mit jedem Gerät',
+                'about.f6Title': 'Online-Buchung',
+                'about.f6Desc': 'Lassen Sie Kunden selbst online buchen.',
+                'about.f6l1': 'Eigene öffentliche Buchungsseite',
+                'about.f6l2': 'Eigene URL mit Ihrem Namen',
+                'about.f6l3': 'Verfügbarkeit selbst einstellen',
+                'about.f6l4': 'Automatische Bestätigung',
+                'about.f6l5': '24/7 erreichbar für Kunden',
+                'about.f7Title': 'Flexible Einstellungen',
+                'about.f7Desc': 'Passen Sie PianoPlanner an Ihre Bedürfnisse an.',
+                'about.f7l1': 'Firmendaten und Logo',
+                'about.f7l2': 'Arbeitstage und -zeiten',
+                'about.f7l3': 'Zeitzone einstellen',
+                'about.f7l4': 'Dienste und Preise verwalten',
+                'about.f7l5': 'Fahrtzeit-Einstellungen',
+                'about.f8Title': 'Sicher & Zuverlässig',
+                'about.f8Desc': 'Ihre Daten sind bei uns sicher.',
+                'about.f8l1': 'Google-Login (OAuth)',
+                'about.f8l2': 'E-Mail/Passwort-Login',
+                'about.f8l3': 'Verschlüsselte Verbindungen (SSL)',
+                'about.f8l4': 'Tägliche Backups',
+                'about.f8l5': 'DSGVO-konform',
+                'about.numbersTitle': 'PianoPlanner in Zahlen',
+                'about.unlimited1': 'Unbegrenzt Kunden',
+                'about.unlimited2': 'Unbegrenzt Klaviere',
+                'about.unlimited3': 'Unbegrenzt Termine',
+                'about.online': 'Online-Zugang',
+                'about.langTitle': 'In mehreren Sprachen verfügbar',
+                'about.langDesc': 'Ihre Spracheinstellung wird in Ihrem Konto gespeichert',
+                'about.ctaTitle': 'Bereit loszulegen?',
+                'about.ctaDesc': 'Testen Sie PianoPlanner kostenlos und entdecken Sie, wie es Ihre Arbeit als Klaviertechniker erleichtert.',
+                'about.ctaBtn': 'Kostenlos testen',
+                'about.footer': '© 2026 PianoPlanner. Speziell für Klaviertechniker entwickelt.'
+            },
+            fr: {
+                'about.login': 'Connexion',
+                'about.tryFree': 'Essai gratuit',
+                'about.heroTitle': 'La solution complète pour les techniciens piano',
+                'about.heroDesc': 'PianoPlanner est spécialement conçu pour les accordeurs et techniciens piano. Gérez vos clients, pianos et rendez-vous en un seul endroit. Gagnez du temps et offrez un service professionnel.',
+                'about.featuresTitle': 'Tout ce dont vous avez besoin',
+                'about.f1Title': 'Rendez-vous & Planning',
+                'about.f1Desc': 'Planifiez efficacement votre journée avec l\'optimisation des itinéraires.',
+                'about.f1l1': 'Vue calendrier (jour/semaine/mois)',
+                'about.f1l2': 'Calcul du temps de trajet',
+                'about.f1l3': 'Rappels automatiques par email',
+                'about.f1l4': 'Emails de confirmation aux clients',
+                'about.f1l5': 'Glisser-déposer les rendez-vous',
+                'about.f2Title': 'Gestion des clients',
+                'about.f2Desc': 'Toutes vos données clients organisées en un seul endroit.',
+                'about.f2l1': 'Historique client complet',
+                'about.f2l2': 'Recherche et filtrage',
+                'about.f2l3': 'Détection et fusion des doublons',
+                'about.f2l4': 'Adresse avec intégration Google Maps',
+                'about.f2l5': 'Notes et coordonnées',
+                'about.f3Title': 'Enregistrement des pianos',
+                'about.f3Desc': 'Suivez tous les pianos de vos clients avec l\'historique complet.',
+                'about.f3l1': 'Marque, modèle, numéro de série, année',
+                'about.f3l2': 'Type: piano à queue, droit',
+                'about.f3l3': 'Suivi de l\'historique de service',
+                'about.f3l4': 'Intervalles de service',
+                'about.f3l5': 'Alerte quand le service est dû',
+                'about.f4Title': 'Email & Communication',
+                'about.f4Desc': 'Communication professionnelle avec vos clients.',
+                'about.f4l1': 'Configurer votre propre serveur SMTP',
+                'about.f4l2': 'Modèles d\'email personnalisables',
+                'about.f4l3': 'Emails de confirmation automatiques',
+                'about.f4l4': 'Rappels de rendez-vous',
+                'about.f4l5': 'Envoyer des emails de test',
+                'about.f5Title': 'Synchronisation calendrier',
+                'about.f5Desc': 'Intégration transparente avec vos calendriers existants.',
+                'about.f5l1': 'Google Calendar (sync bidirectionnelle)',
+                'about.f5l2': 'Apple Calendar / iCloud sync',
+                'about.f5l3': 'Flux iCal pour abonnement',
+                'about.f5l4': 'Temps de trajet dans les événements',
+                'about.f5l5': 'Sync avec tout appareil',
+                'about.f6Title': 'Réservation en ligne',
+                'about.f6Desc': 'Laissez les clients réserver en ligne eux-mêmes.',
+                'about.f6l1': 'Votre propre page de réservation publique',
+                'about.f6l2': 'URL personnalisée avec votre nom',
+                'about.f6l3': 'Définir votre disponibilité',
+                'about.f6l4': 'Confirmation automatique',
+                'about.f6l5': '24/7 accessible pour les clients',
+                'about.f7Title': 'Paramètres flexibles',
+                'about.f7Desc': 'Personnalisez PianoPlanner selon vos besoins.',
+                'about.f7l1': 'Détails et logo de l\'entreprise',
+                'about.f7l2': 'Jours et heures de travail',
+                'about.f7l3': 'Paramètres de fuseau horaire',
+                'about.f7l4': 'Gérer services et prix',
+                'about.f7l5': 'Préférences de temps de trajet',
+                'about.f8Title': 'Sûr & Fiable',
+                'about.f8Desc': 'Vos données sont en sécurité chez nous.',
+                'about.f8l1': 'Connexion Google (OAuth)',
+                'about.f8l2': 'Connexion email/mot de passe',
+                'about.f8l3': 'Connexions chiffrées (SSL)',
+                'about.f8l4': 'Sauvegardes quotidiennes',
+                'about.f8l5': 'Conforme RGPD',
+                'about.numbersTitle': 'PianoPlanner en chiffres',
+                'about.unlimited1': 'Clients illimités',
+                'about.unlimited2': 'Pianos illimités',
+                'about.unlimited3': 'Rendez-vous illimités',
+                'about.online': 'Accès en ligne',
+                'about.langTitle': 'Disponible en plusieurs langues',
+                'about.langDesc': 'Votre préférence de langue est enregistrée dans votre compte',
+                'about.ctaTitle': 'Prêt à commencer ?',
+                'about.ctaDesc': 'Essayez PianoPlanner gratuitement et découvrez comment il facilite votre travail de technicien piano.',
+                'about.ctaBtn': 'Commencer l\'essai gratuit',
+                'about.footer': '© 2026 PianoPlanner. Spécialement développé pour les techniciens piano.'
+            }
+        };
+
+        function getBrowserLanguage() {
+            const lang = navigator.language || navigator.userLanguage;
+            const shortLang = lang.split('-')[0];
+            return ['nl', 'de', 'fr'].includes(shortLang) ? shortLang : 'en';
+        }
+
+        function applyTranslations() {
+            const lang = getBrowserLanguage();
+            const translations = aboutTranslations[lang];
+            if (!translations) return;
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[key]) el.textContent = translations[key];
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTranslations();
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>
