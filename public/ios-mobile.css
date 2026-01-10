@@ -1112,7 +1112,7 @@
         background: var(--ios-bg-primary) !important;
     }
     
-    /* Sticky calendar toolbar at top */
+    /* Sticky calendar toolbar at top - FIXED LAYOUT */
     .calendar-toolbar {
         position: sticky !important;
         top: 0 !important;
@@ -1120,65 +1120,69 @@
         display: flex !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
-        justify-content: space-between !important;
-        padding: 10px 12px !important;
+        justify-content: center !important;
+        padding: 10px 16px !important;
         padding-top: calc(10px + var(--safe-area-top)) !important;
-        gap: 8px !important;
+        gap: 6px !important;
         background: rgba(249, 249, 249, 0.95) !important;
         backdrop-filter: saturate(180%) blur(20px) !important;
         -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
         border-bottom: 0.5px solid var(--ios-separator) !important;
     }
     
-    /* Navigation buttons inline */
+    /* Navigation buttons - smaller and compact */
     .calendar-nav {
         display: flex !important;
         align-items: center !important;
-        gap: 4px !important;
-        order: 1;
+        gap: 2px !important;
+        flex-shrink: 0;
     }
     
     .calendar-nav button {
-        width: 36px !important;
-        height: 36px !important;
-        border-radius: 8px !important;
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 6px !important;
         background: var(--ios-gray-6) !important;
         border: none !important;
-        font-size: 14px !important;
+        font-size: 12px !important;
         color: var(--ios-text-primary) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        padding: 0 !important;
     }
     
     .calendar-nav button:active {
         background: var(--ios-gray-5) !important;
     }
     
-    /* Today button styled */
+    /* Today button styled - smaller */
     .calendar-nav button:nth-child(2) {
         width: auto !important;
-        padding: 0 14px !important;
-        font-size: 14px !important;
+        padding: 0 10px !important;
+        font-size: 12px !important;
         font-weight: 500 !important;
     }
     
-    /* Calendar title compact */
+    /* Calendar title - takes remaining space, centered */
     .calendar-title {
-        font-size: 18px !important;
+        font-size: 15px !important;
         font-weight: 600 !important;
         color: var(--ios-text-primary) !important;
         text-align: center !important;
-        order: 2;
-        flex: 0 0 auto !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
     
     /* Toolbar right - sync and dropdown */
     .toolbar-right {
         display: flex !important;
         align-items: center !important;
-        gap: 8px !important;
-        order: 3;
+        gap: 4px !important;
+        flex-shrink: 0;
     }
     
     /* Hide slot duration selector on mobile */
@@ -1188,20 +1192,25 @@
     
     /* View selector compact */
     #viewSelect {
-        height: 36px !important;
-        padding: 0 28px 0 12px !important;
-        font-size: 14px !important;
+        height: 32px !important;
+        padding: 0 24px 0 8px !important;
+        font-size: 12px !important;
         background: var(--ios-gray-6) !important;
-        border-radius: 8px !important;
-        min-width: 70px !important;
+        border-radius: 6px !important;
+        min-width: 55px !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%238E8E93' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 6px center !important;
     }
     
     /* Sync button compact */
     .btn-sync {
-        width: 36px !important;
-        height: 36px !important;
+        width: 32px !important;
+        height: 32px !important;
         padding: 0 !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         background: var(--ios-gray-6) !important;
         border: none !important;
         display: flex !important;
@@ -1214,13 +1223,33 @@
     }
     
     .btn-sync .sync-icon {
-        width: 18px !important;
-        height: 18px !important;
+        width: 16px !important;
+        height: 16px !important;
     }
     
     /* Week grid improvements */
     .week-grid {
         font-size: 13px !important;
+        overflow-x: hidden !important;
+    }
+    
+    /* Calendar content - ensure it doesn't overflow */
+    #calendarContent {
+        overflow-x: hidden !important;
+        width: 100% !important;
+    }
+    
+    /* Day view / Week view grid fix */
+    .day-view,
+    .week-view {
+        width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    
+    .week-grid,
+    .day-grid {
+        width: 100% !important;
+        table-layout: fixed !important;
     }
     
     /* Day headers more compact */
@@ -1228,6 +1257,7 @@
         display: grid !important;
         background: var(--ios-bg-secondary) !important;
         border-bottom: 0.5px solid var(--ios-separator) !important;
+        width: 100% !important;
     }
     
     .day-header {
@@ -1265,15 +1295,23 @@
     
     /* Time slots more visible */
     .time-column {
-        width: 42px !important;
+        width: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
         flex-shrink: 0 !important;
     }
     
     .time-label {
-        font-size: 10px !important;
+        font-size: 9px !important;
         color: var(--ios-text-tertiary) !important;
-        padding: 0 4px !important;
+        padding: 0 2px !important;
         text-align: right !important;
+    }
+    
+    /* Day columns - equal width */
+    .day-column {
+        flex: 1 !important;
+        min-width: 0 !important;
     }
     
     .day-column,
