@@ -606,7 +606,7 @@
                         <div class="form-group">
                             <label for="piano-type">Type</label>
                             <select id="piano-type">
-                                <option value="upright">Upright piano</option>
+                                <option value="upright">Piano</option>
                                 <option value="grand">Grand piano</option>
                             </select>
                         </div>
@@ -950,7 +950,7 @@
 
             container.innerHTML = pianosData.map(piano => {
                 const typeLabel = {
-                    'upright': 'Upright',
+                    'upright': 'Piano',
                     'grand': 'Grand'
                 }[piano.type] || piano.type;
 

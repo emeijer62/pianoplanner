@@ -1245,7 +1245,7 @@ function onCustomerChange() {
             customerPianos.forEach((p, index) => {
                 const pianoName = `${p.brand || ''} ${p.model || ''}`.trim() || 'Piano';
                 const pianoDetails = [
-                    p.type === 'grand' ? '🎹 Grand' : (p.type === 'upright' ? '🎹 Upright' : ''),
+                    p.type === 'grand' ? '🎹 Grand' : (p.type === 'upright' ? '🎹 Piano' : ''),
                     p.serialNumber ? `SN: ${p.serialNumber}` : ''
                 ].filter(Boolean).join(' • ');
                 
