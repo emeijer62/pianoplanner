@@ -106,7 +106,8 @@ async function loadProfileSettings() {
                 ${profile.hasPassword ? ' + Password set' : ' - <em>No password set</em>'}
             `;
         } else {
-            authTypeInfo.innerHTML = '<span style="color: #333;">📧 Email/Password</span>';
+            authTypeInfo.innerHTML = '<span style="color: #333;"><i data-lucide="mail" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> Email/Password</span>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
         
         // Adjust password section based on situation
@@ -118,12 +119,14 @@ async function loadProfileSettings() {
             // Google user without password - can set password
             if (currentPasswordGroup) currentPasswordGroup.style.display = 'none';
             if (passwordSectionDesc) passwordSectionDesc.textContent = 'You are logged in via Google. Set a password to also log in with email/password.';
-            if (passwordSubmitBtn) passwordSubmitBtn.textContent = '🔐 Set Password';
+            if (passwordSubmitBtn) passwordSubmitBtn.innerHTML = '<i data-lucide="lock" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> Set Password';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         } else {
             // Normal situation - change password
             if (currentPasswordGroup) currentPasswordGroup.style.display = 'block';
             if (passwordSectionDesc) passwordSectionDesc.textContent = 'Enter your current password to set a new password.';
-            if (passwordSubmitBtn) passwordSubmitBtn.textContent = '🔐 Change Password';
+            if (passwordSubmitBtn) passwordSubmitBtn.innerHTML = '<i data-lucide="lock" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> Change Password';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
         
     } catch (error) {
@@ -486,7 +489,8 @@ function updateLogoPreview(logoUrl) {
         preview.style.border = '2px solid #e5e5e5';
         deleteBtn.style.display = 'inline-block';
     } else {
-        preview.innerHTML = '<span style="font-size: 40px; color: #ccc;">🏢</span>';
+        preview.innerHTML = '<i data-lucide="building-2" style="width:40px;height:40px;color:#ccc;"></i>';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         preview.style.border = '2px dashed #ddd';
         deleteBtn.style.display = 'none';
     }
@@ -933,17 +937,17 @@ function renderServices() {
                     ${service.name}
                 </h4>
                 <div class="service-meta">
-                    <span>⏱️ ${service.duration} min</span>
-                    <span>💶 €${service.price}</span>
-                    ${service.bufferBefore ? `<span>⏪ +${service.bufferBefore} min before</span>` : ''}
-                    ${service.bufferAfter ? `<span>⏩ +${service.bufferAfter} min after</span>` : ''}
-                    <span>📊 Total: ${getTotalDuration(service)} min</span>
+                    <span><i data-lucide="clock" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> ${service.duration} min</span>
+                    <span><i data-lucide="euro" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> €${service.price}</span>
+                    ${service.bufferBefore ? `<span><i data-lucide="chevron-left" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> +${service.bufferBefore} min before</span>` : ''}
+                    ${service.bufferAfter ? `<span><i data-lucide="chevron-right" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> +${service.bufferAfter} min after</span>` : ''}
+                    <span><i data-lucide="bar-chart-3" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> Total: ${getTotalDuration(service)} min</span>
                 </div>
                 ${service.description ? `<p style="margin: 8px 0 0; color: #666; font-size: 13px;">${service.description}</p>` : ''}
             </div>
             <div class="service-actions">
-                <button class="btn btn-secondary btn-small" onclick="editService('${service.id}')">✏️ Edit</button>
-                <button class="btn btn-danger btn-small" onclick="deleteService('${service.id}')">🗑️</button>
+                <button class="btn btn-secondary btn-small" onclick="editService('${service.id}')"><i data-lucide="pencil" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> Edit</button>
+                <button class="btn btn-danger btn-small" onclick="deleteService('${service.id}')"><i data-lucide="trash-2" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i></button>
             </div>
         </div>
     `).join('');
@@ -1103,7 +1107,8 @@ async function loadBookingSettings() {
             document.getElementById('booking-link-url').value = data.bookingUrl;
             document.getElementById('booking-link-preview').href = data.bookingUrl;
             statusDiv.className = 'sync-status connected';
-            statusText.textContent = '✅ Booking link is active';
+            statusText.innerHTML = '<i data-lucide="check-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#28a745;"></i> Booking link is active';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             // Update header badge
             if (statusBadge) {
                 statusBadge.textContent = 'Active';
@@ -1262,8 +1267,9 @@ async function loadAppleCalendarStatus() {
         
         if (data.connected) {
             statusDiv.className = 'sync-status connected';
-            statusDiv.innerHTML = `<strong>✅ Connected to Apple Calendar</strong><br>
+            statusDiv.innerHTML = `<strong><i data-lucide="check-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#28a745;"></i> Connected to Apple Calendar</strong><br>
                 <small>Apple ID: ${data.appleId}</small>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             
             connectForm.style.display = 'none';
             syncOptions.style.display = 'block';
@@ -1364,8 +1370,9 @@ async function loadMicrosoftCalendarStatus() {
         const statusBadge = document.getElementById('microsoft-status-badge');
         
         if (data.connected) {
-            statusDiv.innerHTML = `<strong>✅ Connected to Microsoft Calendar</strong><br>
+            statusDiv.innerHTML = `<strong><i data-lucide="check-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#28a745;"></i> Connected to Microsoft Calendar</strong><br>
                 <small>Account: ${data.email || 'Microsoft Account'}</small>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             
             syncOptions.style.display = 'block';
             notConnected.style.display = 'none';
@@ -1518,7 +1525,7 @@ async function enableAppleCalendarSync() {
 
 async function syncAppleNow() {
     try {
-        showAlert('🔄 Syncing with Apple Calendar...', 'info');
+        showAlert('Syncing with Apple Calendar...', 'info');
         
         const response = await fetch('/api/apple-calendar/sync', {
             method: 'POST'
@@ -1531,7 +1538,7 @@ async function syncAppleNow() {
             return;
         }
         
-        let message = `✅ Sync complete! ${data.synced} items synchronized.`;
+        let message = `Sync complete! ${data.synced} items synchronized.`;
         if (data.errors && data.errors.length > 0) {
             message += ` (${data.errors.length} errors)`;
         }
@@ -1604,8 +1611,9 @@ async function loadSmtpSettings() {
         
         if (data.enabled && data.verified) {
             statusDiv.className = 'sync-status connected';
-            statusDiv.innerHTML = `<strong>✅ Own email configured</strong><br>
+            statusDiv.innerHTML = `<strong><i data-lucide="check-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#28a745;"></i> Own email configured</strong><br>
                 <small>Emails will be sent from: ${data.smtpUser}</small>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             
             // Select "own" radio
             document.querySelector('input[name="smtpChoice"][value="own"]').checked = true;
@@ -1621,8 +1629,9 @@ async function loadSmtpSettings() {
             statusDiv.className = 'sync-status';
             statusDiv.style.background = '#fff3cd';
             statusDiv.style.border = '1px solid #ffc107';
-            statusDiv.innerHTML = `<strong>⚠️ Not verified</strong><br>
+            statusDiv.innerHTML = `<strong><i data-lucide="alert-triangle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#ffc107;"></i> Not verified</strong><br>
                 <small>Test the connection to activate your settings</small>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             
             document.querySelector('input[name="smtpChoice"][value="own"]').checked = true;
             document.getElementById('own-smtp-config').style.display = 'block';
@@ -1632,8 +1641,9 @@ async function loadSmtpSettings() {
             updateSmtpProviderInstructions();
         } else {
             statusDiv.className = 'sync-status disconnected';
-            statusDiv.innerHTML = `<strong>📧 PianoPlanner email</strong><br>
+            statusDiv.innerHTML = `<strong><i data-lucide="mail" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> PianoPlanner email</strong><br>
                 <small>Emails are sent via info@pianoplanner.com with your name</small>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     } catch (error) {
         // Only log if it's not a network/auth error (those are expected if not on settings page)
@@ -1650,7 +1660,7 @@ function updateSmtpProviderInstructions() {
     
     if (config) {
         instructionsDiv.innerHTML = `
-            <strong>📱 Zo stel je ${config.name} in:</strong>
+            <strong><i data-lucide="smartphone" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> Zo stel je ${config.name} in:</strong>
             <ol style="margin: 12px 0 0 20px; color: #444;">
                 ${config.instructions.map(i => `<li>${i}</li>`).join('')}
             </ol>
@@ -1750,18 +1760,21 @@ async function testSmtpConnection() {
         if (data.success) {
             resultDiv.style.background = '#d4edda';
             resultDiv.style.border = '1px solid #28a745';
-            resultDiv.innerHTML = `✅ ${data.message}`;
+            resultDiv.innerHTML = `<i data-lucide="check-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#28a745;"></i> ${data.message}`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             showAlert('SMTP test successful! Check your inbox.', 'success');
             loadSmtpSettings();
         } else {
             resultDiv.style.background = '#f8d7da';
             resultDiv.style.border = '1px solid #dc3545';
-            resultDiv.innerHTML = `❌ ${data.error}${data.details ? '<br><small>' + data.details + '</small>' : ''}`;
+            resultDiv.innerHTML = `<i data-lucide="x-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#dc3545;"></i> ${data.error}${data.details ? '<br><small>' + data.details + '</small>' : ''}`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     } catch (error) {
         resultDiv.style.background = '#f8d7da';
         resultDiv.style.border = '1px solid #dc3545';
-        resultDiv.innerHTML = '❌ Error: ' + error.message;
+        resultDiv.innerHTML = '<i data-lucide="x-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#dc3545;"></i> Error: ' + error.message;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }
 
@@ -1802,9 +1815,9 @@ async function loadEmailTemplates() {
         
         // Template labels in Dutch
         const templateLabels = {
-            'appointment_confirmation': { name: 'Afspraak Bevestiging', icon: '✅', desc: 'Email naar klant na het maken van een afspraak' },
-            'booking_notification': { name: 'Nieuwe Boeking Melding', icon: '📥', desc: 'Email naar jou wanneer iemand online boekt' },
-            'appointment_reminder': { name: 'Herinnering', icon: '⏰', desc: 'Email naar klant als herinnering voor afspraak' }
+            'appointment_confirmation': { name: 'Afspraak Bevestiging', icon: 'check-circle', desc: 'Email naar klant na het maken van een afspraak' },
+            'booking_notification': { name: 'Nieuwe Boeking Melding', icon: 'download', desc: 'Email naar jou wanneer iemand online boekt' },
+            'appointment_reminder': { name: 'Herinnering', icon: 'clock', desc: 'Email naar klant als herinnering voor afspraak' }
         };
         
         let html = '<div class="template-list" style="display: flex; flex-direction: column; gap: 12px;">';
@@ -1812,14 +1825,14 @@ async function loadEmailTemplates() {
         templates.forEach(template => {
             // API returns 'type' not 'template_type'
             const templateType = template.type || template.template_type;
-            const info = templateLabels[templateType] || { name: templateType, icon: '📧', desc: '' };
+            const info = templateLabels[templateType] || { name: templateType, icon: 'mail', desc: '' };
             const isCustom = template.is_custom;
             
             html += `
                 <div class="template-item" style="background: white; border: 1px solid #e5e5e5; border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 20px;">${info.icon}</span>
+                            <i data-lucide="${info.icon}" style="width:20px;height:20px;"></i>
                             <strong>${info.name}</strong>
                             ${isCustom ? '<span style="background: #d4edda; color: #155724; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Aangepast</span>' : '<span style="background: #e9ecef; color: #6c757d; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Standaard</span>'}
                             ${template.is_active === 0 ? '<span style="background: #f8d7da; color: #721c24; padding: 2px 8px; border-radius: 12px; font-size: 11px;">Uitgeschakeld</span>' : ''}
@@ -1828,7 +1841,7 @@ async function loadEmailTemplates() {
                         <div style="color: #999; font-size: 12px; margin-top: 4px;">Onderwerp: ${template.subject}</div>
                     </div>
                     <button class="btn btn-secondary" onclick="editTemplate('${templateType}')" style="white-space: nowrap;">
-                        ✏️ Bewerken
+                        <i data-lucide="pencil" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> Bewerken
                     </button>
                 </div>
             `;
@@ -1839,7 +1852,8 @@ async function loadEmailTemplates() {
         
     } catch (error) {
         console.error('Error loading templates:', error);
-        container.innerHTML = '<div style="color: #dc3545; padding: 20px; text-align: center;">❌ Kon templates niet laden</div>';
+        container.innerHTML = '<div style="color: #dc3545; padding: 20px; text-align: center;"><i data-lucide="x-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> Kon templates niet laden</div>';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }
 
@@ -1921,7 +1935,8 @@ async function refreshTemplatePreview() {
         
     } catch (error) {
         console.error('Preview error:', error);
-        document.getElementById('template-preview').innerHTML = '<span style="color: #dc3545;">❌ Preview kon niet worden geladen</span>';
+        document.getElementById('template-preview').innerHTML = '<span style="color: #dc3545;"><i data-lucide="x-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> Preview kon niet worden geladen</span>';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }
 
@@ -2034,7 +2049,8 @@ function updateCalendarFeedUI(data) {
     if (data.enabled && data.feedUrl) {
         // Feed is active
         if (statusEl) statusEl.className = 'sync-status connected';
-        if (statusText) statusText.textContent = '✅ Feed is active';
+        if (statusText) statusText.innerHTML = '<i data-lucide="check-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;color:#28a745;"></i> Feed is active';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
         if (urlDisplay) urlDisplay.style.display = 'block';
         if (urlInput) urlInput.value = data.feedUrl;
         if (instructions) instructions.style.display = 'block';
@@ -2187,7 +2203,8 @@ async function regenerateCalendarFeed() {
     } finally {
         const btn = document.getElementById('feed-regenerate-btn');
         btn.disabled = false;
-        btn.textContent = '🔄 New Link';
+        btn.innerHTML = '<i data-lucide="refresh-cw" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> New Link';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 }
 
@@ -2199,7 +2216,8 @@ function copyFeedUrl() {
     // Visual feedback
     const btn = event.target.closest('button');
     const originalText = btn.innerHTML;
-    btn.innerHTML = '✅ Copied!';
+    btn.innerHTML = '<i data-lucide="check" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> Copied!';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
     setTimeout(() => {
         btn.innerHTML = originalText;
     }, 2000);

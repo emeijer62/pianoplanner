@@ -1305,7 +1305,7 @@ function onCustomerChange() {
             customerPianos.forEach((p, index) => {
                 const pianoName = `${p.brand || ''} ${p.model || ''}`.trim() || 'Piano';
                 const pianoDetails = [
-                    p.type === 'grand' ? '🎹 Grand Piano' : (p.type === 'upright' ? '🎹 Piano' : ''),
+                    p.type === 'grand' ? 'Grand Piano' : (p.type === 'upright' ? 'Piano' : ''),
                     p.serialNumber ? `SN: ${p.serialNumber}` : ''
                 ].filter(Boolean).join(' • ');
                 
@@ -1452,7 +1452,7 @@ async function findSmartSlot() {
     
     // Show loading
     resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `<div style="text-align: center; padding: 10px; color: var(--gray-500);">🔍 Searching for available times${pianoCount > 1 ? ` (${pianoCount} pianos, ${durationResult.total} min)` : ''}...</div>`;
+    resultDiv.innerHTML = `<div style="text-align: center; padding: 10px; color: var(--gray-500);"><i data-lucide="search" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> Searching for available times${pianoCount > 1 ? ` (${pianoCount} pianos, ${durationResult.total} min)` : ''}...</div>`;
     btn.disabled = true;
     
     try {
@@ -1499,7 +1499,7 @@ async function findSmartSlot() {
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <div style="font-weight: 600; color: ${isFirstChoice ? 'var(--success-color, #22c55e)' : '#333'};">
-                                    ${isFirstChoice ? '⭐ ' : ''}${startTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
+                                    ${isFirstChoice ? '<i data-lucide="star" style="width:14px;height:14px;display:inline-block;vertical-align:middle;color:#f59e0b;"></i> ' : ''}${startTime.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
                                 </div>
                                 <div style="font-size: 14px; color: #666;">
                                     ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })} - 
@@ -1513,14 +1513,14 @@ async function findSmartSlot() {
             }).join('');
             
             // Build info text with piano count
-            const pianoInfo = data.pianoCount > 1 ? `🎹 ${data.pianoCount} pianos • ` : '';
+            const pianoInfo = data.pianoCount > 1 ? `<i data-lucide="piano" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> ${data.pianoCount} pianos • ` : '';
             
             resultDiv.innerHTML = `
                 <div style="padding: 8px 0;">
                     <div style="font-weight: 600; margin-bottom: 10px; color: #333;">
                         ✓ ${data.slots.length} ${data.slots.length === 1 ? 'option' : 'options'} found
                         <span style="font-weight: normal; font-size: 12px; color: #666; margin-left: 8px;">
-                            ${pianoInfo}🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min
+                            ${pianoInfo}<i data-lucide="car" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> ${data.travelInfo?.durationText || 'N/A'} travel • <i data-lucide="clock" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> ${data.service?.duration || '?'} min
                         </span>
                     </div>
                     ${slotsHtml}
@@ -1533,7 +1533,7 @@ async function findSmartSlot() {
             // Fallback: enkele slot (oude formaat)
             const startTime = new Date(data.slot.appointmentStart);
             const endTime = new Date(data.slot.appointmentEnd);
-            const pianoInfo = data.pianoCount > 1 ? `🎹 ${data.pianoCount} pianos • ` : '';
+            const pianoInfo = data.pianoCount > 1 ? `<i data-lucide="piano" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> ${data.pianoCount} pianos • ` : '';
             
             resultDiv.innerHTML = `
                 <div style="background: var(--success-bg, #dcfce7); border: 1px solid var(--success-color, #22c55e); border-radius: 8px; padding: 12px;">
@@ -1543,7 +1543,7 @@ async function findSmartSlot() {
                         ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })}
                     </div>
                     <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 10px;">
-                        ${pianoInfo}🚗 ${data.travelInfo?.durationText || 'N/A'} travel • ⏱️ ${data.service?.duration || '?'} min service
+                        ${pianoInfo}<i data-lucide="car" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> ${data.travelInfo?.durationText || 'N/A'} travel • <i data-lucide="clock" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> ${data.service?.duration || '?'} min service
                     </div>
                     <button type="button" class="btn btn-primary" onclick="applySmartSlot('${data.slot.appointmentStart}', '${data.slot.appointmentEnd}')" style="width: 100%;">
                         Use this time
@@ -1563,7 +1563,7 @@ async function findSmartSlot() {
             
             resultDiv.innerHTML = `
                 <div style="background: var(--warning-bg, #fef3c7); border: 1px solid var(--warning-color, #f59e0b); border-radius: 8px; padding: 12px; text-align: center;">
-                    <div style="color: var(--warning-color, #f59e0b);">❌ ${errorMessage}</div>
+                    <div style="color: var(--warning-color, #f59e0b);"><i data-lucide="x-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> ${errorMessage}</div>
                     <div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">${window.i18n?.t('booking.tryDifferentDate') || 'Try another date'}</div>
                 </div>
             `;

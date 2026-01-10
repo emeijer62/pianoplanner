@@ -140,7 +140,7 @@ function renderCustomers(customers) {
                 <div class="list-item-subtitle">
                     ${address.city || 'No city'} 
                     ${customer.phone ? '• ' + customer.phone : ''} 
-                    ${customer.pianos?.length ? '• 🎹 ' + customer.pianos.length : ''}
+                    ${customer.pianos?.length ? '• <i data-lucide="piano" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> ' + customer.pianos.length : ''}
                 </div>
             </div>
             <div class="list-item-meta" onclick="event.stopPropagation();">
@@ -375,7 +375,7 @@ function openDuplicatesModal() {
         container.innerHTML = duplicatesData.map((dup, index) => `
             <div class="duplicate-group" style="background: var(--gray-50); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <strong>${dup.matchType === 'email' ? '📧 ' + escapeHtml(dup.email) : '👤 ' + escapeHtml(dup.name)}</strong>
+                    <strong>${dup.matchType === 'email' ? '<i data-lucide="mail" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> ' + escapeHtml(dup.email) : '<i data-lucide="user" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> ' + escapeHtml(dup.name)}</strong>
                     <span style="background: var(--gray-200); padding: 4px 12px; border-radius: 20px; font-size: 12px;">${dup.count} duplicates</span>
                 </div>
                 <div class="duplicate-customers" style="display: flex; flex-direction: column; gap: 8px;">
@@ -389,7 +389,7 @@ function openDuplicatesModal() {
                                         ${c.phone || 'No phone'} • ${c.address?.city || 'No city'}
                                     </div>
                                     <div style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">
-                                        📅 ${c.appointmentCount} appointments • 🎹 ${c.pianoCount} pianos
+                                        <i data-lucide="calendar" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i> ${c.appointmentCount} appointments • <i data-lucide="piano" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i> ${c.pianoCount} pianos
                                         • Created: ${new Date(c.createdAt).toLocaleDateString('nl-NL')}
                                     </div>
                                 </div>

@@ -397,13 +397,14 @@ async function sendAppointmentConfirmation({ customerEmail, customerName, appoin
                     .detail-label { color: #86868b; font-size: 14px; }
                     .detail-value { font-weight: 500; color: #1d1d1f; }
                     .footer { text-align: center; padding: 20px; color: #86868b; font-size: 12px; }
-                    .icon { font-size: 48px; margin-bottom: 16px; }
+                    .icon { margin-bottom: 16px; }
+                    .icon svg { width: 48px; height: 48px; stroke: #d4af37; stroke-width: 1.5; fill: none; }
                 </style>
             </head>
             <body>
                 <div class="container">
                     <div class="header">
-                        <div class="icon">🎹</div>
+                        <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.5 8c-1.4 0-2.6-.8-3.2-2A3.5 3.5 0 0 0 8.5 8H3v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8h-2.5z"/><path d="M3 8V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2"/><path d="M7 22v-5"/><path d="M10 22v-5"/><path d="M14 22v-5"/><path d="M17 22v-5"/></svg></div>
                         <h1>Afspraak Bevestigd</h1>
                     </div>
                     <div class="content">
@@ -601,13 +602,14 @@ async function sendAppointmentCancellation({ customerEmail, customerName, appoin
                 .detail-label { color: #86868b; font-size: 14px; }
                 .detail-value { font-weight: 500; color: #1d1d1f; text-decoration: line-through; color: #86868b; }
                 .footer { text-align: center; padding: 20px; color: #86868b; font-size: 12px; }
-                .icon { font-size: 48px; margin-bottom: 16px; }
+                .icon { margin-bottom: 16px; }
+                .icon svg { width: 48px; height: 48px; stroke: white; stroke-width: 1.5; fill: none; }
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
-                    <div class="icon">❌</div>
+                    <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></div>
                     <h1>Appointment Cancelled</h1>
                 </div>
                 <div class="content">
@@ -681,13 +683,14 @@ async function sendNewBookingNotification({ technicianEmail, customerName, custo
                 .detail-value { font-weight: 500; color: #1d1d1f; }
                 .new-badge { background: #34c759; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; margin-bottom: 16px; }
                 .footer { text-align: center; padding: 20px; color: #86868b; font-size: 12px; }
-                .icon { font-size: 48px; margin-bottom: 16px; }
+                .icon { margin-bottom: 16px; }
+                .icon svg { width: 48px; height: 48px; stroke: white; stroke-width: 1.5; fill: none; }
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
-                    <div class="icon">📅</div>
+                    <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg></div>
                     <h1>New Booking</h1>
                 </div>
                 <div class="content">
@@ -741,7 +744,7 @@ async function sendNewBookingNotification({ technicianEmail, customerName, custo
 
     return sendEmail({
         to: technicianEmail,
-        subject: `🎹 New Booking: ${customerName} - ${formattedDate}`,
+        subject: `New Booking: ${customerName} - ${formattedDate}`,
         html
     });
 }
@@ -762,13 +765,14 @@ async function sendTestEmail(to) {
                 .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
                 .content { background: #f5f5f7; padding: 30px; border-radius: 0 0 12px 12px; }
                 .success-badge { background: #34c759; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; display: inline-block; }
-                .icon { font-size: 48px; margin-bottom: 16px; }
+                .icon { margin-bottom: 16px; }
+                .icon svg { width: 48px; height: 48px; stroke: #d4af37; stroke-width: 1.5; fill: none; }
             </style>
         </head>
         <body>
             <div class="container">
                 <div class="header">
-                    <div class="icon">🎹</div>
+                    <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.5 8c-1.4 0-2.6-.8-3.2-2A3.5 3.5 0 0 0 8.5 8H3v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8h-2.5z"/><path d="M3 8V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2"/><path d="M7 22v-5"/><path d="M10 22v-5"/><path d="M14 22v-5"/><path d="M17 22v-5"/></svg></div>
                     <h1>PianoPlanner</h1>
                 </div>
                 <div class="content">
@@ -790,7 +794,7 @@ async function sendTestEmail(to) {
 
     return sendEmail({
         to,
-        subject: '✓ PianoPlanner Email Test Successful',
+        subject: 'PianoPlanner Email Test Successful',
         html
     });
 }
@@ -831,7 +835,7 @@ async function sendApprovalEmail(user) {
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🎹 PianoPlanner</h1>
+                    <h1 style="display: flex; align-items: center; justify-content: center; gap: 10px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 32px; height: 32px; stroke: #d4af37; stroke-width: 1.5; fill: none;"><path d="M18.5 8c-1.4 0-2.6-.8-3.2-2A3.5 3.5 0 0 0 8.5 8H3v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8h-2.5z"/><path d="M3 8V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2"/><path d="M7 22v-5"/><path d="M10 22v-5"/><path d="M14 22v-5"/><path d="M17 22v-5"/></svg> PianoPlanner</h1>
                 </div>
                 <div class="content">
                     <span class="success-badge">✓ Account Approved</span>
@@ -865,7 +869,7 @@ async function sendApprovalEmail(user) {
     try {
         const result = await sendEmail({
             to: user.email,
-            subject: '✓ Your PianoPlanner account has been approved!',
+            subject: 'Your PianoPlanner account has been approved!',
             html,
             skipBcc: true // Don't BCC admin for system emails
         });

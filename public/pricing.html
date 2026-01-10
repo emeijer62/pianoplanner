@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pricing - PianoPlanner</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -311,7 +312,7 @@
 <body>
     <header class="header">
         <div class="header-content">
-            <a href="/" class="logo">🎹 PianoPlanner</a>
+            <a href="/" class="logo"><i data-lucide="piano" style="width:24px;height:24px;display:inline-block;vertical-align:middle;"></i> PianoPlanner</a>
             <nav class="nav-links">
                 <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
                 <a href="/pricing.html" class="nav-link active" data-i18n="nav.pricing">Pricing</a>
@@ -682,6 +683,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             applyTranslations();
             checkAuth();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
     </script>
 </body>

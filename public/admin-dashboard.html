@@ -720,7 +720,7 @@
         </div>
         <div class="nav-user">
             <span id="impersonate-banner" style="display: none; background: #f59e0b; color: white; padding: 0.25rem 0.75rem; border-radius: var(--radius-sm); margin-right: 1rem; font-size: 0.8rem;">
-                👤 Impersonating user
+                <i data-lucide="user" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> Impersonating user
                 <button onclick="stopImpersonate()" style="background: #fff; color: #f59e0b; border: none; padding: 0.125rem 0.5rem; border-radius: 3px; margin-left: 0.5rem; cursor: pointer; font-size: 0.75rem;">Stop</button>
             </span>
             <span id="admin-username">Admin</span>
@@ -1462,10 +1462,10 @@
                                 <button class="btn-approve btn-small" onclick="approveUser('${user.id}')">Approve</button>
                                 <button class="btn-reject btn-small" onclick="showRejectModal('${user.id}')">Reject</button>
                             ` : `
-                                <button class="action-btn impersonate" onclick="impersonateUser('${user.id}')" title="Login as user">👤</button>
+                                <button class="action-btn impersonate" onclick="impersonateUser('${user.id}')" title="Login as user"><i data-lucide="user" style="width:14px;height:14px;"></i></button>
                                 <button class="btn btn-small btn-secondary" onclick="showEditModal('${user.id}')">Edit</button>
                                 <button class="btn btn-small btn-secondary" onclick="showPlanModal('${user.id}')">Plan</button>
-                                <button class="action-btn delete" onclick="deleteUser('${user.id}')" title="Delete user">🗑️</button>
+                                <button class="action-btn delete" onclick="deleteUser('${user.id}')" title="Delete user"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
                             `}
                         </td>
                     </tr>
@@ -2215,7 +2215,7 @@
                         <div class="announcement-header">
                             <span class="announcement-title">${escapeHtml(ann.title)}</span>
                             <span class="announcement-meta">
-                                ${ann.show_banner ? '🔔 Banner' : ''} 
+                                ${ann.show_banner ? '<i data-lucide="bell" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i> Banner' : ''} 
                                 ${ann.expires_at ? `Expires: ${formatDate(ann.expires_at)}` : 'No expiry'}
                             </span>
                         </div>
