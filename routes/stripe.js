@@ -79,11 +79,17 @@ router.post('/create-checkout-session', requireAuth, requireStripe, async (req, 
         // Bepaal success/cancel URLs
         const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
 
-        // Maak checkout session
+        // Maak checkout session met automatische BTW
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
             payment_method_types: ['card', 'ideal', 'bancontact'],
             mode: 'subscription',
+            // Automatische BTW berekening op basis van locatie
+            automatic_tax: { enabled: true },
+            // Laat zakelijke klanten hun BTW-nummer invoeren voor reverse charge
+            tax_id_collection: { enabled: true },
+            // Vraag altijd om facturatieadres (nodig voor BTW berekening)
+            billing_address_collection: 'required',
             line_items: [{
                 price_data: {
                     currency: PRICES.monthly.currency,
