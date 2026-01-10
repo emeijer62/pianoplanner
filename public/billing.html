@@ -442,7 +442,7 @@
                         <span class="plan-value">PianoPlanner Go (trial)</span>
                     </div>
                     <div class="plan-info">
-                        <span class="plan-label">Price after trial</span>
+                        <span class="plan-label">Price</span>
                         <span class="plan-value">€25/month + applicable taxes <span style="color: #888; font-size: 0.85em;">(intro price)</span></span>
                     </div>
                     <div class="trial-progress">
@@ -452,6 +452,9 @@
                         <div class="trial-progress-text">
                             ${daysLeft} days left in your trial
                         </div>
+                    </div>
+                    <div style="margin-top: 16px; padding: 12px; background: #e8f5e9; border-radius: 8px; font-size: 14px; color: #2e7d32;">
+                        <strong>💡 Like PianoPlanner?</strong> You can upgrade anytime – no need to wait for your trial to end!
                     </div>
                 `;
             } else if (sub.status === 'active') {
@@ -496,9 +499,10 @@
             let buttonsHTML = '';
 
             if (sub.status === 'trial' || sub.status === 'trialing' || sub.status === 'trial_expired' || sub.status === 'canceled' || sub.status === 'none' || !sub.status) {
+                const isTrialing = sub.status === 'trial' || sub.status === 'trialing';
                 buttonsHTML = `
                     <button class="btn btn-primary" onclick="startSubscription()">
-                        Start subscription
+                        ${isTrialing ? 'Upgrade to Go now' : 'Start subscription'}
                     </button>
                 `;
             } else if (sub.status === 'active') {
