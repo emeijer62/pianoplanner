@@ -370,7 +370,32 @@
         }
 
         // Load subscription status
+        let companySettings = null;
+        
+        async function loadCompanySettings() {
+            try {
+                const response = await fetch('/api/settings/company');
+                if (response.ok) {
+                    companySettings = await response.json();
+                }
+            } catch (error) {
+                console.error('Failed to load company settings:', error);
+            }
+        }
+        
+        function hasCompleteAddress() {
+            if (!companySettings) return false;
+            // Check if essential billing fields are filled
+            return companySettings.address && 
+                   companySettings.city && 
+                   companySettings.postalCode && 
+                   companySettings.country;
+        }
+        
         async function loadSubscription() {
+            // Load company settings first
+            await loadCompanySettings();
+            
             try {
                 const response = await fetch('/api/user');
                 const data = await response.json();
@@ -500,11 +525,28 @@
 
             if (sub.status === 'trial' || sub.status === 'trialing' || sub.status === 'trial_expired' || sub.status === 'canceled' || sub.status === 'none' || !sub.status) {
                 const isTrialing = sub.status === 'trial' || sub.status === 'trialing';
-                buttonsHTML = `
-                    <button class="btn btn-primary" onclick="startSubscription()">
-                        ${isTrialing ? 'Upgrade to Go now' : 'Start subscription'}
-                    </button>
-                `;
+                
+                // Check if company address is complete
+                if (!hasCompleteAddress()) {
+                    buttonsHTML = `
+                        <div class="address-warning" style="margin-bottom: 16px; padding: 12px 16px; background: #fff3e0; border: 1px solid #ffcc80; border-radius: 8px; font-size: 14px; color: #e65100;">
+                            <strong>⚠️ Complete your company details first</strong><br>
+                            <span style="color: #795548;">Please add your billing address in Settings before upgrading. This is required for tax calculation.</span>
+                        </div>
+                        <a href="/settings.html#company" class="btn btn-secondary" style="margin-right: 8px;">
+                            Go to Settings
+                        </a>
+                        <button class="btn btn-primary" disabled style="opacity: 0.5; cursor: not-allowed;">
+                            ${isTrialing ? 'Upgrade to Go now' : 'Start subscription'}
+                        </button>
+                    `;
+                } else {
+                    buttonsHTML = `
+                        <button class="btn btn-primary" onclick="startSubscription()">
+                            ${isTrialing ? 'Upgrade to Go now' : 'Start subscription'}
+                        </button>
+                    `;
+                }
             } else if (sub.status === 'active') {
                 buttonsHTML = `
                     <button class="btn btn-secondary" onclick="manageSubscription()">
