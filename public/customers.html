@@ -14,6 +14,99 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="/js/i18n.js"></script>
     <script src="icons.js?v=20260109" defer></script>
+    <style>
+        /* Desktop Compact Layout */
+        @media (min-width: 769px) {
+            .page {
+                max-width: 1000px;
+                padding: 20px 24px;
+            }
+            
+            .page-header {
+                margin-bottom: 16px;
+            }
+            
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .page-subtitle {
+                font-size: 14px;
+                margin-top: 4px;
+            }
+            
+            /* Compact search */
+            .card:has(#search-input) {
+                padding: 10px 16px !important;
+                margin-bottom: 16px !important;
+            }
+            
+            #search-input {
+                font-size: 14px !important;
+            }
+            
+            /* Compact stats */
+            .stat-grid {
+                margin-bottom: 16px !important;
+                gap: 12px;
+            }
+            
+            .stat-card {
+                padding: 14px 16px;
+                border-radius: 10px;
+            }
+            
+            .stat-label {
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            
+            .stat-value {
+                font-size: 22px;
+            }
+            
+            /* Compact list items */
+            .list {
+                border-radius: 12px;
+            }
+            
+            .list-item {
+                padding: 10px 16px;
+                gap: 12px;
+            }
+            
+            .list-item-icon {
+                width: 36px;
+                height: 36px;
+                border-radius: 8px;
+            }
+            
+            .list-item-icon svg,
+            .list-item-icon i {
+                width: 18px;
+                height: 18px;
+            }
+            
+            .list-item-title {
+                font-size: 14px;
+            }
+            
+            .list-item-subtitle {
+                font-size: 12px;
+            }
+            
+            .list-item-meta .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+                height: auto;
+            }
+            
+            .list-item-meta .btn-small {
+                padding: 5px 10px;
+                font-size: 11px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->

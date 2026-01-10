@@ -15,19 +15,19 @@
     <script src="icons.js?v=20260109" defer></script>
     <style>
         .customer-detail-container {
-            max-width: 1200px;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 20px 24px;
         }
 
         .back-link {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             color: var(--text-secondary);
             text-decoration: none;
-            margin-bottom: 16px;
-            font-size: 0.9rem;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
         }
 
         .back-link:hover {
@@ -36,9 +36,9 @@
 
         .customer-header {
             background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
             border: 1px solid var(--border-color);
         }
 
@@ -46,46 +46,46 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .customer-name {
-            font-size: 1.75rem;
+            font-size: 1.375rem;
             font-weight: 600;
-            margin: 0 0 4px 0;
+            margin: 0 0 2px 0;
         }
 
         .customer-since {
             color: var(--text-muted);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .customer-actions {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         .customer-info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
         }
 
         .info-item {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 2px;
         }
 
         .info-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .info-value {
-            font-size: 0.95rem;
+            font-size: 0.875rem;
             color: var(--text-primary);
         }
 
@@ -100,20 +100,20 @@
 
         /* Tabs */
         .tabs-container {
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
 
         .tabs {
             display: flex;
-            gap: 4px;
+            gap: 2px;
             border-bottom: 2px solid var(--border-color);
         }
 
         .tab {
-            padding: 12px 20px;
+            padding: 10px 16px;
             background: none;
             border: none;
-            font-size: 0.95rem;
+            font-size: 0.875rem;
             font-weight: 500;
             color: var(--text-secondary);
             cursor: pointer;
@@ -134,8 +134,8 @@
         .tab-content {
             display: none;
             background: white;
-            border-radius: 12px;
-            padding: 24px;
+            border-radius: 10px;
+            padding: 16px 20px;
             border: 1px solid var(--border-color);
         }
 
@@ -148,25 +148,25 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
 
         .section-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             margin: 0;
         }
 
         .pianos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
         }
 
         .piano-card {
             background: var(--light-gray);
-            border-radius: 10px;
-            padding: 16px;
+            border-radius: 8px;
+            padding: 12px 14px;
             cursor: pointer;
             transition: all 0.2s;
             border: 2px solid transparent;
@@ -180,20 +180,20 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .piano-brand-model {
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
 
         .piano-type-badge {
             background: var(--accent);
             color: white;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 8px;
+            font-size: 0.65rem;
             font-weight: 500;
             text-transform: uppercase;
         }
@@ -202,18 +202,18 @@
         .piano-type-badge.digital { background: #7b1fa2; }
 
         .piano-info {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .piano-service-status {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 12px;
+            padding-top: 8px;
             border-top: 1px solid var(--border-color);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .service-ok { color: #2e7d32; }
@@ -222,30 +222,30 @@
 
         /* Service Historie */
         .service-history {
-            margin-top: 16px;
+            margin-top: 12px;
         }
 
         .service-item {
             display: flex;
-            gap: 16px;
-            padding: 16px;
+            gap: 12px;
+            padding: 12px 14px;
             background: var(--light-gray);
             border-radius: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .service-date {
-            min-width: 100px;
+            min-width: 80px;
         }
 
         .service-date-day {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 600;
             line-height: 1;
         }
 
         .service-date-month {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
         }
 
@@ -255,34 +255,35 @@
 
         .service-type {
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
+            font-size: 0.9rem;
         }
 
         .service-notes {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
         }
 
         .service-pitch {
             background: white;
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
-            margin-top: 8px;
+            margin-top: 6px;
             display: inline-block;
         }
 
         /* Empty state */
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 16px;
             color: var(--text-muted);
         }
 
         .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 12px;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
         }
 
         /* Modal */
@@ -306,16 +307,16 @@
 
         .modal {
             background: white;
-            border-radius: 12px;
-            width: 70%;
-            max-width: 800px;
+            border-radius: 10px;
+            width: 65%;
+            max-width: 700px;
             max-height: calc(100vh - 40px);
             display: flex;
             flex-direction: column;
         }
 
         .modal-header {
-            padding: 20px 24px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;

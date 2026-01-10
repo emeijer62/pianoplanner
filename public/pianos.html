@@ -16,38 +16,38 @@
     <script src="icons.js?v=20260109" defer></script>
     <style>
         .pianos-container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            padding: 32px 24px;
+            padding: 20px 24px;
         }
 
         .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 32px;
+            margin-bottom: 16px;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 12px;
         }
 
         .page-header h1 {
             margin: 0;
-            font-size: 34px;
+            font-size: 24px;
             font-weight: 700;
         }
 
         .header-actions {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: center;
         }
 
         .search-box input {
-            padding: 12px 16px;
+            padding: 8px 14px;
             border: 1px solid var(--gray-300);
             border-radius: var(--radius-md);
-            font-size: 15px;
-            width: 280px;
+            font-size: 14px;
+            width: 240px;
             font-family: var(--font-family);
         }
         
@@ -60,19 +60,19 @@
         /* Stats */
         .stats-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
         .stat-badge {
             background: var(--white);
             border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: 20px 24px;
+            border-radius: 10px;
+            padding: 14px 16px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
             transition: all var(--transition-fast);
         }
         
@@ -82,7 +82,7 @@
         }
         
         .stat-badge .label {
-            font-size: 13px;
+            font-size: 11px;
             color: var(--gray-500);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -90,7 +90,7 @@
         }
 
         .stat-badge .number {
-            font-size: 32px;
+            font-size: 22px;
             font-weight: 700;
             color: var(--gray-900);
         }
@@ -107,14 +107,14 @@
         /* Piano Grid */
         .pianos-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
         }
 
         /* Piano Table */
         .pianos-table-container {
             background: var(--white);
-            border-radius: var(--radius-lg);
+            border-radius: 10px;
             border: 1px solid var(--gray-200);
             overflow: hidden;
         }
@@ -126,10 +126,10 @@
 
         .pianos-table th {
             background: var(--gray-50);
-            padding: 14px 16px;
+            padding: 10px 14px;
             text-align: left;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 11px;
             color: var(--gray-600);
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -137,9 +137,10 @@
         }
 
         .pianos-table td {
-            padding: 16px;
+            padding: 10px 14px;
             border-bottom: 1px solid var(--gray-100);
             vertical-align: middle;
+            font-size: 13px;
         }
 
         .pianos-table tr:last-child td {
@@ -157,14 +158,14 @@
 
         .piano-model-cell {
             color: var(--gray-500);
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .piano-type-badge {
             display: inline-block;
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: var(--radius-full);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
         }
 
