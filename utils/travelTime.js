@@ -347,6 +347,18 @@ const estimateTravelTime = (origin, destination) => {
  * @param {number} bufferBefore - Buffer voor afspraak in minuten (bijv. opzetten)
  * @param {number} bufferAfter - Buffer na afspraak in minuten (bijv. opruimen)
  */
+// Round time to nearest 15-minute interval (forward)
+const roundToQuarter = (date) => {
+    const d = new Date(date);
+    const minutes = d.getMinutes();
+    const remainder = minutes % 15;
+    if (remainder > 0) {
+        d.setMinutes(minutes + (15 - remainder));
+    }
+    d.setSeconds(0, 0);
+    return d;
+};
+
 const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, date, workHours = { start: '09:00', end: '18:00' }, bufferBefore = 0, bufferAfter = 0) => {
     const dayStart = new Date(date);
     const [startHour, startMin] = workHours.start.split(':').map(Number);
@@ -377,9 +389,13 @@ const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, dat
         
         if (availableMinutes >= totalNeeded) {
             // Er is ruimte! Bereken tijden met buffers
-            const travelStart = new Date(currentTime);
-            const bufferBeforeStart = new Date(travelStart.getTime() + travelTime * 60 * 1000);
-            const appointmentStart = new Date(bufferBeforeStart.getTime() + bufferBefore * 60 * 1000);
+            // Round appointment start to nearest quarter hour for professional appearance
+            const rawAppointmentStart = new Date(currentTime.getTime() + (travelTime + bufferBefore) * 60 * 1000);
+            const appointmentStart = roundToQuarter(rawAppointmentStart);
+            
+            // Recalculate other times based on rounded appointment start
+            const bufferBeforeStart = new Date(appointmentStart.getTime() - bufferBefore * 60 * 1000);
+            const travelStart = new Date(bufferBeforeStart.getTime() - travelTime * 60 * 1000);
             const appointmentEnd = new Date(appointmentStart.getTime() + serviceDuration * 60 * 1000);
             const slotEnd = new Date(appointmentEnd.getTime() + bufferAfter * 60 * 1000);
             
@@ -405,9 +421,13 @@ const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, dat
     const remainingMinutes = (dayEnd - currentTime) / (1000 * 60);
     
     if (remainingMinutes >= totalNeeded) {
-        const travelStart = new Date(currentTime);
-        const bufferBeforeStart = new Date(travelStart.getTime() + travelTime * 60 * 1000);
-        const appointmentStart = new Date(bufferBeforeStart.getTime() + bufferBefore * 60 * 1000);
+        // Round appointment start to nearest quarter hour for professional appearance
+        const rawAppointmentStart = new Date(currentTime.getTime() + (travelTime + bufferBefore) * 60 * 1000);
+        const appointmentStart = roundToQuarter(rawAppointmentStart);
+        
+        // Recalculate other times based on rounded appointment start
+        const bufferBeforeStart = new Date(appointmentStart.getTime() - bufferBefore * 60 * 1000);
+        const travelStart = new Date(bufferBeforeStart.getTime() - travelTime * 60 * 1000);
         const appointmentEnd = new Date(appointmentStart.getTime() + serviceDuration * 60 * 1000);
         const slotEnd = new Date(appointmentEnd.getTime() + bufferAfter * 60 * 1000);
         

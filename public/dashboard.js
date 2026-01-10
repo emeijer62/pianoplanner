@@ -1588,9 +1588,19 @@ function openModal() {
     // Load customers, pianos, services
     loadModalData();
     
-    // Set default start time based on current view
+    // Set default start time based on current view - rounded to next quarter hour
     const startDate = new Date(currentDate);
-    startDate.setHours(new Date().getHours() + 1, 0, 0, 0);
+    const nextHour = new Date().getHours() + 1;
+    const currentMinutes = new Date().getMinutes();
+    const roundedMinutes = Math.ceil(currentMinutes / 15) * 15;
+    if (roundedMinutes === 60) {
+        startDate.setHours(nextHour, 0, 0, 0);
+    } else {
+        startDate.setHours(new Date().getHours(), roundedMinutes, 0, 0);
+        if (startDate <= new Date()) {
+            startDate.setMinutes(startDate.getMinutes() + 15);
+        }
+    }
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
     
     document.getElementById('event-start').value = formatDateTimeLocal(startDate);
@@ -1612,14 +1622,18 @@ function openModalWithTime(element) {
     
     const dateStr = element.dataset.date;
     const hour = parseInt(element.dataset.hour);
+    const minute = parseInt(element.dataset.minute || '0');
     
     document.getElementById('event-modal').style.display = 'flex';
     
     // Load customers, pianos, services
     loadModalData();
     
-    // Create start date from clicked slot
-    const startDate = new Date(dateStr + 'T' + hour.toString().padStart(2, '0') + ':00:00');
+    // Create start date from clicked slot - round to nearest quarter if needed
+    const startDate = new Date(dateStr + 'T' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0') + ':00');
+    // Round to nearest 15 minutes
+    const roundedMinutes = Math.round(startDate.getMinutes() / 15) * 15;
+    startDate.setMinutes(roundedMinutes, 0, 0);
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
     
     document.getElementById('event-start').value = formatDateTimeLocal(startDate);

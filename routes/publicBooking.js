@@ -896,8 +896,8 @@ function generateTimeSlots(date, startHour, endHour, duration, bufferBefore, buf
             });
         }
         
-        // Volgende slot (30 min intervals)
-        currentMinutes += 30;
+        // Volgende slot (15 min intervals for professional appearance)
+        currentMinutes += 15;
     }
     
     return slots;
