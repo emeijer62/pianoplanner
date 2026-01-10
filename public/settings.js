@@ -44,6 +44,49 @@ function showAlert(message, type = 'success') {
 
 // ========== ACCOUNT/PROFILE SETTINGS ==========
 
+async function loadSubscriptionStatus() {
+    try {
+        const response = await fetch('/api/stripe/subscription-status');
+        if (!response.ok) throw new Error('Could not load subscription status');
+        
+        const status = await response.json();
+        
+        const badge = document.getElementById('subscription-status-badge');
+        const details = document.getElementById('subscription-details');
+        
+        if (badge && details) {
+            if (status.status === 'active') {
+                badge.className = 'status-badge status-badge-success';
+                badge.textContent = 'Active';
+                details.textContent = `Your subscription is active until ${new Date(status.current_period_end).toLocaleDateString()}`;
+            } else if (status.status === 'trialing') {
+                badge.className = 'status-badge status-badge-info';
+                badge.textContent = 'Trial';
+                details.textContent = `Trial ends on ${new Date(status.trial_end).toLocaleDateString()}`;
+            } else if (status.status === 'past_due') {
+                badge.className = 'status-badge status-badge-warning';
+                badge.textContent = 'Past Due';
+                details.textContent = 'Your payment is past due. Please update your payment method.';
+            } else {
+                badge.className = 'status-badge status-badge-neutral';
+                badge.textContent = 'Free';
+                details.textContent = 'Upgrade to PianoPlanner Go for advanced features';
+            }
+        }
+    } catch (error) {
+        console.error('Could not load subscription status:', error);
+        const badge = document.getElementById('subscription-status-badge');
+        const details = document.getElementById('subscription-details');
+        if (badge) {
+            badge.className = 'status-badge status-badge-neutral';
+            badge.textContent = 'Free';
+        }
+        if (details) {
+            details.textContent = 'Upgrade to PianoPlanner Go for advanced features';
+        }
+    }
+}
+
 async function loadProfileSettings() {
     try {
         const response = await fetch('/auth/profile');
@@ -2298,6 +2341,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadCompanySettings();
         loadServices();
         loadProfileSettings();
+        loadSubscriptionStatus();
         loadBookingSettings();
         loadTravelSettings();
         loadAppleCalendarStatus();
