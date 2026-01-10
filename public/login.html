@@ -517,11 +517,29 @@
                             <label for="login-password" data-i18n="login.password">Password</label>
                             <input type="password" id="login-password" placeholder="••••••••" required>
                         </div>
-                        <div class="form-row">
-                            <input type="checkbox" id="remember-me">
-                            <label for="remember-me">Remember me</label>
+                        <div class="form-row" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <input type="checkbox" id="remember-me">
+                                <label for="remember-me">Remember me</label>
+                            </div>
+                            <a href="#" onclick="showForgotPassword(); return false;" style="font-size: 13px; color: var(--blue); text-decoration: none;" data-i18n="login.forgotPassword">Forgot password?</a>
                         </div>
                         <button type="submit" class="btn btn-primary" id="login-btn" data-i18n="login.title">Log in</button>
+                    </form>
+                    
+                    <!-- Forgot Password Form (hidden by default) -->
+                    <form id="forgot-form" style="display: none;" onsubmit="handleForgotPassword(event)">
+                        <p style="font-size: 14px; color: var(--gray-500); margin-bottom: 16px;">
+                            Voer je email in. Je ontvangt een link om je wachtwoord te resetten.
+                        </p>
+                        <div class="form-group">
+                            <label for="forgot-email">Email</label>
+                            <input type="email" id="forgot-email" placeholder="your@email.com" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="forgot-btn">Verstuur reset link</button>
+                        <p style="text-align: center; margin-top: 16px;">
+                            <a href="#" onclick="hideForgotPassword(); return false;" style="font-size: 13px; color: var(--blue); text-decoration: none;">← Terug naar inloggen</a>
+                        </p>
                     </form>
                     
                     <div class="divider"><span data-i18n="login.or">or</span></div>
@@ -683,6 +701,56 @@
                 showError('Something went wrong. Please try again.');
                 btn.disabled = false;
                 btn.textContent = 'Log in';
+            }
+        }
+        
+        // Forgot Password UI functions
+        function showForgotPassword() {
+            document.querySelector('#login-panel form:first-of-type').style.display = 'none';
+            document.getElementById('forgot-form').style.display = 'block';
+            hideMessages();
+        }
+        
+        function hideForgotPassword() {
+            document.querySelector('#login-panel form:first-of-type').style.display = 'block';
+            document.getElementById('forgot-form').style.display = 'none';
+            hideMessages();
+        }
+        
+        // Forgot Password handler
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+            hideMessages();
+            
+            const email = document.getElementById('forgot-email').value;
+            const btn = document.getElementById('forgot-btn');
+            
+            btn.disabled = true;
+            btn.textContent = 'Versturen...';
+            
+            try {
+                const response = await fetch('/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                // Always show success message (even if email doesn't exist, for security)
+                showSuccess('Als dit email adres bekend is, ontvang je een reset link.');
+                document.getElementById('forgot-email').value = '';
+                btn.disabled = false;
+                btn.textContent = 'Verstuur reset link';
+                
+                // After 3 seconds, go back to login
+                setTimeout(() => {
+                    hideForgotPassword();
+                }, 3000);
+            } catch (error) {
+                showError('Er ging iets mis. Probeer het opnieuw.');
+                btn.disabled = false;
+                btn.textContent = 'Verstuur reset link';
             }
         }
         

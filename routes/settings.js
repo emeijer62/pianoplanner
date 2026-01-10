@@ -356,4 +356,41 @@ router.put('/language', requireAuth, async (req, res) => {
     }
 });
 
+// ==================== ACCOUNT VERWIJDEREN ====================
+
+// Verwijder eigen account (alleen voor reguliere gebruikers, niet admin)
+router.delete('/account', requireAuth, async (req, res) => {
+    try {
+        const { password } = req.body;
+        const userId = req.session.user.id;
+        
+        if (!password) {
+            return res.status(400).json({ error: 'Wachtwoord is verplicht' });
+        }
+        
+        // Admins mogen hun eigen account niet verwijderen
+        if (req.session.user.role === 'admin') {
+            return res.status(403).json({ error: 'Admins kunnen hun account niet zelf verwijderen' });
+        }
+        
+        const result = await userStore.deleteOwnAccount(userId, password);
+        
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        // Session vernietigen na account verwijdering
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session:', err);
+            }
+            res.clearCookie('connect.sid');
+            res.json({ success: true, message: 'Account succesvol verwijderd' });
+        });
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        res.status(500).json({ error: 'Kon account niet verwijderen' });
+    }
+});
+
 module.exports = router;

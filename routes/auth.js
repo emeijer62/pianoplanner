@@ -122,6 +122,139 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// ==================== PASSWORD RESET ====================
+
+// Request password reset
+router.post('/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({ error: 'Email is verplicht' });
+        }
+        
+        const result = await userStore.createPasswordResetToken(email);
+        
+        if (result.error) {
+            // Don't reveal if email exists - always show success message
+            console.log(`⚠️ Password reset request failed for ${email}: ${result.error}`);
+            return res.json({ 
+                success: true, 
+                message: 'Als dit emailadres bij ons bekend is, ontvang je een reset link.' 
+            });
+        }
+        
+        // Send reset email
+        const emailService = require('../utils/emailService');
+        const resetUrl = `${process.env.BASE_URL || 'https://www.pianoplanner.com'}/reset-password.html?token=${result.token}`;
+        
+        try {
+            await emailService.sendEmail({
+                to: result.user.email,
+                subject: 'Wachtwoord resetten - PianoPlanner',
+                html: `
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h1 style="color: #1d1d1f; font-size: 24px; font-weight: 600; margin: 0;">🎹 PianoPlanner</h1>
+                        </div>
+                        
+                        <div style="background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                            <h2 style="color: #1d1d1f; font-size: 20px; margin: 0 0 16px;">Wachtwoord resetten</h2>
+                            
+                            <p style="color: #424245; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+                                Hallo ${result.user.name || 'daar'},<br><br>
+                                Je hebt een verzoek ingediend om je wachtwoord te resetten. 
+                                Klik op de onderstaande knop om een nieuw wachtwoord in te stellen.
+                            </p>
+                            
+                            <div style="text-align: center; margin: 32px 0;">
+                                <a href="${resetUrl}" style="display: inline-block; background: #0071e3; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 980px; font-size: 15px; font-weight: 500;">
+                                    Wachtwoord resetten
+                                </a>
+                            </div>
+                            
+                            <p style="color: #86868b; font-size: 13px; line-height: 1.5; margin: 24px 0 0;">
+                                Deze link is 1 uur geldig. Heb je dit verzoek niet gedaan? 
+                                Dan kun je deze email negeren.
+                            </p>
+                        </div>
+                        
+                        <p style="color: #86868b; font-size: 12px; text-align: center; margin-top: 24px;">
+                            © ${new Date().getFullYear()} PianoPlanner
+                        </p>
+                    </div>
+                `
+            });
+            console.log(`📧 Password reset email verzonden naar: ${email}`);
+        } catch (emailError) {
+            console.error('Failed to send reset email:', emailError);
+            // Still return success to not reveal email existence
+        }
+        
+        res.json({ 
+            success: true, 
+            message: 'Als dit emailadres bij ons bekend is, ontvang je een reset link.' 
+        });
+        
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ error: 'Er is een fout opgetreden' });
+    }
+});
+
+// Verify reset token
+router.get('/verify-reset-token', async (req, res) => {
+    try {
+        const { token } = req.query;
+        
+        if (!token) {
+            return res.status(400).json({ error: 'Token ontbreekt' });
+        }
+        
+        const result = await userStore.verifyPasswordResetToken(token);
+        
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        res.json({ valid: true, email: result.user.email });
+        
+    } catch (error) {
+        console.error('Verify token error:', error);
+        res.status(500).json({ error: 'Kon token niet verifiëren' });
+    }
+});
+
+// Reset password with token
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+        
+        if (!token || !password) {
+            return res.status(400).json({ error: 'Token en wachtwoord zijn verplicht' });
+        }
+        
+        if (password.length < 6) {
+            return res.status(400).json({ error: 'Wachtwoord moet minimaal 6 tekens zijn' });
+        }
+        
+        const result = await userStore.resetPasswordWithToken(token, password);
+        
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        }
+        
+        res.json({ 
+            success: true, 
+            message: 'Wachtwoord succesvol gewijzigd. Je kunt nu inloggen.' 
+        });
+        
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ error: 'Kon wachtwoord niet resetten' });
+    }
+});
+
 // ==================== GOOGLE OAUTH ====================
 
 // Start Google OAuth flow

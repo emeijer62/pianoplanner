@@ -2015,6 +2015,33 @@
                 </div>
             </div>
             
+            <!-- Danger Zone: Delete Account Card -->
+            <div class="settings-card danger-zone" id="delete-account-card" style="border: 2px solid var(--red); margin-top: 32px;">
+                <div class="settings-card-header" onclick="toggleCard('delete-account-card')">
+                    <div class="settings-card-title" style="color: var(--red);">
+                        <i data-lucide="alert-triangle" class="card-icon" style="width: 20px; height: 20px; color: var(--red);"></i>
+                        Danger Zone
+                    </div>
+                    <div class="settings-card-status">
+                        <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor" style="color: var(--red);">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="settings-card-body">
+                    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                        <p style="color: #991b1b; font-weight: 600; margin: 0 0 8px;">Delete your account permanently</p>
+                        <p style="color: #7f1d1d; margin: 0; font-size: 13px;">
+                            This action cannot be undone. All your data, appointments, customers, and settings will be permanently deleted.
+                        </p>
+                    </div>
+                    
+                    <button type="button" class="btn btn-danger" onclick="showDeleteAccountModal()" id="delete-account-btn">
+                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i> Delete Account
+                    </button>
+                </div>
+            </div>
+            
         </div>
         
         <!-- ==================== SERVICES TAB ==================== -->
@@ -2095,6 +2122,45 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px; height: 16px;"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Delete Account Confirmation Modal -->
+    <div class="modal" id="deleteAccountModal" style="display: none;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header" style="background: var(--red); color: white;">
+                <h3 style="margin: 0;"><i data-lucide="alert-triangle" style="width: 20px; height: 20px;"></i> Delete Account</h3>
+                <button class="modal-close" onclick="closeDeleteAccountModal()" style="color: white;">&times;</button>
+            </div>
+            <form onsubmit="handleDeleteAccount(event)">
+                <div class="modal-body">
+                    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                        <p style="color: #991b1b; font-weight: 600; margin: 0 0 8px;">
+                            <i data-lucide="alert-circle" style="width: 16px; height: 16px;"></i> This action is permanent!
+                        </p>
+                        <p style="color: #7f1d1d; margin: 0; font-size: 13px;">
+                            Your account, all appointments, customers, pianos, services, and settings will be permanently deleted and cannot be recovered.
+                        </p>
+                    </div>
+                    
+                    <p style="margin-bottom: 16px; font-size: 14px;">
+                        To confirm deletion, please enter your password:
+                    </p>
+                    
+                    <div class="form-group">
+                        <label for="delete-confirm-password">Password</label>
+                        <input type="password" id="delete-confirm-password" required placeholder="Enter your password" autocomplete="current-password">
+                    </div>
+                    
+                    <div id="delete-account-error" style="display: none; color: var(--red); font-size: 13px; margin-top: 8px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeDeleteAccountModal()">Cancel</button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i> Delete My Account
+                    </button>
                 </div>
             </form>
         </div>
@@ -2749,6 +2815,80 @@
                 selector.value = i18n.currentLang;
             }
         }, 100);
+        
+        // ========== DELETE ACCOUNT ==========
+        
+        function showDeleteAccountModal() {
+            const modal = document.getElementById('deleteAccountModal');
+            modal.style.display = 'flex';
+            document.getElementById('delete-confirm-password').value = '';
+            document.getElementById('delete-account-error').style.display = 'none';
+            // Re-initialize lucide icons for the modal
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+        
+        function closeDeleteAccountModal() {
+            document.getElementById('deleteAccountModal').style.display = 'none';
+        }
+        
+        async function handleDeleteAccount(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('delete-confirm-password').value;
+            const errorEl = document.getElementById('delete-account-error');
+            const btn = document.getElementById('confirm-delete-btn');
+            
+            if (!password) {
+                errorEl.textContent = 'Please enter your password';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" style="width: 16px; height: 16px; animation: spin 1s linear infinite;"></i> Deleting...';
+            errorEl.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/settings/account', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Account deleted successfully, redirect to login
+                    closeDeleteAccountModal();
+                    showAlert('Account deleted successfully. Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 1500);
+                } else {
+                    errorEl.textContent = data.error || 'Failed to delete account';
+                    errorEl.style.display = 'block';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="trash-2" style="width: 16px; height: 16px;"></i> Delete My Account';
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+            } catch (error) {
+                console.error('Delete account error:', error);
+                errorEl.textContent = 'Something went wrong. Please try again.';
+                errorEl.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="trash-2" style="width: 16px; height: 16px;"></i> Delete My Account';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('deleteAccountModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteAccountModal();
+            }
+        });
     </script>
     
     <style>

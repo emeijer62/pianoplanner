@@ -330,6 +330,110 @@ const loginWithEmail = async (email, password) => {
     return { user };
 };
 
+// ==================== PASSWORD RESET ====================
+
+const createPasswordResetToken = async (email) => {
+    const user = await getUserByEmail(email);
+    if (!user) {
+        return { error: 'Email niet gevonden' };
+    }
+    
+    // Google-only users cannot reset password
+    if (user.authType === 'google' && !user.passwordHash) {
+        return { error: 'Deze account gebruikt Google login. Wachtwoord reset is niet mogelijk.' };
+    }
+    
+    // Generate secure token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+    
+    await dbRun(`
+        UPDATE users SET reset_token = ?, reset_token_expires = ?, updated_at = ? WHERE id = ?
+    `, [token, expires.toISOString(), new Date().toISOString(), user.id]);
+    
+    return { 
+        success: true, 
+        token, 
+        user: { id: user.id, email: user.email, name: user.name }
+    };
+};
+
+const verifyPasswordResetToken = async (token) => {
+    const user = await dbGet(`
+        SELECT id, email, name, reset_token_expires 
+        FROM users 
+        WHERE reset_token = ?
+    `, [token]);
+    
+    if (!user) {
+        return { error: 'Ongeldige of verlopen reset link' };
+    }
+    
+    // Check if token is expired
+    if (new Date(user.reset_token_expires) < new Date()) {
+        // Clean up expired token
+        await dbRun(`UPDATE users SET reset_token = NULL, reset_token_expires = NULL WHERE id = ?`, [user.id]);
+        return { error: 'Reset link is verlopen. Vraag een nieuwe aan.' };
+    }
+    
+    return { valid: true, user: { id: user.id, email: user.email, name: user.name } };
+};
+
+const resetPasswordWithToken = async (token, newPassword) => {
+    // Verify token first
+    const verification = await verifyPasswordResetToken(token);
+    if (verification.error) {
+        return verification;
+    }
+    
+    // Validate new password
+    if (!newPassword || newPassword.length < 6) {
+        return { error: 'Wachtwoord moet minimaal 6 tekens zijn' };
+    }
+    
+    const hashedPassword = hashPassword(newPassword);
+    
+    // Update password and clear reset token
+    await dbRun(`
+        UPDATE users 
+        SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL, updated_at = ? 
+        WHERE id = ?
+    `, [hashedPassword, new Date().toISOString(), verification.user.id]);
+    
+    console.log(`🔑 Wachtwoord gereset voor: ${verification.user.email}`);
+    
+    return { success: true, user: verification.user };
+};
+
+// ==================== ACCOUNT DELETION ====================
+
+const deleteOwnAccount = async (userId, password) => {
+    const user = await getUser(userId);
+    if (!user) {
+        return { error: 'Gebruiker niet gevonden' };
+    }
+    
+    // Verify password (unless Google-only user)
+    if (user.passwordHash) {
+        if (!password) {
+            return { error: 'Wachtwoord is verplicht om je account te verwijderen' };
+        }
+        if (!verifyPassword(password, user.passwordHash)) {
+            return { error: 'Onjuist wachtwoord' };
+        }
+    }
+    
+    // Delete the user and all their data (cascades in database)
+    const success = await deleteUser(userId);
+    
+    if (success) {
+        console.log(`🗑️ Account verwijderd door gebruiker: ${user.email}`);
+        return { success: true };
+    }
+    
+    return { error: 'Kon account niet verwijderen' };
+};
+
 // ==================== SUBSCRIPTION & TIERS ====================
 
 // Owner emails hebben altijd toegang (Go tier)
@@ -1023,6 +1127,12 @@ module.exports = {
     changePassword,
     hashPassword,
     verifyPassword,
+    // Password Reset
+    createPasswordResetToken,
+    verifyPasswordResetToken,
+    resetPasswordWithToken,
+    // Account Deletion
+    deleteOwnAccount,
     // Sanitize
     sanitizeUser,
     sanitizeUsers,

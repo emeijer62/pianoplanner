@@ -491,6 +491,18 @@ function initDatabase() {
                 console.error('Migration error piano_ids:', err.message);
             }
         });
+        
+        // Migratie: voeg password reset token kolommen toe aan users
+        db.run(`ALTER TABLE users ADD COLUMN reset_token TEXT`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error reset_token:', err.message);
+            }
+        });
+        db.run(`ALTER TABLE users ADD COLUMN reset_token_expires DATETIME`, (err) => {
+            if (err && !err.message.includes('duplicate column')) {
+                console.error('Migration error reset_token_expires:', err.message);
+            }
+        });
 
         console.log('✅ Database tabellen en indexen aangemaakt');
         
