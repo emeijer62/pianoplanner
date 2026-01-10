@@ -1166,7 +1166,8 @@
                 // Map type
                 let type = getValue(values, cols.type) || 'upright';
                 if (type === 'unknown') type = 'upright';
-                if (!['upright', 'grand', 'digital'].includes(type)) type = 'upright';
+                // Digital pianos don't need tuning, map to upright
+                if (!['upright', 'grand'].includes(type)) type = 'upright';
                 
                 // Build finish from color + finish
                 const caseColor = getValue(values, cols.caseColor) || '';

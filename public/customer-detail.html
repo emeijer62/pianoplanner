@@ -608,7 +608,6 @@
                             <select id="piano-type">
                                 <option value="upright">Upright piano</option>
                                 <option value="grand">Grand piano</option>
-                                <option value="digital">Digital piano</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -952,8 +951,7 @@
             container.innerHTML = pianosData.map(piano => {
                 const typeLabel = {
                     'upright': 'Upright',
-                    'grand': 'Grand',
-                    'digital': 'Digital'
+                    'grand': 'Grand'
                 }[piano.type] || piano.type;
 
                 const serviceStatus = getServiceStatus(piano);
