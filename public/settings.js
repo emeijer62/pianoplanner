@@ -683,11 +683,11 @@ async function saveAvailability() {
         const availability = getAvailabilityFromForm();
         
         // Get current company settings
-        const response = await fetch('/api/settings');
+        const response = await fetch('/api/settings/company');
         const currentSettings = await response.json();
         
         // Update with new availability
-        const updateResponse = await fetch('/api/settings', {
+        const updateResponse = await fetch('/api/settings/company', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -718,11 +718,11 @@ async function saveTheaterAvailability() {
         const availability = getTheaterAvailabilityFromForm();
         
         // Get current company settings
-        const response = await fetch('/api/settings');
+        const response = await fetch('/api/settings/company');
         const currentSettings = await response.json();
         
         // Update with new theater availability
-        const updateResponse = await fetch('/api/settings', {
+        const updateResponse = await fetch('/api/settings/company', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
