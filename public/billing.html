@@ -386,10 +386,14 @@
         function hasCompleteAddress() {
             if (!companySettings) return false;
             // Check if essential billing fields are filled
-            return companySettings.address && 
-                   companySettings.city && 
-                   companySettings.postalCode && 
-                   companySettings.country;
+            // Address can be nested object or direct fields
+            const addr = companySettings.address || {};
+            const street = addr.street || companySettings.street;
+            const city = addr.city || companySettings.city;
+            const postalCode = addr.postalCode || companySettings.postalCode;
+            const country = addr.country || companySettings.country;
+            
+            return street && city && postalCode && country;
         }
         
         async function loadSubscription() {
