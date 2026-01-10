@@ -639,7 +639,7 @@ const setUserPlan = async (userId, plan) => {
     const now = new Date();
     let updates = {};
     
-    if (plan === 'active' || plan === 'pro') {
+    if (plan === 'active' || plan === 'pro' || plan === 'go') {
         // Actief abonnement voor 1 jaar
         const endDate = new Date();
         endDate.setFullYear(endDate.getFullYear() + 1);
@@ -655,7 +655,7 @@ const setUserPlan = async (userId, plan) => {
             status: 'trialing',
             trialEndsAt: trialEnd.toISOString()
         };
-    } else if (plan === 'none' || plan === 'canceled') {
+    } else if (plan === 'none' || plan === 'canceled' || plan === 'free') {
         updates = {
             status: 'canceled',
             canceledAt: now.toISOString()
