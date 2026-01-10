@@ -734,35 +734,45 @@
        STEP 4: iOS Bottom Sheet Modals
        ============================================ */
     
-    /* Modal Overlay */
-    .modal,
-    .modal-overlay,
-    [class*="modal"]:not(.modal-content) {
+    /* Modal Overlay - stays as overlay background */
+    .modal-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
         background: rgba(0, 0, 0, 0.4) !important;
-        backdrop-filter: none;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 1000;
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
     }
     
-    /* iOS Sheet Modal */
-    .modal-content,
-    .modal-dialog,
-    .modal-box,
-    [class*="modal-content"] {
-        position: fixed !important;
+    .modal-overlay.active {
+        display: flex !important;
+    }
+    
+    /* iOS Sheet Modal - the actual modal box */
+    .modal-overlay > .modal {
+        position: relative !important;
         bottom: 0 !important;
         left: 0 !important;
         right: 0 !important;
         top: auto !important;
-        max-height: 90vh !important;
+        max-height: 92vh !important;
+        height: auto !important;
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
-        border-radius: var(--ios-radius-lg) var(--ios-radius-lg) 0 0 !important;
-        background: var(--ios-bg-primary) !important;
+        border-radius: 16px 16px 0 0 !important;
+        background: var(--ios-bg-secondary) !important;
         box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2) !important;
         animation: ios-sheet-up 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
         overflow: hidden;
-        display: flex;
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: column !important;
     }
     
     @keyframes ios-sheet-up {
@@ -776,82 +786,43 @@
         }
     }
     
-    @keyframes ios-sheet-down {
-        from {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateY(100%);
-            opacity: 0;
-        }
-    }
-    
     /* iOS Drag Handle */
-    .modal-content::before,
-    .modal-dialog::before,
-    [class*="modal-content"]::before {
+    .modal-overlay > .modal::before {
         content: '';
         display: block;
         width: 36px;
         height: 5px;
         background: var(--ios-gray-4);
         border-radius: 2.5px;
-        margin: 8px auto 4px;
+        margin: 8px auto 0;
         flex-shrink: 0;
     }
     
     /* Modal Header iOS Style */
-    .modal-header {
+    .modal-overlay > .modal .modal-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 8px var(--ios-spacing-md) 12px !important;
-        border-bottom: 0.5px solid var(--ios-separator) !important;
+        justify-content: center;
+        padding: 12px 16px 14px !important;
+        border-bottom: none !important;
         background: transparent !important;
         flex-shrink: 0;
+        position: relative;
     }
     
-    .modal-header h2,
-    .modal-header h3,
-    .modal-title {
+    .modal-overlay > .modal .modal-header .modal-title {
         font-size: 17px !important;
         font-weight: 600 !important;
         color: var(--ios-text-primary) !important;
         text-align: center;
-        flex: 1;
         margin: 0 !important;
     }
     
-    /* Modal Body */
-    .modal-body {
-        padding: var(--ios-spacing-md) !important;
-        overflow-y: auto;
-        flex: 1;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Modal Footer */
-    .modal-footer,
-    .modal-actions {
-        padding: var(--ios-spacing-md) !important;
-        padding-bottom: calc(var(--ios-spacing-md) + var(--safe-area-bottom)) !important;
-        border-top: 0.5px solid var(--ios-separator) !important;
-        background: var(--ios-bg-secondary) !important;
-        display: flex;
-        gap: var(--ios-spacing-sm);
-        flex-shrink: 0;
-    }
-    
-    .modal-footer .btn,
-    .modal-actions .btn {
-        flex: 1;
-    }
-    
-    /* Close Button iOS Style */
-    .modal-close,
-    .close-btn,
-    [class*="close"] {
+    .modal-overlay > .modal .modal-close {
+        position: absolute !important;
+        right: 12px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
         width: 30px !important;
         height: 30px !important;
         border-radius: 50% !important;
@@ -860,12 +831,212 @@
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 16px !important;
+        font-size: 18px !important;
         color: var(--ios-gray-1) !important;
         cursor: pointer;
+        line-height: 1;
+    }
+    
+    /* Modal Body - iOS Grouped Style */
+    .modal-overlay > .modal .modal-body {
+        padding: 0 !important;
+        overflow-y: auto;
+        flex: 1;
+        -webkit-overflow-scrolling: touch;
+        background: var(--ios-bg-secondary) !important;
+    }
+    
+    /* iOS Form Section in Modal */
+    .modal-overlay > .modal .form-group {
+        margin: 0 !important;
+        background: var(--ios-bg-primary);
+        padding: 12px 16px;
+        position: relative;
+        border: none !important;
+    }
+    
+    .modal-overlay > .modal .form-group:first-child {
+        border-radius: 12px 12px 0 0;
+        margin-top: 16px !important;
+    }
+    
+    .modal-overlay > .modal .form-group:last-of-type {
+        border-radius: 0 0 12px 12px;
+        margin-bottom: 16px !important;
+    }
+    
+    .modal-overlay > .modal .form-group:only-child,
+    .modal-overlay > .modal .form-group:first-child:last-of-type {
+        border-radius: 12px !important;
+        margin: 16px 0 !important;
+    }
+    
+    /* Form group wrapper for margin */
+    .modal-overlay > .modal .modal-body > form {
+        padding: 0 16px;
+    }
+    
+    .modal-overlay > .modal .form-group:not(:last-of-type)::after {
+        content: '';
         position: absolute;
-        right: var(--ios-spacing-md);
-        top: 14px;
+        bottom: 0;
+        left: 16px;
+        right: 0;
+        height: 0.5px;
+        background: var(--ios-separator);
+    }
+    
+    .modal-overlay > .modal .form-group label,
+    .modal-overlay > .modal .form-label {
+        font-size: 13px !important;
+        font-weight: 400 !important;
+        color: var(--ios-gray-1) !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px !important;
+        display: block;
+    }
+    
+    .modal-overlay > .modal .form-input,
+    .modal-overlay > .modal input[type="text"],
+    .modal-overlay > .modal input[type="email"],
+    .modal-overlay > .modal input[type="tel"],
+    .modal-overlay > .modal select,
+    .modal-overlay > .modal textarea {
+        width: 100% !important;
+        padding: 0 !important;
+        font-size: 17px !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: var(--ios-text-primary) !important;
+        height: auto !important;
+        min-height: 24px;
+    }
+    
+    .modal-overlay > .modal textarea {
+        min-height: 80px;
+        resize: none;
+    }
+    
+    .modal-overlay > .modal select {
+        -webkit-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 0 center !important;
+        background-size: 16px !important;
+        padding-right: 24px !important;
+        background-color: transparent !important;
+    }
+    
+    .modal-overlay > .modal .form-row {
+        display: flex;
+        gap: 0;
+        margin: 0;
+    }
+    
+    .modal-overlay > .modal .form-row .form-group {
+        flex: 1;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .modal-overlay > .modal .form-row .form-group:first-child::after {
+        right: 0 !important;
+    }
+    
+    /* Modal Footer / Actions - iOS Action Bar */
+    .modal-overlay > .modal .modal-footer,
+    .modal-overlay > .modal .modal-actions {
+        padding: 16px !important;
+        padding-bottom: calc(16px + var(--safe-area-bottom)) !important;
+        border-top: 0.5px solid var(--ios-separator) !important;
+        background: var(--ios-bg-primary) !important;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+    
+    .modal-overlay > .modal .modal-footer .btn,
+    .modal-overlay > .modal .modal-actions .btn {
+        width: 100% !important;
+        height: 50px !important;
+        border-radius: 12px !important;
+        font-size: 17px !important;
+        font-weight: 600 !important;
+    }
+    
+    .modal-overlay > .modal .modal-footer .btn-primary,
+    .modal-overlay > .modal .modal-actions .btn-primary {
+        background: var(--ios-blue) !important;
+        color: white !important;
+        order: 1;
+    }
+    
+    .modal-overlay > .modal .modal-footer .btn-secondary,
+    .modal-overlay > .modal .modal-actions .btn-secondary {
+        background: var(--ios-gray-5) !important;
+        color: var(--ios-text-primary) !important;
+        order: 2;
+    }
+    
+    .modal-overlay > .modal .modal-footer .btn-danger,
+    .modal-overlay > .modal .modal-actions .btn-danger,
+    .modal-overlay > .modal .modal-footer .btn[style*="dc2626"],
+    .modal-overlay > .modal .modal-footer #delete-customer-btn,
+    .modal-overlay > .modal .modal-actions #delete-piano-btn {
+        background: rgba(255, 59, 48, 0.12) !important;
+        color: var(--ios-red) !important;
+        order: 3;
+        margin-top: 8px;
+    }
+    
+    /* Hide the flex spacer div in footer */
+    .modal-overlay > .modal .modal-footer > div:not(:has(.btn)),
+    .modal-overlay > .modal .modal-actions > div:not(:has(.btn)) {
+        display: none;
+    }
+    
+    /* iOS Toast Notification for Save Feedback */
+    .ios-toast {
+        position: fixed;
+        top: calc(var(--safe-area-top) + 20px);
+        left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 14px 24px;
+        border-radius: 100px;
+        font-size: 15px;
+        font-weight: 500;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .ios-toast.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+    
+    .ios-toast.success {
+        background: rgba(52, 199, 89, 0.95);
+    }
+    
+    .ios-toast.error {
+        background: rgba(255, 59, 48, 0.95);
+    }
+    
+    .ios-toast svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
     }
     
     /* ============================================

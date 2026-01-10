@@ -849,13 +849,26 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" id="delete-btn" onclick="deletePiano()" style="display: none;" data-i18n="pianos.deletePiano">Delete</button>
-                    <div style="flex: 1;"></div>
+                    <button type="submit" class="btn btn-primary" id="submit-btn">
+                        <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                        <span data-i18n="common.save">Save</span>
+                    </button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal()" data-i18n="common.cancel">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="submit-btn" data-i18n="common.save">Save</button>
+                    <button type="button" class="btn btn-danger" id="delete-btn" onclick="deletePiano()" style="display: none;">
+                        <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                        <span data-i18n="pianos.deletePiano">Delete</span>
+                    </button>
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- iOS Toast for save feedback -->
+    <div id="ios-toast" class="ios-toast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span id="ios-toast-message">Saved!</span>
     </div>
 
     <!-- Service Modal -->
@@ -1062,13 +1075,14 @@
                 
                 if (response.ok) {
                     loadPianos();
+                    showToast('Piano deleted', 'success');
                 } else {
                     const result = await response.json();
-                    alert(result.error || 'Could not delete piano');
+                    showToast(result.error || 'Could not delete piano', 'error');
                 }
             } catch (error) {
                 console.error('Error deleting piano:', error);
-                alert('Something went wrong while deleting');
+                showToast('Something went wrong while deleting', 'error');
             }
         }
 
@@ -1103,13 +1117,14 @@
                 if (response.ok) {
                     closeModal();
                     loadPianos();
+                    showToast('Piano deleted', 'success');
                 } else {
                     const result = await response.json();
-                    alert(result.error || 'Could not delete piano');
+                    showToast(result.error || 'Could not delete piano', 'error');
                 }
             } catch (error) {
                 console.error('Error deleting piano:', error);
-                alert('Something went wrong while deleting');
+                showToast('Something went wrong while deleting', 'error');
             }
         }
 
@@ -1236,14 +1251,44 @@
                 if (response.ok) {
                     closeModal();
                     loadPianos();
+                    showToast(pianoId ? 'Piano updated!' : 'Piano created!', 'success');
                 } else {
-                    alert(result.error || 'Something went wrong');
+                    showToast(result.error || 'Something went wrong', 'error');
                 }
             } catch (error) {
                 console.error('Error saving piano:', error);
-                alert('Something went wrong while saving');
+                showToast('Something went wrong while saving', 'error');
             }
         });
+
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('ios-toast');
+            const toastMessage = document.getElementById('ios-toast-message');
+            
+            if (!toast || !toastMessage) return;
+            
+            toastMessage.textContent = message;
+            toast.className = 'ios-toast ' + type;
+            
+            // Update icon based on type
+            const svg = toast.querySelector('svg');
+            if (svg) {
+                if (type === 'success') {
+                    svg.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+                } else if (type === 'error') {
+                    svg.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
+                }
+            }
+            
+            // Show toast
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Hide after 2.5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
 
         // Submit service form
         document.getElementById('service-form').addEventListener('submit', async (e) => {

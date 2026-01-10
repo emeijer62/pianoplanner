@@ -265,10 +265,42 @@ async function handleSubmit(e) {
         closeModal();
         await loadCustomers();
         
+        // Show success toast
+        showToast(id ? 'Customer updated!' : 'Customer created!', 'success');
+        
     } catch (err) {
         console.error('Error saving customer:', err);
-        alert('Could not save customer. Please try again.');
+        showToast('Could not save customer', 'error');
     }
+}
+
+// Toast notification function
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('ios-toast');
+    const toastMessage = document.getElementById('ios-toast-message');
+    
+    if (!toast || !toastMessage) return;
+    
+    toastMessage.textContent = message;
+    toast.className = 'ios-toast ' + type;
+    
+    // Update icon based on type
+    const svg = toast.querySelector('svg');
+    if (svg) {
+        if (type === 'success') {
+            svg.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+        } else if (type === 'error') {
+            svg.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>';
+        }
+    }
+    
+    // Show toast
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Hide after 2.5 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2500);
 }
 
 // Scroll-aware tap handler to prevent accidental navigation while scrolling
@@ -327,10 +359,11 @@ async function deleteCustomer(id, name) {
         if (!response.ok) throw new Error('Delete failed');
         
         await loadCustomers();
+        showToast('Customer deleted', 'success');
         
     } catch (err) {
         console.error('Error deleting customer:', err);
-        alert('Could not delete customer.');
+        showToast('Could not delete customer', 'error');
     }
 }
 

@@ -240,14 +240,24 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer" style="justify-content: space-between;">
-                <button type="button" id="delete-customer-btn" class="btn" style="background: #fee2e2; color: #dc2626; display: none;" onclick="deleteCurrentCustomer()">Delete Customer</button>
-                <div style="display: flex; gap: 8px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="document.getElementById('customer-form').requestSubmit()">Save Customer</button>
-                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('customer-form').requestSubmit()">
+                    <i data-lucide="check" style="width: 18px; height: 18px;"></i> Save Customer
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" id="delete-customer-btn" class="btn" style="display: none;" onclick="deleteCurrentCustomer()">
+                    <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i> Delete Customer
+                </button>
             </div>
         </div>
+    </div>
+
+    <!-- iOS Toast for save feedback -->
+    <div id="ios-toast" class="ios-toast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span id="ios-toast-message">Saved!</span>
     </div>
 
     <!-- Modal for duplicate customers -->
