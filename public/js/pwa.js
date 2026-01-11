@@ -42,7 +42,7 @@
             { tag: 'link', rel: 'apple-touch-icon', sizes: '180x180', href: '/assets/icons/icon-180x180.png' },
             { tag: 'link', rel: 'apple-touch-icon', sizes: '167x167', href: '/assets/icons/icon-167x167.png' },
             
-            // iOS Splash Screens (for common devices)
+            // iOS Splash Screens (all iPhone/iPad sizes)
             { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-640x1136.png', media: '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)' },
             { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-750x1334.png', media: '(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)' },
             { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-1242x2208.png', media: '(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)' },
@@ -50,6 +50,16 @@
             { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-1170x2532.png', media: '(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)' },
             { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-1179x2556.png', media: '(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)' },
             { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-1284x2778.png', media: '(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)' },
+            { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-1290x2796.png', media: '(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)' },
+            { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-1320x2868.png', media: '(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3)' },
+            // iPad splash screens
+            { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-1620x2160.png', media: '(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2)' },
+            { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-1640x2360.png', media: '(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2)' },
+            { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-1668x2388.png', media: '(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)' },
+            { tag: 'link', rel: 'apple-touch-startup-image', href: '/assets/splash/splash-2048x2732.png', media: '(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)' },
+            
+            // iOS Standalone CSS
+            { tag: 'link', rel: 'stylesheet', href: '/ios-standalone.css', media: 'all and (display-mode: standalone)' },
             
             // Android/Chrome
             { tag: 'meta', name: 'mobile-web-app-capable', content: 'yes' },
@@ -338,6 +348,90 @@
         // Initial offline check
         if (!navigator.onLine) {
             document.body.classList.add('is-offline');
+        }
+        
+        // iOS Standalone mode enhancements
+        if (isInstalledPWA()) {
+            initStandaloneMode();
+        }
+    }
+    
+    /**
+     * Initialize iOS Standalone Mode enhancements
+     */
+    function initStandaloneMode() {
+        console.log('[PWA] Running in standalone mode');
+        
+        // Add standalone class
+        document.body.classList.add('ios-standalone');
+        
+        // Handle iOS keyboard showing/hiding
+        if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+            initIOSKeyboardHandling();
+        }
+        
+        // Prevent overscroll/bounce effect
+        document.body.style.overscrollBehavior = 'none';
+        
+        // Handle navigation within standalone app (prevent opening in Safari)
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link && link.href) {
+                const url = new URL(link.href);
+                // Only intercept internal links
+                if (url.origin === window.location.origin) {
+                    // Allow normal navigation
+                    return;
+                }
+                // External links - open in Safari
+                if (link.target !== '_blank') {
+                    e.preventDefault();
+                    window.open(link.href, '_blank');
+                }
+            }
+        });
+        
+        // iOS status bar tap to scroll to top
+        let lastScrollTop = 0;
+        document.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            // Check if tap is in status bar area (top 20px)
+            if (touch.clientY < 20) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    }
+    
+    /**
+     * Handle iOS virtual keyboard
+     */
+    function initIOSKeyboardHandling() {
+        const visualViewport = window.visualViewport;
+        
+        if (visualViewport) {
+            let keyboardOpen = false;
+            
+            visualViewport.addEventListener('resize', () => {
+                const heightDiff = window.innerHeight - visualViewport.height;
+                const isKeyboardNowOpen = heightDiff > 150;
+                
+                if (isKeyboardNowOpen !== keyboardOpen) {
+                    keyboardOpen = isKeyboardNowOpen;
+                    
+                    if (keyboardOpen) {
+                        document.body.classList.add('keyboard-open');
+                        // Scroll focused input into view
+                        const activeElement = document.activeElement;
+                        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+                            setTimeout(() => {
+                                activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 100);
+                        }
+                    } else {
+                        document.body.classList.remove('keyboard-open');
+                    }
+                }
+            });
         }
     }
 

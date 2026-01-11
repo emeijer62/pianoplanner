@@ -1,7 +1,7 @@
-// PianoPlanner Service Worker v1.0
+// PianoPlanner Service Worker v1.1
 // Provides offline support for piano tuners on the go
 
-const CACHE_NAME = 'pianoplanner-v1';
+const CACHE_NAME = 'pianoplanner-v1.1';
 const OFFLINE_URL = '/offline.html';
 
 // Assets to cache immediately on install
@@ -16,17 +16,23 @@ const PRECACHE_ASSETS = [
   '/offline.html',
   '/apple-style.css',
   '/ios-mobile.css',
+  '/ios-standalone.css',
   '/icons.css',
   '/icons.js',
   '/js/i18n.js',
   '/js/language-picker.js',
+  '/js/pwa.js',
+  '/js/touch-gestures.js',
+  '/js/push-notifications.js',
   '/lang/en.json',
   '/lang/nl.json',
   '/lang/de.json',
   '/lang/fr.json',
   '/assets/favicon.svg',
   '/assets/icons/icon-192x192.png',
-  '/assets/icons/icon-512x512.png'
+  '/assets/icons/icon-512x512.png',
+  '/assets/icons/apple-touch-icon.png',
+  '/manifest.json'
 ];
 
 // API routes that should use network-first strategy
