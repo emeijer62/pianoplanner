@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacten Importeren - PianoPlanner</title>
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="stylesheet" href="icons.css">
+    <style>
+        .import-container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .import-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .import-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .import-header p {
+            color: var(--gray-500);
+            font-size: 15px;
+        }
+        
+        .import-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .import-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .import-card h2 .icon {
+            font-size: 24px;
+        }
+        
+        /* Uitleg sectie */
+        .help-section {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .help-section.blue {
+            background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%);
+        }
+        
+        .help-section h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #2e7d32;
+        }
+        
+        .help-section.blue h3 {
+            color: #1565c0;
+        }
+        
+        .help-steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .help-steps li {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .help-steps li:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background: #2e7d32;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .help-section.blue .step-number {
+            background: #1565c0;
+        }
+        
+        .app-tag {
+            display: inline-block;
+            background: rgba(0,0,0,0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* Drop zone */
+        .drop-zone {
+            border: 2px dashed var(--gray-300);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        
+        .drop-zone:hover {
+            border-color: var(--primary);
+            background: rgba(0, 122, 255, 0.02);
+        }
+        
+        .drop-zone.drag-over {
+            border-color: var(--primary);
+            background: rgba(0, 122, 255, 0.05);
+            transform: scale(1.01);
+        }
+        
+        .drop-zone-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .drop-zone-text {
+            font-size: 15px;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+        
+        .drop-zone-hint {
+            font-size: 13px;
+            color: var(--gray-400);
+        }
+        
+        .file-info {
+            background: var(--gray-100);
+            border-radius: 10px;
+            padding: 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .file-info.show {
+            display: flex;
+        }
+        
+        .file-icon {
+            font-size: 32px;
+        }
+        
+        .file-details {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .file-meta {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+        
+        .file-remove {
+            color: var(--red);
+            cursor: pointer;
+            padding: 8px;
+        }
+        
+        /* Preview */
+        .preview-section {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .preview-section.show {
+            display: block;
+        }
+        
+        .preview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .stat-box {
+            background: var(--gray-100);
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+        
+        .preview-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+        
+        .preview-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .preview-item:last-child {
+            border-bottom: none;
+        }
+        
+        .preview-item-name {
+            font-weight: 500;
+        }
+        
+        .preview-item-details {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+        
+        .preview-item-badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--gray-200);
+        }
+        
+        .preview-item-badge.new {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .preview-item-badge.skip {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .btn-import {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-import.primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-import.primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-import.primary:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+        }
+        
+        .btn-import.secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+        
+        .btn-import.secondary:hover {
+            background: var(--gray-300);
+        }
+        
+        /* Results */
+        .results-section {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .results-section.show {
+            display: block;
+        }
+        
+        .results-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .results-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .results-subtitle {
+            color: var(--gray-500);
+            margin-bottom: 24px;
+        }
+        
+        /* Collapsible help */
+        .help-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        
+        .help-toggle:hover {
+            text-decoration: underline;
+        }
+        
+        .help-content {
+            display: none;
+        }
+        
+        .help-content.show {
+            display: block;
+        }
+        
+        /* Tabs */
+        .source-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .source-tab {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .source-tab:hover {
+            border-color: var(--gray-400);
+        }
+        
+        .source-tab.active {
+            border-color: var(--primary);
+            background: rgba(0, 122, 255, 0.05);
+        }
+        
+        .source-tab-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .source-tab-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .source-tab-desc {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+        
+        /* Progress */
+        .progress-bar-container {
+            background: var(--gray-200);
+            border-radius: 10px;
+            height: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="import-container">
+        <a href="settings.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Terug naar instellingen
+        </a>
+        
+        <div class="import-header">
+            <h1>📥 Contacten Importeren</h1>
+            <p>Importeer je klanten vanuit Apple Contacten, Google, Outlook of andere apps</p>
+        </div>
+        
+        <!-- Source Selection -->
+        <div class="import-card" id="sourceCard">
+            <h2><span class="icon">📁</span> Stap 1: Kies je bron</h2>
+            
+            <div class="source-tabs">
+                <div class="source-tab active" data-source="vcard">
+                    <div class="source-tab-icon">👥</div>
+                    <div class="source-tab-name">vCard (.vcf)</div>
+                    <div class="source-tab-desc">iPhone, Mac, Google</div>
+                </div>
+                <div class="source-tab" data-source="csv">
+                    <div class="source-tab-icon">📊</div>
+                    <div class="source-tab-name">CSV / Excel</div>
+                    <div class="source-tab-desc">Excel, Numbers, andere</div>
+                </div>
+            </div>
+            
+            <!-- vCard Help -->
+            <div id="vcardHelp" class="help-section">
+                <h3>📱 Hoe exporteer ik mijn contacten?</h3>
+                <ul class="help-steps">
+                    <li>
+                        <span class="step-number">1</span>
+                        <div>
+                            <strong>iPhone/iPad:</strong> Ga naar <span class="app-tag">iCloud.com</span> → Contacten → Selecteer alle contacten (⌘A) → Klik op het tandwiel ⚙️ → Exporteer vCard
+                        </div>
+                    </li>
+                    <li>
+                        <span class="step-number">2</span>
+                        <div>
+                            <strong>Mac Contacten:</strong> Open <span class="app-tag">Contacten</span> → Selecteer contacten → Archief → Exporteer → Exporteer vCard
+                        </div>
+                    </li>
+                    <li>
+                        <span class="step-number">3</span>
+                        <div>
+                            <strong>Google Contacten:</strong> Ga naar <span class="app-tag">contacts.google.com</span> → Klik links op Exporteren → Kies "vCard" → Exporteren
+                        </div>
+                    </li>
+                    <li>
+                        <span class="step-number">4</span>
+                        <div>
+                            <strong>Outlook:</strong> Open Contacten → Selecteer contacten → Bestand → Exporteren → vCard-bestand
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- CSV Help -->
+            <div id="csvHelp" class="help-section blue" style="display: none;">
+                <h3>📊 Hoe maak ik een CSV bestand?</h3>
+                <ul class="help-steps">
+                    <li>
+                        <span class="step-number">1</span>
+                        <div>
+                            <strong>Excel:</strong> Maak kolommen: <code>Naam, Email, Telefoon, Adres, Stad, Postcode</code> → Bestand → Opslaan als → CSV
+                        </div>
+                    </li>
+                    <li>
+                        <span class="step-number">2</span>
+                        <div>
+                            <strong>Google Sheets:</strong> Bestand → Downloaden → CSV (.csv)
+                        </div>
+                    </li>
+                    <li>
+                        <span class="step-number">3</span>
+                        <div>
+                            <strong>Numbers (Mac):</strong> Archief → Exporteer naar → CSV
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Upload Section -->
+        <div class="import-card" id="uploadCard">
+            <h2><span class="icon">📤</span> Stap 2: Upload je bestand</h2>
+            
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-zone-icon">📂</div>
+                <div class="drop-zone-text">Sleep je bestand hierheen</div>
+                <div class="drop-zone-hint">of klik om te bladeren (.vcf of .csv)</div>
+            </div>
+            <input type="file" id="fileInput" accept=".vcf,.csv" style="display: none;">
+            
+            <div class="file-info" id="fileInfo">
+                <div class="file-icon" id="fileIcon">📄</div>
+                <div class="file-details">
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-meta" id="fileMeta"></div>
+                </div>
+                <div class="file-remove" onclick="removeFile()">✕</div>
+            </div>
+            
+            <button class="btn-import primary" id="parseBtn" onclick="parseFile()" disabled style="width: 100%;">
+                Bestand analyseren
+            </button>
+        </div>
+        
+        <!-- Preview Section -->
+        <div class="import-card preview-section" id="previewCard">
+            <h2><span class="icon">👀</span> Stap 3: Controleer en importeer</h2>
+            
+            <div class="preview-stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="totalContacts">0</div>
+                    <div class="stat-label">Contacten gevonden</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="newContacts">0</div>
+                    <div class="stat-label">Nieuw toe te voegen</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="skipContacts">0</div>
+                    <div class="stat-label">Al bestaand</div>
+                </div>
+            </div>
+            
+            <div class="preview-list" id="previewList"></div>
+            
+            <div class="btn-group">
+                <button class="btn-import secondary" onclick="resetImport()">
+                    Annuleren
+                </button>
+                <button class="btn-import primary" id="importBtn" onclick="startImport()">
+                    Importeer contacten
+                </button>
+            </div>
+            
+            <div class="progress-bar-container" id="progressContainer" style="display: none;">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="import-card results-section" id="resultsCard">
+            <div class="results-icon">✅</div>
+            <div class="results-title">Import voltooid!</div>
+            <div class="results-subtitle" id="resultsText"></div>
+            
+            <div class="btn-group" style="justify-content: center;">
+                <a href="customers.html" class="btn-import primary" style="text-decoration: none;">
+                    Bekijk klanten
+                </a>
+                <button class="btn-import secondary" onclick="resetImport()">
+                    Meer importeren
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let selectedSource = 'vcard';
+        let uploadedFile = null;
+        let parsedContacts = [];
+        let existingEmails = new Set();
+        
+        // Source tab selection
+        document.querySelectorAll('.source-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                selectedSource = tab.dataset.source;
+                
+                // Show appropriate help
+                document.getElementById('vcardHelp').style.display = selectedSource === 'vcard' ? 'block' : 'none';
+                document.getElementById('csvHelp').style.display = selectedSource === 'csv' ? 'block' : 'none';
+                
+                // Reset file
+                removeFile();
+            });
+        });
+        
+        // File drop zone
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            
+            if (ext === 'vcf') {
+                selectedSource = 'vcard';
+                document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('[data-source="vcard"]').classList.add('active');
+            } else if (ext === 'csv') {
+                selectedSource = 'csv';
+                document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('[data-source="csv"]').classList.add('active');
+            } else {
+                alert('Upload een .vcf of .csv bestand');
+                return;
+            }
+            
+            uploadedFile = file;
+            
+            // Update UI
+            document.getElementById('dropZone').style.display = 'none';
+            document.getElementById('fileInfo').classList.add('show');
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileMeta').textContent = formatFileSize(file.size);
+            document.getElementById('fileIcon').textContent = ext === 'vcf' ? '👥' : '📊';
+            document.getElementById('parseBtn').disabled = false;
+        }
+        
+        function removeFile() {
+            uploadedFile = null;
+            fileInput.value = '';
+            document.getElementById('dropZone').style.display = 'block';
+            document.getElementById('fileInfo').classList.remove('show');
+            document.getElementById('parseBtn').disabled = true;
+            document.getElementById('previewCard').classList.remove('show');
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        // Parse file
+        async function parseFile() {
+            if (!uploadedFile) return;
+            
+            try {
+                // Eerst bestaande klanten ophalen om duplicaten te detecteren
+                const response = await fetch('/api/customers', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const customers = Array.isArray(data) ? data : (data.customers || []);
+                    existingEmails = new Set(customers.map(c => (c.email || '').toLowerCase()).filter(e => e));
+                }
+                
+                const text = await uploadedFile.text();
+                
+                if (selectedSource === 'vcard') {
+                    parsedContacts = parseVCard(text);
+                } else {
+                    parsedContacts = parseCSV(text);
+                }
+                
+                // Check for duplicates
+                parsedContacts.forEach(contact => {
+                    contact.isDuplicate = contact.email && existingEmails.has(contact.email.toLowerCase());
+                });
+                
+                showPreview();
+            } catch (error) {
+                console.error('Parse error:', error);
+                alert('Fout bij het lezen van het bestand: ' + error.message);
+            }
+        }
+        
+        // Parse vCard format
+        function parseVCard(text) {
+            const contacts = [];
+            const vcards = text.split('BEGIN:VCARD');
+            
+            for (const vcard of vcards) {
+                if (!vcard.trim()) continue;
+                
+                const contact = {
+                    name: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    city: '',
+                    postalCode: '',
+                    notes: ''
+                };
+                
+                const lines = vcard.split('\n');
+                
+                for (let line of lines) {
+                    line = line.trim();
+                    
+                    // Handle line continuation (lines starting with space)
+                    // Unfold quoted-printable encoding
+                    line = line.replace(/=\r?\n/g, '');
+                    
+                    // Parse FN (formatted name) - preferred
+                    if (line.startsWith('FN:') || line.startsWith('FN;')) {
+                        contact.name = decodeVCardValue(line.substring(line.indexOf(':') + 1));
+                    }
+                    // Parse N (structured name) as fallback
+                    else if ((line.startsWith('N:') || line.startsWith('N;')) && !contact.name) {
+                        const parts = line.substring(line.indexOf(':') + 1).split(';');
+                        const lastName = decodeVCardValue(parts[0] || '');
+                        const firstName = decodeVCardValue(parts[1] || '');
+                        contact.name = `${firstName} ${lastName}`.trim();
+                    }
+                    // Parse EMAIL
+                    else if (line.startsWith('EMAIL')) {
+                        if (!contact.email) {
+                            contact.email = decodeVCardValue(line.substring(line.indexOf(':') + 1));
+                        }
+                    }
+                    // Parse TEL (phone)
+                    else if (line.startsWith('TEL')) {
+                        if (!contact.phone) {
+                            contact.phone = decodeVCardValue(line.substring(line.indexOf(':') + 1));
+                        }
+                    }
+                    // Parse ADR (address)
+                    else if (line.startsWith('ADR')) {
+                        const addrParts = line.substring(line.indexOf(':') + 1).split(';');
+                        // ADR format: PO Box; Extended; Street; City; Region; Postal; Country
+                        contact.address = decodeVCardValue(addrParts[2] || '');
+                        contact.city = decodeVCardValue(addrParts[3] || '');
+                        contact.postalCode = decodeVCardValue(addrParts[5] || '');
+                    }
+                    // Parse ORG (organization)
+                    else if (line.startsWith('ORG')) {
+                        const org = decodeVCardValue(line.substring(line.indexOf(':') + 1));
+                        if (org && !contact.name.includes(org)) {
+                            contact.notes = contact.notes ? `${contact.notes}\nOrganisatie: ${org}` : `Organisatie: ${org}`;
+                        }
+                    }
+                    // Parse NOTE
+                    else if (line.startsWith('NOTE')) {
+                        const note = decodeVCardValue(line.substring(line.indexOf(':') + 1));
+                        contact.notes = contact.notes ? `${contact.notes}\n${note}` : note;
+                    }
+                }
+                
+                // Only add if we have a name
+                if (contact.name) {
+                    contacts.push(contact);
+                }
+            }
+            
+            return contacts;
+        }
+        
+        // Decode vCard encoded values
+        function decodeVCardValue(value) {
+            if (!value) return '';
+            
+            // Remove any remaining encoding parameters
+            value = value.replace(/^.*:/, '');
+            
+            // Decode quoted-printable
+            value = value.replace(/=([0-9A-F]{2})/gi, (_, hex) => {
+                return String.fromCharCode(parseInt(hex, 16));
+            });
+            
+            // Decode escaped characters
+            value = value.replace(/\\n/gi, '\n');
+            value = value.replace(/\\,/g, ',');
+            value = value.replace(/\\;/g, ';');
+            value = value.replace(/\\\\/g, '\\');
+            
+            return value.trim();
+        }
+        
+        // Parse CSV format
+        function parseCSV(text) {
+            const contacts = [];
+            const lines = text.split('\n');
+            
+            if (lines.length < 2) return contacts;
+            
+            // Parse header
+            const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+            
+            // Find columns (flexible matching)
+            const findCol = (...names) => {
+                for (const name of names) {
+                    const idx = headers.findIndex(h => h.includes(name));
+                    if (idx !== -1) return idx;
+                }
+                return -1;
+            };
+            
+            const cols = {
+                name: findCol('naam', 'name', 'volledige naam', 'full name', 'contact'),
+                firstName: findCol('voornaam', 'first name', 'firstname', 'first'),
+                lastName: findCol('achternaam', 'last name', 'lastname', 'last', 'family'),
+                email: findCol('email', 'e-mail', 'mail'),
+                phone: findCol('telefoon', 'phone', 'tel', 'mobiel', 'mobile'),
+                address: findCol('adres', 'address', 'straat', 'street'),
+                city: findCol('stad', 'city', 'plaats', 'woonplaats'),
+                postalCode: findCol('postcode', 'postal', 'zip')
+            };
+            
+            // Parse data rows
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = parseCSVLine(line);
+                
+                // Build name
+                let name = '';
+                if (cols.name !== -1 && values[cols.name]) {
+                    name = values[cols.name].trim();
+                } else {
+                    const firstName = cols.firstName !== -1 ? (values[cols.firstName] || '').trim() : '';
+                    const lastName = cols.lastName !== -1 ? (values[cols.lastName] || '').trim() : '';
+                    name = `${firstName} ${lastName}`.trim();
+                }
+                
+                if (!name) continue;
+                
+                contacts.push({
+                    name: name,
+                    email: cols.email !== -1 ? (values[cols.email] || '').trim() : '',
+                    phone: cols.phone !== -1 ? (values[cols.phone] || '').trim() : '',
+                    address: cols.address !== -1 ? (values[cols.address] || '').trim() : '',
+                    city: cols.city !== -1 ? (values[cols.city] || '').trim() : '',
+                    postalCode: cols.postalCode !== -1 ? (values[cols.postalCode] || '').trim() : '',
+                    notes: ''
+                });
+            }
+            
+            return contacts;
+        }
+        
+        // Parse CSV line handling quotes
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    if (inQuotes && line[i + 1] === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if ((char === ',' || char === ';') && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current);
+            return result;
+        }
+        
+        // Show preview
+        function showPreview() {
+            const total = parsedContacts.length;
+            const newCount = parsedContacts.filter(c => !c.isDuplicate).length;
+            const skipCount = total - newCount;
+            
+            document.getElementById('totalContacts').textContent = total;
+            document.getElementById('newContacts').textContent = newCount;
+            document.getElementById('skipContacts').textContent = skipCount;
+            
+            // Show preview list (max 50)
+            const previewList = document.getElementById('previewList');
+            const preview = parsedContacts.slice(0, 50);
+            
+            previewList.innerHTML = preview.map(contact => `
+                <div class="preview-item">
+                    <div>
+                        <div class="preview-item-name">${escapeHtml(contact.name)}</div>
+                        <div class="preview-item-details">
+                            ${contact.email ? escapeHtml(contact.email) : ''}
+                            ${contact.email && contact.phone ? ' • ' : ''}
+                            ${contact.phone ? escapeHtml(contact.phone) : ''}
+                        </div>
+                    </div>
+                    <span class="preview-item-badge ${contact.isDuplicate ? 'skip' : 'new'}">
+                        ${contact.isDuplicate ? 'Bestaat al' : 'Nieuw'}
+                    </span>
+                </div>
+            `).join('');
+            
+            if (total > 50) {
+                previewList.innerHTML += `
+                    <div class="preview-item" style="justify-content: center; color: var(--gray-500);">
+                        ... en ${total - 50} meer
+                    </div>
+                `;
+            }
+            
+            document.getElementById('previewCard').classList.add('show');
+            document.getElementById('importBtn').disabled = newCount === 0;
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+        
+        // Start import
+        async function startImport() {
+            const contactsToImport = parsedContacts.filter(c => !c.isDuplicate);
+            
+            if (contactsToImport.length === 0) {
+                alert('Geen nieuwe contacten om te importeren');
+                return;
+            }
+            
+            document.getElementById('importBtn').disabled = true;
+            document.getElementById('progressContainer').style.display = 'block';
+            
+            let imported = 0;
+            let errors = 0;
+            
+            for (const contact of contactsToImport) {
+                try {
+                    const response = await fetch('/api/customers', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        },
+                        body: JSON.stringify({
+                            name: contact.name,
+                            email: contact.email,
+                            phone: contact.phone,
+                            address: contact.address,
+                            city: contact.city,
+                            postalCode: contact.postalCode,
+                            notes: contact.notes
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        imported++;
+                    } else {
+                        errors++;
+                    }
+                } catch (e) {
+                    errors++;
+                }
+                
+                // Update progress
+                const progress = ((imported + errors) / contactsToImport.length) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+            
+            // Show results
+            document.getElementById('sourceCard').style.display = 'none';
+            document.getElementById('uploadCard').style.display = 'none';
+            document.getElementById('previewCard').style.display = 'none';
+            document.getElementById('resultsCard').classList.add('show');
+            document.getElementById('resultsText').textContent = 
+                `${imported} contacten geïmporteerd` + (errors > 0 ? `, ${errors} fouten` : '');
+        }
+        
+        // Reset
+        function resetImport() {
+            removeFile();
+            parsedContacts = [];
+            
+            document.getElementById('sourceCard').style.display = 'block';
+            document.getElementById('uploadCard').style.display = 'block';
+            document.getElementById('previewCard').classList.remove('show');
+            document.getElementById('resultsCard').classList.remove('show');
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('progressBar').style.width = '0%';
+        }
+    </script>
+</body>
+</html>

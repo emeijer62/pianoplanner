@@ -1617,7 +1617,7 @@
                         Import Data
                     </div>
                     <div class="settings-card-status">
-                        <span style="color: var(--gray-500); font-size: 13px;">Gazelle, CSV</span>
+                        <span style="color: var(--gray-500); font-size: 13px;">Contacten, Agenda, Gazelle</span>
                         <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
                         </svg>
@@ -1625,23 +1625,38 @@
                 </div>
                 <div class="settings-card-body">
                     <p style="color: var(--gray-500); margin-bottom: 16px;">
-                        Import your existing customer data from Gazelle or other sources.
+                        Importeer bestaande gegevens uit andere apps of bestanden.
                     </p>
                     
-                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                        <a href="/import.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px;">
-                            <i data-lucide="upload" style="width: 16px; height: 16px;"></i>
-                            Import Wizard
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <!-- Contacten importeren -->
+                        <a href="/import-contacts.html" class="import-option-card" style="display: flex; flex-direction: column; align-items: center; padding: 20px; background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border-radius: 12px; text-decoration: none; color: inherit; transition: transform 0.2s;">
+                            <span style="font-size: 32px; margin-bottom: 8px;">👥</span>
+                            <strong style="font-size: 14px; margin-bottom: 4px;">Contacten</strong>
+                            <span style="font-size: 12px; color: var(--gray-500); text-align: center;">vCard, CSV<br>iPhone, Google, Outlook</span>
+                        </a>
+                        
+                        <!-- Agenda importeren -->
+                        <a href="/import-calendar.html" class="import-option-card" style="display: flex; flex-direction: column; align-items: center; padding: 20px; background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%); border-radius: 12px; text-decoration: none; color: inherit; transition: transform 0.2s;">
+                            <span style="font-size: 32px; margin-bottom: 8px;">📅</span>
+                            <strong style="font-size: 14px; margin-bottom: 4px;">Agenda</strong>
+                            <span style="font-size: 12px; color: var(--gray-500); text-align: center;">iCal (.ics)<br>Apple, Google, Outlook</span>
+                        </a>
+                        
+                        <!-- Gazelle/CSV import -->
+                        <a href="/import.html" class="import-option-card" style="display: flex; flex-direction: column; align-items: center; padding: 20px; background: linear-gradient(135deg, #fff3e0 0%, #fff8e1 100%); border-radius: 12px; text-decoration: none; color: inherit; transition: transform 0.2s;">
+                            <span style="font-size: 32px; margin-bottom: 8px;">🦌</span>
+                            <strong style="font-size: 14px; margin-bottom: 4px;">Gazelle / CSV</strong>
+                            <span style="font-size: 12px; color: var(--gray-500); text-align: center;">Klanten & piano's<br>Gazelle export</span>
                         </a>
                     </div>
                     
-                    <div style="margin-top: 16px; padding: 12px; background: var(--gray-50); border-radius: 8px; font-size: 13px; color: var(--gray-600);">
-                        <strong>Supported formats:</strong>
-                        <ul style="margin: 8px 0 0 16px; padding: 0;">
-                            <li>Gazelle client export (CSV)</li>
-                            <li>Generic CSV with name, email, phone, address</li>
-                        </ul>
-                    </div>
+                    <style>
+                        .import-option-card:hover {
+                            transform: translateY(-2px);
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                        }
+                    </style>
                     
                     <!-- Clean Notes Tool -->
                     <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--gray-200);">

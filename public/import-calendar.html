@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Importeren - PianoPlanner</title>
+    <link rel="stylesheet" href="apple-style.css">
+    <link rel="stylesheet" href="icons.css">
+    <style>
+        .import-container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .import-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .import-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .import-header p {
+            color: var(--gray-500);
+            font-size: 15px;
+        }
+        
+        .import-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .import-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .import-card h2 .icon {
+            font-size: 24px;
+        }
+        
+        /* Uitleg sectie */
+        .help-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .help-section h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1565c0;
+        }
+        
+        .help-steps {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .help-steps li {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .help-steps li:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background: #1565c0;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .app-tag {
+            display: inline-block;
+            background: rgba(0,0,0,0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* Warning box */
+        .warning-box {
+            background: #fff8e1;
+            border-left: 4px solid #ff9800;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+        
+        .warning-box .icon {
+            font-size: 20px;
+        }
+        
+        .warning-box p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .warning-box strong {
+            color: #e65100;
+        }
+        
+        /* Drop zone */
+        .drop-zone {
+            border: 2px dashed var(--gray-300);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        
+        .drop-zone:hover {
+            border-color: var(--primary);
+            background: rgba(0, 122, 255, 0.02);
+        }
+        
+        .drop-zone.drag-over {
+            border-color: var(--primary);
+            background: rgba(0, 122, 255, 0.05);
+            transform: scale(1.01);
+        }
+        
+        .drop-zone-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .drop-zone-text {
+            font-size: 15px;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+        
+        .drop-zone-hint {
+            font-size: 13px;
+            color: var(--gray-400);
+        }
+        
+        .file-info {
+            background: var(--gray-100);
+            border-radius: 10px;
+            padding: 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .file-info.show {
+            display: flex;
+        }
+        
+        .file-icon {
+            font-size: 32px;
+        }
+        
+        .file-details {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .file-meta {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+        
+        .file-remove {
+            color: var(--red);
+            cursor: pointer;
+            padding: 8px;
+        }
+        
+        /* Options */
+        .import-options {
+            background: var(--gray-50);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+        
+        .option-group label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        
+        .option-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .option-text {
+            font-size: 14px;
+        }
+        
+        .option-desc {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+        
+        /* Customer/Service selector */
+        .service-selector {
+            margin-top: 16px;
+        }
+        
+        .service-selector label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .service-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            background: var(--card-bg);
+        }
+        
+        /* Preview */
+        .preview-section {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .preview-section.show {
+            display: block;
+        }
+        
+        .preview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .stat-box {
+            background: var(--gray-100);
+            padding: 16px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
+        
+        .preview-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+        }
+        
+        .preview-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .preview-item:last-child {
+            border-bottom: none;
+        }
+        
+        .preview-item-date {
+            font-size: 12px;
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .preview-item-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .preview-item-details {
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+        
+        .preview-item-badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 6px;
+        }
+        
+        .preview-item-badge.new {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .preview-item-badge.past {
+            background: var(--gray-200);
+            color: var(--gray-600);
+        }
+        
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .btn-import {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-import.primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-import.primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-import.primary:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+        }
+        
+        .btn-import.secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+        
+        .btn-import.secondary:hover {
+            background: var(--gray-300);
+        }
+        
+        /* Results */
+        .results-section {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .results-section.show {
+            display: block;
+        }
+        
+        .results-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .results-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .results-subtitle {
+            color: var(--gray-500);
+            margin-bottom: 24px;
+        }
+        
+        /* Progress */
+        .progress-bar-container {
+            background: var(--gray-200);
+            border-radius: 10px;
+            height: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Date filter */
+        .date-filter {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .date-filter-option {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .date-filter-option:hover {
+            border-color: var(--primary);
+        }
+        
+        .date-filter-option.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="import-container">
+        <a href="settings.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Terug naar instellingen
+        </a>
+        
+        <div class="import-header">
+            <h1>📅 Agenda Importeren</h1>
+            <p>Importeer afspraken vanuit Apple Agenda, Google Calendar, Outlook of andere apps</p>
+        </div>
+        
+        <!-- Help Section -->
+        <div class="import-card" id="helpCard">
+            <h2><span class="icon">💡</span> Hoe werkt het?</h2>
+            
+            <div class="help-section">
+                <h3>📱 Hoe exporteer ik mijn agenda?</h3>
+                <ul class="help-steps">
+                    <li>
+                        <span class="step-number">1</span>
+                        <div>
+                            <strong>Apple Agenda (Mac):</strong> Open <span class="app-tag">Agenda</span> → Selecteer je agenda in de zijbalk → Archief → Exporteer → Exporteer... → Sla op als .ics bestand
+                        </div>
+                    </li>
+                    <li>
+                        <span class="step-number">2</span>
+                        <div>
+                            <strong>Google Calendar:</strong> Ga naar <span class="app-tag">calendar.google.com</span> → Klik op ⚙️ → Instellingen → Importeren & exporteren → Exporteren → Kies je agenda
+                        </div>
+                    </li>
+                    <li>
+                        <span class="step-number">3</span>
+                        <div>
+                            <strong>Outlook:</strong> Open Agenda → Bestand → Agenda opslaan → Kies datumbereik → Opslaan als .ics
+                        </div>
+                    </li>
+                    <li>
+                        <span class="step-number">4</span>
+                        <div>
+                            <strong>iPhone/iPad:</strong> Dit gaat via iCloud: ga naar <span class="app-tag">icloud.com/calendar</span> → Klik op 📤 (delen) naast je agenda → Openbare agenda → Kopieer link en download
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="warning-box">
+                <div class="icon">⚠️</div>
+                <p>
+                    <strong>Let op:</strong> Geïmporteerde afspraken worden aangemaakt zonder klant gekoppeld. 
+                    Je kunt na het importeren de klant handmatig aan de afspraak toevoegen via de agenda.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Upload Section -->
+        <div class="import-card" id="uploadCard">
+            <h2><span class="icon">📤</span> Upload je agenda-bestand</h2>
+            
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-zone-icon">📅</div>
+                <div class="drop-zone-text">Sleep je .ics bestand hierheen</div>
+                <div class="drop-zone-hint">of klik om te bladeren</div>
+            </div>
+            <input type="file" id="fileInput" accept=".ics,.ical" style="display: none;">
+            
+            <div class="file-info" id="fileInfo">
+                <div class="file-icon">📅</div>
+                <div class="file-details">
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-meta" id="fileMeta"></div>
+                </div>
+                <div class="file-remove" onclick="removeFile()">✕</div>
+            </div>
+            
+            <div class="import-options">
+                <div class="service-selector">
+                    <label for="serviceSelect">Standaard service voor geïmporteerde afspraken:</label>
+                    <select id="serviceSelect">
+                        <option value="">Geen service (alleen afspraak)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="btn-import primary" id="parseBtn" onclick="parseFile()" disabled style="width: 100%;">
+                Bestand analyseren
+            </button>
+        </div>
+        
+        <!-- Preview Section -->
+        <div class="import-card preview-section" id="previewCard">
+            <h2><span class="icon">👀</span> Selecteer afspraken om te importeren</h2>
+            
+            <div class="preview-stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="totalEvents">0</div>
+                    <div class="stat-label">Totaal gevonden</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="futureEvents">0</div>
+                    <div class="stat-label">Toekomstig</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="pastEvents">0</div>
+                    <div class="stat-label">In verleden</div>
+                </div>
+            </div>
+            
+            <div class="date-filter">
+                <div class="date-filter-option active" data-filter="future">Alleen toekomstige</div>
+                <div class="date-filter-option" data-filter="month">Afgelopen maand + toekomst</div>
+                <div class="date-filter-option" data-filter="all">Alles</div>
+            </div>
+            
+            <div class="preview-list" id="previewList"></div>
+            
+            <div class="btn-group">
+                <button class="btn-import secondary" onclick="resetImport()">
+                    Annuleren
+                </button>
+                <button class="btn-import primary" id="importBtn" onclick="startImport()">
+                    Importeer afspraken
+                </button>
+            </div>
+            
+            <div class="progress-bar-container" id="progressContainer" style="display: none;">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="import-card results-section" id="resultsCard">
+            <div class="results-icon">✅</div>
+            <div class="results-title">Import voltooid!</div>
+            <div class="results-subtitle" id="resultsText"></div>
+            
+            <div class="btn-group" style="justify-content: center;">
+                <a href="dashboard.html" class="btn-import primary" style="text-decoration: none;">
+                    Bekijk agenda
+                </a>
+                <button class="btn-import secondary" onclick="resetImport()">
+                    Meer importeren
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let uploadedFile = null;
+        let parsedEvents = [];
+        let filteredEvents = [];
+        let currentFilter = 'future';
+        let services = [];
+        
+        // Load services
+        async function loadServices() {
+            try {
+                const response = await fetch('/api/services', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    services = Array.isArray(data) ? data : (data.services || []);
+                    
+                    const select = document.getElementById('serviceSelect');
+                    services.forEach(service => {
+                        const option = document.createElement('option');
+                        option.value = service.id;
+                        option.textContent = `${service.name} (${service.duration} min)`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (e) {
+                console.error('Error loading services:', e);
+            }
+        }
+        
+        loadServices();
+        
+        // File drop zone
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('drag-over');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            
+            if (ext !== 'ics' && ext !== 'ical') {
+                alert('Upload een .ics of .ical bestand');
+                return;
+            }
+            
+            uploadedFile = file;
+            
+            // Update UI
+            document.getElementById('dropZone').style.display = 'none';
+            document.getElementById('fileInfo').classList.add('show');
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileMeta').textContent = formatFileSize(file.size);
+            document.getElementById('parseBtn').disabled = false;
+        }
+        
+        function removeFile() {
+            uploadedFile = null;
+            fileInput.value = '';
+            document.getElementById('dropZone').style.display = 'block';
+            document.getElementById('fileInfo').classList.remove('show');
+            document.getElementById('parseBtn').disabled = true;
+            document.getElementById('previewCard').classList.remove('show');
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        // Parse iCal file
+        async function parseFile() {
+            if (!uploadedFile) return;
+            
+            try {
+                const text = await uploadedFile.text();
+                parsedEvents = parseICS(text);
+                
+                // Sort by date
+                parsedEvents.sort((a, b) => new Date(a.start) - new Date(b.start));
+                
+                applyFilter();
+                showPreview();
+            } catch (error) {
+                console.error('Parse error:', error);
+                alert('Fout bij het lezen van het bestand: ' + error.message);
+            }
+        }
+        
+        // Parse ICS format
+        function parseICS(text) {
+            const events = [];
+            
+            // Split by VEVENT
+            const eventBlocks = text.split('BEGIN:VEVENT');
+            
+            for (let i = 1; i < eventBlocks.length; i++) {
+                const block = eventBlocks[i].split('END:VEVENT')[0];
+                
+                const event = {
+                    title: '',
+                    start: null,
+                    end: null,
+                    location: '',
+                    description: ''
+                };
+                
+                // Parse properties
+                const lines = unfoldICS(block);
+                
+                for (const line of lines) {
+                    if (line.startsWith('SUMMARY')) {
+                        event.title = decodeICSValue(getICSValue(line));
+                    }
+                    else if (line.startsWith('DTSTART')) {
+                        event.start = parseICSDate(getICSValue(line));
+                    }
+                    else if (line.startsWith('DTEND')) {
+                        event.end = parseICSDate(getICSValue(line));
+                    }
+                    else if (line.startsWith('LOCATION')) {
+                        event.location = decodeICSValue(getICSValue(line));
+                    }
+                    else if (line.startsWith('DESCRIPTION')) {
+                        event.description = decodeICSValue(getICSValue(line));
+                    }
+                }
+                
+                // Only add if we have title and start date
+                if (event.title && event.start) {
+                    // If no end date, set to 1 hour after start
+                    if (!event.end) {
+                        event.end = new Date(new Date(event.start).getTime() + 60 * 60 * 1000).toISOString();
+                    }
+                    
+                    // Mark as future or past
+                    event.isFuture = new Date(event.start) > new Date();
+                    event.isRecent = new Date(event.start) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                    
+                    events.push(event);
+                }
+            }
+            
+            return events;
+        }
+        
+        // Unfold ICS lines (lines starting with space/tab are continuations)
+        function unfoldICS(text) {
+            const lines = text.split(/\r?\n/);
+            const result = [];
+            let current = '';
+            
+            for (const line of lines) {
+                if (line.startsWith(' ') || line.startsWith('\t')) {
+                    current += line.substring(1);
+                } else {
+                    if (current) {
+                        result.push(current);
+                    }
+                    current = line;
+                }
+            }
+            if (current) {
+                result.push(current);
+            }
+            
+            return result;
+        }
+        
+        // Get value from ICS property line
+        function getICSValue(line) {
+            const colonIndex = line.indexOf(':');
+            return colonIndex !== -1 ? line.substring(colonIndex + 1) : '';
+        }
+        
+        // Decode ICS escaped values
+        function decodeICSValue(value) {
+            if (!value) return '';
+            
+            return value
+                .replace(/\\n/gi, '\n')
+                .replace(/\\,/g, ',')
+                .replace(/\\;/g, ';')
+                .replace(/\\\\/g, '\\')
+                .trim();
+        }
+        
+        // Parse ICS date format
+        function parseICSDate(value) {
+            if (!value) return null;
+            
+            // Handle different date formats
+            // YYYYMMDD or YYYYMMDDTHHMMSS or YYYYMMDDTHHMMSSZ
+            
+            let dateStr = value;
+            
+            // Remove TZID parameter if present
+            if (dateStr.includes(':')) {
+                dateStr = dateStr.split(':').pop();
+            }
+            
+            // Basic format: YYYYMMDD
+            if (dateStr.length === 8) {
+                const year = dateStr.substring(0, 4);
+                const month = dateStr.substring(4, 6);
+                const day = dateStr.substring(6, 8);
+                return `${year}-${month}-${day}T09:00:00`;
+            }
+            
+            // With time: YYYYMMDDTHHMMSS
+            if (dateStr.length >= 15) {
+                const year = dateStr.substring(0, 4);
+                const month = dateStr.substring(4, 6);
+                const day = dateStr.substring(6, 8);
+                const hour = dateStr.substring(9, 11);
+                const minute = dateStr.substring(11, 13);
+                const second = dateStr.substring(13, 15);
+                
+                // If ends with Z, it's UTC
+                const isUTC = dateStr.endsWith('Z');
+                
+                if (isUTC) {
+                    const utcDate = new Date(Date.UTC(
+                        parseInt(year), parseInt(month) - 1, parseInt(day),
+                        parseInt(hour), parseInt(minute), parseInt(second)
+                    ));
+                    return utcDate.toISOString();
+                } else {
+                    return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+                }
+            }
+            
+            return null;
+        }
+        
+        // Filter events
+        function applyFilter() {
+            const now = new Date();
+            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            
+            switch (currentFilter) {
+                case 'future':
+                    filteredEvents = parsedEvents.filter(e => new Date(e.start) > now);
+                    break;
+                case 'month':
+                    filteredEvents = parsedEvents.filter(e => new Date(e.start) > monthAgo);
+                    break;
+                case 'all':
+                default:
+                    filteredEvents = [...parsedEvents];
+            }
+        }
+        
+        // Date filter click
+        document.querySelectorAll('.date-filter-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.date-filter-option').forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+                currentFilter = option.dataset.filter;
+                applyFilter();
+                updatePreviewList();
+            });
+        });
+        
+        // Show preview
+        function showPreview() {
+            const total = parsedEvents.length;
+            const future = parsedEvents.filter(e => e.isFuture).length;
+            const past = total - future;
+            
+            document.getElementById('totalEvents').textContent = total;
+            document.getElementById('futureEvents').textContent = future;
+            document.getElementById('pastEvents').textContent = past;
+            
+            updatePreviewList();
+            
+            document.getElementById('previewCard').classList.add('show');
+        }
+        
+        function updatePreviewList() {
+            const previewList = document.getElementById('previewList');
+            const preview = filteredEvents.slice(0, 100);
+            
+            previewList.innerHTML = preview.map(event => {
+                const startDate = new Date(event.start);
+                const endDate = new Date(event.end);
+                
+                const dateStr = startDate.toLocaleDateString('nl-NL', { 
+                    weekday: 'short', 
+                    day: 'numeric', 
+                    month: 'short',
+                    year: 'numeric'
+                });
+                
+                const timeStr = `${startDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}`;
+                
+                return `
+                    <div class="preview-item">
+                        <div class="preview-item-date">${dateStr} • ${timeStr}</div>
+                        <div class="preview-item-title">${escapeHtml(event.title)}</div>
+                        ${event.location ? `<div class="preview-item-details">📍 ${escapeHtml(event.location)}</div>` : ''}
+                        <span class="preview-item-badge ${event.isFuture ? 'new' : 'past'}">
+                            ${event.isFuture ? 'Toekomst' : 'Verleden'}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+            
+            if (filteredEvents.length > 100) {
+                previewList.innerHTML += `
+                    <div class="preview-item" style="text-align: center; color: var(--gray-500);">
+                        ... en ${filteredEvents.length - 100} meer
+                    </div>
+                `;
+            }
+            
+            document.getElementById('importBtn').disabled = filteredEvents.length === 0;
+            document.getElementById('importBtn').textContent = `Importeer ${filteredEvents.length} afspraken`;
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+        
+        // Start import
+        async function startImport() {
+            if (filteredEvents.length === 0) {
+                alert('Geen afspraken om te importeren');
+                return;
+            }
+            
+            const selectedServiceId = document.getElementById('serviceSelect').value;
+            const selectedService = selectedServiceId ? services.find(s => s.id == selectedServiceId) : null;
+            
+            document.getElementById('importBtn').disabled = true;
+            document.getElementById('progressContainer').style.display = 'block';
+            
+            let imported = 0;
+            let errors = 0;
+            
+            for (const event of filteredEvents) {
+                try {
+                    const startDate = new Date(event.start);
+                    const endDate = new Date(event.end);
+                    
+                    // Calculate duration in minutes
+                    const duration = Math.round((endDate - startDate) / (1000 * 60));
+                    
+                    const appointmentData = {
+                        title: event.title,
+                        date: startDate.toISOString().split('T')[0],
+                        time: startDate.toTimeString().substring(0, 5),
+                        duration: selectedService ? selectedService.duration : duration,
+                        notes: event.description || '',
+                        location: event.location || ''
+                    };
+                    
+                    // Add service if selected
+                    if (selectedServiceId) {
+                        appointmentData.serviceId = parseInt(selectedServiceId);
+                    }
+                    
+                    const response = await fetch('/api/appointments', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + localStorage.getItem('token')
+                        },
+                        body: JSON.stringify(appointmentData)
+                    });
+                    
+                    if (response.ok) {
+                        imported++;
+                    } else {
+                        errors++;
+                    }
+                } catch (e) {
+                    console.error('Import error:', e);
+                    errors++;
+                }
+                
+                // Update progress
+                const progress = ((imported + errors) / filteredEvents.length) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+            
+            // Show results
+            document.getElementById('helpCard').style.display = 'none';
+            document.getElementById('uploadCard').style.display = 'none';
+            document.getElementById('previewCard').style.display = 'none';
+            document.getElementById('resultsCard').classList.add('show');
+            document.getElementById('resultsText').textContent = 
+                `${imported} afspraken geïmporteerd` + (errors > 0 ? `, ${errors} fouten` : '');
+        }
+        
+        // Reset
+        function resetImport() {
+            removeFile();
+            parsedEvents = [];
+            filteredEvents = [];
+            currentFilter = 'future';
+            
+            document.querySelectorAll('.date-filter-option').forEach(o => o.classList.remove('active'));
+            document.querySelector('[data-filter="future"]').classList.add('active');
+            
+            document.getElementById('helpCard').style.display = 'block';
+            document.getElementById('uploadCard').style.display = 'block';
+            document.getElementById('previewCard').classList.remove('show');
+            document.getElementById('resultsCard').classList.remove('show');
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('progressBar').style.width = '0%';
+        }
+    </script>
+</body>
+</html>
