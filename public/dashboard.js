@@ -2880,7 +2880,7 @@ async function loadSwCustomerPianos() {
     container.innerHTML = '<p class="sw-empty-state">Piano\'s laden...</p>';
     
     try {
-        const response = await fetch(`/api/customers/${swSelectedCustomer.id}/pianos`);
+        const response = await fetch(`/api/pianos/customer/${swSelectedCustomer.id}`);
         const pianos = await response.json();
         
         if (pianos.length === 0) {
@@ -3210,13 +3210,6 @@ async function createSwAppointment() {
     }
 }
 
-
-                services.forEach(service => {
-                    const option = document.createElement('option');
-                    option.value = service.id;
-                    option.textContent = `${service.name} (${service.duration} min)`;
-                    serviceSelect.appendChild(option);
-                });
 async function handleEventSubmit(e) {
     e.preventDefault();
     
