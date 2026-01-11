@@ -15,6 +15,7 @@ const { calculateTravelTime, getPlaceAutocomplete, getPlaceDetails, geocodeAddre
 const emailService = require('../utils/emailService');
 const { getDb } = require('../utils/database');
 const { XMLParser } = require('fast-xml-parser');
+const { google } = require('googleapis');
 const xmlParser = new XMLParser({ ignoreAttributes: false });
 
 // ==================== EXTERNAL CALENDAR HELPERS ====================
@@ -25,21 +26,151 @@ const xmlParser = new XMLParser({ ignoreAttributes: false });
  */
 async function getExternalCalendarEvents(userId, dayStart, dayEnd) {
     try {
-        // Check Apple Calendar first
+        let events = [];
+        
+        // 1. Check Google Calendar
+        const googleEvents = await getGoogleCalendarEventsForUser(userId, dayStart, dayEnd);
+        if (googleEvents.length > 0) {
+            console.log(`[PUBLIC BOOKING] Found ${googleEvents.length} Google Calendar events`);
+            events = events.concat(googleEvents);
+        }
+        
+        // 2. Check Microsoft Calendar
+        const microsoftEvents = await getMicrosoftCalendarEventsForUser(userId, dayStart, dayEnd);
+        if (microsoftEvents.length > 0) {
+            console.log(`[PUBLIC BOOKING] Found ${microsoftEvents.length} Microsoft Calendar events`);
+            events = events.concat(microsoftEvents);
+        }
+        
+        // 3. Check Apple Calendar
         const appleCredentials = await userStore.getAppleCalendarCredentials(userId);
         const appleSync = await userStore.getAppleCalendarSync(userId);
         
         if (appleCredentials && appleSync?.enabled && appleSync?.appleCalendarUrl) {
-            console.log('[PUBLIC BOOKING] Checking Apple Calendar for conflicts');
-            return await getAppleCalendarEventsForUser(appleCredentials, appleSync.appleCalendarUrl, dayStart, dayEnd);
+            const appleEvents = await getAppleCalendarEventsForUser(appleCredentials, appleSync.appleCalendarUrl, dayStart, dayEnd);
+            if (appleEvents.length > 0) {
+                console.log(`[PUBLIC BOOKING] Found ${appleEvents.length} Apple Calendar events`);
+                events = events.concat(appleEvents);
+            }
         }
         
-        // TODO: Add Google Calendar support here if needed
-        // TODO: Add Microsoft Calendar support here if needed
-        
-        return [];
+        return events;
     } catch (error) {
         console.error('[PUBLIC BOOKING] Error fetching external calendar:', error.message);
+        return [];
+    }
+}
+
+/**
+ * Haal events op van Google Calendar voor een userId (zonder sessie)
+ */
+async function getGoogleCalendarEventsForUser(userId, dayStart, dayEnd) {
+    try {
+        // Haal user tokens uit database
+        const user = await userStore.getUser(userId);
+        if (!user || !user.tokens) {
+            return [];
+        }
+        
+        let tokens;
+        try {
+            tokens = typeof user.tokens === 'string' ? JSON.parse(user.tokens) : user.tokens;
+        } catch (e) {
+            return [];
+        }
+        
+        if (!tokens || !tokens.access_token) {
+            return [];
+        }
+        
+        // Maak OAuth2 client
+        const oauth2Client = new google.auth.OAuth2(
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
+            process.env.GOOGLE_REDIRECT_URI
+        );
+        oauth2Client.setCredentials(tokens);
+        
+        // Auto-refresh tokens indien nodig
+        oauth2Client.on('tokens', async (newTokens) => {
+            console.log(`[PUBLIC BOOKING] Google tokens refreshed for user ${userId}`);
+            try {
+                await userStore.saveUser({
+                    ...user,
+                    tokens: JSON.stringify({ ...tokens, ...newTokens })
+                });
+            } catch (error) {
+                console.error('[PUBLIC BOOKING] Error saving refreshed Google tokens:', error);
+            }
+        });
+        
+        // Haal events op
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+        const eventsResponse = await calendar.events.list({
+            calendarId: 'primary',
+            timeMin: dayStart.toISOString(),
+            timeMax: dayEnd.toISOString(),
+            singleEvents: true,
+            orderBy: 'startTime'
+        });
+        
+        return (eventsResponse.data.items || []).map(event => ({
+            id: 'google-' + event.id,
+            summary: event.summary || 'Bezet',
+            start: event.start?.dateTime ? new Date(event.start.dateTime) : new Date(event.start?.date),
+            end: event.end?.dateTime ? new Date(event.end.dateTime) : new Date(event.end?.date)
+        }));
+    } catch (error) {
+        console.error('[PUBLIC BOOKING] Google Calendar fetch error:', error.message);
+        return [];
+    }
+}
+
+/**
+ * Haal events op van Microsoft Calendar voor een userId (zonder sessie)
+ */
+async function getMicrosoftCalendarEventsForUser(userId, dayStart, dayEnd) {
+    try {
+        const credentials = await userStore.getMicrosoftCalendarCredentials(userId);
+        
+        if (!credentials || !credentials.connected || !credentials.accessToken) {
+            return [];
+        }
+        
+        // Check of token niet verlopen is (met 5 minuten marge)
+        if (credentials.expiresAt && credentials.expiresAt < Date.now() + 300000) {
+            console.log('[PUBLIC BOOKING] Microsoft token expired, skipping');
+            return [];
+        }
+        
+        const GRAPH_API_URL = 'https://graph.microsoft.com/v1.0';
+        const url = new URL(`${GRAPH_API_URL}/me/calendar/events`);
+        url.searchParams.set('$filter', `start/dateTime ge '${dayStart.toISOString()}' and end/dateTime le '${dayEnd.toISOString()}'`);
+        url.searchParams.set('$orderby', 'start/dateTime');
+        url.searchParams.set('$top', '50');
+        
+        const response = await fetch(url.toString(), {
+            headers: {
+                'Authorization': `Bearer ${credentials.accessToken}`,
+                'Prefer': 'outlook.timezone="Europe/Amsterdam"'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            console.error('[PUBLIC BOOKING] Microsoft Calendar error:', data.error.message);
+            return [];
+        }
+        
+        return (data.value || []).map(event => ({
+            id: 'microsoft-' + event.id,
+            summary: event.subject || 'Bezet',
+            start: event.start?.dateTime ? new Date(event.start.dateTime) : null,
+            end: event.end?.dateTime ? new Date(event.end.dateTime) : null
+        })).filter(e => e.start && e.end);
+    } catch (error) {
+        console.error('[PUBLIC BOOKING] Microsoft Calendar fetch error:', error.message);
         return [];
     }
 }
