@@ -1732,17 +1732,285 @@
     color: white;
 }
 
+/* ========================================
+   APPLE AUTOCOMPLETE DROPDOWN
+   ======================================== */
+
+.apple-autocomplete {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 0.5px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    max-height: 280px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.apple-autocomplete .autocomplete-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    border-bottom: 0.5px solid #f0f0f5;
+}
+
+.apple-autocomplete .autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.apple-autocomplete .autocomplete-item:hover {
+    background: #f5f5f7;
+}
+
+.apple-autocomplete .autocomplete-item.selected {
+    background: #e8f0fe;
+}
+
+.apple-autocomplete .autocomplete-item.no-results {
+    cursor: default;
+    padding: 16px;
+    text-align: center;
+}
+
+.apple-autocomplete .autocomplete-item.no-results:hover {
+    background: transparent;
+}
+
+/* ========================================
+   APPLE SMART PICK SECTION
+   ======================================== */
+
+.apple-smart-pick-section {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    padding: 16px !important;
+}
+
+.apple-smart-pick-section .apple-form-section-title {
+    color: #92400e;
+    margin-bottom: 12px;
+}
+
+/* ========================================
+   APPLE NEW CUSTOMER FORM
+   ======================================== */
+
+.apple-new-customer-form {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 8px;
+    border: 0.5px solid #e8e8ed;
+}
+
+/* ========================================
+   APPLE PIANO CHECKBOXES
+   ======================================== */
+
+.apple-piano-checkboxes {
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 0.5px solid #e8e8ed;
+    min-height: 48px;
+}
+
+/* ========================================
+   APPLE SERVICE PANEL
+   ======================================== */
+
+.apple-service-panel {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.apple-service-panel .service-list {
+    margin-top: 12px;
+}
+
+.apple-service-panel .service-item {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 0.5px solid #e8e8ed;
+}
+
+.apple-service-panel .service-item:last-child {
+    margin-bottom: 0;
+}
+
+.apple-service-panel .service-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.apple-service-panel .service-type {
+    font-weight: 600;
+    color: #1d1d1f;
+    font-size: 14px;
+}
+
+.apple-service-panel .service-date {
+    font-size: 12px;
+    color: #8e8e93;
+}
+
+.apple-service-panel .service-notes {
+    font-size: 13px;
+    color: #636366;
+    line-height: 1.4;
+}
+
+/* ========================================
+   APPLE WIZARD STEPS
+   ======================================== */
+
+.wizard-steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 0 20px;
+    margin-bottom: 8px;
+    border-bottom: 0.5px solid #e8e8ed;
+}
+
+.wizard-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #f5f5f7;
+    transition: all 0.25s ease;
+}
+
+.wizard-step.active {
+    background: linear-gradient(180deg, #007aff 0%, #0055d4 100%);
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+}
+
+.wizard-step.completed {
+    background: #34c759;
+}
+
+.wizard-step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #8e8e93;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+}
+
+.wizard-step.active .wizard-step-number {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.wizard-step.completed .wizard-step-number {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.wizard-step.completed .wizard-step-number::before {
+    content: '✓';
+}
+
+.wizard-step-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #8e8e93;
+    transition: color 0.25s ease;
+}
+
+.wizard-step.active .wizard-step-label,
+.wizard-step.completed .wizard-step-label {
+    color: #ffffff;
+}
+
+/* Hide label on mobile, show only numbers */
 @media (max-width: 480px) {
-    .apple-modal-footer {
-        flex-direction: column;
+    .wizard-step-label {
+        display: none;
     }
     
-    .apple-btn {
-        width: 100%;
+    .wizard-step {
+        padding: 8px;
+    }
+}
+
+/* Wizard content transitions */
+.wizard-content {
+    animation: wizardFadeIn 0.3s ease;
+}
+
+@keyframes wizardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ========================================
+   SMART PICK BUTTON
+   ======================================== */
+
+.btn-smart-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #92400e;
+    background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.2);
+}
+
+.btn-smart-pick:hover {
+    background: linear-gradient(180deg, #fde68a 0%, #fcd34d 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-smart-pick:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+}
+
+.btn-smart-pick i {
+    color: #f59e0b;
+}
+
+/* Responsive: hide text on smaller screens */
+@media (max-width: 600px) {
+    .btn-smart-pick span {
+        display: none;
     }
     
-    .apple-btn-danger {
-        margin-left: 0;
-        order: 3;
+    .btn-smart-pick {
+        padding: 8px 12px;
     }
 }

@@ -15,6 +15,10 @@ let calendarEndHour = parseInt(localStorage.getItem('calendarEndHour') || '18');
 // User timezone (defaults to Europe/Amsterdam)
 let userTimeZone = localStorage.getItem('userTimeZone') || 'Europe/Amsterdam';
 
+// Wizard state
+let currentWizardStep = 1;
+let isWizardMode = true; // true = new appointment wizard, false = edit mode
+
 /**
  * Get hours and minutes from a date string in the user's timezone
  * This ensures consistent display regardless of browser timezone
@@ -1958,6 +1962,173 @@ function setupNewCustomerAutocomplete() {
     });
 }
 
+// ========== WIZARD FUNCTIONS ==========
+
+function initWizardMode() {
+    isWizardMode = true;
+    currentWizardStep = 1;
+    
+    // Show wizard UI
+    document.getElementById('wizard-steps').style.display = 'flex';
+    document.getElementById('wizard-actions').style.display = 'flex';
+    document.getElementById('edit-actions').style.display = 'none';
+    document.getElementById('edit-mode-fields').style.display = 'none';
+    
+    // Show step 1, hide others
+    showWizardStep(1);
+    
+    // Update modal title
+    document.querySelector('#event-modal .apple-modal-title').textContent = 'New Appointment';
+    
+    // Re-init lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function initEditMode(appointment) {
+    isWizardMode = false;
+    
+    // Hide wizard UI
+    document.getElementById('wizard-steps').style.display = 'none';
+    document.getElementById('wizard-actions').style.display = 'none';
+    document.getElementById('wizard-step-1').style.display = 'none';
+    document.getElementById('wizard-step-2').style.display = 'none';
+    document.getElementById('wizard-step-3').style.display = 'none';
+    
+    // Show edit mode UI
+    document.getElementById('edit-actions').style.display = 'flex';
+    document.getElementById('edit-mode-fields').style.display = 'block';
+    
+    // Update modal title
+    document.querySelector('#event-modal .apple-modal-title').textContent = 'Edit Appointment';
+    
+    // Fill edit fields
+    document.getElementById('edit-event-title').value = appointment.summary || '';
+    document.getElementById('edit-event-description').value = appointment.description || '';
+    document.getElementById('edit-event-location').value = appointment.location || '';
+    
+    const startDate = new Date(appointment.start?.dateTime || appointment.start);
+    const endDate = new Date(appointment.end?.dateTime || appointment.end);
+    document.getElementById('edit-event-start').value = formatDateTimeLocal(startDate);
+    document.getElementById('edit-event-end').value = formatDateTimeLocal(endDate);
+    
+    // Display customer, piano, service (read-only)
+    const customer = appointment.customerId ? customersCache.find(c => c.id === appointment.customerId) : null;
+    const piano = appointment.pianoId ? pianosCache.find(p => p.id === appointment.pianoId) : null;
+    const service = appointment.serviceId ? servicesCache.find(s => s.id === appointment.serviceId) : null;
+    
+    document.getElementById('edit-customer-display').textContent = customer?.name || '-';
+    document.getElementById('edit-piano-display').textContent = piano ? `${piano.brand || ''} ${piano.model || ''}`.trim() : '-';
+    document.getElementById('edit-service-display').textContent = service?.name || '-';
+    
+    // Re-init lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function showWizardStep(step) {
+    currentWizardStep = step;
+    
+    // Hide all steps
+    document.getElementById('wizard-step-1').style.display = 'none';
+    document.getElementById('wizard-step-2').style.display = 'none';
+    document.getElementById('wizard-step-3').style.display = 'none';
+    
+    // Show current step
+    document.getElementById(`wizard-step-${step}`).style.display = 'block';
+    
+    // Update step indicators
+    document.querySelectorAll('.wizard-step').forEach((el, i) => {
+        const stepNum = i + 1;
+        el.classList.remove('active', 'completed');
+        if (stepNum < step) {
+            el.classList.add('completed');
+        } else if (stepNum === step) {
+            el.classList.add('active');
+        }
+    });
+    
+    // Update navigation buttons
+    const backBtn = document.getElementById('wizard-back-btn');
+    const nextBtn = document.getElementById('wizard-next-btn');
+    const saveBtn = document.getElementById('wizard-save-btn');
+    
+    backBtn.style.display = step > 1 ? 'flex' : 'none';
+    
+    if (step === 3) {
+        nextBtn.style.display = 'none';
+        saveBtn.style.display = 'flex';
+        
+        // Check if we have preselected data from Smart Pick
+        const modal = document.getElementById('event-modal');
+        const preselectedService = modal.dataset.preselectedService;
+        const preselectedStart = modal.dataset.preselectedStart;
+        const preselectedEnd = modal.dataset.preselectedEnd;
+        
+        if (preselectedService && preselectedStart && preselectedEnd) {
+            // Set service
+            document.getElementById('event-service').value = preselectedService;
+            
+            // Set times
+            const startDate = new Date(preselectedStart);
+            const endDate = new Date(preselectedEnd);
+            document.getElementById('event-start').value = formatDateTimeLocal(startDate);
+            document.getElementById('event-end').value = formatDateTimeLocal(endDate);
+            
+            // Clear preselected data to avoid re-applying
+            delete modal.dataset.preselectedService;
+            delete modal.dataset.preselectedStart;
+            delete modal.dataset.preselectedEnd;
+            
+            // Trigger service change to update duration display
+            updatePianoDurationDisplay();
+        }
+    } else {
+        nextBtn.style.display = 'flex';
+        saveBtn.style.display = 'none';
+    }
+    
+    // Focus on relevant field
+    setTimeout(() => {
+        if (step === 1) {
+            document.getElementById('event-customer-search')?.focus();
+        } else if (step === 3) {
+            document.getElementById('event-service')?.focus();
+        }
+    }, 100);
+}
+
+function wizardNext() {
+    // Validate current step before proceeding
+    if (currentWizardStep === 1) {
+        const customerId = document.getElementById('event-customer').value;
+        if (!customerId) {
+            showNotification('Please select a customer first', 'warning');
+            document.getElementById('event-customer-search')?.focus();
+            return;
+        }
+        // Trigger customer change to load pianos
+        onCustomerChange();
+    }
+    
+    if (currentWizardStep === 2) {
+        // Piano selection is optional, but we should have loaded them
+        // Just proceed to step 3
+    }
+    
+    if (currentWizardStep < 3) {
+        showWizardStep(currentWizardStep + 1);
+    }
+}
+
+function wizardBack() {
+    if (currentWizardStep > 1) {
+        showWizardStep(currentWizardStep - 1);
+    }
+}
+
 function openModal() {
     // Don't reopen if already open
     const modal = document.getElementById('event-modal');
@@ -1969,6 +2140,9 @@ function openModal() {
     
     // Load customers, pianos, services
     loadModalData();
+    
+    // Initialize wizard mode for new appointments
+    initWizardMode();
     
     // Set default start time based on current view - rounded to next quarter hour
     const startDate = new Date(currentDate);
@@ -2011,6 +2185,9 @@ function openModalWithTime(element) {
     // Load customers, pianos, services
     loadModalData();
     
+    // Initialize wizard mode for new appointments
+    initWizardMode();
+    
     // Create start date from clicked slot - round to nearest quarter if needed
     const startDate = new Date(dateStr + 'T' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0') + ':00');
     // Round to nearest 15 minutes
@@ -2020,12 +2197,6 @@ function openModalWithTime(element) {
     
     document.getElementById('event-start').value = formatDateTimeLocal(startDate);
     document.getElementById('event-end').value = formatDateTimeLocal(endDate);
-    
-    // Focus on customer search field first
-    setTimeout(() => {
-        const searchInput = document.getElementById('event-customer-search');
-        if (searchInput) searchInput.focus();
-    }, 100);
 }
 
 // Format date for data attribute (YYYY-MM-DD)
@@ -2059,53 +2230,11 @@ async function openEditModal(appointmentId) {
     
     modal.style.display = 'flex';
     
-    // Update modal title
-    document.querySelector('#event-modal .modal-header h2').textContent = 'Edit Appointment';
-    
-    // Show delete button
-    document.getElementById('delete-appointment-btn').style.display = 'block';
-    
     // Load customers, pianos, services first
     await loadModalData();
     
-    // Fill in the form with existing data
-    document.getElementById('event-title').value = appointment.summary || '';
-    document.getElementById('event-description').value = appointment.description || '';
-    document.getElementById('event-location').value = appointment.location || '';
-    
-    // Parse dates
-    const startDate = new Date(appointment.start?.dateTime || appointment.start);
-    const endDate = new Date(appointment.end?.dateTime || appointment.end);
-    document.getElementById('event-start').value = formatDateTimeLocal(startDate);
-    document.getElementById('event-end').value = formatDateTimeLocal(endDate);
-    
-    // Set customer if exists
-    if (appointment.customerId) {
-        const customer = customersCache.find(c => c.id === appointment.customerId);
-        if (customer) {
-            const searchInput = document.getElementById('event-customer-search');
-            const hiddenInput = document.getElementById('event-customer');
-            if (searchInput) searchInput.value = customer.name;
-            if (hiddenInput) hiddenInput.value = appointment.customerId;
-            onCustomerChange(); // Load pianos for this customer
-        }
-        
-        // Set piano checkbox after pianos are loaded
-        setTimeout(() => {
-            if (appointment.pianoId) {
-                const checkbox = document.querySelector(`#piano-checkboxes input[value="${appointment.pianoId}"]`);
-                if (checkbox) {
-                    checkbox.checked = true;
-                    onPianoCheckboxChange(checkbox);
-                }
-            }
-        }, 100);
-    }
-    
-    // Set service if exists
-    if (appointment.serviceId) {
-        document.getElementById('event-service').value = appointment.serviceId;
-    }
+    // Initialize EDIT mode (no wizard, no Smart Pick)
+    initEditMode(appointment);
 }
 
 // ========== ACTION SHEET FOR APPOINTMENT CRUD ==========
@@ -2348,36 +2477,358 @@ function closeModal(force = false) {
     // Clear customer search
     clearCustomerSelection();
     
-    // Reset edit mode
+    // Reset edit mode and wizard state
     editingAppointmentId = null;
-    document.querySelector('#event-modal .modal-header h2').textContent = 'New Appointment';
-    document.getElementById('delete-appointment-btn').style.display = 'none';
+    isWizardMode = true;
+    currentWizardStep = 1;
 }
+
+// ============================================
+// SMART PICK MODAL FUNCTIONS
+// ============================================
+
+function openSmartPickModal() {
+    const modal = document.getElementById('smart-pick-modal');
+    modal.style.display = 'flex';
+    
+    // Set default date to today
+    const today = new Date();
+    document.getElementById('smart-date-input').value = today.toISOString().split('T')[0];
+    
+    // Clear previous selection
+    document.getElementById('smart-customer-search').value = '';
+    document.getElementById('smart-customer-id').value = '';
+    document.getElementById('smart-pick-result').style.display = 'none';
+    
+    // Populate services dropdown
+    populateSmartPickServices();
+    
+    // Setup customer autocomplete
+    setupSmartPickCustomerSearch();
+    
+    lucide.createIcons();
+}
+
+function closeSmartPickModal() {
+    const modal = document.getElementById('smart-pick-modal');
+    modal.style.display = 'none';
+    
+    // Clear fields
+    document.getElementById('smart-customer-search').value = '';
+    document.getElementById('smart-customer-id').value = '';
+    document.getElementById('smart-service-select').value = '';
+    document.getElementById('smart-pick-result').style.display = 'none';
+    document.getElementById('smart-customer-results').style.display = 'none';
+}
+
+async function populateSmartPickServices() {
+    const serviceSelect = document.getElementById('smart-service-select');
+    serviceSelect.innerHTML = '<option value="">-- Select service --</option>';
+    
+    try {
+        const response = await fetch('/api/services');
+        const services = await response.json();
+        services.forEach(service => {
+            const option = document.createElement('option');
+            option.value = service.id;
+            option.textContent = `${service.name} (${service.duration} min)`;
+            serviceSelect.appendChild(option);
+        });
+    } catch (err) {
+        console.error('Error loading services:', err);
+    }
+}
+
+function setupSmartPickCustomerSearch() {
+    const searchInput = document.getElementById('smart-customer-search');
+    const resultsDiv = document.getElementById('smart-customer-results');
+    const hiddenInput = document.getElementById('smart-customer-id');
+    
+    let debounceTimer;
+    
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+        
+        if (query.length < 2) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+        
+        debounceTimer = setTimeout(async () => {
+            try {
+                const response = await fetch(`/api/customers?search=${encodeURIComponent(query)}`);
+                const customers = await response.json();
+                
+                if (customers.length === 0) {
+                    resultsDiv.innerHTML = '<div class="autocomplete-item no-results">No customers found</div>';
+                    resultsDiv.style.display = 'block';
+                    return;
+                }
+                
+                resultsDiv.innerHTML = customers.slice(0, 8).map(customer => `
+                    <div class="autocomplete-item" onclick="selectSmartPickCustomer(${customer.id}, '${escapeHtml(customer.name)}')">
+                        <strong>${escapeHtml(customer.name)}</strong>
+                        ${customer.city ? `<span style="color: var(--gray-500); margin-left: 8px;">${escapeHtml(customer.city)}</span>` : ''}
+                    </div>
+                `).join('');
+                resultsDiv.style.display = 'block';
+            } catch (err) {
+                console.error('Search error:', err);
+            }
+        }, 200);
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+            resultsDiv.style.display = 'none';
+        }
+    });
+}
+
+function selectSmartPickCustomer(id, name) {
+    document.getElementById('smart-customer-search').value = name;
+    document.getElementById('smart-customer-id').value = id;
+    document.getElementById('smart-customer-results').style.display = 'none';
+}
+
+async function findSmartSlotFromModal() {
+    const customerId = document.getElementById('smart-customer-id').value;
+    const serviceId = document.getElementById('smart-service-select').value;
+    const date = document.getElementById('smart-date-input').value;
+    const resultDiv = document.getElementById('smart-pick-result');
+    const btn = document.getElementById('find-slot-btn');
+    
+    if (!customerId) {
+        alert('Please select a customer');
+        return;
+    }
+    if (!serviceId) {
+        alert('Please select a service');
+        return;
+    }
+    if (!date) {
+        alert('Please select a date');
+        return;
+    }
+    
+    // Show loading
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+        <div style="text-align: center; padding: 16px; color: var(--gray-500);">
+            <i data-lucide="loader" class="spin" style="width:20px;height:20px;display:inline-block;vertical-align:middle;"></i>
+            <span style="margin-left: 8px;">Finding optimal time...</span>
+        </div>
+    `;
+    btn.disabled = true;
+    lucide.createIcons();
+    
+    try {
+        const requestBody = {
+            serviceId,
+            customerId,
+            date,
+            maxSlots: 4,
+            skipSlots: 0
+        };
+        
+        const response = await fetch('/api/booking/find-slot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+        
+        const data = await response.json();
+        
+        if (data.available && data.slots && data.slots.length > 0) {
+            // Get date display
+            const dateObj = new Date(date);
+            const dateDisplay = dateObj.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+            
+            // Build slots HTML
+            const slotsHtml = data.slots.map(slotData => {
+                const startTime = new Date(slotData.slot.appointmentStart);
+                const endTime = new Date(slotData.slot.appointmentEnd);
+                const timeStr = `${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })} - ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })}`;
+                
+                return `
+                    <div class="smart-slot-option" 
+                         style="display: flex; align-items: center; justify-content: space-between; 
+                                background: white; border: 1px solid #e5e5e5; border-radius: 8px; 
+                                padding: 12px 14px; cursor: pointer; transition: all 0.15s ease;"
+                         onmouseover="this.style.borderColor='#f59e0b'; this.style.background='#fffbeb'"
+                         onmouseout="this.style.borderColor='#e5e5e5'; this.style.background='white'"
+                         onclick="applySmartPickSlot('${slotData.slot.appointmentStart}', '${slotData.slot.appointmentEnd}', '${customerId}', '${serviceId}')">
+                        <div style="font-weight: 500; font-size: 15px;">${timeStr}</div>
+                        <div style="color: #f59e0b; font-size: 18px;">→</div>
+                    </div>
+                `;
+            }).join('');
+            
+            resultDiv.innerHTML = `
+                <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 14px;">
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-weight: 600; color: #333; margin-bottom: 4px;">
+                            <i data-lucide="calendar" style="width:14px;height:14px;display:inline-block;vertical-align:middle;color:#f59e0b;"></i>
+                            ${dateDisplay}
+                        </div>
+                        <div style="font-size: 12px; color: var(--gray-500);">
+                            <i data-lucide="car" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i> ${data.travelInfo?.durationText || 'N/A'} • 
+                            <i data-lucide="clock" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i> ${data.service?.duration || '?'} min
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        ${slotsHtml}
+                    </div>
+                    <div style="font-size: 11px; color: var(--gray-400); text-align: center; margin-top: 8px;">
+                        Click a time to create appointment
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            
+        } else {
+            // No slots found
+            let errorMessage = data.message || 'No availability';
+            if (data.message === 'not_available_on_day' && typeof data.dayIndex !== 'undefined') {
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                errorMessage = `Not available on ${days[data.dayIndex]}`;
+            } else if (data.message === 'no_slots_on_day') {
+                errorMessage = 'No available times on this day';
+            }
+            
+            resultDiv.innerHTML = `
+                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 10px; padding: 14px; text-align: center;">
+                    <div style="color: #b45309;">
+                        <i data-lucide="alert-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 
+                        ${errorMessage}
+                    </div>
+                    <div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">
+                        Try a different date
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+    } catch (err) {
+        console.error('Smart pick error:', err);
+        resultDiv.innerHTML = `
+            <div style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 10px; padding: 14px; text-align: center; color: #dc2626;">
+                Error finding slot. Please try again.
+            </div>
+        `;
+    }
+    
+    btn.disabled = false;
+}
+
+async function applySmartPickSlot(startStr, endStr, customerId, serviceId) {
+    // Close smart pick modal
+    closeSmartPickModal();
+    
+    // Open the appointment modal in wizard mode
+    const startDate = new Date(startStr);
+    const endDate = new Date(endStr);
+    
+    // Initialize wizard mode
+    isWizardMode = true;
+    currentWizardStep = 1;
+    editingAppointmentId = null;
+    
+    const modal = document.getElementById('event-modal');
+    modal.style.display = 'flex';
+    
+    // Reset form
+    document.getElementById('event-form').reset();
+    
+    // Load modal data first (customers, pianos, services)
+    await loadModalData();
+    
+    // Show wizard elements, hide edit-mode elements
+    initWizardMode();
+    showWizardStep(1);
+    
+    // Pre-select customer
+    try {
+        const customerResponse = await fetch(`/api/customers/${customerId}`);
+        const customer = await customerResponse.json();
+        
+        if (customer) {
+            document.getElementById('event-customer-search').value = customer.name;
+            document.getElementById('event-customer').value = customer.id;
+            
+            // Set location if available
+            const customerAddress = [customer.address || customer.street, customer.city, customer.postalCode].filter(Boolean).join(', ');
+            if (customerAddress) {
+                document.getElementById('event-location').value = customerAddress;
+            }
+            
+            // Trigger customer change to load pianos (uses pianosCache)
+            onCustomerChange(customerAddress);
+            
+            // Now move to step 2
+            currentWizardStep = 2;
+            showWizardStep(2);
+            
+            // After pianos step, pre-select service and set times
+            // Store these for when they reach step 3
+            modal.dataset.preselectedService = serviceId;
+            modal.dataset.preselectedStart = startStr;
+            modal.dataset.preselectedEnd = endStr;
+        }
+    } catch (err) {
+        console.error('Error loading customer:', err);
+    }
+    
+    lucide.createIcons();
+}
+
+// ============================================
+// END SMART PICK MODAL FUNCTIONS
+// ============================================
 
 async function handleEventSubmit(e) {
     e.preventDefault();
     
-    const customerId = document.getElementById('event-customer').value;
-    const selectedPianoIds = getSelectedPianoIds();
-    const serviceId = document.getElementById('event-service').value;
-    const title = document.getElementById('event-title').value;
-    const description = document.getElementById('event-description').value;
-    const location = document.getElementById('event-location').value;
-    const start = document.getElementById('event-start').value;
-    const end = document.getElementById('event-end').value;
-    const sendConfirmation = document.getElementById('send-confirmation')?.checked || false;
+    let title, description, location, start, end, customerId, selectedPianoIds, serviceId, sendConfirmation;
+    
+    if (isWizardMode) {
+        // New appointment - get from wizard fields
+        customerId = document.getElementById('event-customer').value;
+        selectedPianoIds = getSelectedPianoIds();
+        serviceId = document.getElementById('event-service').value;
+        title = document.getElementById('event-title').value;
+        description = document.getElementById('event-description').value;
+        location = document.getElementById('event-location').value;
+        start = document.getElementById('event-start').value;
+        end = document.getElementById('event-end').value;
+        sendConfirmation = document.getElementById('send-confirmation')?.checked || false;
+    } else {
+        // Edit mode - get from edit fields
+        const appointment = allEvents.find(e => e.id === editingAppointmentId);
+        customerId = appointment?.customerId || null;
+        selectedPianoIds = appointment?.pianoIds || (appointment?.pianoId ? [appointment.pianoId] : []);
+        serviceId = appointment?.serviceId || null;
+        title = document.getElementById('edit-event-title').value;
+        description = document.getElementById('edit-event-description').value;
+        location = document.getElementById('edit-event-location').value;
+        start = document.getElementById('edit-event-start').value;
+        end = document.getElementById('edit-event-end').value;
+        sendConfirmation = false;
+    }
     
     // Get names from cache (use == for loose comparison since dropdown values are strings)
-    const customer = customersCache.find(c => String(c.id) === customerId);
-    const service = servicesCache.find(s => String(s.id) === serviceId);
+    const customer = customersCache.find(c => String(c.id) === String(customerId));
+    const service = servicesCache.find(s => String(s.id) === String(serviceId));
     
     // Get first piano for backward compatibility
     const firstPianoId = selectedPianoIds.length > 0 ? selectedPianoIds[0] : null;
-    const firstPiano = firstPianoId ? pianosCache.find(p => String(p.id) === firstPianoId) : null;
+    const firstPiano = firstPianoId ? pianosCache.find(p => String(p.id) === String(firstPianoId)) : null;
     
     // Build piano names for description
     const selectedPianoNames = selectedPianoIds.map(id => {
-        const piano = pianosCache.find(p => String(p.id) === id);
+        const piano = pianosCache.find(p => String(p.id) === String(id));
         return piano ? `${piano.brand || ''} ${piano.model || ''}`.trim() : 'Piano';
     });
     

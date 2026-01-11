@@ -1124,6 +1124,10 @@
         <div class="dashboard-header">
             <h1 style="display: flex; align-items: center; gap: 10px;"><i data-lucide="calendar" style="width: 22px; height: 22px;"></i> <span data-i18n="nav.dashboard">Calendar</span></h1>
             <div class="header-actions">
+                <button id="smart-pick-btn" class="btn btn-smart-pick" onclick="openSmartPickModal()">
+                    <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i> 
+                    <span>Smart Pick</span>
+                </button>
                 <button id="add-event-btn" class="btn btn-primary"><i data-lucide="plus" style="width: 16px; height: 16px;"></i> <span data-i18n="appointments.newAppointment">Appointment</span></button>
             </div>
         </div>
@@ -1227,146 +1231,328 @@
         </div>
     </main>
 
-    <!-- Modal for new event -->
-    <div id="event-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>New Appointment</h2>
-                <button class="modal-close" onclick="closeModal(true)">&times;</button>
+    <!-- Modal for new event - Apple Style Wizard -->
+    <div id="event-modal" class="apple-modal" style="display: none;">
+        <div class="apple-modal-backdrop" onclick="closeModal(true)"></div>
+        <div class="apple-modal-content">
+            <div class="apple-modal-header">
+                <button class="apple-modal-close" onclick="closeModal(true)">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <path d="M1.41 0L5 3.59 8.59 0 10 1.41 6.41 5 10 8.59 8.59 10 5 6.41 1.41 10 0 8.59 3.59 5 0 1.41z"/>
+                    </svg>
+                </button>
+                <h2 class="apple-modal-title">New Appointment</h2>
+                <div style="width: 30px;"></div>
             </div>
-            <form id="event-form">
-                <!-- SECTION 1: Basis info - Titel en Tijd -->
-                <div class="form-group">
-                    <label for="event-title">Title *</label>
-                    <input type="text" id="event-title" required placeholder="e.g. Tune Steinway">
+            <form id="event-form" class="apple-modal-body">
+                
+                <!-- WIZARD STEP INDICATOR (alleen bij nieuwe afspraak) -->
+                <div id="wizard-steps" class="wizard-steps" style="display: none;">
+                    <div class="wizard-step active" data-step="1">
+                        <span class="wizard-step-number">1</span>
+                        <span class="wizard-step-label">Customer</span>
+                    </div>
+                    <div class="wizard-step" data-step="2">
+                        <span class="wizard-step-number">2</span>
+                        <span class="wizard-step-label">Piano</span>
+                    </div>
+                    <div class="wizard-step" data-step="3">
+                        <span class="wizard-step-number">3</span>
+                        <span class="wizard-step-label">Service & Time</span>
+                    </div>
                 </div>
                 
-                <div class="form-row" id="datetime-row">
-                    <div class="form-group">
-                        <label for="event-start">Start *</label>
-                        <input type="datetime-local" id="event-start" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="event-end">End *</label>
-                        <input type="datetime-local" id="event-end" required>
+                <!-- STEP 1: Customer Selection -->
+                <div id="wizard-step-1" class="wizard-content">
+                    <div class="apple-form-section">
+                        <div class="apple-form-section-title">
+                            <i data-lucide="user" style="width: 16px; height: 16px; color: var(--primary-color);"></i>
+                            Select or Create Customer
+                        </div>
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="event-customer-search" data-i18n="dashboard.customer">Customer *</label>
+                            <div style="display: flex; gap: 8px;">
+                                <div style="flex: 1; position: relative;">
+                                    <input type="text" id="event-customer-search" class="apple-form-input" placeholder="Search customer..." autocomplete="off" data-i18n-placeholder="dashboard.searchCustomer">
+                                    <input type="hidden" id="event-customer">
+                                    <div id="customer-search-results" class="autocomplete-suggestions apple-autocomplete" style="display: none;"></div>
+                                </div>
+                                <button type="button" class="apple-btn-secondary" onclick="openNewCustomerForm()" title="Add new customer" style="padding: 0 12px; min-width: 40px;">+</button>
+                            </div>
+                        </div>
+                        
+                        <!-- New Customer Form (embedded) -->
+                        <div id="new-customer-form" class="apple-new-customer-form" style="display: none;">
+                            <div class="apple-form-section-title" style="font-size: 13px; color: var(--primary-color);">New Customer</div>
+                            <div class="apple-form-field">
+                                <label class="apple-form-label" for="new-customer-name">Name *</label>
+                                <input type="text" id="new-customer-name" class="apple-form-input" placeholder="Full name">
+                            </div>
+                            <div class="apple-form-grid">
+                                <div class="apple-form-field">
+                                    <label class="apple-form-label" for="new-customer-email">Email</label>
+                                    <input type="email" id="new-customer-email" class="apple-form-input" placeholder="email@example.com">
+                                </div>
+                                <div class="apple-form-field">
+                                    <label class="apple-form-label" for="new-customer-phone">Phone</label>
+                                    <input type="tel" id="new-customer-phone" class="apple-form-input" placeholder="06-12345678">
+                                </div>
+                            </div>
+                            <div class="apple-form-field" style="position: relative;">
+                                <label class="apple-form-label" for="new-customer-street">Street + number</label>
+                                <input type="text" id="new-customer-street" class="apple-form-input" placeholder="Street name 123" autocomplete="off">
+                                <div id="new-customer-suggestions" class="autocomplete-suggestions apple-autocomplete" style="display: none;"></div>
+                            </div>
+                            <div class="apple-form-grid">
+                                <div class="apple-form-field">
+                                    <label class="apple-form-label" for="new-customer-postalcode">Postal code</label>
+                                    <input type="text" id="new-customer-postalcode" class="apple-form-input" placeholder="1234 AB">
+                                </div>
+                                <div class="apple-form-field">
+                                    <label class="apple-form-label" for="new-customer-city">City</label>
+                                    <input type="text" id="new-customer-city" class="apple-form-input" placeholder="City">
+                                </div>
+                            </div>
+                            <div class="apple-form-actions" style="justify-content: flex-end; padding-top: 8px;">
+                                <button type="button" class="apple-btn-secondary" onclick="cancelNewCustomer()">Cancel</button>
+                                <button type="button" class="apple-btn-primary" onclick="saveNewCustomer()">Add customer</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- SECTION 2: Smart Pick - alleen voor nieuwe afspraken of bij wijzigen tijd -->
-                <div id="smart-appointment-section" class="form-group" style="display: none; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 12px; border-radius: 10px; border: 1px solid #f59e0b33;">
-                    <label style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                        <i data-lucide="sparkles" style="width:16px;height:16px;color:#f59e0b;"></i>
-                        <span style="font-weight: 600; color: #92400e;">Smart Pick</span>
-                        <span style="font-size: 11px; color: #a16207; font-weight: normal;">— find optimal time</span>
-                    </label>
-                    <div style="display: flex; gap: 10px; align-items: flex-end;">
-                        <div style="flex: 1;">
-                            <input type="date" id="smart-date" style="width: 100%;">
+                <!-- STEP 2: Piano Selection -->
+                <div id="wizard-step-2" class="wizard-content" style="display: none;">
+                    <div class="apple-form-section">
+                        <div class="apple-form-section-title">
+                            <i data-lucide="piano" style="width: 16px; height: 16px; color: var(--primary-color);"></i>
+                            Select Piano(s)
                         </div>
-                        <button type="button" id="find-smart-slot-btn" class="btn btn-primary" onclick="findSmartSlot()" style="white-space: nowrap; background: #f59e0b; border-color: #d97706;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                            </svg>
-                            Find time
-                        </button>
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Piano's for this appointment</span>
+                                <span id="piano-duration-display" style="font-size: 11px; color: var(--gray-500); font-weight: normal;"></span>
+                            </label>
+                            <div id="piano-checkboxes" class="piano-checkbox-container apple-piano-checkboxes">
+                                <div class="piano-checkbox-placeholder" style="color: var(--gray-400); font-size: 13px; padding: 12px; text-align: center;">
+                                    No pianos available
+                                </div>
+                            </div>
+                            <p class="apple-form-hint" style="margin-top: 8px;">Select one or more pianos. Duration is calculated automatically.</p>
+                        </div>
                     </div>
-                    <div id="smart-result" style="margin-top: 10px; display: none;"></div>
                 </div>
                 
-                <hr style="border: none; border-top: 1px solid var(--gray-200); margin: 16px 0;">
-                
-                <!-- SECTION 3: Klant en Piano -->
-                <div class="form-group">
-                    <label for="event-customer-search" data-i18n="dashboard.customer">Customer</label>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <div style="flex: 1; position: relative;">
-                            <input type="text" id="event-customer-search" placeholder="Search customer..." autocomplete="off" data-i18n-placeholder="dashboard.searchCustomer">
-                            <input type="hidden" id="event-customer">
-                            <div id="customer-search-results" class="autocomplete-suggestions" style="display: none;"></div>
+                <!-- STEP 3: Service & Time -->
+                <div id="wizard-step-3" class="wizard-content" style="display: none;">
+                    <div class="apple-form-section">
+                        <div class="apple-form-section-title">
+                            <i data-lucide="wrench" style="width: 16px; height: 16px; color: var(--primary-color);"></i>
+                            Service & Time
                         </div>
-                        <button type="button" class="btn btn-secondary" onclick="openNewCustomerForm()" title="Add new customer">+</button>
-                    </div>
-                </div>
-                <div id="new-customer-form" style="display: none; background: var(--light-gray); padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
-                    <h4 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: var(--primary-color);">New Customer</h4>
-                    <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label for="new-customer-name">Name *</label>
-                        <input type="text" id="new-customer-name" placeholder="Full name">
-                    </div>
-                    <div class="form-row" style="margin-bottom: 0.5rem;">
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="new-customer-email">Email</label>
-                            <input type="email" id="new-customer-email" placeholder="email@example.com">
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="event-service">Service *</label>
+                            <select id="event-service" class="apple-form-select" onchange="onServiceChange()">
+                                <option value="">-- Select service --</option>
+                            </select>
                         </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label for="new-customer-phone">Phone</label>
-                            <input type="tel" id="new-customer-phone" placeholder="06-12345678">
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="event-title">Title *</label>
+                            <input type="text" id="event-title" class="apple-form-input" required placeholder="e.g. Tune Steinway">
                         </div>
-                    </div>
-                    <div class="form-group" style="margin-bottom: 0.5rem; position: relative;">
-                        <label for="new-customer-street">Street + number</label>
-                        <input type="text" id="new-customer-street" placeholder="Street name 123" autocomplete="off">
-                        <div id="new-customer-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
-                    </div>
-                    <div class="form-row" style="margin-bottom: 0.5rem;">
-                        <div class="form-group" style="margin-bottom: 0; flex: 1;">
-                            <label for="new-customer-postalcode">Postal code</label>
-                            <input type="text" id="new-customer-postalcode" placeholder="1234 AB">
+                        
+                        <div class="apple-form-grid" id="datetime-row">
+                            <div class="apple-form-field">
+                                <label class="apple-form-label" for="event-start">Start time *</label>
+                                <input type="datetime-local" id="event-start" class="apple-form-input" required>
+                            </div>
+                            <div class="apple-form-field">
+                                <label class="apple-form-label" for="event-end">
+                                    End time
+                                    <span id="auto-end-badge" style="font-size: 10px; background: #e8f4fd; color: var(--primary-color); padding: 2px 6px; border-radius: 4px; margin-left: 6px;">Auto</span>
+                                </label>
+                                <input type="datetime-local" id="event-end" class="apple-form-input" required>
+                            </div>
                         </div>
-                        <div class="form-group" style="margin-bottom: 0; flex: 2;">
-                            <label for="new-customer-city">City</label>
-                            <input type="text" id="new-customer-city" placeholder="City">
+                        <p class="apple-form-hint" id="duration-hint" style="margin-top: -8px;">End time calculated: service duration + buffer</p>
+                    </div>
+                    
+                    <div class="apple-form-divider"></div>
+                    
+                    <div class="apple-form-section">
+                        <div class="apple-form-section-title">Location & Notes</div>
+                        
+                        <div class="apple-form-field" style="position: relative;">
+                            <label class="apple-form-label" for="event-location">Location</label>
+                            <input type="text" id="event-location" class="apple-form-input" placeholder="Address (auto-filled from customer)" autocomplete="off">
+                            <div id="location-suggestions" class="autocomplete-suggestions apple-autocomplete" style="display: none;"></div>
                         </div>
-                    </div>
-                    <div class="form-group" style="margin-bottom: 0.5rem;">
-                        <label for="new-customer-piano">Piano/Grand piano brand (optional)</label>
-                        <input type="text" id="new-customer-piano" placeholder="e.g. Steinway, Yamaha, Kawai">
-                    </div>
-                    <div class="form-actions" style="justify-content: flex-end;">
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="cancelNewCustomer()">Cancel</button>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="saveNewCustomer()">Add customer</button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>Piano's</span>
-                        <span id="piano-duration-display" style="font-size: 11px; color: var(--gray-500); font-weight: normal;"></span>
-                    </label>
-                    <div id="piano-checkboxes" class="piano-checkbox-container">
-                        <div class="piano-checkbox-placeholder" style="color: var(--gray-400); font-size: 13px; padding: 8px 0;">
-                            Select a customer first
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="event-description">Notes</label>
+                            <textarea id="event-description" class="apple-form-textarea" rows="2" placeholder="Additional info..."></textarea>
+                        </div>
+                        
+                        <div id="send-confirmation-wrapper" class="apple-toggle-row" style="display: none;">
+                            <div class="apple-toggle-info">
+                                <span class="apple-toggle-label" id="send-confirmation-label">Send confirmation email to customer</span>
+                            </div>
+                            <label class="apple-toggle">
+                                <input type="checkbox" id="send-confirmation">
+                                <span class="apple-toggle-slider"></span>
+                            </label>
                         </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="event-service">Service</label>
-                    <select id="event-service" onchange="onServiceChange()">
-                        <option value="">-- Select service --</option>
-                    </select>
                 </div>
                 
-                <!-- SECTION 4: Locatie en Notes -->
-                <div class="form-group" style="position: relative;">
-                    <label for="event-location">Location</label>
-                    <input type="text" id="event-location" placeholder="Address" autocomplete="off">
-                    <div id="location-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
+                <!-- EDIT MODE: All fields visible (no wizard) -->
+                <div id="edit-mode-fields" style="display: none;">
+                    <div class="apple-form-section">
+                        <div class="apple-form-section-title">Appointment Details</div>
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="edit-event-title">Title *</label>
+                            <input type="text" id="edit-event-title" class="apple-form-input" placeholder="e.g. Tune Steinway">
+                        </div>
+                        
+                        <div class="apple-form-grid">
+                            <div class="apple-form-field">
+                                <label class="apple-form-label" for="edit-event-start">Start *</label>
+                                <input type="datetime-local" id="edit-event-start" class="apple-form-input">
+                            </div>
+                            <div class="apple-form-field">
+                                <label class="apple-form-label" for="edit-event-end">End *</label>
+                                <input type="datetime-local" id="edit-event-end" class="apple-form-input">
+                            </div>
+                        </div>
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label">Customer</label>
+                            <div id="edit-customer-display" class="apple-form-static" style="padding: 10px 12px; background: #f8f9fa; border-radius: 8px; color: var(--gray-700);">-</div>
+                        </div>
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label">Piano</label>
+                            <div id="edit-piano-display" class="apple-form-static" style="padding: 10px 12px; background: #f8f9fa; border-radius: 8px; color: var(--gray-700);">-</div>
+                        </div>
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label">Service</label>
+                            <div id="edit-service-display" class="apple-form-static" style="padding: 10px 12px; background: #f8f9fa; border-radius: 8px; color: var(--gray-700);">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="apple-form-divider"></div>
+                    
+                    <div class="apple-form-section">
+                        <div class="apple-form-section-title">Location & Notes</div>
+                        
+                        <div class="apple-form-field" style="position: relative;">
+                            <label class="apple-form-label" for="edit-event-location">Location</label>
+                            <input type="text" id="edit-event-location" class="apple-form-input" placeholder="Address" autocomplete="off">
+                        </div>
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="edit-event-description">Notes</label>
+                            <textarea id="edit-event-description" class="apple-form-textarea" rows="2" placeholder="Additional info..."></textarea>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="event-description">Notes</label>
-                    <textarea id="event-description" rows="2" placeholder="Additional info..."></textarea>
+                
+                <!-- WIZARD NAVIGATION -->
+                <div class="apple-form-actions" id="wizard-actions">
+                    <button type="button" id="wizard-back-btn" class="apple-btn-secondary" onclick="wizardBack()" style="display: none;">
+                        <i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
+                        Back
+                    </button>
+                    <div style="flex: 1;"></div>
+                    <button type="button" class="apple-btn-secondary" onclick="closeModal(true)">Cancel</button>
+                    <button type="button" id="wizard-next-btn" class="apple-btn-primary" onclick="wizardNext()">
+                        Next
+                        <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i>
+                    </button>
+                    <button type="submit" id="wizard-save-btn" class="apple-btn-primary" style="display: none;">
+                        <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                        Save
+                    </button>
                 </div>
-                <div id="send-confirmation-wrapper" class="form-group" style="display: none;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: normal;">
-                        <input type="checkbox" id="send-confirmation" style="width: 18px; height: 18px; accent-color: var(--primary-color);">
-                        <span id="send-confirmation-label">Send confirmation email to customer</span>
-                    </label>
-                </div>
-                <div class="form-actions">
-                    <button type="button" id="delete-appointment-btn" class="btn btn-danger" onclick="deleteCurrentAppointment()" style="display: none; margin-right: auto;">Delete</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal(true)">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                
+                <!-- EDIT MODE ACTIONS -->
+                <div class="apple-form-actions" id="edit-actions" style="display: none;">
+                    <button type="button" id="delete-appointment-btn" class="apple-btn-danger" onclick="deleteCurrentAppointment()" style="margin-right: auto;">
+                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                        Delete
+                    </button>
+                    <button type="button" class="apple-btn-secondary" onclick="closeModal(true)">Cancel</button>
+                    <button type="submit" class="apple-btn-primary">
+                        <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                        Save
+                    </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Smart Pick Modal -->
+    <div id="smart-pick-modal" class="apple-modal" style="display: none;">
+        <div class="apple-modal-backdrop" onclick="closeSmartPickModal()"></div>
+        <div class="apple-modal-content" style="max-width: 500px;">
+            <div class="apple-modal-header">
+                <button class="apple-modal-close" onclick="closeSmartPickModal()">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <path d="M1.41 0L5 3.59 8.59 0 10 1.41 6.41 5 10 8.59 8.59 10 5 6.41 1.41 10 0 8.59 3.59 5 0 1.41z"/>
+                    </svg>
+                </button>
+                <h2 class="apple-modal-title" style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="sparkles" style="width: 20px; height: 20px; color: #f59e0b;"></i>
+                    Smart Pick
+                </h2>
+                <div style="width: 30px;"></div>
+            </div>
+            <div class="apple-modal-body">
+                <p style="color: var(--gray-600); margin-bottom: 16px; font-size: 14px;">
+                    Find the optimal time slot based on customer location and your existing appointments.
+                </p>
+                
+                <div class="apple-form-section">
+                    <div class="apple-form-field">
+                        <label class="apple-form-label" for="smart-customer-search">Customer *</label>
+                        <div style="position: relative;">
+                            <input type="text" id="smart-customer-search" class="apple-form-input" placeholder="Search customer..." autocomplete="off">
+                            <input type="hidden" id="smart-customer-id">
+                            <div id="smart-customer-results" class="autocomplete-suggestions apple-autocomplete" style="display: none;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="apple-form-field">
+                        <label class="apple-form-label" for="smart-service-select">Service *</label>
+                        <select id="smart-service-select" class="apple-form-select">
+                            <option value="">-- Select service --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="apple-form-field">
+                        <label class="apple-form-label" for="smart-date-input">Date</label>
+                        <input type="date" id="smart-date-input" class="apple-form-input">
+                    </div>
+                </div>
+                
+                <div id="smart-pick-result" style="display: none; margin-top: 16px;">
+                    <!-- Results will be shown here -->
+                </div>
+                
+                <div class="apple-form-actions" style="margin-top: 20px;">
+                    <button type="button" class="apple-btn-secondary" onclick="closeSmartPickModal()">Cancel</button>
+                    <button type="button" id="find-slot-btn" class="apple-btn-primary" onclick="findSmartSlotFromModal()" style="background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%); border-color: #d97706;">
+                        <i data-lucide="search" style="width: 16px; height: 16px;"></i>
+                        Find Time
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

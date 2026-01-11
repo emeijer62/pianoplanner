@@ -136,6 +136,55 @@
             border-bottom: 1px solid var(--gray-200);
         }
 
+        .pianos-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .pianos-table th.sortable:hover {
+            background: var(--gray-100);
+            color: var(--gray-900);
+        }
+
+        .pianos-table th.sortable .sort-icon {
+            display: inline-block;
+            margin-left: 4px;
+            opacity: 0.3;
+            transition: opacity 0.15s ease;
+        }
+
+        .pianos-table th.sortable .sort-icon::after {
+            content: '↕';
+            font-size: 10px;
+        }
+
+        .pianos-table th.sortable.sort-asc {
+            color: var(--primary-color);
+            background: #e8f4fd;
+        }
+
+        .pianos-table th.sortable.sort-asc .sort-icon {
+            opacity: 1;
+        }
+
+        .pianos-table th.sortable.sort-asc .sort-icon::after {
+            content: '↑';
+        }
+
+        .pianos-table th.sortable.sort-desc {
+            color: var(--primary-color);
+            background: #e8f4fd;
+        }
+
+        .pianos-table th.sortable.sort-desc .sort-icon {
+            opacity: 1;
+        }
+
+        .pianos-table th.sortable.sort-desc .sort-icon::after {
+            content: '↓';
+        }
+
         .pianos-table td {
             padding: 10px 14px;
             border-bottom: 1px solid var(--gray-100);
@@ -732,11 +781,11 @@
             <table class="pianos-table">
                 <thead>
                     <tr>
-                        <th data-i18n="pianos.brand">Brand</th>
+                        <th class="sortable" data-sort="brand" onclick="sortPianos('brand')" data-i18n="pianos.brand">Brand <span class="sort-icon"></span></th>
                         <th data-i18n="pianos.model">Model</th>
                         <th data-i18n="pianos.type">Type</th>
-                        <th data-i18n="customers.title">Customer</th>
-                        <th data-i18n="pianos.lastTuning">Last tuning</th>
+                        <th class="sortable" data-sort="customer" onclick="sortPianos('customer')" data-i18n="customers.title">Customer <span class="sort-icon"></span></th>
+                        <th class="sortable" data-sort="lastTuning" onclick="sortPianos('lastTuning')" data-i18n="pianos.lastTuning">Last tuning <span class="sort-icon"></span></th>
                         <th style="width: 100px;"></th>
                     </tr>
                 </thead>
@@ -752,63 +801,79 @@
         </div>
     </main>
 
-    <!-- Piano Modal -->
-    <div id="piano-modal" class="modal-overlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 id="modal-title">New Piano</h2>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+    <!-- Piano Modal - Apple Style -->
+    <div id="piano-modal" class="apple-modal">
+        <div class="apple-modal-backdrop" onclick="closeModal()"></div>
+        <div class="apple-modal-content" style="max-width: 600px;">
+            <div class="apple-modal-header">
+                <button class="apple-modal-close" onclick="closeModal()">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                        <path d="M1.41 0L5 3.59 8.59 0 10 1.41 6.41 5 10 8.59 8.59 10 5 6.41 1.41 10 0 8.59 3.59 5 0 1.41z"/>
+                    </svg>
+                </button>
+                <h2 id="modal-title" class="apple-modal-title">New Piano</h2>
+                <div style="width: 30px;"></div>
             </div>
-            <form id="piano-form">
-                <div class="modal-body">
-                    <input type="hidden" id="piano-id">
+            <form id="piano-form" class="apple-modal-body">
+                <input type="hidden" id="piano-id">
+                
+                <!-- Section 1: Piano Details -->
+                <div class="apple-form-section">
+                    <div class="apple-form-section-title">Piano Details</div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="piano-brand">Brand *</label>
-                            <input type="text" id="piano-brand" required placeholder="Steinway, Yamaha, Bösendorfer, etc.">
+                    <div class="apple-form-grid">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="piano-brand">Brand *</label>
+                            <input type="text" id="piano-brand" class="apple-form-input" required placeholder="Steinway, Yamaha, Bösendorfer...">
                         </div>
-                        <div class="form-group">
-                            <label for="piano-model">Model</label>
-                            <input type="text" id="piano-model" placeholder="B-211, U3, etc.">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="piano-model">Model</label>
+                            <input type="text" id="piano-model" class="apple-form-input" placeholder="B-211, U3, etc.">
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="piano-type">Type</label>
-                            <select id="piano-type">
+                    <div class="apple-form-grid">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="piano-type">Type</label>
+                            <select id="piano-type" class="apple-form-select">
                                 <option value="upright">Piano</option>
                                 <option value="grand">Grand piano</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="piano-year">Year built</label>
-                            <input type="number" id="piano-year" min="1800" max="2030" placeholder="1985">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="piano-year">Year built</label>
+                            <input type="number" id="piano-year" class="apple-form-input" min="1800" max="2030" placeholder="1985">
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="piano-serial">Serial number</label>
-                            <input type="text" id="piano-serial" placeholder="12345678">
+                    <div class="apple-form-grid">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="piano-serial">Serial number</label>
+                            <input type="text" id="piano-serial" class="apple-form-input" placeholder="12345678">
                         </div>
-                        <div class="form-group">
-                            <label for="piano-finish">Finish</label>
-                            <input type="text" id="piano-finish" placeholder="Black polished">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="piano-finish">Finish</label>
+                            <input type="text" id="piano-finish" class="apple-form-input" placeholder="Black polished">
                         </div>
                     </div>
+                </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="piano-customer">Customer</label>
-                            <select id="piano-customer">
-                                <option value="">No customer linked</option>
-                            </select>
+                <div class="apple-form-divider"></div>
+
+                <!-- Section 2: Owner & Service -->
+                <div class="apple-form-section">
+                    <div class="apple-form-section-title">Owner & Service</div>
+                    
+                    <div class="apple-form-grid">
+                        <div class="apple-form-field" style="position: relative;">
+                            <label class="apple-form-label" for="piano-customer-search">Customer</label>
+                            <input type="text" id="piano-customer-search" class="apple-form-input" placeholder="Search by name..." autocomplete="off">
+                            <input type="hidden" id="piano-customer" value="">
+                            <div id="piano-customer-results" class="autocomplete-suggestions apple-autocomplete" style="display: none;"></div>
                         </div>
-                        <div class="form-group">
-                            <label for="piano-condition">Condition</label>
-                            <select id="piano-condition">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="piano-condition">Condition</label>
+                            <select id="piano-condition" class="apple-form-select">
                                 <option value="excellent">Excellent</option>
                                 <option value="good" selected>Good</option>
                                 <option value="fair">Fair</option>
@@ -817,14 +882,14 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="piano-location">Location in home</label>
-                            <input type="text" id="piano-location" placeholder="Living room">
+                    <div class="apple-form-grid">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="piano-location">Location in home</label>
+                            <input type="text" id="piano-location" class="apple-form-input" placeholder="Living room">
                         </div>
-                        <div class="form-group">
-                            <label for="piano-interval">Service interval (months)</label>
-                            <select id="piano-interval">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" for="piano-interval">Service interval</label>
+                            <select id="piano-interval" class="apple-form-select">
                                 <option value="3">3 months</option>
                                 <option value="6" selected>6 months</option>
                                 <option value="12">12 months</option>
@@ -832,31 +897,32 @@
                         </div>
                     </div>
 
-                    <div class="form-group full-width">
-                        <label for="piano-notes">Notes</label>
-                        <textarea id="piano-notes" placeholder="Special notes about this piano..."></textarea>
-                    </div>
-
-                    <!-- Service Panel (only when editing) -->
-                    <div id="service-panel" class="service-panel" style="display: none;">
-                        <h3>
-                            <span data-i18n="pianos.serviceHistory">Service History</span>
-                            <button type="button" class="btn btn-small btn-secondary" onclick="openServiceModal()" data-i18n="pianos.addService">+ Service</button>
-                        </h3>
-                        <div id="service-list" class="service-list">
-                            <p style="color: #666; text-align: center;" data-i18n="pianos.noServiceHistory">No service history yet</p>
-                        </div>
+                    <div class="apple-form-field">
+                        <label class="apple-form-label" for="piano-notes">Notes</label>
+                        <textarea id="piano-notes" class="apple-form-textarea" placeholder="Special notes about this piano..."></textarea>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary" id="submit-btn">
-                        <i data-lucide="check" style="width: 18px; height: 18px;"></i>
-                        <span data-i18n="common.save">Save</span>
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()" data-i18n="common.cancel">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="delete-btn" onclick="deletePiano()" style="display: none;">
-                        <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+
+                <!-- Service Panel (only when editing) -->
+                <div id="service-panel" class="apple-form-section apple-service-panel" style="display: none;">
+                    <div class="apple-form-section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span data-i18n="pianos.serviceHistory">Service History</span>
+                        <button type="button" class="apple-btn-secondary" onclick="openServiceModal()" style="padding: 6px 12px; font-size: 13px;" data-i18n="pianos.addService">+ Service</button>
+                    </div>
+                    <div id="service-list" class="service-list">
+                        <p style="color: var(--gray-500); text-align: center; padding: 12px;" data-i18n="pianos.noServiceHistory">No service history yet</p>
+                    </div>
+                </div>
+                
+                <div class="apple-form-actions">
+                    <button type="button" id="delete-btn" class="apple-btn-danger" onclick="deletePiano()" style="display: none; margin-right: auto;">
+                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
                         <span data-i18n="pianos.deletePiano">Delete</span>
+                    </button>
+                    <button type="button" class="apple-btn-secondary" onclick="closeModal()" data-i18n="common.cancel">Cancel</button>
+                    <button type="submit" class="apple-btn-primary" id="submit-btn">
+                        <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                        <span data-i18n="common.save">Save</span>
                     </button>
                 </div>
             </form>
@@ -935,6 +1001,7 @@
         let allPianos = [];
         let allCustomers = [];
         let currentPianoId = null;
+        let currentSort = { field: 'lastTuning', direction: 'asc' }; // Default: oudste stembeurt eerst
 
         // Check login
         async function checkAuth() {
@@ -954,21 +1021,147 @@
 
         // Merk wordt nu als vrij tekstveld ingevoerd
 
-        // Load customers for dropdown
+        // Load customers for searchable dropdown
         async function loadCustomers() {
             try {
                 const response = await fetch('/api/customers');
                 const data = await response.json();
                 allCustomers = data.customers || [];
-                
-                const select = document.getElementById('piano-customer');
-                select.innerHTML = '<option value="">No customer linked</option>';
-                allCustomers.forEach(customer => {
-                    select.innerHTML += `<option value="${customer.id}">${customer.name}</option>`;
-                });
             } catch (error) {
                 console.error('Error loading customers:', error);
             }
+        }
+        
+        // Customer search functionality for piano modal
+        function initCustomerSearch() {
+            const searchInput = document.getElementById('piano-customer-search');
+            const hiddenInput = document.getElementById('piano-customer');
+            const resultsContainer = document.getElementById('piano-customer-results');
+            
+            if (!searchInput || !resultsContainer) return;
+            
+            // Focus event - show dropdown if there's text or show all customers
+            searchInput.addEventListener('focus', () => {
+                const query = searchInput.value.trim().toLowerCase();
+                if (query.length > 0 || allCustomers.length <= 15) {
+                    showCustomerResults(query);
+                }
+            });
+            
+            // Input event - search while typing
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.trim().toLowerCase();
+                // Clear selection if user is typing
+                if (hiddenInput.value) {
+                    hiddenInput.value = '';
+                }
+                showCustomerResults(query);
+            });
+            
+            // Blur event - hide dropdown (with delay for click)
+            searchInput.addEventListener('blur', () => {
+                setTimeout(() => {
+                    resultsContainer.style.display = 'none';
+                }, 200);
+            });
+            
+            // Clear button functionality - clear on double click or when input is cleared
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    resultsContainer.style.display = 'none';
+                    searchInput.blur();
+                } else if (e.key === 'Backspace' && searchInput.value === '') {
+                    hiddenInput.value = '';
+                }
+            });
+        }
+        
+        // Show customer search results
+        function showCustomerResults(query) {
+            const resultsContainer = document.getElementById('piano-customer-results');
+            const hiddenInput = document.getElementById('piano-customer');
+            const searchInput = document.getElementById('piano-customer-search');
+            
+            let filtered = allCustomers;
+            
+            if (query.length > 0) {
+                filtered = allCustomers.filter(c => {
+                    const name = (c.name || '').toLowerCase();
+                    const nameParts = name.split(' ');
+                    
+                    // Match against full name, first name, or last name
+                    return name.includes(query) ||
+                           nameParts.some(part => part.startsWith(query));
+                });
+            }
+            
+            // Limit to 10 results
+            filtered = filtered.slice(0, 10);
+            
+            if (filtered.length === 0 && query.length > 0) {
+                resultsContainer.innerHTML = `
+                    <div class="autocomplete-item no-results" style="color: var(--gray-500); font-style: italic;">
+                        No customers found
+                    </div>
+                `;
+                resultsContainer.style.display = 'block';
+                return;
+            }
+            
+            if (filtered.length === 0) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Add "No customer linked" option at the top
+            let html = `
+                <div class="autocomplete-item ${!hiddenInput.value ? 'selected' : ''}" 
+                     onclick="selectPianoCustomer('', 'No customer linked')">
+                    <span style="color: var(--gray-500);">No customer linked</span>
+                </div>
+            `;
+            
+            html += filtered.map(c => `
+                <div class="autocomplete-item ${hiddenInput.value === c.id ? 'selected' : ''}" 
+                     onclick="selectPianoCustomer('${c.id}', '${(c.name || '').replace(/'/g, "\\'")}')">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 500;">${c.name || 'Unknown'}</span>
+                        ${c.city ? `<span style="font-size: 12px; color: var(--gray-500);">${c.city}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            resultsContainer.innerHTML = html;
+            resultsContainer.style.display = 'block';
+        }
+        
+        // Select customer from search results
+        function selectPianoCustomer(customerId, customerName) {
+            const searchInput = document.getElementById('piano-customer-search');
+            const hiddenInput = document.getElementById('piano-customer');
+            const resultsContainer = document.getElementById('piano-customer-results');
+            
+            hiddenInput.value = customerId;
+            searchInput.value = customerId ? customerName : '';
+            resultsContainer.style.display = 'none';
+        }
+        
+        // Set customer in search field (for editing)
+        function setCustomerSearchValue(customerId) {
+            const searchInput = document.getElementById('piano-customer-search');
+            const hiddenInput = document.getElementById('piano-customer');
+            
+            if (customerId) {
+                const customer = allCustomers.find(c => c.id === customerId);
+                if (customer) {
+                    searchInput.value = customer.name || '';
+                    hiddenInput.value = customerId;
+                    return;
+                }
+            }
+            
+            searchInput.value = '';
+            hiddenInput.value = '';
         }
 
         // Laad piano's
@@ -992,6 +1185,57 @@
             } catch (error) {
                 console.error('Error loading pianos:', error);
             }
+        }
+
+        // Sort pianos
+        function sortPianos(field) {
+            // Toggle direction if same field
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
+            }
+            
+            // Update sort indicators
+            document.querySelectorAll('.pianos-table th.sortable').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                if (th.dataset.sort === field) {
+                    th.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+            
+            // Sort the pianos
+            const sorted = [...allPianos].sort((a, b) => {
+                let valA, valB;
+                
+                switch (field) {
+                    case 'brand':
+                        valA = (a.brand || '').toLowerCase();
+                        valB = (b.brand || '').toLowerCase();
+                        break;
+                    case 'customer':
+                        const custA = allCustomers.find(c => c.id === a.customerId);
+                        const custB = allCustomers.find(c => c.id === b.customerId);
+                        valA = (custA?.name || '').toLowerCase();
+                        valB = (custB?.name || '').toLowerCase();
+                        break;
+                    case 'lastTuning':
+                        // Pianos without tuning date go to the end
+                        valA = a.lastTuningDate ? new Date(a.lastTuningDate).getTime() : (currentSort.direction === 'asc' ? Infinity : -Infinity);
+                        valB = b.lastTuningDate ? new Date(b.lastTuningDate).getTime() : (currentSort.direction === 'asc' ? Infinity : -Infinity);
+                        break;
+                    default:
+                        valA = '';
+                        valB = '';
+                }
+                
+                if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
+            renderPianos(sorted);
         }
 
         // Render piano's als tabel
@@ -1092,6 +1336,11 @@
             document.getElementById('modal-title').textContent = 'New Piano';
             document.getElementById('piano-form').reset();
             document.getElementById('piano-id').value = '';
+            
+            // Reset customer search field
+            document.getElementById('piano-customer-search').value = '';
+            document.getElementById('piano-customer').value = '';
+            
             document.getElementById('service-panel').style.display = 'none';
             document.getElementById('delete-btn').style.display = 'none';
             document.getElementById('piano-modal').classList.add('active');
@@ -1143,7 +1392,10 @@
                 document.getElementById('piano-year').value = piano.year || '';
                 document.getElementById('piano-serial').value = piano.serialNumber || '';
                 document.getElementById('piano-finish').value = piano.finish || '';
-                document.getElementById('piano-customer').value = piano.customerId || '';
+                
+                // Set customer via search field
+                setCustomerSearchValue(piano.customerId);
+                
                 document.getElementById('piano-condition').value = piano.condition || 'good';
                 document.getElementById('piano-location').value = piano.location || '';
                 document.getElementById('piano-interval').value = piano.serviceInterval || 6;
@@ -1334,13 +1586,47 @@
         // Search
         document.getElementById('search-input').addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
-            const filtered = allPianos.filter(piano => 
+            let filtered = allPianos.filter(piano => 
                 piano.brand?.toLowerCase().includes(query) ||
                 piano.model?.toLowerCase().includes(query) ||
                 piano.serialNumber?.toLowerCase().includes(query)
             );
+            
+            // Apply current sort to filtered results
+            filtered = applySortToArray(filtered);
             renderPianos(filtered);
         });
+        
+        // Apply sort to an array without changing currentSort state
+        function applySortToArray(pianos) {
+            return [...pianos].sort((a, b) => {
+                let valA, valB;
+                
+                switch (currentSort.field) {
+                    case 'brand':
+                        valA = (a.brand || '').toLowerCase();
+                        valB = (b.brand || '').toLowerCase();
+                        break;
+                    case 'customer':
+                        const custA = allCustomers.find(c => c.id === a.customerId);
+                        const custB = allCustomers.find(c => c.id === b.customerId);
+                        valA = (custA?.name || '').toLowerCase();
+                        valB = (custB?.name || '').toLowerCase();
+                        break;
+                    case 'lastTuning':
+                        valA = a.lastTuningDate ? new Date(a.lastTuningDate).getTime() : (currentSort.direction === 'asc' ? Infinity : -Infinity);
+                        valB = b.lastTuningDate ? new Date(b.lastTuningDate).getTime() : (currentSort.direction === 'asc' ? Infinity : -Infinity);
+                        break;
+                    default:
+                        valA = '';
+                        valB = '';
+                }
+                
+                if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
 
         // Close modals on escape
         document.addEventListener('keydown', (e) => {
@@ -1355,6 +1641,10 @@
             if (await checkAuth()) {
                 await loadCustomers();
                 await loadPianos();
+                initCustomerSearch();
+                
+                // Apply default sort (oldest tuning first)
+                sortPianos('lastTuning');
             }
         }
 
