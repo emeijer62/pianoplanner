@@ -268,6 +268,153 @@
             transform: translateY(-2px);
         }
         
+        /* Mobile App Section */
+        .mobile-section {
+            padding: 60px 24px;
+            background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 100%);
+            overflow: hidden;
+        }
+        
+        .mobile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+        }
+        
+        .mobile-text h2 {
+            color: white;
+            font-size: clamp(28px, 4vw, 36px);
+            margin-bottom: 16px;
+        }
+        
+        .mobile-sub {
+            color: var(--gray-400);
+            font-size: 17px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+        
+        .mobile-features {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .mobile-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        
+        .mobile-feature-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .mobile-feature strong {
+            display: block;
+            color: white;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+        
+        .mobile-feature span {
+            color: var(--gray-400);
+            font-size: 13px;
+        }
+        
+        .mobile-phones {
+            position: relative;
+            height: 350px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .phone {
+            position: absolute;
+            width: 140px;
+            height: 280px;
+            background: #000;
+            border-radius: 28px;
+            padding: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        .phone-1 {
+            left: 20%;
+            top: 20px;
+            transform: rotate(-8deg);
+        }
+        
+        .phone-2 {
+            right: 20%;
+            top: 40px;
+            transform: rotate(8deg);
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #f5f5f7 0%, #e5e5e7 100%);
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .phone-app-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--blue);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(0,113,227,0.3);
+        }
+        
+        .phone-app-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+        
+        .phone-notif {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .notif-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .notif-text strong {
+            display: block;
+            font-size: 12px;
+            color: var(--gray-900);
+        }
+        
+        .notif-text span {
+            font-size: 11px;
+            color: var(--gray-500);
+        }
+        
         .feature-icon {
             width: 40px; height: 40px;
             background: var(--white);
@@ -375,6 +522,14 @@
         /* Responsive */
         @media (max-width: 900px) {
             .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .mobile-content { grid-template-columns: 1fr; gap: 40px; }
+            .mobile-text { text-align: center; }
+            .mobile-features { align-items: center; }
+            .mobile-feature { text-align: left; }
+            .mobile-phones { height: 280px; }
+            .phone { width: 120px; height: 240px; }
+            .phone-1 { left: 25%; }
+            .phone-2 { right: 25%; }
         }
         
         @media (max-width: 768px) {
@@ -401,6 +556,18 @@
             .btn { width: 100%; max-width: 280px; justify-content: center; }
             .features-grid { grid-template-columns: 1fr; }
             .signup-row { flex-direction: column; }
+            .mobile-section { padding: 48px 24px; }
+            .mobile-phones { height: 240px; }
+            .phone { width: 100px; height: 200px; border-radius: 22px; }
+            .phone-screen { border-radius: 18px; }
+            .phone-app-icon { width: 48px; height: 48px; font-size: 22px; border-radius: 12px; }
+            .phone-app-name { font-size: 10px; }
+            .phone-1 { left: 15%; }
+            .phone-2 { right: 15%; }
+            .phone-notif { padding: 8px 10px; border-radius: 10px; }
+            .notif-icon { font-size: 18px; }
+            .notif-text strong { font-size: 10px; }
+            .notif-text span { font-size: 9px; }
             .footer-content { flex-direction: column; text-align: center; }
             .footer-links { flex-wrap: wrap; justify-content: center; }
             .status-content { flex-direction: column; gap: 6px; }
@@ -475,6 +642,18 @@
                 </div>
                 
                 <div class="feature">
+                    <div class="feature-icon"><i data-lucide="smartphone" style="width: 24px; height: 24px;"></i></div>
+                    <h3 data-i18n="landing.featurePwaTitle">Works Offline</h3>
+                    <p data-i18n="landing.featurePwaDesc">Add to homescreen. Full offline access to appointments and customers.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon"><i data-lucide="bell" style="width: 24px; height: 24px;"></i></div>
+                    <h3 data-i18n="landing.featureNotifTitle">Push Notifications</h3>
+                    <p data-i18n="landing.featureNotifDesc">Get notified of new bookings. Automatic reminders before appointments.</p>
+                </div>
+                
+                <div class="feature">
                     <div class="feature-icon"><i data-lucide="piano" style="width: 24px; height: 24px;"></i></div>
                     <h3 data-i18n="landing.feature3Title">Piano Service History</h3>
                     <p data-i18n="landing.feature3Desc">Track every piano with automatic service history.</p>
@@ -496,6 +675,73 @@
                     <div class="feature-icon"><i data-lucide="mail" style="width: 24px; height: 24px;"></i></div>
                     <h3 data-i18n="landing.feature6Title">Custom Email Domain</h3>
                     <p data-i18n="landing.feature6Desc">Send confirmations from your own email address.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon"><i data-lucide="globe" style="width: 24px; height: 24px;"></i></div>
+                    <h3 data-i18n="landing.featureLangTitle">23 Languages</h3>
+                    <p data-i18n="landing.featureLangDesc">Full interface in your language. Auto-detects from browser.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Mobile App Section -->
+    <section class="mobile-section">
+        <div class="container">
+            <div class="mobile-content">
+                <div class="mobile-text">
+                    <h2 data-i18n="landing.mobileTitle">Your schedule, anywhere.</h2>
+                    <p class="mobile-sub" data-i18n="landing.mobileDesc">Add PianoPlanner to your iPhone or Android homescreen. It works like a native app - even without internet.</p>
+                    
+                    <div class="mobile-features">
+                        <div class="mobile-feature">
+                            <span class="mobile-feature-icon">📱</span>
+                            <div>
+                                <strong data-i18n="landing.mobileFeature1Title">Add to Homescreen</strong>
+                                <span data-i18n="landing.mobileFeature1Desc">One tap to install. No app store needed.</span>
+                            </div>
+                        </div>
+                        <div class="mobile-feature">
+                            <span class="mobile-feature-icon">📴</span>
+                            <div>
+                                <strong data-i18n="landing.mobileFeature2Title">Works Offline</strong>
+                                <span data-i18n="landing.mobileFeature2Desc">View appointments and customers without internet.</span>
+                            </div>
+                        </div>
+                        <div class="mobile-feature">
+                            <span class="mobile-feature-icon">🔔</span>
+                            <div>
+                                <strong data-i18n="landing.mobileFeature3Title">Push Notifications</strong>
+                                <span data-i18n="landing.mobileFeature3Desc">Get alerts for new bookings and reminders.</span>
+                            </div>
+                        </div>
+                        <div class="mobile-feature">
+                            <span class="mobile-feature-icon">👆</span>
+                            <div>
+                                <strong data-i18n="landing.mobileFeature4Title">Touch Gestures</strong>
+                                <span data-i18n="landing.mobileFeature4Desc">Swipe to navigate. Pull to refresh.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mobile-phones">
+                    <div class="phone phone-1">
+                        <div class="phone-screen">
+                            <div class="phone-app-icon">🎹</div>
+                            <div class="phone-app-name">PianoPlanner</div>
+                        </div>
+                    </div>
+                    <div class="phone phone-2">
+                        <div class="phone-notif">
+                            <span class="notif-icon">📅</span>
+                            <div class="notif-text">
+                                <strong>New Booking!</strong>
+                                <span>John Smith - Piano Tuning</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -531,7 +777,9 @@
             <span class="status-item status-done">✓ Google Calendar</span>
             <span class="status-item status-done">✓ Microsoft 365</span>
             <span class="status-item status-done">✓ Apple Calendar</span>
-            <span class="status-item status-done">✓ Smart Suggestions</span>
+            <span class="status-item status-done">✓ Offline Mode</span>
+            <span class="status-item status-done">✓ Push Notifications</span>
+            <span class="status-item status-done">✓ 23 Languages</span>
         </div>
     </div>
     
