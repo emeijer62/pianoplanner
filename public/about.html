@@ -417,6 +417,9 @@
             <div class="language-badge"><span class="language-flag">🇨🇿</span><span>Čeština</span></div>
             <div class="language-badge"><span class="language-flag">🇭🇺</span><span>Magyar</span></div>
             <div class="language-badge"><span class="language-flag">🇫🇮</span><span>Suomi</span></div>
+            <div class="language-badge"><span class="language-flag">🇪🇪</span><span>Eesti</span></div>
+            <div class="language-badge"><span class="language-flag">🇱🇻</span><span>Latviešu</span></div>
+            <div class="language-badge"><span class="language-flag">🇱🇹</span><span>Lietuvių</span></div>
         </div>
     </section>
 
@@ -1339,6 +1342,45 @@
                 'about.ctaDesc': 'Kokeile PianoPlanneria ilmaiseksi ja löydä miten se helpottaa työtäsi pianoteknikona.',
                 'about.ctaBtn': 'Aloita ilmainen kokeilu',
                 'about.footer': '© 2026 PianoPlanner. Kehitetty erityisesti pianoteknikoille.'
+            },
+            et: {
+                'about.login': 'Logi sisse',
+                'about.tryFree': 'Proovi tasuta',
+                'about.heroTitle': 'Täiuslik lahendus klaveritehnikkutele',
+                'about.heroDesc': 'PianoPlanner on loodud spetsiaalselt klaverihäälestajatele ja -tehnikutele. Halda kliente, klavereid ja broneeringuid ühes kohas. Säästa aega ja paku professionaalset teenust.',
+                'about.featuresTitle': 'Kõik, mida vajad',
+                'about.langTitle': 'Saadaval mitmes keeles',
+                'about.langDesc': 'Sinu keele-eelistus salvestatakse sinu kontole',
+                'about.ctaTitle': 'Valmis alustama?',
+                'about.ctaDesc': 'Proovi PianoPlanerit tasuta ja avasta, kuidas see lihtsustab sinu tööd klaveritehnikkuna.',
+                'about.ctaBtn': 'Alusta tasuta prooviperioodi',
+                'about.footer': '© 2026 PianoPlanner. Spetsiaalselt klaveritehnikkutele loodud.'
+            },
+            lv: {
+                'about.login': 'Pieteikties',
+                'about.tryFree': 'Izmēģini bez maksas',
+                'about.heroTitle': 'Ideāls risinājums klavieru tehniķiem',
+                'about.heroDesc': 'PianoPlanner ir izveidots īpaši klavieru skaņotājiem un tehniķiem. Pārvaldiet klientus, klavieres un rezervācijas vienuviet. Ietaupiet laiku un sniedziet profesionālu servisu.',
+                'about.featuresTitle': 'Viss, kas jums nepieciešams',
+                'about.langTitle': 'Pieejams vairākās valodās',
+                'about.langDesc': 'Jūsu valodas izvēle tiek saglabāta jūsu kontā',
+                'about.ctaTitle': 'Gatavs sākt?',
+                'about.ctaDesc': 'Izmēģiniet PianoPlanner bez maksas un atklājiet, kā tas atvieglo jūsu darbu kā klavieru tehniķim.',
+                'about.ctaBtn': 'Sākt bezmaksas izmēģinājumu',
+                'about.footer': '© 2026 PianoPlanner. Īpaši izstrādāts klavieru tehniķiem.'
+            },
+            lt: {
+                'about.login': 'Prisijungti',
+                'about.tryFree': 'Išbandyk nemokamai',
+                'about.heroTitle': 'Tobulas sprendimas pianinų technikams',
+                'about.heroDesc': 'PianoPlanner sukurtas specialiai pianinų derintojams ir technikams. Tvarkykite klientus, pianinus ir rezervacijas vienoje vietoje. Sutaupykite laiko ir teikite profesionalų aptarnavimą.',
+                'about.featuresTitle': 'Viskas, ko reikia',
+                'about.langTitle': 'Prieinama keliomis kalbomis',
+                'about.langDesc': 'Jūsų kalbos nuostata išsaugoma jūsų paskyroje',
+                'about.ctaTitle': 'Pasiruošę pradėti?',
+                'about.ctaDesc': 'Išbandykite PianoPlanner nemokamai ir atraskite, kaip tai palengvina jūsų darbą kaip pianinų technikui.',
+                'about.ctaBtn': 'Pradėti nemokamą bandomąjį laikotarpį',
+                'about.footer': '© 2026 PianoPlanner. Specialiai sukurta pianinų technikams.'
             }
         };
 
@@ -1347,7 +1389,7 @@
             // Check for American English specifically
             if (lang === 'en-US' || lang.startsWith('en-US')) return 'en-US';
             const shortLang = lang.split('-')[0];
-            return ['nl', 'de', 'fr', 'es', 'it', 'pl', 'da', 'el', 'sv', 'no', 'pt', 'cs', 'hu', 'fi'].includes(shortLang) ? shortLang : 'en';
+            return ['nl', 'de', 'fr', 'es', 'it', 'pl', 'da', 'el', 'sv', 'no', 'pt', 'cs', 'hu', 'fi', 'et', 'lv', 'lt'].includes(shortLang) ? shortLang : 'en';
         }
 
         function applyTranslations() {
