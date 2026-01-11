@@ -9,6 +9,7 @@ const customerStore = require('../utils/customerStore');
 const companyStore = require('../utils/companyStore');
 const userStore = require('../utils/userStore');
 const appointmentStore = require('../utils/appointmentStore');
+const pianoStore = require('../utils/pianoStore');
 const { requireAuth } = require('../middleware/auth');
 
 /**
@@ -590,15 +591,37 @@ router.post('/find-slot', async (req, res) => {
         // Haal bedrijfsadres op als default vertrekpunt
         const companyAddress = await companyStore.getOriginAddress(req.session.user.id);
         
-        // Bepaal bestemming (klant adres)
+        // Bepaal bestemming - PRIORITEIT:
+        // 1. Piano locatie (als pianoIds meegegeven)
+        // 2. Klant adres (als customerId meegegeven)  
+        // 3. Company adres (fallback)
         let destination = companyAddress;
+        let destinationSource = 'company';
         let customer = null;
-        if (customerId) {
+        
+        // Eerst: check piano locatie (piano kan ergens anders staan dan waar klant woont!)
+        if (pianoIds && pianoIds.length > 0) {
+            const firstPianoId = pianoIds[0];
+            const piano = await pianoStore.getPiano(req.session.user.id, firstPianoId);
+            if (piano && piano.location && piano.location.trim()) {
+                destination = piano.location.trim();
+                destinationSource = 'piano.location';
+                console.log(`[SMART] 🎹 Using piano location as destination: "${destination}"`);
+            }
+        }
+        
+        // Dan: check klant adres (alleen als piano geen locatie heeft)
+        if (destinationSource === 'company' && customerId) {
             customer = await customerStore.getCustomer(req.session.user.id, customerId);
             if (customer && customer.address?.city) {
                 destination = `${customer.address.street}, ${customer.address.city}`;
+                destinationSource = 'customer.address';
             }
+        } else if (customerId && !customer) {
+            customer = await customerStore.getCustomer(req.session.user.id, customerId);
         }
+        
+        console.log(`[SMART] Destination (${destinationSource}): "${destination}"`);
         
         // Check of klant theater availability heeft
         const isTheater = customer?.use_theater_availability === 1 || customer?.useTheaterAvailability === true;
@@ -612,37 +635,72 @@ router.post('/find-slot', async (req, res) => {
         let dynamicOrigin = origin || companyAddress;
         let previousAppointmentInfo = null;
         
-        // Haal alle afspraken van die dag op
+        // Haal alle afspraken van die dag op (DB + externe calendars)
         const searchDateStr = date.split('T')[0]; // YYYY-MM-DD
+        const searchDateTime = new Date(date);
+        
+        // 1. Database afspraken
         const dayAppointments = await appointmentStore.getAppointmentsForDay(req.session.user.id, searchDateStr);
         
-        if (dayAppointments && dayAppointments.length > 0) {
-            // Sorteer op eindtijd en pak de laatste afspraak die VOOR de zoekperiode eindigt
-            const sortedAppts = dayAppointments.sort((a, b) => 
-                new Date(a.end_time || a.endTime) - new Date(b.end_time || b.endTime)
-            );
+        // 2. Externe calendar events (Google, Apple, Microsoft)
+        const dayStart = new Date(searchDateStr + 'T00:00:00');
+        const dayEnd = new Date(searchDateStr + 'T23:59:59');
+        let externalEvents = [];
+        try {
+            externalEvents = await getCalendarEvents(req, dayStart, dayEnd);
+            console.log(`[SMART] Found ${externalEvents.length} external calendar events on ${searchDateStr}`);
+        } catch (err) {
+            console.log('[SMART] Could not fetch external events:', err.message);
+        }
+        
+        // Combineer alle events
+        const allDayEvents = [
+            ...dayAppointments.map(apt => ({
+                type: 'db',
+                title: apt.title,
+                start: new Date(apt.start_time || apt.startTime),
+                end: new Date(apt.end_time || apt.endTime),
+                location: apt.location,
+                customer_id: apt.customer_id,
+                description: apt.description
+            })),
+            ...externalEvents.map(evt => ({
+                type: 'external',
+                title: evt.title || evt.summary || 'External event',
+                start: new Date(evt.start?.dateTime || evt.start),
+                end: new Date(evt.end?.dateTime || evt.end),
+                location: evt.location || null,
+                description: evt.description || null
+            }))
+        ];
+        
+        console.log(`[SMART] Total events on ${searchDateStr}: ${allDayEvents.length} (${dayAppointments.length} DB + ${externalEvents.length} external)`);
+        
+        if (allDayEvents.length > 0) {
+            // Filter: alleen events die VOOR het gezochte tijdstip eindigen
+            const eventsBefore = allDayEvents.filter(evt => evt.end < searchDateTime);
             
-            // We zoeken de meest recente afspraak die eindigt voor onze zoekochtend
-            // (of de eerste als we meerdere dagen zoeken)
-            const previousAppointment = sortedAppts[sortedAppts.length - 1];
-            
-            if (previousAppointment) {
-                console.log('[SMART] Found previous appointment on same day:', previousAppointment.title);
-                previousAppointmentInfo = previousAppointment;
+            if (eventsBefore.length > 0) {
+                // Sorteer op eindtijd (oplopend) en pak de LAATSTE die voor ons tijdstip eindigt
+                const sortedEvents = eventsBefore.sort((a, b) => a.end - b.end);
+                const previousEvent = sortedEvents[sortedEvents.length - 1];
+                
+                console.log(`[SMART] 📍 Previous event before ${searchDateTime.toISOString()}: "${previousEvent.title}" (ends ${previousEvent.end.toISOString()})`);
+                previousAppointmentInfo = previousEvent;
                 
                 // Probeer adres te vinden - in volgorde van prioriteit:
                 let foundAddress = null;
                 let addressSource = null;
                 
-                // 1. Uit het location veld van de afspraak
-                if (previousAppointment.location && previousAppointment.location.trim()) {
-                    foundAddress = previousAppointment.location.trim();
-                    addressSource = 'appointment.location';
+                // 1. Uit het location veld van de afspraak/event
+                if (previousEvent.location && previousEvent.location.trim()) {
+                    foundAddress = previousEvent.location.trim();
+                    addressSource = 'event.location';
                 }
                 
-                // 2. Uit de klant gekoppeld aan de afspraak
-                if (!foundAddress && previousAppointment.customer_id) {
-                    const prevCustomer = await customerStore.getCustomer(req.session.user.id, previousAppointment.customer_id);
+                // 2. Uit de klant gekoppeld aan de afspraak (alleen DB afspraken)
+                if (!foundAddress && previousEvent.type === 'db' && previousEvent.customer_id) {
+                    const prevCustomer = await customerStore.getCustomer(req.session.user.id, previousEvent.customer_id);
                     if (prevCustomer && prevCustomer.address?.city) {
                         foundAddress = `${prevCustomer.address.street}, ${prevCustomer.address.city}`;
                         addressSource = 'customer.address';
@@ -650,8 +708,8 @@ router.post('/find-slot', async (req, res) => {
                 }
                 
                 // 3. AI-SLIM: Uit de notities/description van de afspraak
-                if (!foundAddress && previousAppointment.description) {
-                    const extractedAddress = extractAddressFromText(previousAppointment.description);
+                if (!foundAddress && previousEvent.description) {
+                    const extractedAddress = extractAddressFromText(previousEvent.description);
                     if (extractedAddress) {
                         foundAddress = extractedAddress;
                         addressSource = 'description (AI extracted)';
@@ -659,8 +717,8 @@ router.post('/find-slot', async (req, res) => {
                 }
                 
                 // 4. AI-SLIM: Uit de titel van de afspraak
-                if (!foundAddress && previousAppointment.title) {
-                    const extractedFromTitle = extractAddressFromText(previousAppointment.title);
+                if (!foundAddress && previousEvent.title) {
+                    const extractedFromTitle = extractAddressFromText(previousEvent.title);
                     if (extractedFromTitle) {
                         foundAddress = extractedFromTitle;
                         addressSource = 'title (AI extracted)';
@@ -671,8 +729,10 @@ router.post('/find-slot', async (req, res) => {
                     dynamicOrigin = foundAddress;
                     console.log(`[SMART] 🎯 Dynamic origin from ${addressSource}: "${foundAddress}"`);
                 } else {
-                    console.log('[SMART] Previous appointment found but no address detected, using company address');
+                    console.log('[SMART] Previous event found but no address detected, using company address');
                 }
+            } else {
+                console.log(`[SMART] No events end before ${searchDateTime.toISOString()}, using company address`);
             }
         } else {
             console.log('[SMART] No previous appointments on this day, using company address');
@@ -763,12 +823,7 @@ router.post('/find-slot', async (req, res) => {
             end: effectiveAvailability.end || '17:00'
         };
         
-        // Haal events van die dag op
-        const dayStart = new Date(searchDate);
-        dayStart.setHours(0, 0, 0, 0);
-        const dayEnd = new Date(searchDate);
-        dayEnd.setHours(23, 59, 59, 999);
-        
+        // Haal events van die dag op (hergebruik dayStart/dayEnd van eerder)
         const existingEvents = await getCalendarEvents(req, dayStart, dayEnd);
         
         console.log(`[SMART] Day: ${dayName}, workHours:`, workHours);
