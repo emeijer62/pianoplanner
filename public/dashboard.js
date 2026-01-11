@@ -2877,7 +2877,9 @@ async function loadSwCustomerPianos() {
     if (!swSelectedCustomer) return;
     
     const container = document.getElementById('sw-customer-pianos');
+    const alertDiv = document.getElementById('sw-piano-service-alert');
     container.innerHTML = '<p class="sw-empty-state">Piano\'s laden...</p>';
+    alertDiv.style.display = 'none';
     
     try {
         const response = await fetch(`/api/pianos/customer/${swSelectedCustomer.id}`);
@@ -2887,15 +2889,36 @@ async function loadSwCustomerPianos() {
         if (pianos.length === 0) {
             container.innerHTML = '<p class="sw-empty-state">Deze klant heeft nog geen piano\'s. Voeg er een toe!</p>';
         } else {
-            container.innerHTML = pianos.map(p => `
-                <div class="sw-piano-item" data-id="${p.id}" data-brand="${escapeHtml(p.brand)}" data-model="${escapeHtml(p.model || '')}">
-                    <i data-lucide="music"></i>
-                    <div class="sw-piano-info">
-                        <strong>${escapeHtml(p.brand)}${p.model ? ' ' + escapeHtml(p.model) : ''}</strong>
-                        <span>${[p.type === 'grand' ? 'Vleugel' : p.type === 'upright' ? 'Staande piano' : p.type, p.year, p.serialNumber].filter(Boolean).join(' • ')}</span>
+            container.innerHTML = pianos.map(p => {
+                // Calculate months since last tuning
+                let serviceInfo = '';
+                let serviceClass = '';
+                if (p.lastTuningDate) {
+                    const lastDate = new Date(p.lastTuningDate);
+                    const monthsSince = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24 * 30));
+                    if (monthsSince >= 12) {
+                        serviceInfo = `⚠️ ${monthsSince} mnd geleden gestemd`;
+                        serviceClass = 'overdue';
+                    } else {
+                        serviceInfo = `✓ ${monthsSince} mnd geleden gestemd`;
+                        serviceClass = 'recent';
+                    }
+                } else {
+                    serviceInfo = '📋 Geen stembeurt bekend';
+                    serviceClass = 'unknown';
+                }
+                
+                return `
+                    <div class="sw-piano-item" data-id="${p.id}" data-brand="${escapeHtml(p.brand)}" data-model="${escapeHtml(p.model || '')}" data-lasttuning="${p.lastTuningDate || ''}" data-service-months="${p.lastTuningDate ? Math.floor((new Date() - new Date(p.lastTuningDate)) / (1000 * 60 * 60 * 24 * 30)) : -1}">
+                        <i data-lucide="music"></i>
+                        <div class="sw-piano-info">
+                            <strong>${escapeHtml(p.brand)}${p.model ? ' ' + escapeHtml(p.model) : ''}</strong>
+                            <span>${[p.type === 'grand' ? 'Vleugel' : p.type === 'upright' ? 'Staande piano' : p.type, p.year, p.serialNumber].filter(Boolean).join(' • ')}</span>
+                            <span class="sw-piano-service ${serviceClass}">${serviceInfo}</span>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             container.querySelectorAll('.sw-piano-item').forEach(item => {
                 item.addEventListener('click', () => {
@@ -2907,6 +2930,22 @@ async function loadSwCustomerPianos() {
                         model: item.dataset.model
                     };
                     updateSwNavButtons();
+                    
+                    // Show piano service alert
+                    const monthsSince = parseInt(item.dataset.serviceMonths);
+                    if (monthsSince >= 12) {
+                        alertDiv.className = 'sw-piano-alert warning';
+                        alertDiv.innerHTML = `<span class="icon">⚠️</span><span>Deze piano is al <strong>${monthsSince} maanden</strong> niet gestemd. Een stembeurt wordt aanbevolen!</span>`;
+                        alertDiv.style.display = 'flex';
+                    } else if (monthsSince < 0) {
+                        alertDiv.className = 'sw-piano-alert info';
+                        alertDiv.innerHTML = `<span class="icon">📋</span><span>Geen stembeurt bekend voor deze piano. Dit kan de eerste afspraak zijn.</span>`;
+                        alertDiv.style.display = 'flex';
+                    } else {
+                        alertDiv.className = 'sw-piano-alert info';
+                        alertDiv.innerHTML = `<span class="icon">✓</span><span>Laatste stembeurt: <strong>${monthsSince} maanden geleden</strong>. Piano is goed onderhouden.</span>`;
+                        alertDiv.style.display = 'flex';
+                    }
                     
                     // Generate AI service suggestion
                     generateSwServiceSuggestion(item.dataset.id);
@@ -3080,6 +3119,47 @@ let swSearchState = {
     totalSlotsFound: 0
 };
 
+// Current time filter: 'all', 'morning', 'afternoon', 'evening'
+let swCurrentTimeFilter = 'all';
+
+// Set time filter for smart picks
+function setSwTimeFilter(filter) {
+    swCurrentTimeFilter = filter;
+    
+    // Update button states
+    document.querySelectorAll('.sw-filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+    });
+    
+    // Filter visible slots
+    applySwTimeFilter();
+}
+
+// Apply time filter to visible slots
+function applySwTimeFilter() {
+    document.querySelectorAll('.sw-smart-slot').forEach(slot => {
+        const startTime = new Date(slot.dataset.start);
+        const hour = startTime.getHours();
+        
+        let visible = true;
+        if (swCurrentTimeFilter === 'morning' && (hour < 6 || hour >= 12)) {
+            visible = false;
+        } else if (swCurrentTimeFilter === 'afternoon' && (hour < 12 || hour >= 17)) {
+            visible = false;
+        } else if (swCurrentTimeFilter === 'evening' && (hour < 17 || hour >= 23)) {
+            visible = false;
+        }
+        
+        slot.style.display = visible ? '' : 'none';
+    });
+    
+    // Hide empty day groups
+    document.querySelectorAll('.sw-day-group').forEach(group => {
+        const visibleSlots = group.querySelectorAll('.sw-smart-slot:not([style*="display: none"])');
+        group.style.display = visibleSlots.length > 0 ? '' : 'none';
+    });
+}
+
 // Find Smart Picks - uses batch API for performance
 async function findSwSmartPicks(serviceId, appendMode = false) {
     const container = document.getElementById('sw-smart-picks');
@@ -3149,6 +3229,7 @@ async function findSwSmartPicks(serviceId, appendMode = false) {
         const days = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
         let html = appendMode ? container.innerHTML : '';
         let isFirstSlot = !appendMode && swSearchState.totalSlotsFound === data.totalSlots;
+        let slotIndex = 0;
         
         dates.forEach(dateStr => {
             const dayData = data.slotsByDate[dateStr];
@@ -3170,17 +3251,30 @@ async function findSwSmartPicks(serviceId, appendMode = false) {
                 const timeStr = startTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
                 const travelText = dayData.travelInfo?.durationText ? `🚗 ${dayData.travelInfo.durationText}` : '';
                 
+                // Build recommendation text based on slot characteristics
+                let recommendationText = '';
+                if (isFirstSlot) {
+                    recommendationText = '⭐ Beste keuze';
+                } else if (dayData.travelInfo?.durationMinutes && dayData.travelInfo.durationMinutes <= 15) {
+                    recommendationText = '📍 Dichtbij';
+                } else if (slotIndex < 3) {
+                    recommendationText = '👍 Aanbevolen';
+                }
+                
                 html += `
                     <div class="sw-smart-slot ${isFirstSlot ? 'recommended' : ''}" 
                          data-start="${slotData.slot.appointmentStart}" 
                          data-end="${slotData.slot.appointmentEnd}"
                          data-date="${dateStr}"
-                         data-travel="${dayData.travelInfo?.durationText || ''}">
+                         data-travel="${dayData.travelInfo?.durationText || ''}"
+                         data-travel-minutes="${dayData.travelInfo?.durationMinutes || 0}">
                         <span class="time">${timeStr}</span>
                         ${travelText ? `<span class="travel">${travelText}</span>` : ''}
+                        ${recommendationText ? `<span class="recommendation">${recommendationText}</span>` : ''}
                     </div>
                 `;
                 isFirstSlot = false;
+                slotIndex++;
             });
             
             html += `
@@ -3195,6 +3289,9 @@ async function findSwSmartPicks(serviceId, appendMode = false) {
         container.querySelectorAll('.sw-smart-slot').forEach(slot => {
             slot.addEventListener('click', () => selectSwSmartSlot(slot, serviceId));
         });
+        
+        // Apply current time filter
+        applySwTimeFilter();
         
         // Show "more options" button
         moreBtn.style.display = 'block';
