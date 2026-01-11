@@ -3061,98 +3061,196 @@ function updateSwSummary() {
     }
 }
 
-// Setup time slot listeners
+// Setup time slot listeners - now triggers smart picks
 function setupSwTimeSlotListeners() {
     const serviceSelect = document.getElementById('sw-service-select');
-    const dateInput = document.getElementById('sw-date-input');
     
-    const findSlots = () => {
+    serviceSelect.addEventListener('change', () => {
         const serviceId = serviceSelect.value;
-        const date = dateInput.value;
-        
-        if (serviceId && date && swSelectedCustomer) {
-            findSwTimeSlots(serviceId, date);
+        if (serviceId && swSelectedCustomer) {
+            findSwSmartPicks(serviceId);
         }
-    };
-    
-    serviceSelect.addEventListener('change', findSlots);
-    dateInput.addEventListener('change', findSlots);
+    });
 }
 
-// Find available time slots
-async function findSwTimeSlots(serviceId, date) {
-    const container = document.getElementById('sw-ai-suggestions');
-    container.innerHTML = '<p class="sw-empty-state">Beschikbare tijden zoeken...</p>';
+// Find Smart Picks - searches multiple days automatically
+async function findSwSmartPicks(serviceId) {
+    const container = document.getElementById('sw-smart-picks');
+    const loadingEl = document.getElementById('sw-smart-picks-loading');
+    const selectedSlotCard = document.getElementById('sw-selected-slot-card');
+    
+    // Hide selected slot card and reset
+    selectedSlotCard.style.display = 'none';
+    swSelectedSlot = null;
+    document.getElementById('sw-create-btn').disabled = true;
+    
+    // Show loading
+    container.innerHTML = '';
+    loadingEl.style.display = 'block';
+    
+    // Search the next 10 workdays
+    const daysToSearch = 10;
+    const allSlots = [];
+    let currentDate = new Date();
+    let daysChecked = 0;
     
     try {
-        const response = await fetch('/api/booking/find-slot', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                serviceId,
-                customerId: swSelectedCustomer.id,
-                date,
-                maxSlots: 6,
-                skipSlots: 0
-            })
+        // Get piano ID for location-aware routing
+        const pianoIds = swSelectedPiano ? [swSelectedPiano.id] : [];
+        
+        while (allSlots.length < 12 && daysChecked < 21) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            
+            try {
+                const response = await fetch('/api/booking/find-slot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        serviceId,
+                        customerId: swSelectedCustomer.id,
+                        pianoIds,
+                        date: dateStr,
+                        maxSlots: 3,
+                        skipSlots: 0
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.available && data.slots && data.slots.length > 0) {
+                    // Add date info to each slot
+                    data.slots.forEach((slotData, idx) => {
+                        allSlots.push({
+                            ...slotData,
+                            date: dateStr,
+                            dateObj: new Date(dateStr),
+                            travelInfo: data.travelInfo,
+                            isFirst: idx === 0 && allSlots.length === 0 // First overall slot is recommended
+                        });
+                    });
+                }
+            } catch (dayErr) {
+                console.log(`No slots on ${dateStr}:`, dayErr.message);
+            }
+            
+            // Move to next day
+            currentDate.setDate(currentDate.getDate() + 1);
+            daysChecked++;
+        }
+        
+        loadingEl.style.display = 'none';
+        
+        if (allSlots.length === 0) {
+            container.innerHTML = '<p class="sw-empty-state">Geen beschikbare momenten gevonden in de komende weken. Controleer je agenda-instellingen.</p>';
+            return;
+        }
+        
+        // Group slots by date
+        const slotsByDate = {};
+        allSlots.forEach(slot => {
+            if (!slotsByDate[slot.date]) {
+                slotsByDate[slot.date] = [];
+            }
+            slotsByDate[slot.date].push(slot);
         });
         
-        const data = await response.json();
+        // Build HTML grouped by day
+        const days = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
+        let html = '';
+        let isFirstSlot = true;
         
-        if (data.available && data.slots && data.slots.length > 0) {
-            container.innerHTML = data.slots.map((slotData, idx) => {
+        Object.keys(slotsByDate).forEach(dateStr => {
+            const dateObj = new Date(dateStr + 'T12:00:00');
+            const dayName = days[dateObj.getDay()];
+            const dateDisplay = dateObj.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+            
+            html += `
+                <div class="sw-day-group">
+                    <div class="sw-day-header">
+                        <span class="sw-day-title">${dayName.charAt(0).toUpperCase() + dayName.slice(1)}</span>
+                        <span class="sw-day-date">${dateDisplay}</span>
+                    </div>
+                    <div class="sw-day-slots">
+            `;
+            
+            slotsByDate[dateStr].forEach(slotData => {
                 const startTime = new Date(slotData.slot.appointmentStart);
-                const endTime = new Date(slotData.slot.appointmentEnd);
                 const timeStr = startTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-                const endStr = endTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                const travelText = slotData.travelInfo?.durationText ? `🚗 ${slotData.travelInfo.durationText}` : '';
                 
-                const isRecommended = idx === 0;
-                
-                return `
-                    <div class="sw-time-slot ${isRecommended ? 'recommended' : ''}" 
+                html += `
+                    <div class="sw-smart-slot ${isFirstSlot ? 'recommended' : ''}" 
                          data-start="${slotData.slot.appointmentStart}" 
-                         data-end="${slotData.slot.appointmentEnd}">
-                        <div class="time">${timeStr}</div>
-                        <div class="meta">${timeStr} - ${endStr}</div>
+                         data-end="${slotData.slot.appointmentEnd}"
+                         data-date="${dateStr}"
+                         data-travel="${slotData.travelInfo?.durationText || ''}">
+                        <span class="time">${timeStr}</span>
+                        ${travelText ? `<span class="travel">${travelText}</span>` : ''}
                     </div>
                 `;
-            }).join('');
-            
-            // Add travel info
-            if (data.travelInfo) {
-                container.innerHTML += `
-                    <div style="grid-column: 1/-1; text-align: center; font-size: 12px; color: #6b7280; margin-top: 8px;">
-                        🚗 Reistijd: ${data.travelInfo.durationText || 'onbekend'}
-                    </div>
-                `;
-            }
-            
-            // Add click handlers
-            container.querySelectorAll('.sw-time-slot').forEach(slot => {
-                slot.addEventListener('click', () => {
-                    container.querySelectorAll('.sw-time-slot').forEach(s => s.classList.remove('selected'));
-                    slot.classList.add('selected');
-                    swSelectedSlot = {
-                        start: slot.dataset.start,
-                        end: slot.dataset.end
-                    };
-                    swSelectedService = servicesCache.find(s => s.id == serviceId) || { id: serviceId };
-                    document.getElementById('sw-create-btn').disabled = false;
-                });
+                isFirstSlot = false;
             });
-        } else {
-            let message = 'Geen beschikbare tijden';
-            if (data.message === 'not_available_on_day') {
-                const days = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
-                const dayName = days[new Date(date).getDay()];
-                message = `Niet beschikbaar op ${dayName}`;
-            }
-            container.innerHTML = `<p class="sw-empty-state">${message}. Probeer een andere datum.</p>`;
-        }
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        
+        // Add click handlers
+        container.querySelectorAll('.sw-smart-slot').forEach(slot => {
+            slot.addEventListener('click', () => selectSwSmartSlot(slot, serviceId));
+        });
+        
+        lucide.createIcons();
+        
     } catch (err) {
-        console.error('Error finding slots:', err);
-        container.innerHTML = '<p class="sw-empty-state">Fout bij zoeken. Probeer opnieuw.</p>';
+        console.error('Error finding smart picks:', err);
+        loadingEl.style.display = 'none';
+        container.innerHTML = '<p class="sw-empty-state">Fout bij zoeken naar beschikbare momenten.</p>';
     }
+}
+
+// Select a smart slot
+function selectSwSmartSlot(slotElement, serviceId) {
+    // Deselect all
+    document.querySelectorAll('.sw-smart-slot').forEach(s => s.classList.remove('selected'));
+    slotElement.classList.add('selected');
+    
+    // Store selection
+    swSelectedSlot = {
+        start: slotElement.dataset.start,
+        end: slotElement.dataset.end
+    };
+    swSelectedService = servicesCache.find(s => s.id == serviceId) || { id: serviceId };
+    
+    // Show selected slot card
+    const selectedSlotCard = document.getElementById('sw-selected-slot-card');
+    const selectedSlotDisplay = document.getElementById('sw-selected-slot-display');
+    
+    const startTime = new Date(swSelectedSlot.start);
+    const endTime = new Date(swSelectedSlot.end);
+    const dateStr = startTime.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+    const timeStr = startTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    const endStr = endTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    const travelText = slotElement.dataset.travel;
+    
+    selectedSlotDisplay.innerHTML = `
+        <div>
+            <div class="date">${dateStr}</div>
+            <div class="time">${timeStr} - ${endStr}</div>
+            ${travelText ? `<div class="travel-info">🚗 Reistijd: ${travelText}</div>` : ''}
+        </div>
+    `;
+    selectedSlotCard.style.display = 'block';
+    
+    // Enable create button
+    document.getElementById('sw-create-btn').disabled = false;
+    
+    // Smooth scroll to the button
+    document.getElementById('sw-create-btn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // Create appointment

@@ -1766,18 +1766,26 @@
                             </select>
                         </div>
                         
-                        <!-- Date selection -->
-                        <div class="sw-card">
-                            <h3><i data-lucide="calendar"></i> Datum kiezen</h3>
-                            <input type="date" id="sw-date-input" class="sw-input-large">
+                        <!-- AI Smart Pick Results -->
+                        <div class="sw-card" id="sw-smart-picks-card">
+                            <h3><i data-lucide="sparkles"></i> Slimste momenten</h3>
+                            <p class="sw-card-subtitle">Automatisch berekend op basis van je agenda en reistijd</p>
+                            <div id="sw-smart-picks-loading" style="display: none; text-align: center; padding: 20px;">
+                                <i data-lucide="loader" class="spin" style="width: 24px; height: 24px; color: #8b5cf6;"></i>
+                                <p style="color: #6b7280; margin-top: 8px;">Beste momenten zoeken...</p>
+                            </div>
+                            <div id="sw-smart-picks" class="sw-smart-picks-container">
+                                <p class="sw-empty-state">Selecteer een service om de slimste momenten te zien</p>
+                            </div>
                         </div>
                         
-                        <!-- AI Time suggestions -->
-                        <div class="sw-card">
-                            <h3><i data-lucide="clock"></i> Beschikbare tijden</h3>
-                            <div id="sw-ai-suggestions" class="sw-time-slots">
-                                <p class="sw-empty-state">Selecteer een service en datum om beschikbare tijden te zien</p>
-                            </div>
+                        <!-- Hidden date input for compatibility -->
+                        <input type="hidden" id="sw-date-input">
+                        
+                        <!-- Selected slot display -->
+                        <div class="sw-card" id="sw-selected-slot-card" style="display: none;">
+                            <h3><i data-lucide="check-circle"></i> Gekozen moment</h3>
+                            <div id="sw-selected-slot-display" class="sw-selected-slot"></div>
                         </div>
                         
                         <!-- Create appointment button -->
@@ -2415,6 +2423,131 @@
         width: 18px;
         height: 18px;
         color: #f59e0b;
+    }
+    
+    /* Smart Picks Styles */
+    .sw-card-subtitle {
+        font-size: 13px;
+        color: #6b7280;
+        margin: -8px 0 16px 0;
+    }
+    
+    .sw-smart-picks-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .sw-day-group {
+        background: #f9fafb;
+        border-radius: 12px;
+        padding: 16px;
+    }
+    
+    .sw-day-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+    
+    .sw-day-title {
+        font-weight: 600;
+        color: #1d1d1f;
+    }
+    
+    .sw-day-date {
+        font-size: 13px;
+        color: #6b7280;
+    }
+    
+    .sw-day-slots {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .sw-smart-slot {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 16px;
+        background: white;
+        border: 2px solid #e5e5ea;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 90px;
+    }
+    
+    .sw-smart-slot:hover {
+        border-color: #667eea;
+        background: #f5f3ff;
+    }
+    
+    .sw-smart-slot.selected {
+        border-color: #667eea;
+        background: #eff6ff;
+    }
+    
+    .sw-smart-slot.recommended {
+        border-color: #f59e0b;
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        position: relative;
+    }
+    
+    .sw-smart-slot.recommended::after {
+        content: '★';
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #f59e0b;
+        color: white;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .sw-smart-slot .time {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1d1d1f;
+    }
+    
+    .sw-smart-slot .travel {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+    
+    .sw-selected-slot {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        border-radius: 12px;
+        border: 2px solid #10b981;
+    }
+    
+    .sw-selected-slot .date {
+        font-weight: 600;
+        color: #065f46;
+    }
+    
+    .sw-selected-slot .time {
+        font-size: 20px;
+        font-weight: 700;
+        color: #047857;
+    }
+    
+    .sw-selected-slot .travel-info {
+        font-size: 13px;
+        color: #059669;
     }
     
     @media (max-width: 640px) {
