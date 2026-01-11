@@ -13,7 +13,7 @@ const i18n = {
      */
     async init() {
         // Supported languages
-        const supported = ['en', 'en-US', 'nl', 'de', 'fr', 'es', 'it', 'pl', 'da', 'el', 'sv', 'no', 'pt', 'cs', 'hu', 'fi', 'et', 'lv', 'lt'];
+        const supported = ['en', 'en-US', 'nl', 'de', 'de-AT', 'de-CH', 'fr', 'es', 'it', 'pl', 'da', 'el', 'sv', 'no', 'pt', 'cs', 'hu', 'fi', 'et', 'lv', 'lt'];
         
         // Try to get language from server first (if logged in)
         let serverLang = null;

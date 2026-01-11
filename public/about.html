@@ -405,7 +405,9 @@
             <div class="language-badge"><span class="language-flag">🇬🇧</span><span>English (UK)</span></div>
             <div class="language-badge"><span class="language-flag">🇺🇸</span><span>English (US)</span></div>
             <div class="language-badge"><span class="language-flag">🇩🇪</span><span>Deutsch</span></div>
-            <div class="language-badge"><span class="language-flag">🇫🇷</span><span>Français</span></div>
+            <div class="language-badge"><span class="language-flag">�🇹</span><span>Deutsch (Österreich)</span></div>
+            <div class="language-badge"><span class="language-flag">🇨🇭</span><span>Deutsch (Schweiz)</span></div>
+            <div class="language-badge"><span class="language-flag">�🇫🇷</span><span>Français</span></div>
             <div class="language-badge"><span class="language-flag">🇪🇸</span><span>Español</span></div>
             <div class="language-badge"><span class="language-flag">🇮🇹</span><span>Italiano</span></div>
             <div class="language-badge"><span class="language-flag">🇵🇱</span><span>Polski</span></div>
@@ -1388,6 +1390,10 @@
             const lang = navigator.language || navigator.userLanguage;
             // Check for American English specifically
             if (lang === 'en-US' || lang.startsWith('en-US')) return 'en-US';
+            // Check for Austrian German
+            if (lang === 'de-AT' || lang.startsWith('de-AT')) return 'de-AT';
+            // Check for Swiss German
+            if (lang === 'de-CH' || lang.startsWith('de-CH')) return 'de-CH';
             const shortLang = lang.split('-')[0];
             return ['nl', 'de', 'fr', 'es', 'it', 'pl', 'da', 'el', 'sv', 'no', 'pt', 'cs', 'hu', 'fi', 'et', 'lv', 'lt'].includes(shortLang) ? shortLang : 'en';
         }
