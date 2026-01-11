@@ -637,7 +637,6 @@ router.post('/find-slot', async (req, res) => {
         
         // Haal alle afspraken van die dag op (DB + externe calendars)
         const searchDateStr = date.split('T')[0]; // YYYY-MM-DD
-        const searchDateTime = new Date(date);
         
         // 1. Database afspraken
         const dayAppointments = await appointmentStore.getAppointmentsForDay(req.session.user.id, searchDateStr);
@@ -676,63 +675,59 @@ router.post('/find-slot', async (req, res) => {
         
         console.log(`[SMART] Total events on ${searchDateStr}: ${allDayEvents.length} (${dayAppointments.length} DB + ${externalEvents.length} external)`);
         
+        // Voor origin detection: pak de LAATSTE afspraak van de dag
+        // Dit bepaalt vanaf waar de reistijd wordt berekend
+        // (de slot finding zorgt ervoor dat we alleen NA deze afspraak slots vinden)
         if (allDayEvents.length > 0) {
-            // Filter: alleen events die VOOR het gezochte tijdstip eindigen
-            const eventsBefore = allDayEvents.filter(evt => evt.end < searchDateTime);
+            // Sorteer op eindtijd (oplopend) en pak de LAATSTE
+            const sortedEvents = allDayEvents.sort((a, b) => a.end - b.end);
+            const lastEvent = sortedEvents[sortedEvents.length - 1];
             
-            if (eventsBefore.length > 0) {
-                // Sorteer op eindtijd (oplopend) en pak de LAATSTE die voor ons tijdstip eindigt
-                const sortedEvents = eventsBefore.sort((a, b) => a.end - b.end);
-                const previousEvent = sortedEvents[sortedEvents.length - 1];
-                
-                console.log(`[SMART] 📍 Previous event before ${searchDateTime.toISOString()}: "${previousEvent.title}" (ends ${previousEvent.end.toISOString()})`);
-                previousAppointmentInfo = previousEvent;
-                
-                // Probeer adres te vinden - in volgorde van prioriteit:
-                let foundAddress = null;
-                let addressSource = null;
-                
-                // 1. Uit het location veld van de afspraak/event
-                if (previousEvent.location && previousEvent.location.trim()) {
-                    foundAddress = previousEvent.location.trim();
-                    addressSource = 'event.location';
+            console.log(`[SMART] 📍 Last event of day: "${lastEvent.title}" (ends ${lastEvent.end.toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'})})`);
+            previousAppointmentInfo = lastEvent;
+            
+            // Probeer adres te vinden - in volgorde van prioriteit:
+            let foundAddress = null;
+            let addressSource = null;
+            
+            // 1. Uit het location veld van de afspraak/event
+            if (lastEvent.location && lastEvent.location.trim()) {
+                foundAddress = lastEvent.location.trim();
+                addressSource = 'event.location';
+            }
+            
+            // 2. Uit de klant gekoppeld aan de afspraak (alleen DB afspraken)
+            if (!foundAddress && lastEvent.type === 'db' && lastEvent.customer_id) {
+                const prevCustomer = await customerStore.getCustomer(req.session.user.id, lastEvent.customer_id);
+                if (prevCustomer && prevCustomer.address?.city) {
+                    foundAddress = `${prevCustomer.address.street}, ${prevCustomer.address.city}`;
+                    addressSource = 'customer.address';
                 }
-                
-                // 2. Uit de klant gekoppeld aan de afspraak (alleen DB afspraken)
-                if (!foundAddress && previousEvent.type === 'db' && previousEvent.customer_id) {
-                    const prevCustomer = await customerStore.getCustomer(req.session.user.id, previousEvent.customer_id);
-                    if (prevCustomer && prevCustomer.address?.city) {
-                        foundAddress = `${prevCustomer.address.street}, ${prevCustomer.address.city}`;
-                        addressSource = 'customer.address';
-                    }
+            }
+            
+            // 3. AI-SLIM: Uit de notities/description van de afspraak
+            if (!foundAddress && lastEvent.description) {
+                const extractedAddress = extractAddressFromText(lastEvent.description);
+                if (extractedAddress) {
+                    foundAddress = extractedAddress;
+                    addressSource = 'description (AI extracted)';
                 }
-                
-                // 3. AI-SLIM: Uit de notities/description van de afspraak
-                if (!foundAddress && previousEvent.description) {
-                    const extractedAddress = extractAddressFromText(previousEvent.description);
-                    if (extractedAddress) {
-                        foundAddress = extractedAddress;
-                        addressSource = 'description (AI extracted)';
-                    }
+            }
+            
+            // 4. AI-SLIM: Uit de titel van de afspraak
+            if (!foundAddress && lastEvent.title) {
+                const extractedFromTitle = extractAddressFromText(lastEvent.title);
+                if (extractedFromTitle) {
+                    foundAddress = extractedFromTitle;
+                    addressSource = 'title (AI extracted)';
                 }
-                
-                // 4. AI-SLIM: Uit de titel van de afspraak
-                if (!foundAddress && previousEvent.title) {
-                    const extractedFromTitle = extractAddressFromText(previousEvent.title);
-                    if (extractedFromTitle) {
-                        foundAddress = extractedFromTitle;
-                        addressSource = 'title (AI extracted)';
-                    }
-                }
-                
-                if (foundAddress) {
-                    dynamicOrigin = foundAddress;
-                    console.log(`[SMART] 🎯 Dynamic origin from ${addressSource}: "${foundAddress}"`);
-                } else {
-                    console.log('[SMART] Previous event found but no address detected, using company address');
-                }
+            }
+            
+            if (foundAddress) {
+                dynamicOrigin = foundAddress;
+                console.log(`[SMART] 🎯 Dynamic origin from ${addressSource}: "${foundAddress}"`);
             } else {
-                console.log(`[SMART] No events end before ${searchDateTime.toISOString()}, using company address`);
+                console.log('[SMART] Previous event found but no address detected, using company address');
             }
         } else {
             console.log('[SMART] No previous appointments on this day, using company address');
@@ -823,17 +818,35 @@ router.post('/find-slot', async (req, res) => {
             end: effectiveAvailability.end || '17:00'
         };
         
-        // Haal events van die dag op (hergebruik dayStart/dayEnd van eerder)
-        const existingEvents = await getCalendarEvents(req, dayStart, dayEnd);
+        // externalEvents is al opgehaald eerder in de functie voor origin detection
+        // dayAppointments ook - we hergebruiken deze voor slot finding
+        
+        // Combineer DB appointments met external events voor slot finding
+        const allEventsForSlotFinding = [
+            // DB appointments omzetten naar zelfde format als external events
+            ...dayAppointments.map(apt => ({
+                start: { dateTime: apt.start_time || apt.startTime },
+                end: { dateTime: apt.end_time || apt.endTime },
+                summary: apt.title,
+                location: apt.location
+            })),
+            // External calendar events (already in correct format)
+            ...externalEvents
+        ];
         
         console.log(`[SMART] Day: ${dayName}, workHours:`, workHours);
-        console.log(`[SMART] Events on ${searchDate.toISOString().split('T')[0]}:`, existingEvents.length);
+        console.log(`[SMART] Events for slot finding: ${allEventsForSlotFinding.length} (${dayAppointments.length} DB + ${externalEvents.length} external)`);
+        allEventsForSlotFinding.forEach(e => {
+            const start = e.start?.dateTime || e.start;
+            const end = e.end?.dateTime || e.end;
+            console.log(`[SMART]   - "${e.summary || 'Unnamed'}" ${new Date(start).toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'})} - ${new Date(end).toLocaleTimeString('nl-NL', {hour:'2-digit', minute:'2-digit'})}`);
+        });
         console.log(`[SMART] Travel: ${defaultTravelInfo.duration}min, Service: ${effectiveDuration}min${pianoCount > 1 ? ` (${pianoCount} pianos)` : ''}, Buffer: ${effectiveBufferBefore}/${effectiveBufferAfter}`);
         console.log(`[SMART] Finding ${maxSlots} slots, skipping first ${skipSlots}`);
         
         // Vind ALLE beschikbare slots op deze dag
         const daySlots = findAllAvailableSlots(
-            existingEvents,
+            allEventsForSlotFinding,
             defaultTravelInfo.duration,
             effectiveDuration,
             searchDate,
