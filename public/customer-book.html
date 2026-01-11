@@ -1414,6 +1414,57 @@
         const pathParts = window.location.pathname.split('/');
         const token = pathParts[pathParts.length - 1];
         
+        // ========== MOBILE BOOKING LOGGER ==========
+        const mobileLogger = {
+            logs: [],
+            sessionId: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+            
+            log(action, data = {}) {
+                const entry = {
+                    timestamp: new Date().toISOString(),
+                    action,
+                    data,
+                    sessionId: this.sessionId,
+                    userAgent: navigator.userAgent,
+                    screen: { w: window.innerWidth, h: window.innerHeight },
+                    token: token.substring(0, 8) + '...' // Partial token for privacy
+                };
+                this.logs.push(entry);
+                console.log(`📱 [MobileBooking] ${action}`, data);
+                
+                // Send to server async (fire and forget)
+                this.sendToServer(entry);
+            },
+            
+            async sendToServer(entry) {
+                try {
+                    await fetch('/api/book/mobile-log', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(entry)
+                    });
+                } catch (e) {
+                    // Silent fail - logging shouldn't break booking
+                }
+            },
+            
+            error(action, error) {
+                this.log(action, { 
+                    error: error.message || String(error),
+                    stack: error.stack?.substring(0, 500)
+                });
+            }
+        };
+        
+        // Log page load
+        mobileLogger.log('PAGE_LOAD', {
+            url: window.location.href,
+            referrer: document.referrer,
+            language: currentLang,
+            isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
+            touchSupport: 'ontouchstart' in window
+        });
+        
         // State
         let bookingData = null;
         let selectedService = null;
@@ -1435,14 +1486,23 @@
         
         // Initialize
         async function init() {
+            mobileLogger.log('INIT_START');
             try {
                 const response = await fetch(`/api/book/customer/${token}`);
                 
                 if (!response.ok) {
+                    mobileLogger.error('INIT_FAILED', new Error(`HTTP ${response.status}`));
                     throw new Error('Invalid token');
                 }
                 
                 bookingData = await response.json();
+                mobileLogger.log('INIT_SUCCESS', {
+                    customerId: bookingData.customer?.id,
+                    customerName: bookingData.customer?.name,
+                    servicesCount: bookingData.services?.length,
+                    pianosCount: bookingData.pianos?.length,
+                    businessName: bookingData.business?.name
+                });
                 renderBookingForm();
                 
             } catch (error) {
@@ -1493,6 +1553,12 @@
                     opt.classList.add('selected');
                     opt.querySelector('input').checked = true;
                     selectedService = opt.dataset.id;
+                    const service = bookingData.services.find(s => s.id == selectedService);
+                    mobileLogger.log('SERVICE_SELECTED', {
+                        serviceId: selectedService,
+                        serviceName: service?.name,
+                        duration: service?.duration
+                    });
                     // Show calendar picker when service is selected
                     showCalendarPicker();
                 });
@@ -1563,6 +1629,7 @@
         // ========== ENHANCED CALENDAR PICKER ==========
         
         async function showCalendarPicker() {
+            mobileLogger.log('CALENDAR_OPEN', { serviceId: selectedService });
             calendarCard.style.display = 'block';
             selectedDate = null;
             selectedTime = null;
@@ -1600,12 +1667,17 @@
         }
         
         async function loadFirstAvailable() {
+            mobileLogger.log('FIRST_AVAILABLE_LOADING', { serviceId: selectedService });
             try {
                 const response = await fetch(`/api/book/customer/${token}/first-available?serviceId=${selectedService}`);
                 const data = await response.json();
                 
                 if (data.success && data.firstAvailable) {
                     firstAvailableSlot = data.firstAvailable;
+                    mobileLogger.log('FIRST_AVAILABLE_FOUND', {
+                        date: firstAvailableSlot.date,
+                        time: firstAvailableSlot.time
+                    });
                     
                     // Show first available banner
                     const banner = document.getElementById('firstAvailableBanner');
@@ -1631,6 +1703,11 @@
         
         function selectFirstAvailable() {
             if (!firstAvailableSlot) return;
+            
+            mobileLogger.log('FIRST_AVAILABLE_CLICKED', {
+                date: firstAvailableSlot.date,
+                time: firstAvailableSlot.time
+            });
             
             selectedDate = firstAvailableSlot.date;
             selectedTime = firstAvailableSlot.time;
@@ -1773,6 +1850,7 @@
         }
         
         async function selectDate(dateStr) {
+            mobileLogger.log('DATE_SELECTED', { date: dateStr });
             selectedDate = dateStr;
             selectedTime = null;
             
@@ -1791,6 +1869,7 @@
         }
         
         async function loadTimeSlots(dateStr) {
+            mobileLogger.log('TIMESLOTS_LOADING', { date: dateStr });
             const section = document.getElementById('timeSlotsSection');
             const grid = document.getElementById('timeSlotsGrid');
             const loading = document.getElementById('timeSlotsLoading');
@@ -1816,6 +1895,11 @@
                 loading.style.display = 'none';
                 
                 if (data.success && data.slots && data.slots.length > 0) {
+                    mobileLogger.log('TIMESLOTS_LOADED', { 
+                        date: dateStr, 
+                        slotsCount: data.slots.length,
+                        slots: data.slots.slice(0, 5).map(s => s.time) // First 5 for brevity
+                    });
                     grid.style.display = 'grid';
                     grid.innerHTML = data.slots.map(slot => `
                         <div class="time-slot ${slot.time === selectedTime ? 'selected' : ''}" 
@@ -1824,12 +1908,14 @@
                         </div>
                     `).join('');
                 } else {
+                    mobileLogger.log('TIMESLOTS_EMPTY', { date: dateStr });
                     noTimes.style.display = 'block';
                     lucide.createIcons();
                 }
                 
             } catch (error) {
                 console.error('Load times error:', error);
+                mobileLogger.error('TIMESLOTS_ERROR', error);
                 loading.style.display = 'none';
                 noTimes.style.display = 'block';
                 lucide.createIcons();
@@ -1838,6 +1924,7 @@
         
         function selectTime(time) {
             selectedTime = time;
+            mobileLogger.log('TIME_SELECTED', { time, date: selectedDate });
             
             // Update UI
             document.querySelectorAll('.time-slot').forEach(el => {
@@ -1858,6 +1945,16 @@
         async function submitBooking() {
             if (submitBtn.disabled) return;
             
+            const bookingPayload = {
+                serviceId: selectedService,
+                pianoId: selectedPiano,
+                date: selectedDate,
+                time: selectedTime,
+                notes: document.getElementById('notesInput').value
+            };
+            
+            mobileLogger.log('SUBMIT_STARTED', bookingPayload);
+            
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<span class="spinner" style="width: 20px; height: 20px; margin: 0;"></span> ${t['book.processing']}`;
             
@@ -1865,25 +1962,27 @@
                 const response = await fetch(`/api/book/customer/${token}/appointment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        serviceId: selectedService,
-                        pianoId: selectedPiano,
-                        date: selectedDate,
-                        time: selectedTime,
-                        notes: document.getElementById('notesInput').value
-                    })
+                    body: JSON.stringify(bookingPayload)
                 });
                 
                 const result = await response.json();
                 
                 if (!response.ok) {
+                    mobileLogger.error('SUBMIT_FAILED', new Error(result.error || `HTTP ${response.status}`));
                     throw new Error(result.error || 'Booking failed');
                 }
+                
+                mobileLogger.log('SUBMIT_SUCCESS', {
+                    appointmentId: result.appointment?.id,
+                    date: result.appointment?.date,
+                    time: result.appointment?.time
+                });
                 
                 showSuccess(result);
                 
             } catch (error) {
                 console.error('Booking error:', error);
+                mobileLogger.error('SUBMIT_ERROR', error);
                 alert(t['book.error'] + ' ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = `<i data-lucide="check-circle"></i> ${t['book.bookAppointment']}`;

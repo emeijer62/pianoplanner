@@ -15,6 +15,57 @@ const { calculateTravelTime, getPlaceAutocomplete, getPlaceDetails, geocodeAddre
 const emailService = require('../utils/emailService');
 const { getDb } = require('../utils/database');
 
+// ==================== MOBILE BOOKING LOGGER ====================
+
+/**
+ * Ontvang logs van mobile booking
+ * POST /api/book/mobile-log
+ */
+router.post('/mobile-log', (req, res) => {
+    try {
+        const log = req.body;
+        const emoji = getLogEmoji(log.action);
+        
+        // Format log output for Railway
+        console.log(`📱 [MOBILE-BOOKING] ${emoji} ${log.action}`, JSON.stringify({
+            session: log.sessionId,
+            token: log.token,
+            screen: log.screen,
+            data: log.data,
+            time: log.timestamp
+        }, null, 0));
+        
+        res.json({ received: true });
+    } catch (e) {
+        res.status(200).json({ received: false });
+    }
+});
+
+function getLogEmoji(action) {
+    const emojis = {
+        'PAGE_LOAD': '🚀',
+        'INIT_START': '⏳',
+        'INIT_SUCCESS': '✅',
+        'INIT_FAILED': '❌',
+        'SERVICE_SELECTED': '🎯',
+        'CALENDAR_OPEN': '📅',
+        'FIRST_AVAILABLE_LOADING': '🔍',
+        'FIRST_AVAILABLE_FOUND': '⭐',
+        'FIRST_AVAILABLE_CLICKED': '👆',
+        'DATE_SELECTED': '📆',
+        'TIMESLOTS_LOADING': '⏰',
+        'TIMESLOTS_LOADED': '🕐',
+        'TIMESLOTS_EMPTY': '😕',
+        'TIMESLOTS_ERROR': '⚠️',
+        'TIME_SELECTED': '🎯',
+        'SUBMIT_STARTED': '🚀',
+        'SUBMIT_SUCCESS': '🎉',
+        'SUBMIT_FAILED': '💥',
+        'SUBMIT_ERROR': '🔥'
+    };
+    return emojis[action] || '📝';
+}
+
 // ==================== CUSTOMER-SPECIFIC BOOKING ====================
 
 /**
