@@ -465,7 +465,7 @@
             height: 32px;
         }
         
-        /* Mobile optimizations */
+        /* ========== MOBILE OPTIMIZATIONS (Apple Style) ========== */
         @media (max-width: 500px) {
             .container {
                 padding: 12px;
@@ -473,10 +473,252 @@
             
             .card {
                 padding: 14px;
+                border-radius: 14px;
+            }
+            
+            .card-title {
+                font-size: 16px;
             }
             
             .datetime-row {
                 grid-template-columns: 1fr;
+            }
+            
+            /* Calendar mobile */
+            .calendar-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .calendar-month-select {
+                order: -1;
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 8px;
+            }
+            
+            .calendar-month-select select {
+                padding: 10px 14px;
+                font-size: 15px;
+                border-radius: 10px;
+            }
+            
+            .calendar-nav-btn {
+                width: 44px;
+                height: 44px;
+                border-radius: 10px;
+            }
+            
+            .calendar-grid {
+                gap: 3px;
+            }
+            
+            .calendar-weekday {
+                font-size: 10px;
+                padding: 6px 0;
+            }
+            
+            .calendar-day {
+                font-size: 13px;
+                border-radius: 10px;
+                min-height: 40px;
+            }
+            
+            /* First available banner mobile */
+            .first-available-banner {
+                padding: 14px;
+                gap: 14px;
+                border-radius: 14px;
+            }
+            
+            .first-available-icon {
+                width: 44px;
+                height: 44px;
+                border-radius: 12px;
+            }
+            
+            .first-available-icon i {
+                width: 22px;
+                height: 22px;
+            }
+            
+            .first-available-label {
+                font-size: 11px;
+            }
+            
+            .first-available-value {
+                font-size: 14px;
+            }
+            
+            /* Time slots mobile */
+            .time-slots-section {
+                margin-top: 16px;
+                padding-top: 16px;
+            }
+            
+            .time-slots-header {
+                flex-wrap: wrap;
+                font-size: 14px;
+            }
+            
+            .time-slots-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            
+            .time-slot {
+                padding: 14px 8px;
+                font-size: 15px;
+                border-radius: 10px;
+                font-weight: 600;
+            }
+            
+            .time-slot:active {
+                transform: scale(0.95);
+            }
+            
+            /* Calendar legend mobile */
+            .calendar-legend {
+                justify-content: center;
+                gap: 16px;
+                margin-top: 16px;
+                padding-top: 16px;
+            }
+            
+            .legend-item {
+                font-size: 11px;
+            }
+            
+            .legend-dot {
+                width: 10px;
+                height: 10px;
+            }
+            
+            /* Loading states */
+            .calendar-loading {
+                padding: 30px;
+            }
+            
+            .no-times-message {
+                padding: 24px;
+            }
+            
+            /* Services & Pianos */
+            .service-option,
+            .piano-option {
+                padding: 14px;
+                border-radius: 12px;
+            }
+            
+            .service-name {
+                font-size: 15px;
+            }
+            
+            .service-meta {
+                font-size: 12px;
+            }
+            
+            /* Submit button */
+            .submit-btn {
+                padding: 16px;
+                font-size: 16px;
+                border-radius: 14px;
+            }
+            
+            /* Header */
+            .header {
+                padding: 16px 0;
+            }
+            
+            .business-name {
+                font-size: 18px;
+            }
+            
+            .welcome-text {
+                font-size: 13px;
+            }
+        }
+        
+        /* Extra small screens (iPhone SE, etc) */
+        @media (max-width: 375px) {
+            .container {
+                padding: 8px;
+            }
+            
+            .card {
+                padding: 12px;
+            }
+            
+            .calendar-day {
+                font-size: 12px;
+                min-height: 36px;
+            }
+            
+            .time-slots-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .time-slot {
+                padding: 12px 6px;
+                font-size: 14px;
+            }
+            
+            .first-available-value {
+                font-size: 13px;
+            }
+            
+            .calendar-month-select select {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+        }
+        
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .calendar-day.available:hover {
+                background: #e8f5e9;
+                transform: none;
+            }
+            
+            .calendar-day.available:active {
+                background: #c8e6c9;
+                transform: scale(0.95);
+            }
+            
+            .time-slot:hover {
+                border-color: var(--border);
+                background: white;
+            }
+            
+            .time-slot:active {
+                border-color: var(--primary);
+                background: #f0f7ff;
+                transform: scale(0.95);
+            }
+            
+            .first-available-banner:hover {
+                transform: none;
+                box-shadow: none;
+            }
+            
+            .first-available-banner:active {
+                transform: scale(0.98);
+                background: linear-gradient(135deg, #d4e9fb 0%, #d8eddc 100%);
+            }
+            
+            .calendar-nav-btn:active {
+                background: var(--bg);
+                transform: scale(0.95);
+            }
+        }
+        
+        /* Safe area for iPhone notch */
+        @supports (padding-top: env(safe-area-inset-top)) {
+            .container {
+                padding-top: max(12px, env(safe-area-inset-top));
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+                padding-left: max(12px, env(safe-area-inset-left));
+                padding-right: max(12px, env(safe-area-inset-right));
             }
         }
         
