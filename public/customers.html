@@ -176,7 +176,7 @@
 
     <!-- Modal for adding/editing customer -->
     <div id="customer-modal" class="modal-overlay">
-        <div class="modal">
+        <div class="modal apple-modal">
             <div class="modal-header">
                 <h2 class="modal-title" id="modal-title">New Customer</h2>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
@@ -185,68 +185,94 @@
                 <form id="customer-form">
                     <input type="hidden" id="customer-id">
                     
-                    <div class="form-group">
-                        <label class="form-label" for="customer-name">Name *</label>
-                        <input type="text" id="customer-name" class="form-input" required placeholder="Full name">
+                    <!-- Name - Full Width -->
+                    <div class="apple-form-section">
+                        <label class="apple-form-label" for="customer-name">Name <span class="required">*</span></label>
+                        <input type="text" id="customer-name" class="apple-form-input" required placeholder="Full name">
                     </div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="customer-email">Email</label>
-                            <input type="email" id="customer-email" class="form-input" placeholder="email@example.com">
+                    <!-- Contact Grid -->
+                    <div class="apple-form-grid">
+                        <div class="apple-form-section">
+                            <label class="apple-form-label" for="customer-email">Email</label>
+                            <input type="email" id="customer-email" class="apple-form-input" placeholder="email@example.com">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="customer-phone">Phone</label>
-                            <input type="tel" id="customer-phone" class="form-input" placeholder="+31 6 12345678">
+                        <div class="apple-form-section">
+                            <label class="apple-form-label" for="customer-phone">Phone</label>
+                            <input type="tel" id="customer-phone" class="apple-form-input" placeholder="+31 6 12345678">
                         </div>
                     </div>
                     
-                    <div class="form-group" style="position: relative;">
-                        <label class="form-label" for="customer-street">Street + House number</label>
-                        <input type="text" id="customer-street" class="form-input" autocomplete="off" placeholder="Start typing an address...">
+                    <!-- Address -->
+                    <div class="apple-form-section" style="position: relative;">
+                        <label class="apple-form-label" for="customer-street">Street + House number</label>
+                        <input type="text" id="customer-street" class="apple-form-input" autocomplete="off" placeholder="Start typing an address...">
                         <div id="address-suggestions" class="autocomplete-suggestions"></div>
                     </div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="customer-postalcode">Postal Code</label>
-                            <input type="text" id="customer-postalcode" class="form-input" placeholder="1234 AB">
+                    <!-- Location Grid -->
+                    <div class="apple-form-grid">
+                        <div class="apple-form-section">
+                            <label class="apple-form-label" for="customer-postalcode">Postal Code</label>
+                            <input type="text" id="customer-postalcode" class="apple-form-input" placeholder="1234 AB">
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="customer-city">City</label>
-                            <input type="text" id="customer-city" class="form-input" placeholder="Amsterdam">
+                        <div class="apple-form-section">
+                            <label class="apple-form-label" for="customer-city">City</label>
+                            <input type="text" id="customer-city" class="apple-form-input" placeholder="Amsterdam">
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label" for="customer-notes">Notes</label>
-                        <textarea id="customer-notes" class="form-textarea" rows="3" placeholder="Additional notes about this customer..."></textarea>
+                    <!-- Notes -->
+                    <div class="apple-form-section">
+                        <label class="apple-form-label" for="customer-notes">Notes</label>
+                        <textarea id="customer-notes" class="apple-form-textarea" rows="3" placeholder="Additional notes about this customer..."></textarea>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label" for="customer-default-service">Fixed service for self-booking</label>
-                        <select id="customer-default-service" class="form-input">
+                    <!-- Divider -->
+                    <div class="apple-form-divider"></div>
+                    
+                    <!-- Booking Options Section -->
+                    <div class="apple-form-section-title">
+                        <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
+                        Booking Options
+                    </div>
+                    
+                    <!-- Fixed Service -->
+                    <div class="apple-form-section">
+                        <label class="apple-form-label" for="customer-default-service">Fixed service for self-booking</label>
+                        <select id="customer-default-service" class="apple-form-select">
                             <option value="">None (customer chooses from all services)</option>
                         </select>
-                        <p style="font-size: 12px; color: #666; margin-top: 4px;">When set, the customer can only book this service via their personal booking link.</p>
+                        <p class="apple-form-hint">When set, the customer can only book this service via their personal booking link.</p>
                     </div>
                     
-                    <div class="form-group" id="theater-hours-group" style="display: none;">
-                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                            <input type="checkbox" id="customer-theater-hours" style="width: 18px; height: 18px;">
-                            <span class="form-label" style="margin: 0;">Use theater availability</span>
-                        </label>
-                        <p style="font-size: 12px; color: #666; margin-top: 4px;">Allows booking outside normal hours (evenings, weekends) via their personal link.</p>
+                    <!-- Theater Toggle -->
+                    <div class="apple-form-section" id="theater-hours-group" style="display: none;">
+                        <div class="apple-toggle-row">
+                            <div class="apple-toggle-info">
+                                <div class="apple-toggle-label">
+                                    <i data-lucide="building-2" style="width: 18px; height: 18px; color: #8B5CF6;"></i>
+                                    Theater / Venue
+                                </div>
+                                <p class="apple-toggle-hint">Enable extended availability (evenings, weekends) for theaters and venues.</p>
+                            </div>
+                            <label class="apple-toggle">
+                                <input type="checkbox" id="customer-theater-hours">
+                                <span class="apple-toggle-slider"></span>
+                            </label>
+                        </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onclick="document.getElementById('customer-form').requestSubmit()">
-                    <i data-lucide="check" style="width: 18px; height: 18px;"></i> Save Customer
+            <div class="modal-footer apple-modal-footer">
+                <button type="button" class="apple-btn apple-btn-primary" onclick="document.getElementById('customer-form').requestSubmit()">
+                    <i data-lucide="check" style="width: 18px; height: 18px;"></i>
+                    Save Customer
                 </button>
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                <button type="button" id="delete-customer-btn" class="btn" style="display: none;" onclick="deleteCurrentCustomer()">
-                    <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i> Delete Customer
+                <button type="button" class="apple-btn apple-btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" id="delete-customer-btn" class="apple-btn apple-btn-danger" style="display: none;" onclick="deleteCurrentCustomer()">
+                    <i data-lucide="trash-2" style="width: 18px; height: 18px;"></i>
+                    Delete Customer
                 </button>
             </div>
         </div>
