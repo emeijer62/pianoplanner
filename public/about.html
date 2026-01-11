@@ -422,6 +422,8 @@
             <div class="language-badge"><span class="language-flag">🇪🇪</span><span>Eesti</span></div>
             <div class="language-badge"><span class="language-flag">🇱🇻</span><span>Latviešu</span></div>
             <div class="language-badge"><span class="language-flag">🇱🇹</span><span>Lietuvių</span></div>
+            <div class="language-badge"><span class="language-flag">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span><span>Gàidhlig</span></div>
+            <div class="language-badge"><span class="language-flag">🇮🇪</span><span>Gaeilge</span></div>
         </div>
     </section>
 
@@ -1383,6 +1385,32 @@
                 'about.ctaDesc': 'Išbandykite PianoPlanner nemokamai ir atraskite, kaip tai palengvina jūsų darbą kaip pianinų technikui.',
                 'about.ctaBtn': 'Pradėti nemokamą bandomąjį laikotarpį',
                 'about.footer': '© 2026 PianoPlanner. Specialiai sukurta pianinų technikams.'
+            },
+            gd: {
+                'about.login': 'Clàraich a-steach',
+                'about.tryFree': 'Feuch an-asgaidh',
+                'about.heroTitle': 'Am fuasgladh foirfe airson luchd-obrach phiàno',
+                'about.heroDesc': 'Chaidh PianoPlanner a dhealbhadh gu sònraichte airson luchd-gleusaidh is luchd-obrach phiàno. Stiùirich luchd-ceannach, piànoan agus clàraidhean ann an aon àite. Sàbhail ùine agus thoir seachad seirbheis proifeiseanta.',
+                'about.featuresTitle': 'Na h-uile rud a dh\'fheumas tu',
+                'about.langTitle': 'Ri fhaighinn ann an iomadh cànan',
+                'about.langDesc': 'Tha do roghainn cànain air a shàbhaladh nad chunntas',
+                'about.ctaTitle': 'Deiseil airson tòiseachadh?',
+                'about.ctaDesc': 'Feuch PianoPlanner an-asgaidh agus faigh a-mach ciamar a nì e d\' obair nas fhasa mar neach-obrach piàno.',
+                'about.ctaBtn': 'Tòisich deuchainn an-asgaidh',
+                'about.footer': '© 2026 PianoPlanner. Air a dhealbhadh gu sònraichte airson luchd-obrach phiàno.'
+            },
+            ga: {
+                'about.login': 'Logáil isteach',
+                'about.tryFree': 'Bain triail saor in aisce',
+                'about.heroTitle': 'An réiteach foirfe do theicneoirí pianó',
+                'about.heroDesc': 'Dearadh PianoPlanner go speisialta do thiúnóirí agus teicneoirí pianó. Bainistigh custaiméirí, pianónna agus áirithintí in aon áit amháin. Sábháil am agus tabhair seirbhís ghairmiúil.',
+                'about.featuresTitle': 'Gach rud atá uait',
+                'about.langTitle': 'Ar fáil i dteangacha éagsúla',
+                'about.langDesc': 'Sábháiltear do rogha teanga i do chuntas',
+                'about.ctaTitle': 'Réidh le tosú?',
+                'about.ctaDesc': 'Bain triail as PianoPlanner saor in aisce agus faigh amach conas a dhéanann sé do chuid oibre mar theicneoir pianó níos éasca.',
+                'about.ctaBtn': 'Tosaigh triail saor in aisce',
+                'about.footer': '© 2026 PianoPlanner. Deartha go speisialta do theicneoirí pianó.'
             }
         };
 
@@ -1395,7 +1423,7 @@
             // Check for Swiss German
             if (lang === 'de-CH' || lang.startsWith('de-CH')) return 'de-CH';
             const shortLang = lang.split('-')[0];
-            return ['nl', 'de', 'fr', 'es', 'it', 'pl', 'da', 'el', 'sv', 'no', 'pt', 'cs', 'hu', 'fi', 'et', 'lv', 'lt'].includes(shortLang) ? shortLang : 'en';
+            return ['nl', 'de', 'fr', 'es', 'it', 'pl', 'da', 'el', 'sv', 'no', 'pt', 'cs', 'hu', 'fi', 'et', 'lv', 'lt', 'gd', 'ga'].includes(shortLang) ? shortLang : 'en';
         }
 
         function applyTranslations() {
