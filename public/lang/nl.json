@@ -335,5 +335,42 @@
       "csvOnly": "Upload a.u.b. een CSV bestand",
       "parse": "Fout bij lezen van CSV bestand"
     }
+  },
+  "emailTemplates": {
+    "confirmation": {
+      "subject": "Bevestiging: {{service}} op {{date}}",
+      "title": "Afspraak Bevestigd",
+      "greeting": "Beste {{customerName}},",
+      "intro": "Uw afspraak is bevestigd. Hier zijn de details:",
+      "date": "Datum",
+      "time": "Tijd",
+      "service": "Dienst",
+      "questions": "Heeft u vragen? Neem gerust contact met ons op.",
+      "regards": "Met vriendelijke groet,"
+    },
+    "reminder": {
+      "subject": "Herinnering: {{service}} op {{date}}",
+      "title": "Herinnering",
+      "subtitle": "Uw afspraak is morgen",
+      "greeting": "Beste {{customerName}},",
+      "intro": "Dit is een herinnering voor uw afspraak:",
+      "lookingForward": "Wij kijken ernaar uit u te zien!",
+      "regards": "Met vriendelijke groet,"
+    },
+    "newBooking": {
+      "subject": "Nieuwe boeking: {{customerName}} - {{service}}",
+      "title": "Nieuwe Boeking",
+      "subtitle": "Er is een nieuwe afspraak geboekt",
+      "customerDetails": "Klantgegevens",
+      "appointmentDetails": "Afspraakdetails"
+    },
+    "cancellation": {
+      "subject": "Annulering: {{service}} op {{date}}",
+      "title": "Afspraak Geannuleerd",
+      "greeting": "Beste {{customerName}},",
+      "intro": "Uw afspraak is geannuleerd:",
+      "reschedule": "Wilt u een nieuwe afspraak maken? Neem contact met ons op of boek online.",
+      "regards": "Met vriendelijke groet,"
+    }
   }
 }

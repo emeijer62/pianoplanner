@@ -4,6 +4,7 @@
  */
 
 const nodemailer = require('nodemailer');
+const serverI18n = require('./i18n');
 
 // Email configuration for PianoPlanner central SMTP (TransIP)
 const emailConfig = {
@@ -127,11 +128,106 @@ const DEFAULT_TEMPLATES = {
 };
 
 /**
+ * Generate localized email template
+ * @param {string} templateType - Type of template
+ * @param {string} lang - Language code (default 'en')
+ */
+function getLocalizedTemplate(templateType, lang = 'en') {
+    const t = (key, fallback) => serverI18n.t(lang, `emailTemplates.${key}`, fallback);
+    
+    const templates = {
+        appointment_confirmation: {
+            subject: t('confirmation.subject', 'Confirmation: {{service}} on {{date}}'),
+            body_html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff;">
+<div style="background: #1d1d1f; padding: 40px 32px; text-align: center;">
+<h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #ffffff; letter-spacing: -0.5px;">${t('confirmation.title', 'Appointment Confirmed')}</h1>
+</div>
+<div style="padding: 40px 32px; background: #f5f5f7;">
+<p style="margin: 0 0 24px; font-size: 17px; color: #1d1d1f; line-height: 1.5;">${t('confirmation.greeting', 'Dear {{customerName}},')} </p>
+<p style="margin: 0 0 32px; font-size: 15px; color: #424245; line-height: 1.6;">${t('confirmation.intro', 'Your appointment has been confirmed. Here are the details:')}</p>
+<div style="background: #ffffff; border-radius: 16px; padding: 28px; margin: 0 0 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+<table style="width: 100%; border-collapse: collapse;">
+<tr><td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px;">${t('confirmation.date', 'Date')}</td><td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{datum}}</td></tr>
+<tr><td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px;">${t('confirmation.time', 'Time')}</td><td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{tijd}}</td></tr>
+<tr><td style="padding: 12px 0; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px;">${t('confirmation.service', 'Service')}</td><td style="padding: 12px 0; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{dienst}}</td></tr>
+</table>
+{{#notities}}<p style="margin: 16px 0 0; padding: 12px 16px; background: #f5f5f7; border-radius: 8px; font-size: 14px; color: #636366;">{{notities}}</p>{{/notities}}
+</div>
+<p style="margin: 0 0 8px; font-size: 15px; color: #424245; line-height: 1.6;">${t('confirmation.questions', 'Do you have questions? Feel free to contact us.')}</p>
+<p style="margin: 24px 0 0; font-size: 15px; color: #1d1d1f; line-height: 1.6;">${t('confirmation.regards', 'Kind regards,')}<br><strong>{{bedrijfsnaam}}</strong></p>
+</div>
+<div style="padding: 24px 32px; background: #e8e8ed; text-align: center;">
+<p style="margin: 0; font-size: 13px; color: #8e8e93;">{{bedrijfsnaam}}</p>
+</div>
+</div>`
+        },
+        appointment_reminder: {
+            subject: t('reminder.subject', 'Reminder: {{service}} on {{date}}'),
+            body_html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff;">
+<div style="background: #1d1d1f; padding: 40px 32px; text-align: center;">
+<h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #ffffff; letter-spacing: -0.5px;">${t('reminder.title', 'Reminder')}</h1>
+<p style="margin: 12px 0 0; font-size: 15px; color: #aeaeb2;">${t('reminder.subtitle', 'Your appointment is tomorrow')}</p>
+</div>
+<div style="padding: 40px 32px; background: #f5f5f7;">
+<p style="margin: 0 0 24px; font-size: 17px; color: #1d1d1f; line-height: 1.5;">${t('reminder.greeting', 'Dear {{customerName}},')} </p>
+<p style="margin: 0 0 32px; font-size: 15px; color: #424245; line-height: 1.6;">${t('reminder.intro', 'This is a reminder for your appointment:')}</p>
+<div style="background: #ffffff; border-radius: 16px; padding: 32px; margin: 0 0 32px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+<p style="margin: 0 0 8px; font-size: 44px; font-weight: 600; color: #1d1d1f; letter-spacing: -1px;">{{tijd}}</p>
+<p style="margin: 0 0 16px; font-size: 17px; color: #636366;">{{datum}}</p>
+<div style="display: inline-block; background: #f5f5f7; padding: 8px 16px; border-radius: 20px;">
+<span style="font-size: 15px; color: #1d1d1f; font-weight: 500;">{{dienst}}</span>
+</div>
+{{#locatie}}<p style="margin: 20px 0 0; font-size: 15px; color: #8e8e93;">{{locatie}}</p>{{/locatie}}
+</div>
+<p style="margin: 0 0 8px; font-size: 15px; color: #424245; line-height: 1.6;">${t('reminder.lookingForward', 'We look forward to seeing you!')}</p>
+<p style="margin: 24px 0 0; font-size: 15px; color: #1d1d1f; line-height: 1.6;">${t('reminder.regards', 'Kind regards,')}<br><strong>{{bedrijfsnaam}}</strong></p>
+</div>
+<div style="padding: 24px 32px; background: #e8e8ed; text-align: center;">
+<p style="margin: 0; font-size: 13px; color: #8e8e93;">{{bedrijfsnaam}}</p>
+</div>
+</div>`
+        },
+        booking_notification: {
+            subject: t('newBooking.subject', 'New booking: {{customerName}} - {{service}}'),
+            body_html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif; max-width: 580px; margin: 0 auto; background: #ffffff;">
+<div style="background: #1d1d1f; padding: 40px 32px; text-align: center;">
+<h1 style="margin: 0; font-size: 28px; font-weight: 600; color: #ffffff; letter-spacing: -0.5px;">${t('newBooking.title', 'New Booking')}</h1>
+<p style="margin: 12px 0 0; font-size: 15px; color: #aeaeb2;">${t('newBooking.subtitle', 'A new appointment has been booked')}</p>
+</div>
+<div style="padding: 40px 32px; background: #f5f5f7;">
+<div style="background: #ffffff; border-radius: 16px; padding: 28px; margin: 0 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+<h2 style="margin: 0 0 20px; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">${t('newBooking.customerDetails', 'Customer Details')}</h2>
+<p style="margin: 0 0 8px; font-size: 20px; font-weight: 600; color: #1d1d1f;">{{klantnaam}}</p>
+<p style="margin: 0 0 4px; font-size: 15px; color: #636366;">{{klantemail}}</p>
+<p style="margin: 0; font-size: 15px; color: #636366;">{{klanttelefoon}}</p>
+</div>
+<div style="background: #ffffff; border-radius: 16px; padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+<h2 style="margin: 0 0 20px; font-size: 13px; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">${t('newBooking.appointmentDetails', 'Appointment Details')}</h2>
+<table style="width: 100%; border-collapse: collapse;">
+<tr><td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 15px; color: #636366;">${t('confirmation.service', 'Service')}</td><td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{dienst}}</td></tr>
+<tr><td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 15px; color: #636366;">${t('confirmation.date', 'Date')}</td><td style="padding: 12px 0; border-bottom: 1px solid #e8e8ed; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{datum}}</td></tr>
+<tr><td style="padding: 12px 0; font-size: 15px; color: #636366;">${t('confirmation.time', 'Time')}</td><td style="padding: 12px 0; font-size: 17px; color: #1d1d1f; text-align: right; font-weight: 500;">{{tijd}}</td></tr>
+</table>
+{{#notities}}<p style="margin: 16px 0 0; padding: 12px 16px; background: #f5f5f7; border-radius: 8px; font-size: 14px; color: #424245;">{{notities}}</p>{{/notities}}
+</div>
+</div>
+<div style="padding: 24px 32px; background: #e8e8ed; text-align: center;">
+<p style="margin: 0; font-size: 13px; color: #8e8e93;">{{bedrijfsnaam}}</p>
+</div>
+</div>`
+        }
+    };
+    
+    return templates[templateType] || DEFAULT_TEMPLATES[templateType] || null;
+}
+
+/**
  * Get email template for a user (custom or default)
  * @param {string} userId - User ID
  * @param {string} templateType - Type of template (appointment_confirmation, booking_notification, etc.)
+ * @param {string} lang - Language code for default templates
  */
-async function getUserTemplate(userId, templateType) {
+async function getUserTemplate(userId, templateType, lang = 'en') {
     const getter = getDbGet();
     if (!getter) {
         return DEFAULT_TEMPLATES[templateType] || null;
@@ -153,7 +249,8 @@ async function getUserTemplate(userId, templateType) {
         console.log('⚠️ Could not load custom template:', e.message);
     }
     
-    return DEFAULT_TEMPLATES[templateType] || null;
+    // Return localized template if no custom template
+    return getLocalizedTemplate(templateType, lang) || DEFAULT_TEMPLATES[templateType] || null;
 }
 
 /**
@@ -891,5 +988,7 @@ module.exports = {
     sendNewBookingNotification,
     sendTestEmail,
     sendApprovalEmail,
-    getCompanyLogo
+    getCompanyLogo,
+    getLocalizedTemplate,
+    getUserTemplate
 };

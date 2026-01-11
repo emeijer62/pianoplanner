@@ -333,5 +333,42 @@
       "csvOnly": "Bitte laden Sie eine CSV-Datei hoch",
       "parse": "Fehler beim Parsen der CSV-Datei"
     }
+  },
+  "emailTemplates": {
+    "confirmation": {
+      "subject": "Bestätigung: {{service}} am {{date}}",
+      "title": "Termin Bestätigt",
+      "greeting": "Sehr geehrte(r) {{customerName}},",
+      "intro": "Ihr Termin wurde bestätigt. Hier sind die Details:",
+      "date": "Datum",
+      "time": "Uhrzeit",
+      "service": "Leistung",
+      "questions": "Haben Sie Fragen? Kontaktieren Sie uns gerne.",
+      "regards": "Mit freundlichen Grüßen,"
+    },
+    "reminder": {
+      "subject": "Erinnerung: {{service}} am {{date}}",
+      "title": "Erinnerung",
+      "subtitle": "Ihr Termin ist morgen",
+      "greeting": "Sehr geehrte(r) {{customerName}},",
+      "intro": "Dies ist eine Erinnerung an Ihren Termin:",
+      "lookingForward": "Wir freuen uns auf Sie!",
+      "regards": "Mit freundlichen Grüßen,"
+    },
+    "newBooking": {
+      "subject": "Neue Buchung: {{customerName}} - {{service}}",
+      "title": "Neue Buchung",
+      "subtitle": "Ein neuer Termin wurde gebucht",
+      "customerDetails": "Kundendaten",
+      "appointmentDetails": "Termindetails"
+    },
+    "cancellation": {
+      "subject": "Stornierung: {{service}} am {{date}}",
+      "title": "Termin Storniert",
+      "greeting": "Sehr geehrte(r) {{customerName}},",
+      "intro": "Ihr Termin wurde storniert:",
+      "reschedule": "Möchten Sie einen neuen Termin vereinbaren? Kontaktieren Sie uns oder buchen Sie online.",
+      "regards": "Mit freundlichen Grüßen,"
+    }
   }
 }

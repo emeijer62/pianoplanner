@@ -335,5 +335,42 @@
       "csvOnly": "Please upload a CSV file",
       "parse": "Error parsing CSV file"
     }
+  },
+  "emailTemplates": {
+    "confirmation": {
+      "subject": "Confirmation: {{service}} on {{date}}",
+      "title": "Appointment Confirmed",
+      "greeting": "Dear {{customerName}},",
+      "intro": "Your appointment has been confirmed. Here are the details:",
+      "date": "Date",
+      "time": "Time",
+      "service": "Service",
+      "questions": "Do you have questions? Feel free to contact us.",
+      "regards": "Kind regards,"
+    },
+    "reminder": {
+      "subject": "Reminder: {{service}} on {{date}}",
+      "title": "Reminder",
+      "subtitle": "Your appointment is tomorrow",
+      "greeting": "Dear {{customerName}},",
+      "intro": "This is a reminder for your appointment:",
+      "lookingForward": "We look forward to seeing you!",
+      "regards": "Kind regards,"
+    },
+    "newBooking": {
+      "subject": "New booking: {{customerName}} - {{service}}",
+      "title": "New Booking",
+      "subtitle": "A new appointment has been booked",
+      "customerDetails": "Customer Details",
+      "appointmentDetails": "Appointment Details"
+    },
+    "cancellation": {
+      "subject": "Cancellation: {{service}} on {{date}}",
+      "title": "Appointment Cancelled",
+      "greeting": "Dear {{customerName}},",
+      "intro": "Your appointment has been cancelled:",
+      "reschedule": "Would you like to reschedule? Contact us or book a new appointment online.",
+      "regards": "Kind regards,"
+    }
   }
 }

@@ -8,6 +8,33 @@ const i18n = {
     translations: {},
     fallback: {},
     
+    // Locale configuration per language
+    localeConfig: {
+        'en': { locale: 'en-GB', currency: 'GBP', dateFormat: 'short', timeFormat: '24h', currencySymbol: '£' },
+        'en-US': { locale: 'en-US', currency: 'USD', dateFormat: 'short', timeFormat: '12h', currencySymbol: '$' },
+        'nl': { locale: 'nl-NL', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'de': { locale: 'de-DE', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'de-AT': { locale: 'de-AT', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'de-CH': { locale: 'de-CH', currency: 'CHF', dateFormat: 'short', timeFormat: '24h', currencySymbol: 'CHF' },
+        'fr': { locale: 'fr-FR', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'es': { locale: 'es-ES', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'it': { locale: 'it-IT', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'pt': { locale: 'pt-PT', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'pl': { locale: 'pl-PL', currency: 'PLN', dateFormat: 'short', timeFormat: '24h', currencySymbol: 'zł' },
+        'da': { locale: 'da-DK', currency: 'DKK', dateFormat: 'short', timeFormat: '24h', currencySymbol: 'kr' },
+        'sv': { locale: 'sv-SE', currency: 'SEK', dateFormat: 'short', timeFormat: '24h', currencySymbol: 'kr' },
+        'no': { locale: 'nb-NO', currency: 'NOK', dateFormat: 'short', timeFormat: '24h', currencySymbol: 'kr' },
+        'fi': { locale: 'fi-FI', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'el': { locale: 'el-GR', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'cs': { locale: 'cs-CZ', currency: 'CZK', dateFormat: 'short', timeFormat: '24h', currencySymbol: 'Kč' },
+        'hu': { locale: 'hu-HU', currency: 'HUF', dateFormat: 'short', timeFormat: '24h', currencySymbol: 'Ft' },
+        'et': { locale: 'et-EE', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'lv': { locale: 'lv-LV', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'lt': { locale: 'lt-LT', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'ga': { locale: 'ga-IE', currency: 'EUR', dateFormat: 'short', timeFormat: '24h', currencySymbol: '€' },
+        'gd': { locale: 'gd-GB', currency: 'GBP', dateFormat: 'short', timeFormat: '24h', currencySymbol: '£' }
+    },
+    
     /**
      * Initialize i18n - load language from server (if logged in) or localStorage/browser
      */
@@ -180,6 +207,152 @@ const i18n = {
             { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
             { code: 'fr', name: 'Français', flag: '🇫🇷' }
         ];
+    },
+    
+    /**
+     * Get the locale string for current language
+     */
+    getLocale() {
+        return this.localeConfig[this.currentLang]?.locale || 'en-GB';
+    },
+    
+    /**
+     * Format a date according to locale
+     * @param {Date|string} date - Date to format
+     * @param {string} style - 'short', 'medium', 'long', 'full'
+     */
+    formatDate(date, style = 'medium') {
+        const d = date instanceof Date ? date : new Date(date);
+        const locale = this.getLocale();
+        
+        const options = {
+            short: { day: 'numeric', month: 'numeric', year: 'numeric' },
+            medium: { day: 'numeric', month: 'short', year: 'numeric' },
+            long: { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
+            full: { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
+        };
+        
+        return d.toLocaleDateString(locale, options[style] || options.medium);
+    },
+    
+    /**
+     * Format a time according to locale (24h or 12h)
+     * @param {Date|string} date - Date/time to format
+     * @param {boolean} includeSeconds - Include seconds
+     */
+    formatTime(date, includeSeconds = false) {
+        const d = date instanceof Date ? date : new Date(date);
+        const locale = this.getLocale();
+        const config = this.localeConfig[this.currentLang] || {};
+        
+        const options = {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: config.timeFormat === '12h'
+        };
+        
+        if (includeSeconds) {
+            options.second = '2-digit';
+        }
+        
+        return d.toLocaleTimeString(locale, options);
+    },
+    
+    /**
+     * Format a date and time together
+     * @param {Date|string} date - Date/time to format
+     * @param {string} dateStyle - 'short', 'medium', 'long'
+     */
+    formatDateTime(date, dateStyle = 'medium') {
+        return `${this.formatDate(date, dateStyle)} ${this.formatTime(date)}`;
+    },
+    
+    /**
+     * Format currency amount
+     * @param {number} amount - Amount to format
+     * @param {string} currency - Override currency code
+     */
+    formatCurrency(amount, currency = null) {
+        const locale = this.getLocale();
+        const config = this.localeConfig[this.currentLang] || {};
+        const currencyCode = currency || config.currency || 'EUR';
+        
+        return new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: currencyCode
+        }).format(amount);
+    },
+    
+    /**
+     * Format a number with locale-appropriate separators
+     * @param {number} number - Number to format
+     * @param {number} decimals - Number of decimal places
+     */
+    formatNumber(number, decimals = 0) {
+        const locale = this.getLocale();
+        return new Intl.NumberFormat(locale, {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        }).format(number);
+    },
+    
+    /**
+     * Get relative time (e.g., "2 days ago", "in 3 hours")
+     * @param {Date|string} date - Date to compare
+     */
+    formatRelativeTime(date) {
+        const d = date instanceof Date ? date : new Date(date);
+        const locale = this.getLocale();
+        const now = new Date();
+        const diffMs = d - now;
+        const diffSecs = Math.round(diffMs / 1000);
+        const diffMins = Math.round(diffSecs / 60);
+        const diffHours = Math.round(diffMins / 60);
+        const diffDays = Math.round(diffHours / 24);
+        
+        const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+        
+        if (Math.abs(diffDays) >= 1) {
+            return rtf.format(diffDays, 'day');
+        } else if (Math.abs(diffHours) >= 1) {
+            return rtf.format(diffHours, 'hour');
+        } else if (Math.abs(diffMins) >= 1) {
+            return rtf.format(diffMins, 'minute');
+        } else {
+            return rtf.format(diffSecs, 'second');
+        }
+    },
+    
+    /**
+     * Get weekday name
+     * @param {number} dayIndex - 0-6 (Sunday-Saturday)
+     * @param {string} style - 'long', 'short', 'narrow'
+     */
+    getWeekdayName(dayIndex, style = 'long') {
+        const locale = this.getLocale();
+        const date = new Date(2024, 0, dayIndex); // Jan 2024 starts on Monday
+        // Adjust to get correct day
+        date.setDate(date.getDate() + dayIndex);
+        return date.toLocaleDateString(locale, { weekday: style });
+    },
+    
+    /**
+     * Get month name
+     * @param {number} monthIndex - 0-11
+     * @param {string} style - 'long', 'short', 'narrow'
+     */
+    getMonthName(monthIndex, style = 'long') {
+        const locale = this.getLocale();
+        const date = new Date(2024, monthIndex, 1);
+        return date.toLocaleDateString(locale, { month: style });
+    },
+    
+    /**
+     * Get currency symbol for current locale
+     */
+    getCurrencySymbol() {
+        const config = this.localeConfig[this.currentLang] || {};
+        return config.currencySymbol || '€';
     }
 };
 

@@ -333,5 +333,42 @@
       "csvOnly": "Veuillez télécharger un fichier CSV",
       "parse": "Erreur lors de l'analyse du fichier CSV"
     }
+  },
+  "emailTemplates": {
+    "confirmation": {
+      "subject": "Confirmation : {{service}} le {{date}}",
+      "title": "Rendez-vous Confirmé",
+      "greeting": "Cher(e) {{customerName}},",
+      "intro": "Votre rendez-vous a été confirmé. Voici les détails :",
+      "date": "Date",
+      "time": "Heure",
+      "service": "Service",
+      "questions": "Avez-vous des questions ? N'hésitez pas à nous contacter.",
+      "regards": "Cordialement,"
+    },
+    "reminder": {
+      "subject": "Rappel : {{service}} le {{date}}",
+      "title": "Rappel",
+      "subtitle": "Votre rendez-vous est demain",
+      "greeting": "Cher(e) {{customerName}},",
+      "intro": "Ceci est un rappel pour votre rendez-vous :",
+      "lookingForward": "Nous avons hâte de vous voir !",
+      "regards": "Cordialement,"
+    },
+    "newBooking": {
+      "subject": "Nouvelle réservation : {{customerName}} - {{service}}",
+      "title": "Nouvelle Réservation",
+      "subtitle": "Un nouveau rendez-vous a été réservé",
+      "customerDetails": "Coordonnées du client",
+      "appointmentDetails": "Détails du rendez-vous"
+    },
+    "cancellation": {
+      "subject": "Annulation : {{service}} le {{date}}",
+      "title": "Rendez-vous Annulé",
+      "greeting": "Cher(e) {{customerName}},",
+      "intro": "Votre rendez-vous a été annulé :",
+      "reschedule": "Souhaitez-vous prendre un nouveau rendez-vous ? Contactez-nous ou réservez en ligne.",
+      "regards": "Cordialement,"
+    }
   }
 }
