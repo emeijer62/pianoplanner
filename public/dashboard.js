@@ -2554,7 +2554,10 @@ function setupSmartPickCustomerSearch() {
         debounceTimer = setTimeout(async () => {
             try {
                 const response = await fetch(`/api/customers?search=${encodeURIComponent(query)}`);
-                const customers = await response.json();
+                const data = await response.json();
+                
+                // Handle both array and object response formats
+                const customers = Array.isArray(data) ? data : (data.customers || []);
                 
                 if (customers.length === 0) {
                     resultsDiv.innerHTML = '<div class="autocomplete-item no-results">No customers found</div>';
