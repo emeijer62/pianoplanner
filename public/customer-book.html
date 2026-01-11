@@ -975,6 +975,36 @@
             color: var(--text-muted);
         }
         
+        .more-times-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .more-times-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f8fbff;
+        }
+        
+        .more-times-btn i {
+            width: 16px;
+            height: 16px;
+        }
+        }
+        
         .no-times-message i {
             width: 32px;
             height: 32px;
@@ -1174,6 +1204,10 @@
                     <div class="time-slots-grid" id="timeSlotsGrid">
                         <!-- Time slots filled by JS -->
                     </div>
+                    <button type="button" id="moreTimesBtn" class="more-times-btn" style="display: none;" onclick="showMoreTimes()">
+                        <i data-lucide="chevron-down"></i>
+                        <span data-i18n="book.moreOptions">More options</span>
+                    </button>
                     <div id="noTimesMessage" class="no-times-message" style="display: none;">
                         <i data-lucide="calendar-x"></i>
                         <p data-i18n="book.noTimesAvailable">No times available on this day</p>
@@ -1247,7 +1281,8 @@
                 'book.noTimesAvailable': 'No times available on this day',
                 'book.legendAvailable': 'Available',
                 'book.legendFull': 'Fully booked',
-                'book.legendClosed': 'Closed'
+                'book.legendClosed': 'Closed',
+                'book.moreOptions': 'More options'
             },
             nl: {
                 'book.loading': 'Laden...',
@@ -1289,7 +1324,8 @@
                 'book.noTimesAvailable': 'Geen tijden beschikbaar op deze dag',
                 'book.legendAvailable': 'Beschikbaar',
                 'book.legendFull': 'Volgeboekt',
-                'book.legendClosed': 'Gesloten'
+                'book.legendClosed': 'Gesloten',
+                'book.moreOptions': 'Meer opties'
             },
             de: {
                 'book.loading': 'Laden...',
@@ -1331,7 +1367,8 @@
                 'book.noTimesAvailable': 'Keine Zeiten an diesem Tag verfügbar',
                 'book.legendAvailable': 'Verfügbar',
                 'book.legendFull': 'Ausgebucht',
-                'book.legendClosed': 'Geschlossen'
+                'book.legendClosed': 'Geschlossen',
+                'book.moreOptions': 'Mehr Optionen'
             },
             fr: {
                 'book.loading': 'Chargement...',
@@ -1373,7 +1410,8 @@
                 'book.noTimesAvailable': 'Aucun horaire disponible ce jour',
                 'book.legendAvailable': 'Disponible',
                 'book.legendFull': 'Complet',
-                'book.legendClosed': 'Fermé'
+                'book.legendClosed': 'Fermé',
+                'book.moreOptions': 'Plus d\'options'
             }
         };
 
@@ -1868,17 +1906,27 @@
             validateForm();
         }
         
+        // Store all slots for "more options"
+        let allTimeSlots = [];
+        let visibleSlotsCount = 6;
+        
         async function loadTimeSlots(dateStr) {
             mobileLogger.log('TIMESLOTS_LOADING', { date: dateStr });
             const section = document.getElementById('timeSlotsSection');
             const grid = document.getElementById('timeSlotsGrid');
             const loading = document.getElementById('timeSlotsLoading');
             const noTimes = document.getElementById('noTimesMessage');
+            const moreBtn = document.getElementById('moreTimesBtn');
             
             section.style.display = 'block';
             loading.style.display = 'flex';
             grid.style.display = 'none';
             noTimes.style.display = 'none';
+            moreBtn.style.display = 'none';
+            
+            // Reset
+            allTimeSlots = [];
+            visibleSlotsCount = 6;
             
             // Update header with selected date
             const date = new Date(dateStr);
@@ -1895,18 +1943,14 @@
                 loading.style.display = 'none';
                 
                 if (data.success && data.slots && data.slots.length > 0) {
+                    allTimeSlots = data.slots;
                     mobileLogger.log('TIMESLOTS_LOADED', { 
                         date: dateStr, 
                         slotsCount: data.slots.length,
-                        slots: data.slots.slice(0, 5).map(s => s.time) // First 5 for brevity
+                        slots: data.slots.slice(0, 5).map(s => s.time)
                     });
-                    grid.style.display = 'grid';
-                    grid.innerHTML = data.slots.map(slot => `
-                        <div class="time-slot ${slot.time === selectedTime ? 'selected' : ''}" 
-                             onclick="selectTime('${slot.time}')">
-                            ${slot.time}
-                        </div>
-                    `).join('');
+                    
+                    renderTimeSlots();
                 } else {
                     mobileLogger.log('TIMESLOTS_EMPTY', { date: dateStr });
                     noTimes.style.display = 'block';
@@ -1920,6 +1964,38 @@
                 noTimes.style.display = 'block';
                 lucide.createIcons();
             }
+        }
+        
+        function renderTimeSlots() {
+            const grid = document.getElementById('timeSlotsGrid');
+            const moreBtn = document.getElementById('moreTimesBtn');
+            
+            const slotsToShow = allTimeSlots.slice(0, visibleSlotsCount);
+            const hasMore = allTimeSlots.length > visibleSlotsCount;
+            
+            grid.style.display = 'grid';
+            grid.innerHTML = slotsToShow.map(slot => `
+                <div class="time-slot ${slot.time === selectedTime ? 'selected' : ''}" 
+                     onclick="selectTime('${slot.time}')">
+                    ${slot.time}
+                </div>
+            `).join('');
+            
+            // Show/hide more button
+            if (hasMore) {
+                const remaining = allTimeSlots.length - visibleSlotsCount;
+                moreBtn.style.display = 'flex';
+                moreBtn.innerHTML = `<i data-lucide="chevron-down"></i><span>${t['book.moreOptions'] || 'More options'} (${remaining})</span>`;
+                lucide.createIcons();
+            } else {
+                moreBtn.style.display = 'none';
+            }
+        }
+        
+        function showMoreTimes() {
+            visibleSlotsCount += 6;
+            mobileLogger.log('MORE_TIMES_CLICKED', { nowShowing: visibleSlotsCount, total: allTimeSlots.length });
+            renderTimeSlots();
         }
         
         function selectTime(time) {
