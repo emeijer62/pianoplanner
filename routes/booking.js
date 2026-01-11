@@ -824,12 +824,17 @@ router.post('/find-slot', async (req, res) => {
         // Combineer DB appointments met external events voor slot finding
         const allEventsForSlotFinding = [
             // DB appointments omzetten naar zelfde format als external events
-            ...dayAppointments.map(apt => ({
-                start: { dateTime: apt.start_time || apt.startTime },
-                end: { dateTime: apt.end_time || apt.endTime },
-                summary: apt.title,
-                location: apt.location
-            })),
+            ...dayAppointments.map(apt => {
+                // Zorg dat we geldige ISO strings hebben
+                const startTime = apt.start_time || apt.startTime;
+                const endTime = apt.end_time || apt.endTime;
+                return {
+                    start: { dateTime: new Date(startTime).toISOString() },
+                    end: { dateTime: new Date(endTime).toISOString() },
+                    summary: apt.title,
+                    location: apt.location
+                };
+            }),
             // External calendar events (already in correct format)
             ...externalEvents
         ];
@@ -902,7 +907,7 @@ router.post('/find-slot', async (req, res) => {
             available: false,
             message: 'no_slots_on_day',
             service,
-            travelInfo
+            travelInfo: defaultTravelInfo
         });
         
     } catch (error) {
