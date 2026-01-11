@@ -76,18 +76,73 @@ router.post('/', async (req, res) => {
 // Checkout voltooid
 async function handleCheckoutComplete(session) {
     console.log('Checkout voltooid voor customer:', session.customer);
+    console.log('Session details:', JSON.stringify({
+        customer: session.customer,
+        customer_email: session.customer_email,
+        subscription: session.subscription,
+        metadata: session.metadata
+    }));
     
-    // Subscription wordt apart verwerkt via subscription.created event
-    // Hier kunnen we extra acties doen zoals email sturen
+    // BELANGRIJK: Koppel stripe_customer_id aan gebruiker als dat nog niet gebeurd is
+    // Dit kan gebeuren als klant direct via Stripe betaalt zonder eerst in te loggen
+    const customerId = session.customer;
+    const customerEmail = session.customer_email || session.customer_details?.email;
+    
+    if (customerId && customerEmail) {
+        // Check of er al een user is met deze stripe_customer_id
+        let user = await userStore.getUserByStripeCustomerId(customerId);
+        
+        if (!user) {
+            // Zoek gebruiker op email
+            user = await userStore.getUserByEmail(customerEmail);
+            
+            if (user) {
+                // Koppel de stripe_customer_id aan deze gebruiker
+                await userStore.setStripeCustomerId(user.id, customerId);
+                console.log(`✅ Stripe customer ${customerId} gekoppeld aan gebruiker ${user.id} (${customerEmail})`);
+            } else {
+                console.log(`⚠️ Geen gebruiker gevonden voor email: ${customerEmail} - klant moet eerst registreren`);
+            }
+        }
+    }
+    
+    // Als er een subscription is, activeer deze direct
+    if (session.subscription && customerId) {
+        const user = await userStore.getUserByStripeCustomerId(customerId);
+        if (user) {
+            await userStore.updateSubscription(user.id, {
+                status: 'active',
+                subscriptionId: session.subscription,
+                tier: 'go'
+            });
+            console.log(`✅ Subscription direct geactiveerd voor gebruiker ${user.id}`);
+        }
+    }
 }
 
 // Subscription aangemaakt of bijgewerkt
 async function handleSubscriptionUpdate(subscription) {
     const customerId = subscription.customer;
-    const user = await userStore.getUserByStripeCustomerId(customerId);
+    let user = await userStore.getUserByStripeCustomerId(customerId);
+    
+    // Fallback: zoek via Stripe API de email en koppel de gebruiker
+    if (!user && stripe) {
+        try {
+            const customer = await stripe.customers.retrieve(customerId);
+            if (customer.email) {
+                user = await userStore.getUserByEmail(customer.email);
+                if (user) {
+                    await userStore.setStripeCustomerId(user.id, customerId);
+                    console.log(`✅ Stripe customer ${customerId} alsnog gekoppeld aan gebruiker ${user.id}`);
+                }
+            }
+        } catch (err) {
+            console.error('Kon Stripe customer niet ophalen:', err.message);
+        }
+    }
     
     if (!user) {
-        console.error('Geen gebruiker gevonden voor Stripe customer:', customerId);
+        console.error('❌ Geen gebruiker gevonden voor Stripe customer:', customerId);
         return;
     }
 
