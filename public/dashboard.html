@@ -1124,9 +1124,9 @@
         <div class="dashboard-header">
             <h1 style="display: flex; align-items: center; gap: 10px;"><i data-lucide="calendar" style="width: 22px; height: 22px;"></i> <span data-i18n="nav.dashboard">Calendar</span></h1>
             <div class="header-actions">
-                <button id="smart-pick-btn" class="btn btn-smart-pick" onclick="openSmartPickModal()">
-                    <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i> 
-                    <span>Smart Pick</span>
+                <button id="smart-wizard-btn" class="btn btn-smart-pick" onclick="openSmartWizard()">
+                    <i data-lucide="wand-2" style="width: 16px; height: 16px;"></i> 
+                    <span>Slimme Afspraak</span>
                 </button>
             </div>
         </div>
@@ -1496,113 +1496,947 @@
         </div>
     </div>
 
-    <!-- Smart Pick Modal -->
-    <div id="smart-pick-modal" class="apple-modal" style="display: none;">
-        <div class="apple-modal-backdrop" onclick="closeSmartPickModal()"></div>
-        <div class="apple-modal-content" style="max-width: 440px;">
-            <div class="apple-modal-header" style="background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%); border-bottom: 1px solid #fcd34d;">
-                <button class="apple-modal-close" onclick="closeSmartPickModal()">
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-                        <path d="M1.41 0L5 3.59 8.59 0 10 1.41 6.41 5 10 8.59 8.59 10 5 6.41 1.41 10 0 8.59 3.59 5 0 1.41z"/>
-                    </svg>
+    <!-- Smart Wizard Modal (Fullscreen) -->
+    <div id="smart-wizard-modal" class="smart-wizard-overlay" style="display: none;">
+        <div class="smart-wizard-container">
+            <!-- Header -->
+            <div class="smart-wizard-header">
+                <button type="button" class="smart-wizard-close" onclick="closeSmartWizard()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
-                <h2 class="apple-modal-title" style="display: flex; align-items: center; gap: 10px; font-size: 18px;">
-                    <i data-lucide="sparkles" style="width: 22px; height: 22px; color: #f59e0b;"></i>
-                    Smart Pick
-                </h2>
-                <div style="width: 30px;"></div>
+                <h1 class="smart-wizard-title">
+                    <i data-lucide="wand-2" style="width: 24px; height: 24px;"></i>
+                    Slimme Afspraak
+                </h1>
+                <div class="smart-wizard-steps-indicator">
+                    <div class="sw-step active" data-step="1"><span>1</span> Klant</div>
+                    <div class="sw-step-line"></div>
+                    <div class="sw-step" data-step="2"><span>2</span> Piano</div>
+                    <div class="sw-step-line"></div>
+                    <div class="sw-step" data-step="3"><span>3</span> Afspraak</div>
+                </div>
             </div>
-            <div class="apple-modal-body" style="padding: 24px;">
+            
+            <!-- Content -->
+            <div class="smart-wizard-content">
                 
-                <!-- Main view -->
-                <div id="smart-pick-main">
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
-                        <div class="apple-form-field">
-                            <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Klant</label>
-                            <div style="display: flex; gap: 10px;">
-                                <div style="position: relative; flex: 1;">
-                                    <input type="text" id="smart-customer-search" class="apple-form-input" placeholder="Zoek klant..." autocomplete="off" style="padding: 14px 16px; font-size: 16px; border-radius: 12px; width: 100%;">
-                                    <input type="hidden" id="smart-customer-id">
-                                    <div id="smart-customer-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e5e5ea; border-radius: 12px; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 200px; overflow-y: auto;"></div>
+                <!-- STEP 1: Customer -->
+                <div class="sw-panel active" id="sw-step-1">
+                    <div class="sw-panel-inner">
+                        <div class="sw-section-header">
+                            <i data-lucide="users" class="sw-section-icon"></i>
+                            <div>
+                                <h2>Klant selecteren of toevoegen</h2>
+                                <p>Zoek een bestaande klant of maak een nieuwe aan</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Search existing customer -->
+                        <div class="sw-card" id="sw-customer-search-card">
+                            <h3><i data-lucide="search"></i> Bestaande klant zoeken</h3>
+                            <div class="sw-search-box">
+                                <input type="text" id="sw-customer-search" placeholder="Typ naam, email of telefoonnummer..." autocomplete="off">
+                                <div id="sw-customer-results" class="sw-autocomplete"></div>
+                            </div>
+                            <div id="sw-selected-customer" class="sw-selected-item" style="display: none;">
+                                <div class="sw-selected-info">
+                                    <strong id="sw-selected-customer-name"></strong>
+                                    <span id="sw-selected-customer-address"></span>
                                 </div>
-                                <button type="button" onclick="toggleSmartPickNewCustomer()" style="width: 52px; height: 52px; border-radius: 12px; background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; color: #16a34a; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" title="Nieuwe klant">
-                                    <i data-lucide="user-plus" style="width: 22px; height: 22px;"></i>
+                                <button type="button" onclick="clearSwCustomer()" class="sw-clear-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                                 </button>
                             </div>
                         </div>
                         
-                        <div class="apple-form-field">
-                            <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Service</label>
-                            <select id="smart-service-select" class="apple-form-select" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
-                                <option value="">Kies een service...</option>
+                        <div class="sw-divider"><span>of</span></div>
+                        
+                        <!-- New customer form -->
+                        <div class="sw-card sw-expandable" id="sw-new-customer-card">
+                            <button type="button" class="sw-card-toggle" onclick="toggleSwNewCustomer()">
+                                <h3><i data-lucide="user-plus"></i> Nieuwe klant aanmaken</h3>
+                                <i data-lucide="chevron-down" class="sw-toggle-icon"></i>
+                            </button>
+                            <div class="sw-card-content" style="display: none;">
+                                <div class="sw-form-grid">
+                                    <div class="sw-field full-width">
+                                        <label>Naam *</label>
+                                        <input type="text" id="sw-new-name" placeholder="Volledige naam">
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Email</label>
+                                        <input type="email" id="sw-new-email" placeholder="email@voorbeeld.nl">
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Telefoon</label>
+                                        <input type="tel" id="sw-new-phone" placeholder="06-12345678">
+                                    </div>
+                                    <div class="sw-field full-width" style="position: relative;">
+                                        <label>Adres</label>
+                                        <input type="text" id="sw-new-address" placeholder="Straat en huisnummer" autocomplete="off">
+                                        <div id="sw-address-suggestions" class="sw-autocomplete"></div>
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Postcode</label>
+                                        <input type="text" id="sw-new-postalcode" placeholder="1234 AB">
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Plaats</label>
+                                        <input type="text" id="sw-new-city" placeholder="Stad">
+                                    </div>
+                                    <div class="sw-field full-width">
+                                        <label>Notities</label>
+                                        <textarea id="sw-new-notes" placeholder="Optionele notities over deze klant..." rows="2"></textarea>
+                                    </div>
+                                </div>
+                                <button type="button" class="sw-btn sw-btn-success" onclick="saveSwNewCustomer()">
+                                    <i data-lucide="check"></i> Klant opslaan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- STEP 2: Piano -->
+                <div class="sw-panel" id="sw-step-2">
+                    <div class="sw-panel-inner">
+                        <div class="sw-section-header">
+                            <i data-lucide="piano" class="sw-section-icon"></i>
+                            <div>
+                                <h2>Piano selecteren of toevoegen</h2>
+                                <p>Kies een bestaande piano of registreer een nieuwe</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer's pianos -->
+                        <div class="sw-card" id="sw-customer-pianos-card">
+                            <h3><i data-lucide="list"></i> Piano's van deze klant</h3>
+                            <div id="sw-customer-pianos" class="sw-piano-list">
+                                <p class="sw-empty-state">Selecteer eerst een klant</p>
+                            </div>
+                        </div>
+                        
+                        <div class="sw-divider"><span>of</span></div>
+                        
+                        <!-- New piano form -->
+                        <div class="sw-card sw-expandable" id="sw-new-piano-card">
+                            <button type="button" class="sw-card-toggle" onclick="toggleSwNewPiano()">
+                                <h3><i data-lucide="plus-circle"></i> Nieuwe piano toevoegen</h3>
+                                <i data-lucide="chevron-down" class="sw-toggle-icon"></i>
+                            </button>
+                            <div class="sw-card-content" style="display: none;">
+                                <div class="sw-form-grid">
+                                    <div class="sw-field">
+                                        <label>Merk *</label>
+                                        <input type="text" id="sw-piano-brand" placeholder="bijv. Steinway, Yamaha" list="sw-brand-list">
+                                        <datalist id="sw-brand-list">
+                                            <option value="Steinway & Sons">
+                                            <option value="Yamaha">
+                                            <option value="Kawai">
+                                            <option value="Bösendorfer">
+                                            <option value="Bechstein">
+                                            <option value="Fazioli">
+                                            <option value="Schimmel">
+                                            <option value="Petrof">
+                                            <option value="Boston">
+                                            <option value="Essex">
+                                            <option value="Roland">
+                                            <option value="Casio">
+                                        </datalist>
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Model</label>
+                                        <input type="text" id="sw-piano-model" placeholder="bijv. Model D, U1">
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Type</label>
+                                        <select id="sw-piano-type">
+                                            <option value="upright">Staande piano (Upright)</option>
+                                            <option value="grand">Vleugel (Grand)</option>
+                                            <option value="digital">Digitale piano</option>
+                                            <option value="hybrid">Hybride</option>
+                                        </select>
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Bouwjaar</label>
+                                        <input type="number" id="sw-piano-year" placeholder="bijv. 1985" min="1800" max="2030">
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Serienummer</label>
+                                        <input type="text" id="sw-piano-serial" placeholder="Optioneel">
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Afwerking</label>
+                                        <select id="sw-piano-finish">
+                                            <option value="">-- Kies --</option>
+                                            <option value="black-polish">Zwart hoogglans</option>
+                                            <option value="black-satin">Zwart satijn</option>
+                                            <option value="white-polish">Wit hoogglans</option>
+                                            <option value="mahogany">Mahonie</option>
+                                            <option value="walnut">Walnoot</option>
+                                            <option value="oak">Eiken</option>
+                                            <option value="other">Anders</option>
+                                        </select>
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Locatie in huis</label>
+                                        <input type="text" id="sw-piano-location" placeholder="bijv. Woonkamer, Studio">
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Verdieping</label>
+                                        <select id="sw-piano-floor">
+                                            <option value="">-- Kies --</option>
+                                            <option value="basement">Kelder</option>
+                                            <option value="ground">Begane grond</option>
+                                            <option value="1">1e verdieping</option>
+                                            <option value="2">2e verdieping</option>
+                                            <option value="3">3e verdieping</option>
+                                            <option value="4+">4e of hoger</option>
+                                        </select>
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Conditie</label>
+                                        <select id="sw-piano-condition">
+                                            <option value="excellent">Uitstekend</option>
+                                            <option value="good" selected>Goed</option>
+                                            <option value="fair">Redelijk</option>
+                                            <option value="poor">Matig</option>
+                                            <option value="needs-repair">Reparatie nodig</option>
+                                        </select>
+                                    </div>
+                                    <div class="sw-field">
+                                        <label>Steminterval (maanden)</label>
+                                        <select id="sw-piano-interval">
+                                            <option value="3">Elk kwartaal (3 mnd)</option>
+                                            <option value="6" selected>Halfjaarlijks (6 mnd)</option>
+                                            <option value="12">Jaarlijks (12 mnd)</option>
+                                        </select>
+                                    </div>
+                                    <div class="sw-field full-width">
+                                        <label>Notities over deze piano</label>
+                                        <textarea id="sw-piano-notes" placeholder="Bijzonderheden, geschiedenis, specifieke aandachtspunten..." rows="3"></textarea>
+                                    </div>
+                                </div>
+                                <button type="button" class="sw-btn sw-btn-success" onclick="saveSwNewPiano()">
+                                    <i data-lucide="check"></i> Piano opslaan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- STEP 3: Appointment (AI Suggestions) -->
+                <div class="sw-panel" id="sw-step-3">
+                    <div class="sw-panel-inner">
+                        <div class="sw-section-header">
+                            <i data-lucide="sparkles" class="sw-section-icon" style="color: #f59e0b;"></i>
+                            <div>
+                                <h2>AI Suggesties</h2>
+                                <p>Slimme aanbevelingen op basis van locatie en agenda</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Summary of selection -->
+                        <div class="sw-summary-card">
+                            <div class="sw-summary-item">
+                                <i data-lucide="user"></i>
+                                <div>
+                                    <label>Klant</label>
+                                    <span id="sw-summary-customer">-</span>
+                                </div>
+                            </div>
+                            <div class="sw-summary-item">
+                                <i data-lucide="piano"></i>
+                                <div>
+                                    <label>Piano</label>
+                                    <span id="sw-summary-piano">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Service selection -->
+                        <div class="sw-card">
+                            <h3><i data-lucide="wrench"></i> Service kiezen</h3>
+                            <div id="sw-ai-service-suggestion" class="sw-ai-suggestion" style="display: none;">
+                                <i data-lucide="lightbulb"></i>
+                                <span></span>
+                            </div>
+                            <select id="sw-service-select" class="sw-select-large">
+                                <option value="">-- Selecteer service --</option>
                             </select>
                         </div>
                         
-                        <div class="apple-form-field">
-                            <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Datum</label>
-                            <input type="date" id="smart-date-input" class="apple-form-input" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
+                        <!-- Date selection -->
+                        <div class="sw-card">
+                            <h3><i data-lucide="calendar"></i> Datum kiezen</h3>
+                            <input type="date" id="sw-date-input" class="sw-input-large">
                         </div>
-                    </div>
-                    
-                    <div id="smart-pick-result" style="display: none; margin-top: 24px;"></div>
-                    
-                    <button type="button" id="find-slot-btn" onclick="findSmartSlotFromModal()" style="width: 100%; margin-top: 24px; padding: 16px; font-size: 16px; font-weight: 600; color: #92400e; background: linear-gradient(180deg, #fde68a 0%, #fbbf24 100%); border: 1px solid #f59e0b; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);">
-                        <i data-lucide="search" style="width: 18px; height: 18px;"></i>
-                        Zoek beschikbare tijd
-                    </button>
-                </div>
-                
-                <!-- New Customer view (hidden by default) -->
-                <div id="smart-pick-new-customer" style="display: none;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f0f0f5;">
-                        <button type="button" onclick="toggleSmartPickNewCustomer()" style="width: 36px; height: 36px; border-radius: 10px; background: #f5f5f7; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        
+                        <!-- AI Time suggestions -->
+                        <div class="sw-card">
+                            <h3><i data-lucide="clock"></i> Beschikbare tijden</h3>
+                            <div id="sw-ai-suggestions" class="sw-time-slots">
+                                <p class="sw-empty-state">Selecteer een service en datum om beschikbare tijden te zien</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Create appointment button -->
+                        <button type="button" id="sw-create-btn" class="sw-btn sw-btn-primary sw-btn-large" onclick="createSwAppointment()" disabled>
+                            <i data-lucide="calendar-plus"></i>
+                            Afspraak aanmaken
                         </button>
-                        <span style="font-weight: 600; font-size: 16px;">Nieuwe klant toevoegen</span>
                     </div>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 16px;">
-                        <div class="apple-form-field">
-                            <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Naam *</label>
-                            <input type="text" id="smart-new-customer-name" class="apple-form-input" placeholder="Volledige naam" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                            <div class="apple-form-field">
-                                <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Email</label>
-                                <input type="email" id="smart-new-customer-email" class="apple-form-input" placeholder="email@example.com" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
-                            </div>
-                            <div class="apple-form-field">
-                                <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Telefoon</label>
-                                <input type="tel" id="smart-new-customer-phone" class="apple-form-input" placeholder="06-12345678" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
-                            </div>
-                        </div>
-                        
-                        <div class="apple-form-field">
-                            <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Straat + nummer</label>
-                            <input type="text" id="smart-new-customer-street" class="apple-form-input" placeholder="Straatnaam 123" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                            <div class="apple-form-field">
-                                <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Postcode</label>
-                                <input type="text" id="smart-new-customer-postalcode" class="apple-form-input" placeholder="1234 AB" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
-                            </div>
-                            <div class="apple-form-field">
-                                <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Plaats</label>
-                                <input type="text" id="smart-new-customer-city" class="apple-form-input" placeholder="Stad" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button type="button" onclick="saveSmartPickNewCustomer()" style="width: 100%; margin-top: 24px; padding: 16px; font-size: 16px; font-weight: 600; color: white; background: #16a34a; border: none; border-radius: 14px; cursor: pointer;">
-                        Klant opslaan
-                    </button>
                 </div>
                 
             </div>
+            
+            <!-- Footer Navigation -->
+            <div class="smart-wizard-footer">
+                <button type="button" class="sw-btn sw-btn-secondary" id="sw-prev-btn" onclick="swPrevStep()" style="visibility: hidden;">
+                    <i data-lucide="arrow-left"></i> Vorige
+                </button>
+                <button type="button" class="sw-btn sw-btn-primary" id="sw-next-btn" onclick="swNextStep()">
+                    Volgende <i data-lucide="arrow-right"></i>
+                </button>
+            </div>
         </div>
     </div>
+    
+    <style>
+    /* Smart Wizard Styles */
+    .smart-wizard-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    
+    .smart-wizard-container {
+        background: #f5f5f7;
+        border-radius: 20px;
+        width: 100%;
+        max-width: 800px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    }
+    
+    .smart-wizard-header {
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .smart-wizard-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(255,255,255,0.2);
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+        transition: background 0.2s;
+    }
+    
+    .smart-wizard-close:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    
+    .smart-wizard-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 22px;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .smart-wizard-steps-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .sw-step {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        opacity: 0.6;
+        transition: opacity 0.3s;
+    }
+    
+    .sw-step.active {
+        opacity: 1;
+    }
+    
+    .sw-step.completed {
+        opacity: 0.8;
+    }
+    
+    .sw-step span {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 12px;
+    }
+    
+    .sw-step.active span {
+        background: white;
+        color: #667eea;
+    }
+    
+    .sw-step.completed span {
+        background: #10b981;
+    }
+    
+    .sw-step-line {
+        flex: 1;
+        height: 2px;
+        background: rgba(255,255,255,0.3);
+        max-width: 60px;
+    }
+    
+    .smart-wizard-content {
+        flex: 1;
+        overflow-y: auto;
+        position: relative;
+    }
+    
+    .sw-panel {
+        display: none;
+        padding: 24px;
+    }
+    
+    .sw-panel.active {
+        display: block;
+    }
+    
+    .sw-panel-inner {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .sw-section-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    
+    .sw-section-icon {
+        width: 48px;
+        height: 48px;
+        padding: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        color: white;
+    }
+    
+    .sw-section-header h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+        color: #1d1d1f;
+    }
+    
+    .sw-section-header p {
+        font-size: 14px;
+        color: #6b7280;
+        margin: 0;
+    }
+    
+    .sw-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+        border: 1px solid #e5e5ea;
+    }
+    
+    .sw-card h3 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0 0 16px 0;
+        color: #1d1d1f;
+    }
+    
+    .sw-card h3 i {
+        width: 18px;
+        height: 18px;
+        color: #667eea;
+    }
+    
+    .sw-expandable .sw-card-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+    }
+    
+    .sw-expandable .sw-card-toggle h3 {
+        margin: 0;
+    }
+    
+    .sw-toggle-icon {
+        width: 20px;
+        height: 20px;
+        color: #6b7280;
+        transition: transform 0.3s;
+    }
+    
+    .sw-expandable.expanded .sw-toggle-icon {
+        transform: rotate(180deg);
+    }
+    
+    .sw-expandable .sw-card-content {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e5ea;
+    }
+    
+    .sw-search-box {
+        position: relative;
+    }
+    
+    .sw-search-box input {
+        width: 100%;
+        padding: 14px 16px;
+        font-size: 16px;
+        border: 2px solid #e5e5ea;
+        border-radius: 12px;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    
+    .sw-search-box input:focus {
+        border-color: #667eea;
+    }
+    
+    .sw-autocomplete {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e5ea;
+        border-radius: 12px;
+        margin-top: 4px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        z-index: 100;
+        max-height: 250px;
+        overflow-y: auto;
+        display: none;
+    }
+    
+    .sw-autocomplete-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f5;
+        transition: background 0.15s;
+    }
+    
+    .sw-autocomplete-item:last-child {
+        border-bottom: none;
+    }
+    
+    .sw-autocomplete-item:hover {
+        background: #f5f5f7;
+    }
+    
+    .sw-autocomplete-item strong {
+        display: block;
+        color: #1d1d1f;
+    }
+    
+    .sw-autocomplete-item span {
+        font-size: 13px;
+        color: #6b7280;
+    }
+    
+    .sw-selected-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f0fdf4;
+        border: 2px solid #86efac;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-top: 12px;
+    }
+    
+    .sw-selected-info strong {
+        display: block;
+        color: #166534;
+    }
+    
+    .sw-selected-info span {
+        font-size: 13px;
+        color: #4ade80;
+    }
+    
+    .sw-clear-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #dc2626;
+        padding: 4px;
+    }
+    
+    .sw-divider {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 20px 0;
+        color: #9ca3af;
+        font-size: 13px;
+    }
+    
+    .sw-divider::before,
+    .sw-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #e5e5ea;
+    }
+    
+    .sw-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .sw-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .sw-field.full-width {
+        grid-column: 1 / -1;
+    }
+    
+    .sw-field label {
+        font-size: 13px;
+        font-weight: 500;
+        color: #374151;
+    }
+    
+    .sw-field input,
+    .sw-field select,
+    .sw-field textarea {
+        padding: 12px 14px;
+        font-size: 15px;
+        border: 2px solid #e5e5ea;
+        border-radius: 10px;
+        outline: none;
+        transition: border-color 0.2s;
+        background: white;
+    }
+    
+    .sw-field input:focus,
+    .sw-field select:focus,
+    .sw-field textarea:focus {
+        border-color: #667eea;
+    }
+    
+    .sw-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 20px;
+        font-size: 15px;
+        font-weight: 500;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .sw-btn i {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .sw-btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .sw-btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .sw-btn-primary:disabled {
+        background: #d1d5db;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .sw-btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+    
+    .sw-btn-secondary:hover {
+        background: #e5e7eb;
+    }
+    
+    .sw-btn-success {
+        background: #10b981;
+        color: white;
+        width: 100%;
+        margin-top: 16px;
+    }
+    
+    .sw-btn-success:hover {
+        background: #059669;
+    }
+    
+    .sw-btn-large {
+        padding: 16px 32px;
+        font-size: 17px;
+        width: 100%;
+        margin-top: 20px;
+    }
+    
+    .smart-wizard-footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 16px 24px;
+        background: white;
+        border-top: 1px solid #e5e5ea;
+    }
+    
+    .sw-empty-state {
+        text-align: center;
+        padding: 24px;
+        color: #9ca3af;
+        font-size: 14px;
+    }
+    
+    .sw-piano-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .sw-piano-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #f9fafb;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .sw-piano-item:hover {
+        background: #f3f4f6;
+    }
+    
+    .sw-piano-item.selected {
+        background: #eff6ff;
+        border-color: #3b82f6;
+    }
+    
+    .sw-piano-item i {
+        width: 24px;
+        height: 24px;
+        color: #6b7280;
+    }
+    
+    .sw-piano-item.selected i {
+        color: #3b82f6;
+    }
+    
+    .sw-piano-info {
+        flex: 1;
+    }
+    
+    .sw-piano-info strong {
+        display: block;
+        color: #1d1d1f;
+    }
+    
+    .sw-piano-info span {
+        font-size: 13px;
+        color: #6b7280;
+    }
+    
+    .sw-summary-card {
+        background: white;
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        gap: 24px;
+        margin-bottom: 20px;
+        border: 1px solid #e5e5ea;
+    }
+    
+    .sw-summary-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+    }
+    
+    .sw-summary-item i {
+        width: 20px;
+        height: 20px;
+        color: #667eea;
+    }
+    
+    .sw-summary-item label {
+        font-size: 12px;
+        color: #6b7280;
+        display: block;
+    }
+    
+    .sw-summary-item span {
+        font-weight: 500;
+        color: #1d1d1f;
+    }
+    
+    .sw-select-large,
+    .sw-input-large {
+        width: 100%;
+        padding: 14px 16px;
+        font-size: 16px;
+        border: 2px solid #e5e5ea;
+        border-radius: 12px;
+        outline: none;
+        background: white;
+    }
+    
+    .sw-select-large:focus,
+    .sw-input-large:focus {
+        border-color: #667eea;
+    }
+    
+    .sw-time-slots {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
+    
+    .sw-time-slot {
+        padding: 14px 16px;
+        background: #f9fafb;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    
+    .sw-time-slot:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+    
+    .sw-time-slot.selected {
+        background: #eff6ff;
+        border-color: #3b82f6;
+    }
+    
+    .sw-time-slot .time {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1d1d1f;
+    }
+    
+    .sw-time-slot .meta {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+    
+    .sw-time-slot.recommended {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-color: #f59e0b;
+    }
+    
+    .sw-time-slot.recommended::before {
+        content: '⭐ Aanbevolen';
+        display: block;
+        font-size: 10px;
+        font-weight: 600;
+        color: #92400e;
+        margin-bottom: 4px;
+    }
+    
+    .sw-ai-suggestion {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-radius: 10px;
+        margin-bottom: 12px;
+        font-size: 13px;
+        color: #92400e;
+    }
+    
+    .sw-ai-suggestion i {
+        width: 18px;
+        height: 18px;
+        color: #f59e0b;
+    }
+    
+    @media (max-width: 640px) {
+        .smart-wizard-container {
+            max-height: 100vh;
+            border-radius: 0;
+        }
+        
+        .sw-form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .sw-summary-card {
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .sw-time-slots {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    </style>
 
     <!-- Appointment Action Sheet (Mobile) -->
     <div id="appointment-action-sheet" class="action-sheet" style="display: none;">
@@ -1636,7 +2470,7 @@
         </div>
     </div>
 
-    <script src="dashboard.js?v=2026011101"></script>
+    <script src="dashboard.js?v=2026011102"></script>
     <script>
         // Update cockpit stats
         function updateCockpitStats() {

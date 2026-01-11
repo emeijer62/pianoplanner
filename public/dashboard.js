@@ -2488,104 +2488,337 @@ function closeModal(force = false) {
 // SMART PICK MODAL FUNCTIONS
 // ============================================
 
-function openSmartPickModal() {
-    const modal = document.getElementById('smart-pick-modal');
+// ========== SMART WIZARD FUNCTIONS ==========
+
+let swCurrentStep = 1;
+let swSelectedCustomer = null;
+let swSelectedPiano = null;
+let swSelectedService = null;
+let swSelectedSlot = null;
+
+function openSmartWizard() {
+    const modal = document.getElementById('smart-wizard-modal');
     modal.style.display = 'flex';
     
-    // Set default date to today
+    // Reset state
+    swCurrentStep = 1;
+    swSelectedCustomer = null;
+    swSelectedPiano = null;
+    swSelectedService = null;
+    swSelectedSlot = null;
+    
+    // Reset UI
+    resetSwForms();
+    showSwStep(1);
+    updateSwNavButtons();
+    
+    // Set default date
     const today = new Date();
-    document.getElementById('smart-date-input').value = today.toISOString().split('T')[0];
+    document.getElementById('sw-date-input').value = today.toISOString().split('T')[0];
     
-    // Clear previous selection
-    document.getElementById('smart-customer-search').value = '';
-    document.getElementById('smart-customer-id').value = '';
-    document.getElementById('smart-pick-result').style.display = 'none';
+    // Populate services
+    populateSwServices();
     
-    // Make sure main view is shown, not new customer form
-    document.getElementById('smart-pick-main').style.display = 'block';
-    document.getElementById('smart-pick-new-customer').style.display = 'none';
-    
-    // Populate services dropdown
-    populateSmartPickServices();
-    
-    // Setup customer autocomplete
-    setupSmartPickCustomerSearch();
+    // Setup autocomplete
+    setupSwCustomerSearch();
+    setupSwAddressAutocomplete();
     
     lucide.createIcons();
 }
 
-function closeSmartPickModal() {
-    const modal = document.getElementById('smart-pick-modal');
-    modal.style.display = 'none';
-    
-    // Clear fields
-    document.getElementById('smart-customer-search').value = '';
-    document.getElementById('smart-customer-id').value = '';
-    document.getElementById('smart-service-select').value = '';
-    document.getElementById('smart-pick-result').style.display = 'none';
-    document.getElementById('smart-customer-results').style.display = 'none';
-    
-    // Reset to main view
-    document.getElementById('smart-pick-main').style.display = 'block';
-    document.getElementById('smart-pick-new-customer').style.display = 'none';
+function closeSmartWizard() {
+    document.getElementById('smart-wizard-modal').style.display = 'none';
+    resetSwForms();
 }
 
-function populateSmartPickServices() {
-    const serviceSelect = document.getElementById('smart-service-select');
-    serviceSelect.innerHTML = '<option value="">Kies een service...</option>';
+function resetSwForms() {
+    // Clear customer form
+    document.getElementById('sw-customer-search').value = '';
+    document.getElementById('sw-customer-results').style.display = 'none';
+    document.getElementById('sw-selected-customer').style.display = 'none';
+    document.getElementById('sw-new-name').value = '';
+    document.getElementById('sw-new-email').value = '';
+    document.getElementById('sw-new-phone').value = '';
+    document.getElementById('sw-new-address').value = '';
+    document.getElementById('sw-new-postalcode').value = '';
+    document.getElementById('sw-new-city').value = '';
+    document.getElementById('sw-new-notes').value = '';
     
-    // Use the existing servicesCache instead of fetching again
-    if (servicesCache && servicesCache.length > 0) {
-        servicesCache.forEach(service => {
-            const option = document.createElement('option');
-            option.value = service.id;
-            option.textContent = `${service.name} (${service.duration} min)`;
-            serviceSelect.appendChild(option);
-        });
+    // Clear piano form
+    document.getElementById('sw-piano-brand').value = '';
+    document.getElementById('sw-piano-model').value = '';
+    document.getElementById('sw-piano-type').value = 'upright';
+    document.getElementById('sw-piano-year').value = '';
+    document.getElementById('sw-piano-serial').value = '';
+    document.getElementById('sw-piano-finish').value = '';
+    document.getElementById('sw-piano-location').value = '';
+    document.getElementById('sw-piano-floor').value = '';
+    document.getElementById('sw-piano-condition').value = 'good';
+    document.getElementById('sw-piano-interval').value = '6';
+    document.getElementById('sw-piano-notes').value = '';
+    
+    // Collapse expandable cards
+    document.querySelectorAll('.sw-expandable').forEach(card => {
+        card.classList.remove('expanded');
+        card.querySelector('.sw-card-content').style.display = 'none';
+    });
+    
+    // Reset summaries
+    document.getElementById('sw-summary-customer').textContent = '-';
+    document.getElementById('sw-summary-piano').textContent = '-';
+    document.getElementById('sw-customer-pianos').innerHTML = '<p class="sw-empty-state">Selecteer eerst een klant</p>';
+    document.getElementById('sw-ai-suggestions').innerHTML = '<p class="sw-empty-state">Selecteer een service en datum om beschikbare tijden te zien</p>';
+    document.getElementById('sw-create-btn').disabled = true;
+}
+
+function showSwStep(step) {
+    swCurrentStep = step;
+    
+    // Update panels
+    document.querySelectorAll('.sw-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
+    document.getElementById(`sw-step-${step}`).classList.add('active');
+    
+    // Update step indicators
+    document.querySelectorAll('.sw-step').forEach(el => {
+        const s = parseInt(el.dataset.step);
+        el.classList.remove('active', 'completed');
+        if (s < step) el.classList.add('completed');
+        if (s === step) el.classList.add('active');
+    });
+    
+    updateSwNavButtons();
+    
+    // Load step-specific data
+    if (step === 2 && swSelectedCustomer) {
+        loadSwCustomerPianos();
+    }
+    if (step === 3) {
+        updateSwSummary();
+        setupSwTimeSlotListeners();
+    }
+}
+
+function updateSwNavButtons() {
+    const prevBtn = document.getElementById('sw-prev-btn');
+    const nextBtn = document.getElementById('sw-next-btn');
+    
+    prevBtn.style.visibility = swCurrentStep === 1 ? 'hidden' : 'visible';
+    
+    if (swCurrentStep === 3) {
+        nextBtn.style.display = 'none';
     } else {
-        // Fallback: fetch services if cache is empty
-        fetch('/api/services')
-            .then(r => r.json())
-            .then(data => {
-                const services = Array.isArray(data) ? data : (data.services || []);
-                services.forEach(service => {
-                    const option = document.createElement('option');
-                    option.value = service.id;
-                    option.textContent = `${service.name} (${service.duration} min)`;
-                    serviceSelect.appendChild(option);
+        nextBtn.style.display = 'inline-flex';
+        nextBtn.disabled = !canProceedToNextStep();
+    }
+}
+
+function canProceedToNextStep() {
+    if (swCurrentStep === 1) {
+        return swSelectedCustomer !== null;
+    }
+    if (swCurrentStep === 2) {
+        return swSelectedPiano !== null;
+    }
+    return true;
+}
+
+function swNextStep() {
+    if (!canProceedToNextStep()) {
+        if (swCurrentStep === 1) {
+            alert('Selecteer eerst een klant of maak een nieuwe aan');
+        } else if (swCurrentStep === 2) {
+            alert('Selecteer eerst een piano of maak een nieuwe aan');
+        }
+        return;
+    }
+    if (swCurrentStep < 3) {
+        showSwStep(swCurrentStep + 1);
+    }
+}
+
+function swPrevStep() {
+    if (swCurrentStep > 1) {
+        showSwStep(swCurrentStep - 1);
+    }
+}
+
+// Customer search
+function setupSwCustomerSearch() {
+    const input = document.getElementById('sw-customer-search');
+    const results = document.getElementById('sw-customer-results');
+    
+    let debounce;
+    input.addEventListener('input', () => {
+        clearTimeout(debounce);
+        const query = input.value.trim();
+        
+        if (query.length < 2) {
+            results.style.display = 'none';
+            return;
+        }
+        
+        debounce = setTimeout(async () => {
+            try {
+                const response = await fetch(`/api/customers?search=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                const customers = Array.isArray(data) ? data : (data.customers || []);
+                
+                if (customers.length === 0) {
+                    results.innerHTML = '<div class="sw-autocomplete-item"><span>Geen klanten gevonden</span></div>';
+                } else {
+                    results.innerHTML = customers.slice(0, 8).map(c => `
+                        <div class="sw-autocomplete-item" data-id="${c.id}" data-name="${escapeHtml(c.name)}" data-address="${escapeHtml([c.address || c.street, c.city].filter(Boolean).join(', '))}">
+                            <strong>${escapeHtml(c.name)}</strong>
+                            <span>${escapeHtml([c.city, c.phone].filter(Boolean).join(' • '))}</span>
+                        </div>
+                    `).join('');
+                    
+                    results.querySelectorAll('.sw-autocomplete-item[data-id]').forEach(item => {
+                        item.addEventListener('click', () => {
+                            selectSwCustomer(item.dataset.id, item.dataset.name, item.dataset.address);
+                        });
+                    });
+                }
+                results.style.display = 'block';
+            } catch (err) {
+                console.error('Search error:', err);
+            }
+        }, 200);
+    });
+    
+    document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !results.contains(e.target)) {
+            results.style.display = 'none';
+        }
+    });
+}
+
+function selectSwCustomer(id, name, address) {
+    swSelectedCustomer = { id, name, address };
+    
+    document.getElementById('sw-customer-search').value = '';
+    document.getElementById('sw-customer-results').style.display = 'none';
+    document.getElementById('sw-selected-customer').style.display = 'flex';
+    document.getElementById('sw-selected-customer-name').textContent = name;
+    document.getElementById('sw-selected-customer-address').textContent = address || 'Geen adres';
+    
+    // Collapse new customer form
+    const newCustomerCard = document.getElementById('sw-new-customer-card');
+    newCustomerCard.classList.remove('expanded');
+    newCustomerCard.querySelector('.sw-card-content').style.display = 'none';
+    
+    updateSwNavButtons();
+}
+
+function clearSwCustomer() {
+    swSelectedCustomer = null;
+    document.getElementById('sw-selected-customer').style.display = 'none';
+    document.getElementById('sw-customer-search').value = '';
+    updateSwNavButtons();
+}
+
+// Address autocomplete
+function setupSwAddressAutocomplete() {
+    const input = document.getElementById('sw-new-address');
+    const suggestions = document.getElementById('sw-address-suggestions');
+    
+    let debounce;
+    input.addEventListener('input', () => {
+        clearTimeout(debounce);
+        const query = input.value.trim();
+        
+        if (query.length < 3) {
+            suggestions.style.display = 'none';
+            return;
+        }
+        
+        debounce = setTimeout(async () => {
+            try {
+                const response = await fetch(`/api/booking/address-autocomplete?input=${encodeURIComponent(query)}`);
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                const predictions = Array.isArray(data) ? data : (data.predictions || []);
+                
+                if (predictions.length === 0) {
+                    suggestions.style.display = 'none';
+                    return;
+                }
+                
+                suggestions.innerHTML = predictions.map(p => `
+                    <div class="sw-autocomplete-item" data-place-id="${p.placeId}" data-desc="${escapeHtml(p.description)}">
+                        <span>${escapeHtml(p.description)}</span>
+                    </div>
+                `).join('');
+                
+                suggestions.querySelectorAll('.sw-autocomplete-item').forEach(item => {
+                    item.addEventListener('mousedown', async (e) => {
+                        e.preventDefault();
+                        const placeId = item.dataset.placeId;
+                        
+                        try {
+                            const detailsResponse = await fetch(`/api/booking/place-details?placeId=${placeId}`);
+                            if (detailsResponse.ok) {
+                                const details = await detailsResponse.json();
+                                const addr = details.address || details;
+                                document.getElementById('sw-new-address').value = addr.street || item.dataset.desc.split(',')[0].trim();
+                                document.getElementById('sw-new-postalcode').value = addr.postalCode || '';
+                                document.getElementById('sw-new-city').value = addr.city || '';
+                            } else {
+                                const parts = item.dataset.desc.split(',').map(p => p.trim());
+                                document.getElementById('sw-new-address').value = parts[0] || '';
+                                document.getElementById('sw-new-city').value = parts[1] || '';
+                            }
+                        } catch {
+                            document.getElementById('sw-new-address').value = item.dataset.desc.split(',')[0].trim();
+                        }
+                        
+                        suggestions.style.display = 'none';
+                    });
                 });
-            })
-            .catch(err => console.error('Error loading services:', err));
-    }
-}
-
-// Toggle new customer form in Smart Pick
-function toggleSmartPickNewCustomer() {
-    const mainView = document.getElementById('smart-pick-main');
-    const newCustomerView = document.getElementById('smart-pick-new-customer');
+                
+                suggestions.style.display = 'block';
+            } catch (err) {
+                console.error('Address autocomplete error:', err);
+            }
+        }, 300);
+    });
     
-    if (newCustomerView.style.display === 'none') {
-        mainView.style.display = 'none';
-        newCustomerView.style.display = 'block';
-        document.getElementById('smart-new-customer-name').focus();
+    input.addEventListener('blur', () => {
+        setTimeout(() => { suggestions.style.display = 'none'; }, 200);
+    });
+}
+
+// Toggle new customer form
+function toggleSwNewCustomer() {
+    const card = document.getElementById('sw-new-customer-card');
+    const content = card.querySelector('.sw-card-content');
+    
+    if (card.classList.contains('expanded')) {
+        card.classList.remove('expanded');
+        content.style.display = 'none';
     } else {
-        mainView.style.display = 'block';
-        newCustomerView.style.display = 'none';
+        card.classList.add('expanded');
+        content.style.display = 'block';
+        document.getElementById('sw-new-name').focus();
     }
 }
 
-// Save new customer from Smart Pick
-async function saveSmartPickNewCustomer() {
-    const name = document.getElementById('smart-new-customer-name').value.trim();
-    const email = document.getElementById('smart-new-customer-email').value.trim();
-    const phone = document.getElementById('smart-new-customer-phone').value.trim();
-    const street = document.getElementById('smart-new-customer-street').value.trim();
-    const postalCode = document.getElementById('smart-new-customer-postalcode').value.trim();
-    const city = document.getElementById('smart-new-customer-city').value.trim();
+// Save new customer
+async function saveSwNewCustomer() {
+    const name = document.getElementById('sw-new-name').value.trim();
+    const email = document.getElementById('sw-new-email').value.trim();
+    const phone = document.getElementById('sw-new-phone').value.trim();
+    const address = document.getElementById('sw-new-address').value.trim();
+    const postalCode = document.getElementById('sw-new-postalcode').value.trim();
+    const city = document.getElementById('sw-new-city').value.trim();
+    const notes = document.getElementById('sw-new-notes').value.trim();
     
     if (!name) {
         alert('Vul een naam in');
-        document.getElementById('smart-new-customer-name').focus();
+        document.getElementById('sw-new-name').focus();
         return;
     }
     
@@ -2593,315 +2826,397 @@ async function saveSmartPickNewCustomer() {
         const response = await fetch('/api/customers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name,
-                email,
-                phone,
-                address: street,
-                postalCode,
-                city
-            })
+            body: JSON.stringify({ name, email, phone, address, postalCode, city, notes })
         });
         
-        if (!response.ok) {
-            throw new Error('Failed to create customer');
-        }
+        if (!response.ok) throw new Error('Failed to create customer');
         
         const newCustomer = await response.json();
         
-        // Select the new customer in Smart Pick
-        document.getElementById('smart-customer-search').value = name;
-        document.getElementById('smart-customer-id').value = newCustomer.id;
+        // Select the new customer
+        selectSwCustomer(newCustomer.id, name, [address, city].filter(Boolean).join(', '));
         
         // Clear form
-        document.getElementById('smart-new-customer-name').value = '';
-        document.getElementById('smart-new-customer-email').value = '';
-        document.getElementById('smart-new-customer-phone').value = '';
-        document.getElementById('smart-new-customer-street').value = '';
-        document.getElementById('smart-new-customer-postalcode').value = '';
-        document.getElementById('smart-new-customer-city').value = '';
+        document.getElementById('sw-new-name').value = '';
+        document.getElementById('sw-new-email').value = '';
+        document.getElementById('sw-new-phone').value = '';
+        document.getElementById('sw-new-address').value = '';
+        document.getElementById('sw-new-postalcode').value = '';
+        document.getElementById('sw-new-city').value = '';
+        document.getElementById('sw-new-notes').value = '';
         
-        // Go back to main view
-        toggleSmartPickNewCustomer();
+        // Collapse form
+        toggleSwNewCustomer();
         
         // Refresh customers cache
         loadCustomers();
         
-    } catch (error) {
-        console.error('Error creating customer:', error);
-        alert('Er ging iets mis bij het opslaan van de klant');
+    } catch (err) {
+        console.error('Error creating customer:', err);
+        alert('Fout bij opslaan van klant');
     }
 }
 
-function setupSmartPickCustomerSearch() {
-    const searchInput = document.getElementById('smart-customer-search');
-    const resultsDiv = document.getElementById('smart-customer-results');
-    const hiddenInput = document.getElementById('smart-customer-id');
+// Toggle new piano form
+function toggleSwNewPiano() {
+    const card = document.getElementById('sw-new-piano-card');
+    const content = card.querySelector('.sw-card-content');
     
-    let debounceTimer;
+    if (card.classList.contains('expanded')) {
+        card.classList.remove('expanded');
+        content.style.display = 'none';
+    } else {
+        card.classList.add('expanded');
+        content.style.display = 'block';
+        document.getElementById('sw-piano-brand').focus();
+    }
+}
+
+// Load customer's pianos
+async function loadSwCustomerPianos() {
+    if (!swSelectedCustomer) return;
     
-    searchInput.addEventListener('input', function() {
-        clearTimeout(debounceTimer);
-        const query = this.value.trim();
+    const container = document.getElementById('sw-customer-pianos');
+    container.innerHTML = '<p class="sw-empty-state">Piano\'s laden...</p>';
+    
+    try {
+        const response = await fetch(`/api/customers/${swSelectedCustomer.id}/pianos`);
+        const pianos = await response.json();
         
-        if (query.length < 2) {
-            resultsDiv.style.display = 'none';
-            return;
-        }
-        
-        debounceTimer = setTimeout(async () => {
-            try {
-                const response = await fetch(`/api/customers?search=${encodeURIComponent(query)}`);
-                const data = await response.json();
-                
-                // Handle both array and object response formats
-                const customers = Array.isArray(data) ? data : (data.customers || []);
-                
-                if (customers.length === 0) {
-                    resultsDiv.innerHTML = '<div class="autocomplete-item no-results">No customers found</div>';
-                    resultsDiv.style.display = 'block';
-                    return;
-                }
-                
-                resultsDiv.innerHTML = customers.slice(0, 8).map(customer => {
-                    return `
-                    <div class="smart-pick-customer-item" data-id="${customer.id}" data-name="${escapeHtml(customer.name)}" style="padding: 14px 16px; cursor: pointer; border-bottom: 1px solid #f0f0f5; transition: background 0.15s ease;">
-                        <div style="font-weight: 500; color: #1d1d1f;">${escapeHtml(customer.name)}</div>
-                        ${customer.city ? `<div style="font-size: 13px; color: #86868b; margin-top: 2px;">${escapeHtml(customer.city)}</div>` : ''}
+        if (pianos.length === 0) {
+            container.innerHTML = '<p class="sw-empty-state">Deze klant heeft nog geen piano\'s. Voeg er een toe!</p>';
+        } else {
+            container.innerHTML = pianos.map(p => `
+                <div class="sw-piano-item" data-id="${p.id}" data-brand="${escapeHtml(p.brand)}" data-model="${escapeHtml(p.model || '')}">
+                    <i data-lucide="music"></i>
+                    <div class="sw-piano-info">
+                        <strong>${escapeHtml(p.brand)}${p.model ? ' ' + escapeHtml(p.model) : ''}</strong>
+                        <span>${[p.type === 'grand' ? 'Vleugel' : p.type === 'upright' ? 'Staande piano' : p.type, p.year, p.serialNumber].filter(Boolean).join(' • ')}</span>
                     </div>
-                `;
-                }).join('');
-                
-                // Add click handlers
-                resultsDiv.querySelectorAll('.smart-pick-customer-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const id = this.dataset.id;
-                        const name = this.dataset.name;
-                        selectSmartPickCustomer(id, name);
-                    });
-                    item.addEventListener('mouseenter', function() {
-                        this.style.background = '#f5f5f7';
-                    });
-                    item.addEventListener('mouseleave', function() {
-                        this.style.background = 'white';
-                    });
+                </div>
+            `).join('');
+            
+            container.querySelectorAll('.sw-piano-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    container.querySelectorAll('.sw-piano-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    swSelectedPiano = {
+                        id: item.dataset.id,
+                        brand: item.dataset.brand,
+                        model: item.dataset.model
+                    };
+                    updateSwNavButtons();
+                    
+                    // Generate AI service suggestion
+                    generateSwServiceSuggestion(item.dataset.id);
                 });
-                resultsDiv.style.display = 'block';
-            } catch (err) {
-                console.error('Search error:', err);
-            }
-        }, 200);
-    });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
-            resultsDiv.style.display = 'none';
+            });
+            
+            lucide.createIcons();
         }
-    });
+    } catch (err) {
+        console.error('Error loading pianos:', err);
+        container.innerHTML = '<p class="sw-empty-state">Fout bij laden van piano\'s</p>';
+    }
 }
 
-function selectSmartPickCustomer(id, name) {
-    document.getElementById('smart-customer-search').value = name;
-    document.getElementById('smart-customer-id').value = id;
-    document.getElementById('smart-customer-results').style.display = 'none';
-}
-
-async function findSmartSlotFromModal() {
-    const customerId = document.getElementById('smart-customer-id').value;
-    const serviceId = document.getElementById('smart-service-select').value;
-    const date = document.getElementById('smart-date-input').value;
-    const resultDiv = document.getElementById('smart-pick-result');
-    const btn = document.getElementById('find-slot-btn');
+// Generate AI service suggestion based on piano history
+async function generateSwServiceSuggestion(pianoId) {
+    const suggestionDiv = document.getElementById('sw-ai-service-suggestion');
     
-    if (!customerId) {
+    try {
+        // Try to get piano's last service info
+        const response = await fetch(`/api/pianos/${pianoId}`);
+        const piano = await response.json();
+        
+        if (piano.lastTuningDate) {
+            const lastDate = new Date(piano.lastTuningDate);
+            const monthsSince = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24 * 30));
+            
+            if (monthsSince >= 12) {
+                suggestionDiv.innerHTML = `<i data-lucide="lightbulb"></i><span>💡 Laatste stembeurt was ${monthsSince} maanden geleden. Een stembeurt wordt aanbevolen.</span>`;
+                suggestionDiv.style.display = 'flex';
+            } else if (monthsSince >= 6) {
+                suggestionDiv.innerHTML = `<i data-lucide="lightbulb"></i><span>💡 Laatste stembeurt: ${monthsSince} maanden geleden. Overweeg een controle.</span>`;
+                suggestionDiv.style.display = 'flex';
+            } else {
+                suggestionDiv.style.display = 'none';
+            }
+        } else {
+            suggestionDiv.innerHTML = `<i data-lucide="lightbulb"></i><span>💡 Geen recente stembeurt bekend. Een eerste controle wordt aanbevolen.</span>`;
+            suggestionDiv.style.display = 'flex';
+        }
+        
+        lucide.createIcons();
+    } catch {
+        suggestionDiv.style.display = 'none';
+    }
+}
+
+// Save new piano
+async function saveSwNewPiano() {
+    if (!swSelectedCustomer) {
         alert('Selecteer eerst een klant');
         return;
     }
-    if (!serviceId) {
-        alert('Selecteer eerst een service');
-        return;
-    }
-    if (!date) {
-        alert('Selecteer eerst een datum');
-        return;
-    }
     
-    // Show loading
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `
-        <div style="text-align: center; padding: 16px; color: var(--gray-500);">
-            <i data-lucide="loader" class="spin" style="width:20px;height:20px;display:inline-block;vertical-align:middle;"></i>
-            <span style="margin-left: 8px;">Optimale tijd zoeken...</span>
-        </div>
-    `;
-    btn.disabled = true;
-    lucide.createIcons();
+    const brand = document.getElementById('sw-piano-brand').value.trim();
+    const model = document.getElementById('sw-piano-model').value.trim();
+    const type = document.getElementById('sw-piano-type').value;
+    const year = document.getElementById('sw-piano-year').value;
+    const serialNumber = document.getElementById('sw-piano-serial').value.trim();
+    const finish = document.getElementById('sw-piano-finish').value;
+    const location = document.getElementById('sw-piano-location').value.trim();
+    const floor = document.getElementById('sw-piano-floor').value;
+    const condition = document.getElementById('sw-piano-condition').value;
+    const serviceInterval = document.getElementById('sw-piano-interval').value;
+    const notes = document.getElementById('sw-piano-notes').value.trim();
+    
+    if (!brand) {
+        alert('Vul het merk in');
+        document.getElementById('sw-piano-brand').focus();
+        return;
+    }
     
     try {
-        const requestBody = {
-            serviceId,
-            customerId,
-            date,
-            maxSlots: 4,
-            skipSlots: 0
-        };
+        const response = await fetch('/api/pianos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                customerId: swSelectedCustomer.id,
+                brand, model, type, year, serialNumber, finish, location, floor, condition, serviceInterval, notes
+            })
+        });
         
+        if (!response.ok) throw new Error('Failed to create piano');
+        
+        const newPiano = await response.json();
+        
+        // Select the new piano
+        swSelectedPiano = { id: newPiano.id, brand, model };
+        
+        // Reload pianos list
+        await loadSwCustomerPianos();
+        
+        // Select it in the UI
+        const pianoItem = document.querySelector(`.sw-piano-item[data-id="${newPiano.id}"]`);
+        if (pianoItem) {
+            pianoItem.classList.add('selected');
+        }
+        
+        // Clear form
+        document.getElementById('sw-piano-brand').value = '';
+        document.getElementById('sw-piano-model').value = '';
+        document.getElementById('sw-piano-year').value = '';
+        document.getElementById('sw-piano-serial').value = '';
+        document.getElementById('sw-piano-notes').value = '';
+        
+        // Collapse form
+        toggleSwNewPiano();
+        
+        updateSwNavButtons();
+        
+    } catch (err) {
+        console.error('Error creating piano:', err);
+        alert('Fout bij opslaan van piano');
+    }
+}
+
+// Populate services
+function populateSwServices() {
+    const select = document.getElementById('sw-service-select');
+    select.innerHTML = '<option value="">-- Selecteer service --</option>';
+    
+    if (servicesCache && servicesCache.length > 0) {
+        servicesCache.forEach(s => {
+            const option = document.createElement('option');
+            option.value = s.id;
+            option.textContent = `${s.name} (${s.duration} min)`;
+            select.appendChild(option);
+        });
+    } else {
+        fetch('/api/services')
+            .then(r => r.json())
+            .then(data => {
+                const services = Array.isArray(data) ? data : (data.services || []);
+                services.forEach(s => {
+                    const option = document.createElement('option');
+                    option.value = s.id;
+                    option.textContent = `${s.name} (${s.duration} min)`;
+                    select.appendChild(option);
+                });
+            });
+    }
+}
+
+// Update summary
+function updateSwSummary() {
+    if (swSelectedCustomer) {
+        document.getElementById('sw-summary-customer').textContent = swSelectedCustomer.name;
+    }
+    if (swSelectedPiano) {
+        document.getElementById('sw-summary-piano').textContent = 
+            swSelectedPiano.brand + (swSelectedPiano.model ? ' ' + swSelectedPiano.model : '');
+    }
+}
+
+// Setup time slot listeners
+function setupSwTimeSlotListeners() {
+    const serviceSelect = document.getElementById('sw-service-select');
+    const dateInput = document.getElementById('sw-date-input');
+    
+    const findSlots = () => {
+        const serviceId = serviceSelect.value;
+        const date = dateInput.value;
+        
+        if (serviceId && date && swSelectedCustomer) {
+            findSwTimeSlots(serviceId, date);
+        }
+    };
+    
+    serviceSelect.addEventListener('change', findSlots);
+    dateInput.addEventListener('change', findSlots);
+}
+
+// Find available time slots
+async function findSwTimeSlots(serviceId, date) {
+    const container = document.getElementById('sw-ai-suggestions');
+    container.innerHTML = '<p class="sw-empty-state">Beschikbare tijden zoeken...</p>';
+    
+    try {
         const response = await fetch('/api/booking/find-slot', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({
+                serviceId,
+                customerId: swSelectedCustomer.id,
+                date,
+                maxSlots: 6,
+                skipSlots: 0
+            })
         });
         
         const data = await response.json();
         
         if (data.available && data.slots && data.slots.length > 0) {
-            // Get date display
-            const dateObj = new Date(date);
-            const dateDisplay = dateObj.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
-            
-            // Build slots HTML
-            const slotsHtml = data.slots.map(slotData => {
+            container.innerHTML = data.slots.map((slotData, idx) => {
                 const startTime = new Date(slotData.slot.appointmentStart);
                 const endTime = new Date(slotData.slot.appointmentEnd);
-                const timeStr = `${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })} - ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })}`;
+                const timeStr = startTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                const endStr = endTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+                
+                const isRecommended = idx === 0;
                 
                 return `
-                    <div class="smart-slot-option" 
-                         style="display: flex; align-items: center; justify-content: space-between; 
-                                background: white; border: 1px solid #e5e5e5; border-radius: 8px; 
-                                padding: 12px 14px; cursor: pointer; transition: all 0.15s ease;"
-                         onmouseover="this.style.borderColor='#f59e0b'; this.style.background='#fffbeb'"
-                         onmouseout="this.style.borderColor='#e5e5e5'; this.style.background='white'"
-                         onclick="applySmartPickSlot('${slotData.slot.appointmentStart}', '${slotData.slot.appointmentEnd}', '${customerId}', '${serviceId}')">
-                        <div style="font-weight: 500; font-size: 15px;">${timeStr}</div>
-                        <div style="color: #f59e0b; font-size: 18px;">→</div>
+                    <div class="sw-time-slot ${isRecommended ? 'recommended' : ''}" 
+                         data-start="${slotData.slot.appointmentStart}" 
+                         data-end="${slotData.slot.appointmentEnd}">
+                        <div class="time">${timeStr}</div>
+                        <div class="meta">${timeStr} - ${endStr}</div>
                     </div>
                 `;
             }).join('');
             
-            resultDiv.innerHTML = `
-                <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 14px;">
-                    <div style="margin-bottom: 10px;">
-                        <div style="font-weight: 600; color: #333; margin-bottom: 4px;">
-                            <i data-lucide="calendar" style="width:14px;height:14px;display:inline-block;vertical-align:middle;color:#f59e0b;"></i>
-                            ${dateDisplay}
-                        </div>
-                        <div style="font-size: 12px; color: var(--gray-500);">
-                            <i data-lucide="car" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i> ${data.travelInfo?.durationText || 'N/A'} • 
-                            <i data-lucide="clock" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i> ${data.service?.duration || '?'} min
-                        </div>
+            // Add travel info
+            if (data.travelInfo) {
+                container.innerHTML += `
+                    <div style="grid-column: 1/-1; text-align: center; font-size: 12px; color: #6b7280; margin-top: 8px;">
+                        🚗 Reistijd: ${data.travelInfo.durationText || 'onbekend'}
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        ${slotsHtml}
-                    </div>
-                    <div style="font-size: 11px; color: var(--gray-400); text-align: center; margin-top: 8px;">
-                        Click a time to create appointment
-                    </div>
-                </div>
-            `;
-            lucide.createIcons();
+                `;
+            }
             
+            // Add click handlers
+            container.querySelectorAll('.sw-time-slot').forEach(slot => {
+                slot.addEventListener('click', () => {
+                    container.querySelectorAll('.sw-time-slot').forEach(s => s.classList.remove('selected'));
+                    slot.classList.add('selected');
+                    swSelectedSlot = {
+                        start: slot.dataset.start,
+                        end: slot.dataset.end
+                    };
+                    swSelectedService = servicesCache.find(s => s.id == serviceId) || { id: serviceId };
+                    document.getElementById('sw-create-btn').disabled = false;
+                });
+            });
         } else {
-            // No slots found
-            let errorMessage = data.message || 'No availability';
-            if (data.message === 'not_available_on_day' && typeof data.dayIndex !== 'undefined') {
-                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                errorMessage = `Not available on ${days[data.dayIndex]}`;
-            } else if (data.message === 'no_slots_on_day') {
-                errorMessage = 'No available times on this day';
+            let message = 'Geen beschikbare tijden';
+            if (data.message === 'not_available_on_day') {
+                const days = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
+                const dayName = days[new Date(date).getDay()];
+                message = `Niet beschikbaar op ${dayName}`;
             }
-            
-            resultDiv.innerHTML = `
-                <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 10px; padding: 14px; text-align: center;">
-                    <div style="color: #b45309;">
-                        <i data-lucide="alert-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i> 
-                        ${errorMessage}
-                    </div>
-                    <div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">
-                        Try a different date
-                    </div>
-                </div>
-            `;
-            lucide.createIcons();
+            container.innerHTML = `<p class="sw-empty-state">${message}. Probeer een andere datum.</p>`;
         }
     } catch (err) {
-        console.error('Smart pick error:', err);
-        resultDiv.innerHTML = `
-            <div style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 10px; padding: 14px; text-align: center; color: #dc2626;">
-                Error finding slot. Please try again.
-            </div>
-        `;
+        console.error('Error finding slots:', err);
+        container.innerHTML = '<p class="sw-empty-state">Fout bij zoeken. Probeer opnieuw.</p>';
     }
-    
-    btn.disabled = false;
 }
 
-async function applySmartPickSlot(startStr, endStr, customerId, serviceId) {
-    // Close smart pick modal
-    closeSmartPickModal();
+// Create appointment
+async function createSwAppointment() {
+    if (!swSelectedCustomer || !swSelectedPiano || !swSelectedSlot || !swSelectedService) {
+        alert('Selecteer alle velden');
+        return;
+    }
     
-    // Open the appointment modal in wizard mode
-    const startDate = new Date(startStr);
-    const endDate = new Date(endStr);
+    const btn = document.getElementById('sw-create-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="spin"></i> Bezig...';
     
-    // Initialize wizard mode
-    isWizardMode = true;
-    currentWizardStep = 1;
-    editingAppointmentId = null;
+    const startDate = new Date(swSelectedSlot.start);
+    const endDate = new Date(swSelectedSlot.end);
     
-    const modal = document.getElementById('event-modal');
-    modal.style.display = 'flex';
+    const title = `${swSelectedService.name || 'Afspraak'} - ${swSelectedCustomer.name}`;
     
-    // Reset form
-    document.getElementById('event-form').reset();
-    
-    // Load modal data first (customers, pianos, services)
-    await loadModalData();
-    
-    // Show wizard elements, hide edit-mode elements
-    initWizardMode();
-    showWizardStep(1);
-    
-    // Pre-select customer
     try {
-        const customerResponse = await fetch(`/api/customers/${customerId}`);
-        const customer = await customerResponse.json();
+        const response = await fetch('/api/appointments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title,
+                customerId: swSelectedCustomer.id,
+                pianoId: swSelectedPiano.id,
+                serviceId: swSelectedService.id,
+                start: swSelectedSlot.start,
+                end: swSelectedSlot.end,
+                location: swSelectedCustomer.address || ''
+            })
+        });
         
-        if (customer) {
-            document.getElementById('event-customer-search').value = customer.name;
-            document.getElementById('event-customer').value = customer.id;
-            
-            // Set location if available
-            const customerAddress = [customer.address || customer.street, customer.city, customer.postalCode].filter(Boolean).join(', ');
-            if (customerAddress) {
-                document.getElementById('event-location').value = customerAddress;
-            }
-            
-            // Trigger customer change to load pianos (uses pianosCache)
-            onCustomerChange(customerAddress);
-            
-            // Now move to step 2
-            currentWizardStep = 2;
-            showWizardStep(2);
-            
-            // After pianos step, pre-select service and set times
-            // Store these for when they reach step 3
-            modal.dataset.preselectedService = serviceId;
-            modal.dataset.preselectedStart = startStr;
-            modal.dataset.preselectedEnd = endStr;
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to create appointment');
         }
+        
+        // Success!
+        closeSmartWizard();
+        
+        // Refresh calendar
+        if (typeof loadEvents === 'function') {
+            loadEvents();
+        }
+        
+        // Show success message
+        alert('✅ Afspraak aangemaakt!');
+        
     } catch (err) {
-        console.error('Error loading customer:', err);
+        console.error('Error creating appointment:', err);
+        alert('Fout bij aanmaken afspraak: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="calendar-plus"></i> Afspraak aanmaken';
+        lucide.createIcons();
     }
-    
-    lucide.createIcons();
 }
 
-// ============================================
-// END SMART PICK MODAL FUNCTIONS
-// ============================================
 
+                services.forEach(service => {
+                    const option = document.createElement('option');
+                    option.value = service.id;
+                    option.textContent = `${service.name} (${service.duration} min)`;
+                    serviceSelect.appendChild(option);
+                });
 async function handleEventSubmit(e) {
     e.preventDefault();
     
