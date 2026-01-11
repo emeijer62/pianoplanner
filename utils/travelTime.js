@@ -488,13 +488,23 @@ const findAllAvailableSlots = (existingEvents, travelTime, serviceDuration, date
     // Totale benodigde tijd = reistijd + buffer voor + dienst + buffer na
     const totalNeeded = travelTime + bufferBefore + serviceDuration + bufferAfter;
     
+    // Helper: haal datetime uit event (ondersteunt beide formaten)
+    const getEventDateTime = (event, field) => {
+        const value = event[field];
+        if (!value) return null;
+        // Support: { dateTime: "..." } of direct "..."
+        const dateStr = value.dateTime || value;
+        return dateStr ? new Date(dateStr) : null;
+    };
+    
     // Sorteer events op starttijd en filter alleen events binnen werkuren
     const sortedEvents = existingEvents
-        .filter(e => e.start.dateTime)
         .map(e => ({
-            start: new Date(e.start.dateTime),
-            end: new Date(e.end.dateTime)
+            start: getEventDateTime(e, 'start'),
+            end: getEventDateTime(e, 'end'),
+            summary: e.summary || e.title || 'Event'
         }))
+        .filter(e => e.start && e.end) // Filter events zonder geldige tijden
         .filter(e => {
             const eventEndsBeforeWorkday = e.end <= dayStart;
             const eventStartsAfterWorkday = e.start >= dayEnd;
@@ -502,9 +512,13 @@ const findAllAvailableSlots = (existingEvents, travelTime, serviceDuration, date
         })
         .map(e => ({
             start: e.start < dayStart ? dayStart : e.start,
-            end: e.end > dayEnd ? dayEnd : e.end
+            end: e.end > dayEnd ? dayEnd : e.end,
+            summary: e.summary
         }))
         .sort((a, b) => a.start - b.start);
+    
+    console.log(`[findAllAvailableSlots] Processing ${sortedEvents.length} events on ${date.toISOString().split('T')[0]}`);
+    sortedEvents.forEach(e => console.log(`  - ${e.summary}: ${e.start.toTimeString().slice(0,5)} - ${e.end.toTimeString().slice(0,5)}`));
     
     const slots = [];
     let currentTime = new Date(dayStart);
