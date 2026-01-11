@@ -2567,7 +2567,7 @@ function resetSwForms() {
     document.getElementById('sw-summary-customer').textContent = '-';
     document.getElementById('sw-summary-piano').textContent = '-';
     document.getElementById('sw-customer-pianos').innerHTML = '<p class="sw-empty-state">Selecteer eerst een klant</p>';
-    document.getElementById('sw-ai-suggestions').innerHTML = '<p class="sw-empty-state">Selecteer een service en datum om beschikbare tijden te zien</p>';
+    document.getElementById('sw-smart-picks').innerHTML = '<p class="sw-empty-state">Selecteer een service om de slimste momenten te zien</p>';
     document.getElementById('sw-create-btn').disabled = true;
 }
 
