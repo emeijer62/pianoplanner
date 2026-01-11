@@ -2170,7 +2170,8 @@
                     <div class="form-group">
                         <label for="language-selector">Interface language</label>
                         <select id="language-selector" onchange="changeLanguage(this.value)" style="max-width: 250px;">
-                            <option value="en">🇬🇧 English</option>
+                            <option value="en">🇬🇧 English (UK)</option>
+                            <option value="en-US">🇺🇸 English (US)</option>
                             <option value="nl">🇳🇱 Nederlands</option>
                             <option value="de">🇩🇪 Deutsch</option>
                             <option value="fr">🇫🇷 Français</option>
@@ -2972,7 +2973,8 @@
         // ========== LANGUAGE ==========
         
         const languageNames = {
-            en: 'English',
+            en: 'English (UK)',
+            'en-US': 'English (US)',
             nl: 'Nederlands',
             de: 'Deutsch',
             fr: 'Français',

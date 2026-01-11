@@ -402,7 +402,8 @@
         <p style="color: #666; margin-bottom: 8px;" data-i18n="about.langDesc">Your language preference is saved in your account</p>
         <div class="languages-grid">
             <div class="language-badge"><span class="language-flag">🇳🇱</span><span>Nederlands</span></div>
-            <div class="language-badge"><span class="language-flag">🇬🇧</span><span>English</span></div>
+            <div class="language-badge"><span class="language-flag">🇬🇧</span><span>English (UK)</span></div>
+            <div class="language-badge"><span class="language-flag">🇺🇸</span><span>English (US)</span></div>
             <div class="language-badge"><span class="language-flag">🇩🇪</span><span>Deutsch</span></div>
             <div class="language-badge"><span class="language-flag">🇫🇷</span><span>Français</span></div>
             <div class="language-badge"><span class="language-flag">🇪🇸</span><span>Español</span></div>
@@ -1343,6 +1344,8 @@
 
         function getBrowserLanguage() {
             const lang = navigator.language || navigator.userLanguage;
+            // Check for American English specifically
+            if (lang === 'en-US' || lang.startsWith('en-US')) return 'en-US';
             const shortLang = lang.split('-')[0];
             return ['nl', 'de', 'fr', 'es', 'it', 'pl', 'da', 'el', 'sv', 'no', 'pt', 'cs', 'hu', 'fi'].includes(shortLang) ? shortLang : 'en';
         }
