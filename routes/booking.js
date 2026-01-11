@@ -535,23 +535,30 @@ router.post('/find-slot', async (req, res) => {
         console.log('[SMART] Service:', service.name, 'Duration:', effectiveDuration, 
             pianoCount > 1 ? `(${pianoCount} pianos combined)` : '');
         
-        // Haal bedrijfsadres op als vertrekpunt
+        // Haal bedrijfsadres op als default vertrekpunt
         const companyAddress = await companyStore.getOriginAddress(req.session.user.id);
         
-        // Bepaal bestemming
+        // Bepaal bestemming (klant adres)
         let destination = companyAddress;
+        let customer = null;
         if (customerId) {
-            const customer = await customerStore.getCustomer(req.session.user.id, customerId);
+            customer = await customerStore.getCustomer(req.session.user.id, customerId);
             if (customer && customer.address?.city) {
                 destination = `${customer.address.street}, ${customer.address.city}`;
             }
         }
         
-        // Bereken reistijd
-        const fromLocation = origin || companyAddress;
-        const travelInfo = await calculateTravelTime(fromLocation, destination);
+        // Check of klant theater availability heeft
+        const isTheater = customer?.use_theater_availability === 1 || customer?.useTheaterAvailability === true;
+        if (isTheater) {
+            console.log('[SMART] Customer has theater availability enabled');
+        }
         
-        console.log('[SMART] Travel from', fromLocation, 'to', destination, '=', travelInfo.duration, 'min');
+        // Bereken reistijd - standaard vanaf bedrijfsadres
+        // (wordt later dynamisch aangepast per slot op basis van vorige afspraak)
+        const defaultTravelInfo = await calculateTravelTime(origin || companyAddress, destination);
+        
+        console.log('[SMART] Default travel from', origin || companyAddress, 'to', destination, '=', defaultTravelInfo.duration, 'min');
         
         // Bereken totale benodigde tijd (buffer voor + reistijd + dienst + buffer na)
         const totalServiceTime = effectiveBufferBefore + effectiveDuration + effectiveBufferAfter;
@@ -603,20 +610,31 @@ router.post('/find-slot', async (req, res) => {
         console.log(`[SMART] Checking ${dayName}:`, dayAvailability);
         
         // Check of deze dag beschikbaar is
-        if (!dayAvailability || !dayAvailability.enabled) {
+        // Voor theaters: gebruik theater hours als enabled
+        let effectiveAvailability = dayAvailability;
+        if (isTheater && companySettings.theaterHoursEnabled) {
+            const theaterHours = companySettings.theaterHours || {};
+            const theaterDayHours = theaterHours[dayName];
+            if (theaterDayHours?.enabled) {
+                effectiveAvailability = theaterDayHours;
+                console.log(`[SMART] Using THEATER hours for ${dayName}:`, effectiveAvailability);
+            }
+        }
+        
+        if (!effectiveAvailability || !effectiveAvailability.enabled) {
             console.log(`[SMART] Day ${dayName} - not enabled`);
             return res.json({
                 available: false,
                 message: 'not_available_on_day',
                 dayIndex: dayOfWeek,
                 service,
-                travelInfo
+                travelInfo: defaultTravelInfo
             });
         }
         
         const workHours = {
-            start: dayAvailability.start || '09:00',
-            end: dayAvailability.end || '17:00'
+            start: effectiveAvailability.start || '09:00',
+            end: effectiveAvailability.end || '17:00'
         };
         
         // Haal events van die dag op
@@ -629,13 +647,13 @@ router.post('/find-slot', async (req, res) => {
         
         console.log(`[SMART] Day: ${dayName}, workHours:`, workHours);
         console.log(`[SMART] Events on ${searchDate.toISOString().split('T')[0]}:`, existingEvents.length);
-        console.log(`[SMART] Travel: ${travelInfo.duration}min, Service: ${effectiveDuration}min${pianoCount > 1 ? ` (${pianoCount} pianos)` : ''}, Buffer: ${effectiveBufferBefore}/${effectiveBufferAfter}`);
+        console.log(`[SMART] Travel: ${defaultTravelInfo.duration}min, Service: ${effectiveDuration}min${pianoCount > 1 ? ` (${pianoCount} pianos)` : ''}, Buffer: ${effectiveBufferBefore}/${effectiveBufferAfter}`);
         console.log(`[SMART] Finding ${maxSlots} slots, skipping first ${skipSlots}`);
         
         // Vind ALLE beschikbare slots op deze dag
         const daySlots = findAllAvailableSlots(
             existingEvents,
-            travelInfo.duration,
+            defaultTravelInfo.duration,
             effectiveDuration,
             searchDate,
             workHours,
@@ -668,8 +686,8 @@ router.post('/find-slot', async (req, res) => {
                     ...service,
                     duration: effectiveDuration
                 },
-                travelInfo,
-                totalDuration: travelInfo.duration + effectiveBufferBefore + effectiveDuration + effectiveBufferAfter,
+                travelInfo: defaultTravelInfo,
+                totalDuration: defaultTravelInfo.duration + effectiveBufferBefore + effectiveDuration + effectiveBufferAfter,
                 pianoCount: pianoCount || 1,
                 searchedDate: date,
                 hasMoreSlots: daySlots.length === maxSlots // Hint dat er mogelijk meer zijn
