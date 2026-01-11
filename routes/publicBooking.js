@@ -605,18 +605,37 @@ router.get('/customer/:token/smart-suggestions', async (req, res) => {
         // Haal ook externe calendar events op (Apple/Google/Microsoft)
         const externalEvents = await getExternalCalendarEvents(data.owner.id, startDate, endDate);
         
-        // Combineer alle appointments
-        const allAppointments = [
-            ...dbAppointments,
-            ...externalEvents.filter(e => e.start && e.end).map(event => ({
+        // Combineer alle appointments, maar DEDUPLICEER op basis van starttijd
+        // External events die al in DB staan (via sync) moeten niet dubbel meetellen
+        const dbAppointmentKeys = new Set(
+            dbAppointments.map(apt => {
+                const start = new Date(apt.start);
+                return `${start.toISOString().slice(0, 16)}`; // YYYY-MM-DDTHH:MM
+            })
+        );
+        
+        const uniqueExternalEvents = externalEvents
+            .filter(e => e.start && e.end)
+            .filter(event => {
+                const eventStart = event.start instanceof Date ? event.start : new Date(event.start);
+                const eventKey = `${eventStart.toISOString().slice(0, 16)}`;
+                // Skip als er al een DB appointment is op exact dezelfde starttijd
+                if (dbAppointmentKeys.has(eventKey)) {
+                    console.log(`[CUSTOMER SMART] Skipping duplicate external event: "${event.summary}" at ${eventKey}`);
+                    return false;
+                }
+                return true;
+            })
+            .map(event => ({
                 start: event.start instanceof Date ? event.start.toISOString() : event.start,
                 end: event.end instanceof Date ? event.end.toISOString() : event.end,
                 title: event.summary || 'External event',
-                location: null
-            }))
-        ];
+                location: event.location || null // Use location if available
+            }));
         
-        console.log(`[CUSTOMER SMART] Period: ${dbAppointments.length} DB + ${externalEvents.length} external = ${allAppointments.length} total`);
+        const allAppointments = [...dbAppointments, ...uniqueExternalEvents];
+        
+        console.log(`[CUSTOMER SMART] Period: ${dbAppointments.length} DB + ${uniqueExternalEvents.length} unique external (${externalEvents.length - uniqueExternalEvents.length} duplicates removed) = ${allAppointments.length} total`);
         
         // Haal travel settings op
         const travelSettings = await companyStore.getTravelSettings(data.owner.id);
@@ -1796,18 +1815,37 @@ router.get('/:slug/smart-suggestions', async (req, res) => {
         // Haal ook externe calendar events op (Apple/Google/Microsoft)
         const externalEvents = await getExternalCalendarEvents(user.id, startDate, endDate);
         
-        // Combineer alle appointments
-        const allAppointments = [
-            ...dbAppointments,
-            ...externalEvents.filter(e => e.start && e.end).map(event => ({
+        // Combineer alle appointments, maar DEDUPLICEER op basis van starttijd
+        // External events die al in DB staan (via sync) moeten niet dubbel meetellen
+        const dbAppointmentKeys = new Set(
+            dbAppointments.map(apt => {
+                const start = new Date(apt.start);
+                return `${start.toISOString().slice(0, 16)}`; // YYYY-MM-DDTHH:MM
+            })
+        );
+        
+        const uniqueExternalEvents = externalEvents
+            .filter(e => e.start && e.end)
+            .filter(event => {
+                const eventStart = event.start instanceof Date ? event.start : new Date(event.start);
+                const eventKey = `${eventStart.toISOString().slice(0, 16)}`;
+                // Skip als er al een DB appointment is op exact dezelfde starttijd
+                if (dbAppointmentKeys.has(eventKey)) {
+                    console.log(`[PUBLIC SMART] Skipping duplicate external event: "${event.summary}" at ${eventKey}`);
+                    return false;
+                }
+                return true;
+            })
+            .map(event => ({
                 start: event.start instanceof Date ? event.start.toISOString() : event.start,
                 end: event.end instanceof Date ? event.end.toISOString() : event.end,
                 title: event.summary || 'External event',
-                location: null // External events don't have reliable location
-            }))
-        ];
+                location: event.location || null // Use location if available from external event
+            }));
         
-        console.log(`[PUBLIC SMART] Period ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}: ${dbAppointments.length} DB + ${externalEvents.length} external = ${allAppointments.length} total`);
+        const allAppointments = [...dbAppointments, ...uniqueExternalEvents];
+        
+        console.log(`[PUBLIC SMART] Period ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}: ${dbAppointments.length} DB + ${uniqueExternalEvents.length} unique external (${externalEvents.length - uniqueExternalEvents.length} duplicates removed) = ${allAppointments.length} total`);
         
         // Genereer suggesties met travel settings
         const suggestions = await generateSmartSuggestions({
