@@ -1941,19 +1941,42 @@ function findOptimalSlotsForDay(options) {
     // Default reistijd (kan later via API berekend worden)
     const defaultTravelTime = 30;
     
+    // BELANGRIJK: Sorteer afspraken op starttijd!
+    const sortedAppointments = [...dayAppointments].sort((a, b) => {
+        const aStart = new Date(a.start).getTime();
+        const bStart = new Date(b.start).getTime();
+        return aStart - bStart;
+    });
+    
+    // Helper functie: check of een tijdsslot overlapt met ENIGE bestaande afspraak
+    const hasOverlapWithAnyAppointment = (slotStartMinutes, slotEndMinutes) => {
+        return sortedAppointments.some(apt => {
+            const aptStart = new Date(apt.start);
+            const aptEnd = new Date(apt.end);
+            const aptStartMinutes = aptStart.getHours() * 60 + aptStart.getMinutes();
+            const aptEndMinutes = aptEnd.getHours() * 60 + aptEnd.getMinutes();
+            
+            // Inclusief reistijd buffer
+            const aptBlockStart = aptStartMinutes - defaultTravelTime;
+            const aptBlockEnd = aptEndMinutes + defaultTravelTime;
+            
+            // Check overlap: slot start voor apt block eindigt EN slot eindigt na apt block start
+            return slotStartMinutes < aptBlockEnd && slotEndMinutes > aptBlockStart;
+        });
+    };
+    
     // Als er afspraken zijn op deze dag, zoek slots direct voor/na
-    if (dayAppointments.length > 0) {
-        for (let i = 0; i < dayAppointments.length; i++) {
-            const apt = dayAppointments[i];
+    if (sortedAppointments.length > 0) {
+        for (let i = 0; i < sortedAppointments.length; i++) {
+            const apt = sortedAppointments[i];
             const aptStart = new Date(apt.start);
             const aptEnd = new Date(apt.end);
             const aptStartMinutes = aptStart.getHours() * 60 + aptStart.getMinutes();
             const aptEndMinutes = aptEnd.getHours() * 60 + aptEnd.getMinutes();
             
             // Skip afspraken die buiten de werkuren vallen
-            // Deze moeten niet gebruikt worden om slots bij te plannen
             if (aptStartMinutes < dayStartMinutes || aptEndMinutes > dayEndMinutes) {
-                continue; // Afspraak valt (deels) buiten werkuren, skip
+                continue;
             }
             
             // Slot VOOR deze afspraak
@@ -1961,20 +1984,14 @@ function findOptimalSlotsForDay(options) {
             const beforeSlotStart = beforeSlotEnd - service.duration;
             
             if (beforeSlotStart >= dayStartMinutes + defaultTravelTime) {
-                const hasConflict = dayAppointments.some((other, idx) => {
-                    if (idx === i) return false;
-                    const otherEnd = new Date(other.end);
-                    const otherEndMinutes = otherEnd.getHours() * 60 + otherEnd.getMinutes();
-                    return beforeSlotStart < otherEndMinutes + defaultTravelTime;
-                });
-                
-                if (!hasConflict) {
+                // Check overlap met ALLE afspraken, niet alleen de vorige
+                if (!hasOverlapWithAnyAppointment(beforeSlotStart, beforeSlotEnd)) {
                     const proximityScore = apt.distanceScore || 50;
                     slots.push({
                         date,
                         time: formatMinutesToTime(beforeSlotStart),
                         endTime: formatMinutesToTime(beforeSlotEnd),
-                        score: proximityScore + 10, // Bonus voor aansluiting
+                        score: proximityScore + 10,
                         reason: apt.distanceScore < 30 
                             ? `Direct before appointment in same area`
                             : `Efficient: before another appointment`,
@@ -1988,16 +2005,8 @@ function findOptimalSlotsForDay(options) {
             const afterSlotEnd = afterSlotStart + service.duration;
             
             if (afterSlotEnd <= dayEndMinutes) {
-                const nextApt = dayAppointments[i + 1];
-                let hasConflict = false;
-                
-                if (nextApt) {
-                    const nextStart = new Date(nextApt.start);
-                    const nextStartMinutes = nextStart.getHours() * 60 + nextStart.getMinutes();
-                    hasConflict = afterSlotEnd + defaultTravelTime > nextStartMinutes;
-                }
-                
-                if (!hasConflict) {
+                // Check overlap met ALLE afspraken, niet alleen de volgende
+                if (!hasOverlapWithAnyAppointment(afterSlotStart, afterSlotEnd)) {
                     const proximityScore = apt.distanceScore || 50;
                     slots.push({
                         date,
@@ -2020,18 +2029,12 @@ function findOptimalSlotsForDay(options) {
         const firstSlotEnd = firstSlotStart + service.duration;
         
         if (firstSlotEnd <= dayEndMinutes) {
-            const hasConflict = dayAppointments.some(apt => {
-                const aptStart = new Date(apt.start);
-                const aptStartMinutes = aptStart.getHours() * 60 + aptStart.getMinutes();
-                return firstSlotEnd + defaultTravelTime > aptStartMinutes;
-            });
-            
-            if (!hasConflict) {
+            if (!hasOverlapWithAnyAppointment(firstSlotStart, firstSlotEnd)) {
                 slots.push({
                     date,
                     time: formatMinutesToTime(firstSlotStart),
                     endTime: formatMinutesToTime(firstSlotEnd),
-                    score: 100, // Lagere prioriteit
+                    score: 100,
                     reason: 'First available slot',
                     efficiency: 'normal'
                 });
