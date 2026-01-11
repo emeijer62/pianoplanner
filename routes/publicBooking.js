@@ -14,6 +14,131 @@ const pianoStore = require('../utils/pianoStore');
 const { calculateTravelTime, getPlaceAutocomplete, getPlaceDetails, geocodeAddress } = require('../utils/travelTime');
 const emailService = require('../utils/emailService');
 const { getDb } = require('../utils/database');
+const { XMLParser } = require('fast-xml-parser');
+const xmlParser = new XMLParser({ ignoreAttributes: false });
+
+// ==================== EXTERNAL CALENDAR HELPERS ====================
+
+/**
+ * Haal externe calendar events op (Apple/Google/Microsoft) voor een userId
+ * Dit is nodig om dubbele boekingen te voorkomen bij customer self-booking
+ */
+async function getExternalCalendarEvents(userId, dayStart, dayEnd) {
+    try {
+        // Check Apple Calendar first
+        const appleCredentials = await userStore.getAppleCalendarCredentials(userId);
+        const appleSync = await userStore.getAppleCalendarSync(userId);
+        
+        if (appleCredentials && appleSync?.enabled && appleSync?.appleCalendarUrl) {
+            console.log('[PUBLIC BOOKING] Checking Apple Calendar for conflicts');
+            return await getAppleCalendarEventsForUser(appleCredentials, appleSync.appleCalendarUrl, dayStart, dayEnd);
+        }
+        
+        // TODO: Add Google Calendar support here if needed
+        // TODO: Add Microsoft Calendar support here if needed
+        
+        return [];
+    } catch (error) {
+        console.error('[PUBLIC BOOKING] Error fetching external calendar:', error.message);
+        return [];
+    }
+}
+
+/**
+ * Haal events op van Apple Calendar (CalDAV)
+ */
+async function getAppleCalendarEventsForUser(credentials, calendarUrl, dayStart, dayEnd) {
+    try {
+        const authHeader = Buffer.from(`${credentials.appleId}:${credentials.appPassword}`).toString('base64');
+        
+        const formatICalDate = (date) => {
+            return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        };
+        
+        const reportBody = `<?xml version="1.0" encoding="UTF-8"?>
+<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+    <D:prop>
+        <D:getetag/>
+        <C:calendar-data/>
+    </D:prop>
+    <C:filter>
+        <C:comp-filter name="VCALENDAR">
+            <C:comp-filter name="VEVENT">
+                <C:time-range start="${formatICalDate(dayStart)}" end="${formatICalDate(dayEnd)}"/>
+            </C:comp-filter>
+        </C:comp-filter>
+    </C:filter>
+</C:calendar-query>`;
+        
+        const response = await fetch(calendarUrl, {
+            method: 'REPORT',
+            headers: {
+                'Authorization': `Basic ${authHeader}`,
+                'Content-Type': 'application/xml; charset=utf-8',
+                'Depth': '1'
+            },
+            body: reportBody
+        });
+        
+        if (!response.ok) {
+            console.error(`[PUBLIC BOOKING] Apple CalDAV error: ${response.status}`);
+            return [];
+        }
+        
+        const xmlText = await response.text();
+        const parsed = xmlParser.parse(xmlText);
+        
+        const events = [];
+        const multistatus = parsed.multistatus || parsed['D:multistatus'] || parsed['d:multistatus'];
+        const responses = multistatus?.response || multistatus?.['D:response'] || multistatus?.['d:response'];
+        const responseArray = Array.isArray(responses) ? responses : [responses].filter(Boolean);
+        
+        for (const resp of responseArray) {
+            const propstat = resp.propstat || resp['D:propstat'] || resp['d:propstat'];
+            const propstatArray = Array.isArray(propstat) ? propstat : [propstat].filter(Boolean);
+            
+            for (const ps of propstatArray) {
+                const prop = ps?.prop || ps?.['D:prop'] || ps?.['d:prop'];
+                const calendarData = prop?.['calendar-data'] || prop?.['C:calendar-data'] || prop?.['cal:calendar-data'];
+                
+                if (calendarData && typeof calendarData === 'string') {
+                    const summaryMatch = calendarData.match(/SUMMARY:(.+)/);
+                    const dtStartMatch = calendarData.match(/DTSTART[^:]*:(\d{8}T?\d{0,6}Z?)/);
+                    const dtEndMatch = calendarData.match(/DTEND[^:]*:(\d{8}T?\d{0,6}Z?)/);
+                    
+                    if (dtStartMatch) {
+                        const parseICalDate = (icalDate) => {
+                            if (!icalDate) return null;
+                            if (icalDate.length === 8) {
+                                return new Date(icalDate.slice(0,4) + '-' + icalDate.slice(4,6) + '-' + icalDate.slice(6,8));
+                            }
+                            const year = icalDate.slice(0,4);
+                            const month = icalDate.slice(4,6);
+                            const day = icalDate.slice(6,8);
+                            const hour = icalDate.slice(9,11) || '00';
+                            const min = icalDate.slice(11,13) || '00';
+                            const sec = icalDate.slice(13,15) || '00';
+                            return new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}Z`);
+                        };
+                        
+                        events.push({
+                            id: 'apple-' + Math.random().toString(36).substr(2, 9),
+                            summary: summaryMatch ? summaryMatch[1].trim() : 'Bezet',
+                            start: parseICalDate(dtStartMatch[1]),
+                            end: parseICalDate(dtEndMatch?.[1])
+                        });
+                    }
+                }
+            }
+        }
+        
+        console.log(`[PUBLIC BOOKING] Found ${events.length} Apple Calendar events`);
+        return events;
+    } catch (error) {
+        console.error('[PUBLIC BOOKING] Apple Calendar fetch error:', error.message);
+        return [];
+    }
+}
 
 // ==================== MOBILE BOOKING LOGGER ====================
 
@@ -211,6 +336,13 @@ router.post('/customer/:token/appointment', async (req, res) => {
         // Bereken start en eindtijd
         const startDateTime = new Date(`${date}T${time}`);
         const endDateTime = new Date(startDateTime.getTime() + (service.duration || 60) * 60000);
+        
+        // BELANGRIJK: Check of slot nog beschikbaar is (voorkom dubbele boekingen)
+        const slotCheck = await checkSlotAvailable(data.owner.id, date, time, service.duration || 60);
+        if (!slotCheck.available) {
+            console.log(`⚠️ Customer booking blocked - slot not available: ${date} ${time}`);
+            return res.status(409).json({ error: 'Dit tijdslot is niet meer beschikbaar. Kies een ander moment.' });
+        }
         
         // Maak afspraak aan
         const appointmentData = {
@@ -964,6 +1096,23 @@ router.get('/:slug/slots', async (req, res) => {
         // Haal bestaande afspraken op voor die dag
         const appointments = await appointmentStore.getAppointmentsForDay(user.id, date);
         
+        // Haal ook externe calendar events op (Apple/Google/Microsoft)
+        const dayStart = new Date(date + 'T00:00:00');
+        const dayEnd = new Date(date + 'T23:59:59');
+        const externalEvents = await getExternalCalendarEvents(user.id, dayStart, dayEnd);
+        
+        // Combineer interne afspraken met externe events voor slot generatie
+        const allBlockedTimes = [
+            ...appointments.map(apt => ({
+                start: apt.start,
+                end: apt.end
+            })),
+            ...externalEvents.filter(e => e.start && e.end).map(event => ({
+                start: event.start instanceof Date ? event.start.toISOString() : event.start,
+                end: event.end instanceof Date ? event.end.toISOString() : event.end
+            }))
+        ];
+        
         // Haal bedrijfsadres op voor reistijd schatting
         const originAddress = company?.travelOrigin || 
             [company?.address?.street, company?.address?.postalCode, company?.address?.city].filter(Boolean).join(', ');
@@ -979,7 +1128,7 @@ router.get('/:slug/slots', async (req, res) => {
             service.duration,
             service.bufferBefore || 0,
             service.bufferAfter || 0,
-            appointments,
+            allBlockedTimes,  // Nu inclusief externe events
             defaultTravelTime
         );
         
@@ -1338,19 +1487,45 @@ function calculateEndTime(startTime, durationMinutes) {
 }
 
 async function checkSlotAvailable(userId, date, time, duration) {
+    // Haal interne afspraken op
     const appointments = await appointmentStore.getAppointmentsForDay(userId, date);
+    
+    // Haal ook externe calendar events op (Apple/Google/Microsoft)
+    const dayStart = new Date(date + 'T00:00:00');
+    const dayEnd = new Date(date + 'T23:59:59');
+    const externalEvents = await getExternalCalendarEvents(userId, dayStart, dayEnd);
+    
     const slotStart = time;
     const slotEnd = formatMinutesToTime(
         parseInt(time.split(':')[0]) * 60 + parseInt(time.split(':')[1]) + duration
     );
     
-    const hasConflict = appointments.some(apt => {
+    // Check conflict met interne afspraken
+    const hasInternalConflict = appointments.some(apt => {
         const aptStart = new Date(apt.start).toTimeString().slice(0, 5);
         const aptEnd = new Date(apt.end).toTimeString().slice(0, 5);
         return timesOverlap(slotStart, slotEnd, aptStart, aptEnd);
     });
     
-    return { available: !hasConflict };
+    if (hasInternalConflict) {
+        console.log(`[SLOT CHECK] Internal conflict found for ${date} ${time}`);
+        return { available: false, reason: 'internal' };
+    }
+    
+    // Check conflict met externe calendar events
+    const hasExternalConflict = externalEvents.some(event => {
+        if (!event.start || !event.end) return false;
+        const eventStart = new Date(event.start).toTimeString().slice(0, 5);
+        const eventEnd = new Date(event.end).toTimeString().slice(0, 5);
+        return timesOverlap(slotStart, slotEnd, eventStart, eventEnd);
+    });
+    
+    if (hasExternalConflict) {
+        console.log(`[SLOT CHECK] External calendar conflict found for ${date} ${time}`);
+        return { available: false, reason: 'external' };
+    }
+    
+    return { available: true };
 }
 
 // ==================== SMART SUGGESTIONS ====================
