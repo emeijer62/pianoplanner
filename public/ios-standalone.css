@@ -469,7 +469,8 @@
 /* ===== Keyboard Avoiding ===== */
 @media all and (display-mode: standalone) {
     body.keyboard-open {
-        /* Adjust when keyboard is visible */
+        /* Adjust layout when keyboard is visible */
+        padding-bottom: env(keyboard-inset-height, 0px);
     }
     
     body.keyboard-open .ios-tab-bar {

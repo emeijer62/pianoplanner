@@ -755,7 +755,7 @@ function renderDayView(container) {
         
         html += `
             <div class="time-slot" data-date="${dateStr}" data-hour="${slot.hour}" data-minute="${slot.minute}"
-                 onclick="openModalWithTime(this)"
+                 onclick="openModalWithTime(this, event)"
                  ondragover="handleDragOver(event)"
                  ondragleave="handleDragLeave(event)"
                  ondrop="handleDrop(event, '${dateStr}', ${slot.hour})">
@@ -866,7 +866,7 @@ function renderWeekView(container) {
             
             html += `
                 <div class="week-day-slot" data-date="${dayData.dateStr}" data-hour="${slot.hour}" data-minute="${slot.minute}"
-                     onclick="openModalWithTime(this)"
+                     onclick="openModalWithTime(this, event)"
                      ondragover="handleDragOver(event)"
                      ondragleave="handleDragLeave(event)"
                      ondrop="handleDrop(event, '${dayData.dateStr}', ${slot.hour})">
@@ -2165,7 +2165,7 @@ function openModal() {
 }
 
 // Open modal with pre-filled time from clicked slot
-function openModalWithTime(element) {
+function openModalWithTime(element, event) {
     // Don't trigger if modal is already open
     const modal = document.getElementById('event-modal');
     if (modal.style.display === 'flex') {
@@ -2173,7 +2173,7 @@ function openModalWithTime(element) {
     }
     
     // Don't trigger if clicking on an event
-    if (event.target.closest('.calendar-event')) {
+    if (event && event.target && event.target.closest('.calendar-event')) {
         return;
     }
     
@@ -2212,8 +2212,8 @@ function formatDateForInput(date) {
 let editingAppointmentId = null;
 
 // Open modal to edit existing appointment
-async function openEditModal(appointmentId) {
-    event.stopPropagation(); // Prevent triggering slot click
+async function openEditModal(appointmentId, event) {
+    if (event) event.stopPropagation(); // Prevent triggering slot click
     
     // Don't reopen if editing the same appointment
     const modal = document.getElementById('event-modal');
