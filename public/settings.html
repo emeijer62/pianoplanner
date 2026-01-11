@@ -14,6 +14,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="/js/pwa.js"></script>
     <script src="/js/i18n.js"></script>
+    <script src="/js/push-notifications.js" defer></script>
     <script src="icons.js?v=20260109" defer></script>
     <style>
         /* Settings Cockpit - Tab-based Layout */
@@ -883,6 +884,10 @@
                 <span class="tab-label">Email</span>
                 <span class="tab-status" id="email-tab-status"></span>
             </button>
+            <button class="settings-tab" data-tab="notifications" onclick="switchTab('notifications')">
+                <i data-lucide="bell" class="tab-icon" style="width: 16px; height: 16px;"></i>
+                <span class="tab-label">Push</span>
+            </button>
             <button class="settings-tab" data-tab="account" onclick="switchTab('account')">
                 <i data-lucide="user" class="tab-icon" style="width: 16px; height: 16px;"></i>
                 <span class="tab-label">Account</span>
@@ -891,6 +896,22 @@
                 <i data-lucide="piano" class="tab-icon" style="width: 16px; height: 16px;"></i>
                 <span class="tab-label">Services</span>
             </button>
+        </div>
+        
+        <!-- ==================== NOTIFICATIONS TAB ==================== -->
+        <div class="tab-panel" id="panel-notifications">
+            <div class="settings-card">
+                <div class="settings-card-header">
+                    <div class="settings-card-title">
+                        <i data-lucide="bell" class="card-icon" style="width: 18px; height: 18px;"></i>
+                        Push Notifications
+                    </div>
+                </div>
+                <div class="settings-card-body" id="push-notifications-container">
+                    <!-- Push notifications UI will be inserted here -->
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
         </div>
         
         <!-- ==================== CALENDAR TAB ==================== -->
@@ -2385,6 +2406,21 @@
             
             // Save to localStorage
             localStorage.setItem('settingsActiveTab', tabName);
+            
+            // Initialize notifications tab if needed
+            if (tabName === 'notifications') {
+                initNotificationsTab();
+            }
+        }
+        
+        // Initialize Push Notifications tab
+        function initNotificationsTab() {
+            const container = document.getElementById('push-notifications-container');
+            if (container && window.PushNotifications) {
+                container.innerHTML = PushNotifications.createSettingsUI();
+            } else if (container) {
+                container.innerHTML = '<p style="padding: 20px; color: #6b7280;">Push notifications are not supported in this browser.</p>';
+            }
         }
         
         // Toggle card expand/collapse

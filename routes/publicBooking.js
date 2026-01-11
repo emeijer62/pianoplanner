@@ -18,6 +18,7 @@ const { XMLParser } = require('fast-xml-parser');
 const { google } = require('googleapis');
 const xmlParser = new XMLParser({ ignoreAttributes: false });
 const { pushAppointmentToCalendars } = require('../utils/backgroundSync');
+const { sendNewBookingNotification } = require('./notifications');
 
 // ==================== EXTERNAL CALENDAR HELPERS ====================
 
@@ -1514,6 +1515,19 @@ router.post('/:slug', async (req, res) => {
                 console.log(`🔄 Public booking synced to calendars for ${user.email}`);
             } catch (syncErr) {
                 console.error('❌ Public booking sync error:', syncErr.message);
+            }
+            
+            // 📱 Send push notification to user about new booking
+            try {
+                await sendNewBookingNotification(user.id, {
+                    customerName: customer.name,
+                    serviceName: service.name,
+                    date: date,
+                    time: time
+                });
+                console.log(`📱 Push notification sent for new booking`);
+            } catch (pushErr) {
+                console.error('❌ Push notification error:', pushErr.message);
             }
         });
         

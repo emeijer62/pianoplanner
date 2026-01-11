@@ -39,6 +39,7 @@ const adminRoutes = require('./routes/admin');
 const calendarFeedRoutes = require('./routes/calendarFeed');
 const uploadRoutes = require('./routes/uploads');
 const importRoutes = require('./routes/import');
+const notificationRoutes = require('./routes/notifications');
 const userStore = require('./utils/userStore');
 const { requireAuth, requireAdmin, isAdmin } = require('./middleware/auth');
 
@@ -174,6 +175,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/calendar-feed', calendarFeedRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/import', importRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Email service for beta signup
 const emailService = require('./utils/emailService');
@@ -750,6 +752,17 @@ const server = app.listen(PORT, async () => {
     // Start background sync service
     const { startBackgroundSync } = require('./utils/backgroundSync');
     startBackgroundSync();
+    
+    // Start appointment reminder scheduler
+    try {
+        const { startReminderScheduler } = require('./routes/notifications');
+        if (startReminderScheduler) {
+            startReminderScheduler();
+            console.log('✅ Appointment reminder scheduler started');
+        }
+    } catch (err) {
+        console.error('⚠️ Reminder scheduler not started:', err.message);
+    }
 });
 
 // Graceful shutdown handling
