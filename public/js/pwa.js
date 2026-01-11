@@ -68,10 +68,8 @@
             // Microsoft
             { tag: 'meta', name: 'msapplication-TileColor', content: PWA_CONFIG.themeColor },
             { tag: 'meta', name: 'msapplication-TileImage', content: '/assets/icons/icon-144x144.png' },
-            { tag: 'meta', name: 'msapplication-config', content: '/browserconfig.xml' },
-            
-            // Viewport adjustments for iOS keyboard
-            { tag: 'meta', name: 'viewport', content: 'width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content' }
+            { tag: 'meta', name: 'msapplication-config', content: '/browserconfig.xml' }
+            // Note: viewport is already set in HTML, no need to override here
         ];
 
         metaTags.forEach(config => {
@@ -83,10 +81,13 @@
             head.appendChild(element);
         });
 
-        // Update existing viewport meta if present
+        // Ensure viewport has viewport-fit=cover for iOS safe areas
         const existingViewport = document.querySelector('meta[name="viewport"]');
         if (existingViewport) {
-            existingViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content');
+            const currentContent = existingViewport.getAttribute('content') || '';
+            if (!currentContent.includes('viewport-fit')) {
+                existingViewport.setAttribute('content', currentContent + ', viewport-fit=cover');
+            }
         }
     }
 

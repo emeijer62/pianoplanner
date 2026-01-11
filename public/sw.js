@@ -1,7 +1,7 @@
-// PianoPlanner Service Worker v1.2
+// PianoPlanner Service Worker v1.3
 // Provides offline support for piano tuners on the go
 
-const CACHE_NAME = 'pianoplanner-v1.2';
+const CACHE_NAME = 'pianoplanner-v1.3';
 const OFFLINE_URL = '/offline.html';
 
 // Assets to cache immediately on install
