@@ -1553,8 +1553,11 @@ function updateSmartAppointmentVisibility() {
     }
 }
 
+// Track current skip offset for "more options"
+let smartSlotSkipOffset = 0;
+
 // Find smart slot based on customer, service and date
-async function findSmartSlot() {
+async function findSmartSlot(loadMore = false) {
     const customerId = document.getElementById('event-customer').value;
     const serviceId = document.getElementById('event-service').value;
     const date = document.getElementById('smart-date').value;
@@ -1566,6 +1569,11 @@ async function findSmartSlot() {
         return;
     }
     
+    // Reset offset when not loading more
+    if (!loadMore) {
+        smartSlotSkipOffset = 0;
+    }
+    
     // Calculate multi-piano duration
     const durationResult = calculateMultiPianoDuration();
     const selectedPianoIds = getSelectedPianoIds();
@@ -1573,12 +1581,13 @@ async function findSmartSlot() {
     
     // Show loading
     resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `<div style="text-align: center; padding: 12px; color: var(--gray-500);"><i data-lucide="loader" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;"></i> Finding best time...</div>`;
+    if (!loadMore) {
+        resultDiv.innerHTML = `<div style="text-align: center; padding: 12px; color: var(--gray-500);"><i data-lucide="loader" class="spin" style="width:18px;height:18px;display:inline-block;vertical-align:middle;"></i> Finding available times...</div>`;
+    }
     btn.disabled = true;
     lucide.createIcons();
     
     try {
-        // Send multi-piano info to backend
         const requestBody = {
             serviceId,
             customerId,
@@ -1589,7 +1598,9 @@ async function findSmartSlot() {
             customBuffer: pianoCount > 1 ? {
                 before: durationResult.bufferBefore,
                 after: durationResult.bufferAfter
-            } : undefined
+            } : undefined,
+            maxSlots: 6,
+            skipSlots: smartSlotSkipOffset
         };
         
         const response = await fetch('/api/booking/find-slot', {
@@ -1600,49 +1611,72 @@ async function findSmartSlot() {
         
         const data = await response.json();
         
-        // Get first available slot (from slots array or single slot)
-        let slot = null;
         if (data.available && data.slots && data.slots.length > 0) {
-            slot = data.slots[0].slot;
-        } else if (data.available && data.slot) {
-            slot = data.slot;
-        }
-        
-        if (slot) {
-            // Directly apply the slot - no options to choose
-            applySmartSlot(slot.appointmentStart, slot.appointmentEnd);
-            
-            const startTime = new Date(slot.appointmentStart);
-            const endTime = new Date(slot.appointmentEnd);
             const pianoInfo = (data.pianoCount || pianoCount) > 1 ? `${data.pianoCount || pianoCount} piano's • ` : '';
             
-            // Show success confirmation
+            // Build slots HTML
+            const slotsHtml = data.slots.map((slotData, index) => {
+                const startTime = new Date(slotData.slot.appointmentStart);
+                const endTime = new Date(slotData.slot.appointmentEnd);
+                const timeStr = `${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })} - ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })}`;
+                
+                return `
+                    <div class="smart-slot-option" 
+                         style="display: flex; align-items: center; justify-content: space-between; 
+                                background: white; border: 1px solid #e5e5e5; border-radius: 8px; 
+                                padding: 12px 14px; cursor: pointer; transition: all 0.15s ease;"
+                         onmouseover="this.style.borderColor='var(--primary-color, #007AFF)'; this.style.background='#f8faff'"
+                         onmouseout="this.style.borderColor='#e5e5e5'; this.style.background='white'"
+                         onclick="applySmartSlot('${slotData.slot.appointmentStart}', '${slotData.slot.appointmentEnd}')">
+                        <div style="font-weight: 500; font-size: 15px;">${timeStr}</div>
+                        <div style="color: var(--primary-color, #007AFF); font-size: 18px;">→</div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Get date display
+            const dateObj = new Date(date);
+            const dateDisplay = dateObj.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+            
             resultDiv.innerHTML = `
-                <div style="background: var(--success-bg, #dcfce7); border: 1px solid var(--success-color, #22c55e); border-radius: 8px; padding: 12px;">
-                    <div style="font-weight: 600; color: var(--success-color, #22c55e); margin-bottom: 4px;">
-                        <i data-lucide="check-circle" style="width:16px;height:16px;display:inline-block;vertical-align:middle;"></i>
-                        ${startTime.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
+                <div style="margin-bottom: 10px;">
+                    <div style="font-weight: 600; color: #333; margin-bottom: 4px;">
+                        <i data-lucide="calendar" style="width:14px;height:14px;display:inline-block;vertical-align:middle;color:var(--primary-color);"></i>
+                        ${dateDisplay}
                     </div>
-                    <div style="font-size: 18px; font-weight: 600; color: #333; margin-bottom: 8px;">
-                        ${startTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })} - 
-                        ${endTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: userTimeZone })}
-                    </div>
-                    <div style="font-size: 12px; color: var(--gray-600);">
+                    <div style="font-size: 12px; color: var(--gray-500);">
                         ${pianoInfo}<i data-lucide="car" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i> ${data.travelInfo?.durationText || 'N/A'} • 
                         <i data-lucide="clock" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i> ${data.service?.duration || '?'} min
                     </div>
                 </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    ${slotsHtml}
+                </div>
+                ${data.hasMoreSlots ? `
+                    <button type="button" class="btn btn-secondary" onclick="loadMoreSmartSlots()" 
+                            style="width: 100%; margin-top: 10px; font-size: 13px;">
+                        <i data-lucide="chevron-down" style="width:14px;height:14px;display:inline-block;vertical-align:middle;"></i>
+                        More options
+                    </button>
+                ` : ''}
+                <div style="font-size: 11px; color: var(--gray-400); text-align: center; margin-top: 8px;">
+                    Click a time to select it
+                </div>
             `;
             lucide.createIcons();
+            
+            // Update skip offset for next "more options" load
+            smartSlotSkipOffset += data.slots.length;
+            
         } else {
-            // No slot found
+            // No slots found
             let errorMessage = data.message || 'No availability';
             if (data.message === 'not_available_on_day' && typeof data.dayIndex !== 'undefined') {
                 const days = window.i18n?.t('calendar.days') || ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
                 const dayName = Array.isArray(days) ? days[data.dayIndex] : days;
                 errorMessage = `${window.i18n?.t('booking.notAvailableOn') || 'Not available on'} ${dayName}`;
-            } else if (data.message === 'no_slots_found') {
-                errorMessage = window.i18n?.t('booking.noSlotsIn14Days') || 'No available time found in the next 14 days';
+            } else if (data.message === 'no_slots_on_day') {
+                errorMessage = 'No available times on this day';
             }
             
             resultDiv.innerHTML = `
@@ -1663,6 +1697,11 @@ async function findSmartSlot() {
     }
     
     btn.disabled = false;
+}
+
+// Load more smart slot options
+async function loadMoreSmartSlots() {
+    await findSmartSlot(true);
 }
 
 // Apply the found smart slot to the form

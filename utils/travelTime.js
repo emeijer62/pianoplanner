@@ -464,7 +464,117 @@ const findFirstAvailableSlot = (existingEvents, travelTime, serviceDuration, dat
 };
 
 /**
- * Bereken de afstandsmatrix tussen meerdere locaties
+ * Vind ALLE beschikbare slots op een dag (voor Smart Pick met meerdere opties)
+ * @param {Array} existingEvents - Bestaande afspraken
+ * @param {number} travelTime - Reistijd in minuten
+ * @param {number} serviceDuration - Duur van de dienst in minuten
+ * @param {Date} date - De datum
+ * @param {Object} workHours - Werkuren {start: '09:00', end: '18:00'}
+ * @param {number} bufferBefore - Buffer voor afspraak in minuten
+ * @param {number} bufferAfter - Buffer na afspraak in minuten
+ * @param {number} maxSlots - Maximum aantal slots om te retourneren
+ * @param {number} skipSlots - Aantal slots om over te slaan (voor "meer opties")
+ * @returns {Array} Array van beschikbare slots
+ */
+const findAllAvailableSlots = (existingEvents, travelTime, serviceDuration, date, workHours = { start: '09:00', end: '18:00' }, bufferBefore = 0, bufferAfter = 0, maxSlots = 6, skipSlots = 0) => {
+    const dayStart = new Date(date);
+    const [startHour, startMin] = workHours.start.split(':').map(Number);
+    dayStart.setHours(startHour, startMin, 0, 0);
+    
+    const dayEnd = new Date(date);
+    const [endHour, endMin] = workHours.end.split(':').map(Number);
+    dayEnd.setHours(endHour, endMin, 0, 0);
+    
+    // Totale benodigde tijd = reistijd + buffer voor + dienst + buffer na
+    const totalNeeded = travelTime + bufferBefore + serviceDuration + bufferAfter;
+    
+    // Sorteer events op starttijd en filter alleen events binnen werkuren
+    const sortedEvents = existingEvents
+        .filter(e => e.start.dateTime)
+        .map(e => ({
+            start: new Date(e.start.dateTime),
+            end: new Date(e.end.dateTime)
+        }))
+        .filter(e => {
+            const eventEndsBeforeWorkday = e.end <= dayStart;
+            const eventStartsAfterWorkday = e.start >= dayEnd;
+            return !eventEndsBeforeWorkday && !eventStartsAfterWorkday;
+        })
+        .map(e => ({
+            start: e.start < dayStart ? dayStart : e.start,
+            end: e.end > dayEnd ? dayEnd : e.end
+        }))
+        .sort((a, b) => a.start - b.start);
+    
+    const slots = [];
+    let currentTime = new Date(dayStart);
+    let slotsFound = 0;
+    let slotsSkipped = 0;
+    
+    // Helper function to try to find a slot at currentTime
+    const tryFindSlot = (availableUntil) => {
+        // Genereer slots in intervallen van 30 minuten binnen beschikbare ruimte
+        while (currentTime < availableUntil && slotsFound < maxSlots) {
+            const potentialEnd = new Date(currentTime.getTime() + totalNeeded * 60 * 1000);
+            
+            if (potentialEnd <= availableUntil) {
+                // Er past een slot hier
+                const rawAppointmentStart = new Date(currentTime.getTime() + (travelTime + bufferBefore) * 60 * 1000);
+                const appointmentStart = roundToQuarter(rawAppointmentStart);
+                
+                // Check of deze tijd niet te vroeg is (voor werkdag start)
+                if (appointmentStart >= dayStart) {
+                    const bufferBeforeStart = new Date(appointmentStart.getTime() - bufferBefore * 60 * 1000);
+                    const travelStart = new Date(bufferBeforeStart.getTime() - travelTime * 60 * 1000);
+                    const appointmentEnd = new Date(appointmentStart.getTime() + serviceDuration * 60 * 1000);
+                    const slotEnd = new Date(appointmentEnd.getTime() + bufferAfter * 60 * 1000);
+                    
+                    // Check dat slot niet voorbij werkdag einde gaat
+                    if (slotEnd <= dayEnd) {
+                        if (slotsSkipped < skipSlots) {
+                            slotsSkipped++;
+                        } else {
+                            slots.push({
+                                travelStart,
+                                bufferBeforeStart,
+                                appointmentStart,
+                                appointmentEnd,
+                                slotEnd,
+                                travelTime,
+                                serviceDuration,
+                                bufferBefore,
+                                bufferAfter,
+                                totalDuration: totalNeeded
+                            });
+                            slotsFound++;
+                        }
+                    }
+                }
+            }
+            
+            // Spring 30 minuten vooruit voor volgende potentiële slot
+            currentTime = new Date(currentTime.getTime() + 30 * 60 * 1000);
+        }
+    };
+    
+    // Loop door events en vind slots in de gaten
+    for (const event of sortedEvents) {
+        // Zoek slots voor dit event
+        tryFindSlot(event.start);
+        
+        if (slotsFound >= maxSlots) break;
+        
+        // Spring naar einde van dit event
+        currentTime = new Date(Math.max(currentTime.getTime(), event.end.getTime()));
+    }
+    
+    // Zoek slots na het laatste event
+    if (slotsFound < maxSlots) {
+        tryFindSlot(dayEnd);
+    }
+    
+    return slots;
+};
  * @param {string[]} locations - Array van adressen
  * @returns {Promise<number[][]>} Matrix van reistijden in minuten
  */
@@ -739,6 +849,7 @@ module.exports = {
     calculateTravelTime,
     estimateTravelTime,
     findFirstAvailableSlot,
+    findAllAvailableSlots,
     geocodeAddress,
     getPlaceAutocomplete,
     getPlaceDetails,

@@ -3,7 +3,7 @@ const { google } = require('googleapis');
 const router = express.Router();
 const fetch = require('node-fetch');
 const { XMLParser } = require('fast-xml-parser');
-const { calculateTravelTime, findFirstAvailableSlot, getPlaceAutocomplete, getPlaceDetails, geocodeAddress } = require('../utils/travelTime');
+const { calculateTravelTime, findFirstAvailableSlot, findAllAvailableSlots, getPlaceAutocomplete, getPlaceDetails, geocodeAddress } = require('../utils/travelTime');
 const serviceStore = require('../utils/serviceStore');
 const customerStore = require('../utils/customerStore');
 const companyStore = require('../utils/companyStore');
@@ -506,12 +506,14 @@ router.post('/travel-time', async (req, res) => {
 router.post('/find-slot', async (req, res) => {
     try {
         const { 
-            serviceId, customerId, date, origin, searchMultipleDays = true,
+            serviceId, customerId, date, origin, searchMultipleDays = false,
             // Multi-piano support
-            pianoIds, pianoCount, totalDuration, customBuffer
+            pianoIds, pianoCount, totalDuration, customBuffer,
+            // Pagination for "more options"
+            maxSlots = 6, skipSlots = 0
         } = req.body;
         
-        console.log('[SMART] Request received:', { serviceId, customerId, date, origin, pianoCount, totalDuration });
+        console.log('[SMART] Request received:', { serviceId, customerId, date, origin, pianoCount, totalDuration, maxSlots, skipSlots });
         
         // Validatie
         if (!serviceId || !date) {
@@ -590,121 +592,100 @@ router.post('/find-slot', async (req, res) => {
             console.log('[SMART] Converted workingHours:', JSON.stringify(workingHours));
         }
         
-        // Zoek op de opgegeven dag en eventueel de volgende 14 dagen
-        const maxDaysToSearch = searchMultipleDays ? 14 : 1;
-        const maxSlotsToFind = 5; // Maximaal 5 opties tonen
-        const foundSlots = [];
-        
-        for (let dayOffset = 0; dayOffset < maxDaysToSearch && foundSlots.length < maxSlotsToFind; dayOffset++) {
-            const searchDate = new Date(date);
-            searchDate.setDate(searchDate.getDate() + dayOffset);
-            const dayOfWeek = searchDate.getDay();
-            const dayName = dayNameMap[dayOfWeek];
-            
-            // Haal werkuren op via dagnaam (workingHours.monday, etc.)
-            const dayAvailability = workingHours?.[dayName];
-            
-            console.log(`[SMART] Checking ${dayName} (offset ${dayOffset}):`, dayAvailability);
-            
-            // Skip als deze dag niet beschikbaar is
-            if (!dayAvailability || !dayAvailability.enabled) {
-                console.log(`[SMART] Skipping ${dayName} - not enabled`);
-                continue;
-            }
-            
-            const workHours = {
-                start: dayAvailability.start || '09:00',
-                end: dayAvailability.end || '17:00'
-            };
-            
-            // Haal events van die dag op (werkt met Google én Apple Calendar)
-            const dayStart = new Date(searchDate);
-            dayStart.setHours(0, 0, 0, 0);
-            const dayEnd = new Date(searchDate);
-            dayEnd.setHours(23, 59, 59, 999);
-            
-            const existingEvents = await getCalendarEvents(req, dayStart, dayEnd);
-            
-            console.log(`[SMART] Day ${dayOffset}: ${dayName}, workHours:`, workHours);
-            console.log(`[SMART] Events on ${searchDate.toISOString().split('T')[0]}:`, existingEvents.length);
-            console.log(`[SMART] Travel: ${travelInfo.duration}min, Service: ${effectiveDuration}min${pianoCount > 1 ? ` (${pianoCount} pianos)` : ''}, Buffer: ${effectiveBufferBefore}/${effectiveBufferAfter}`);
-            
-            // Vind eerste beschikbare slot (met buffertijden)
-            // For multi-piano: effectiveDuration already includes all pianos combined
-            const slot = findFirstAvailableSlot(
-                existingEvents,
-                travelInfo.duration,
-                effectiveDuration,
-                searchDate,
-                workHours,
-                effectiveBufferBefore,
-                effectiveBufferAfter
-            );
-            
-            console.log(`[SMART] Slot found:`, slot ? 'YES' : 'NO', slot?.appointmentStart);
-            
-            if (slot) {
-                foundSlots.push({
-                    slot: {
-                        travelStart: slot.travelStart,
-                        bufferBeforeStart: slot.bufferBeforeStart,
-                        appointmentStart: slot.appointmentStart,
-                        appointmentEnd: slot.appointmentEnd,
-                        slotEnd: slot.slotEnd
-                    },
-                    foundDate: searchDate.toISOString().split('T')[0],
-                    dayOffset: dayOffset,
-                    pianoCount: pianoCount || 1
-                });
-            }
-        }
-        
-        // Als we slots hebben gevonden, return ze allemaal
-        if (foundSlots.length > 0) {
-            return res.json({
-                available: true,
-                slots: foundSlots, // Meerdere opties
-                slot: foundSlots[0].slot, // Eerste optie voor backward compatibility
-                service: {
-                    ...service,
-                    duration: effectiveDuration // Use effective duration (may be multi-piano)
-                },
-                travelInfo,
-                totalDuration: travelInfo.duration + totalServiceTime,
-                pianoCount: pianoCount || 1,
-                searchedDate: date,
-                foundDate: foundSlots[0].foundDate,
-                daysSearched: maxDaysToSearch
-            });
-        }
-        
-        // Geen slot gevonden in de komende 14 dagen
-        const requestedDate = new Date(date);
-        const dayOfWeek = requestedDate.getDay();
+        // Zoek alleen op de gekozen dag (niet meer over meerdere dagen)
+        const searchDate = new Date(date);
+        const dayOfWeek = searchDate.getDay();
         const dayName = dayNameMap[dayOfWeek];
+        
+        // Haal werkuren op via dagnaam
         const dayAvailability = workingHours?.[dayName];
         
+        console.log(`[SMART] Checking ${dayName}:`, dayAvailability);
+        
+        // Check of deze dag beschikbaar is
         if (!dayAvailability || !dayAvailability.enabled) {
+            console.log(`[SMART] Day ${dayName} - not enabled`);
             return res.json({
                 available: false,
                 message: 'not_available_on_day',
                 dayIndex: dayOfWeek,
-                noSlotsIn14Days: true,
                 service,
                 travelInfo
             });
         }
         
+        const workHours = {
+            start: dayAvailability.start || '09:00',
+            end: dayAvailability.end || '17:00'
+        };
+        
+        // Haal events van die dag op
+        const dayStart = new Date(searchDate);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(searchDate);
+        dayEnd.setHours(23, 59, 59, 999);
+        
+        const existingEvents = await getCalendarEvents(req, dayStart, dayEnd);
+        
+        console.log(`[SMART] Day: ${dayName}, workHours:`, workHours);
+        console.log(`[SMART] Events on ${searchDate.toISOString().split('T')[0]}:`, existingEvents.length);
+        console.log(`[SMART] Travel: ${travelInfo.duration}min, Service: ${effectiveDuration}min${pianoCount > 1 ? ` (${pianoCount} pianos)` : ''}, Buffer: ${effectiveBufferBefore}/${effectiveBufferAfter}`);
+        console.log(`[SMART] Finding ${maxSlots} slots, skipping first ${skipSlots}`);
+        
+        // Vind ALLE beschikbare slots op deze dag
+        const daySlots = findAllAvailableSlots(
+            existingEvents,
+            travelInfo.duration,
+            effectiveDuration,
+            searchDate,
+            workHours,
+            effectiveBufferBefore,
+            effectiveBufferAfter,
+            maxSlots,
+            skipSlots
+        );
+        
+        console.log(`[SMART] Slots found:`, daySlots.length);
+        
+        if (daySlots.length > 0) {
+            const foundSlots = daySlots.map(slot => ({
+                slot: {
+                    travelStart: slot.travelStart,
+                    bufferBeforeStart: slot.bufferBeforeStart,
+                    appointmentStart: slot.appointmentStart,
+                    appointmentEnd: slot.appointmentEnd,
+                    slotEnd: slot.slotEnd
+                },
+                foundDate: searchDate.toISOString().split('T')[0],
+                pianoCount: pianoCount || 1
+            }));
+            
+            return res.json({
+                available: true,
+                slots: foundSlots,
+                slot: foundSlots[0].slot, // Backward compatibility
+                service: {
+                    ...service,
+                    duration: effectiveDuration
+                },
+                travelInfo,
+                totalDuration: travelInfo.duration + effectiveBufferBefore + effectiveDuration + effectiveBufferAfter,
+                pianoCount: pianoCount || 1,
+                searchedDate: date,
+                hasMoreSlots: daySlots.length === maxSlots // Hint dat er mogelijk meer zijn
+            });
+        }
+        
+        // Geen slots gevonden op deze dag
         return res.json({
             available: false,
-            message: 'no_slots_found',
-            noSlotsIn14Days: true,
+            message: 'no_slots_on_day',
             service,
             travelInfo
         });
         
     } catch (error) {
-        console.error('Find slot error:', error);
+        console.error('[SMART] Error:', error);
         res.status(500).json({ error: 'Kon beschikbaarheid niet bepalen' });
     }
 });
