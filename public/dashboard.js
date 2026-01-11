@@ -2661,7 +2661,7 @@ function setupSwCustomerSearch() {
         
         debounce = setTimeout(async () => {
             try {
-                const response = await fetch(`/api/customers?search=${encodeURIComponent(query)}`);
+                const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}`);
                 const data = await response.json();
                 const customers = Array.isArray(data) ? data : (data.customers || []);
                 
@@ -2826,10 +2826,21 @@ async function saveSwNewCustomer() {
         const response = await fetch('/api/customers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, phone, address, postalCode, city, notes })
+            body: JSON.stringify({ 
+                name, 
+                email, 
+                phone, 
+                street: address,  // API verwacht 'street' niet 'address'
+                postalCode, 
+                city, 
+                notes 
+            })
         });
         
-        if (!response.ok) throw new Error('Failed to create customer');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to create customer');
+        }
         
         const newCustomer = await response.json();
         
@@ -2848,12 +2859,9 @@ async function saveSwNewCustomer() {
         // Collapse form
         toggleSwNewCustomer();
         
-        // Refresh customers cache
-        loadCustomers();
-        
     } catch (err) {
         console.error('Error creating customer:', err);
-        alert('Fout bij opslaan van klant');
+        alert(err.message || 'Fout bij opslaan van klant');
     }
 }
 
