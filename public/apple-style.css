@@ -1470,10 +1470,14 @@
     right: 0;
     bottom: 0;
     z-index: 1000;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
+}
+
+.apple-modal.active {
+    display: flex;
 }
 
 .apple-modal-backdrop {
