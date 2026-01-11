@@ -611,15 +611,20 @@ router.post('/find-slots-batch', async (req, res) => {
         const companySettings = await companyStore.getCompanySettings(userId);
         console.log('[BATCH] Company settings:', JSON.stringify(companySettings?.workingHours || 'none'));
         
-        const workingHours = companySettings?.workingHours || { 
-            start: '09:00', end: '17:00',
-            days: [1, 2, 3, 4, 5]
+        // workingHours is een object met dag-namen als keys (monday, tuesday, etc.)
+        const workingHours = companySettings?.workingHours || {
+            monday: { start: '09:00', end: '17:00', enabled: true },
+            tuesday: { start: '09:00', end: '17:00', enabled: true },
+            wednesday: { start: '09:00', end: '17:00', enabled: true },
+            thursday: { start: '09:00', end: '17:00', enabled: true },
+            friday: { start: '09:00', end: '17:00', enabled: true },
+            saturday: { start: '09:00', end: '13:00', enabled: false },
+            sunday: { start: '09:00', end: '17:00', enabled: false }
         };
-        // Zorg ervoor dat days altijd een array is
-        if (!Array.isArray(workingHours.days)) {
-            workingHours.days = [1, 2, 3, 4, 5];
-        }
         const theaterHours = companySettings?.theaterHours || { start: '09:00', end: '23:00' };
+        
+        // Map dag nummer naar dag naam
+        const dayNameMap = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         
         // Process multiple days in parallel
         const allResults = [];
@@ -629,13 +634,20 @@ router.post('/find-slots-batch', async (req, res) => {
         for (let i = 0; i < daysToSearch; i++) {
             const dateStr = currentDate.toISOString().split('T')[0];
             const dayOfWeek = currentDate.getDay();
+            const dayName = dayNameMap[dayOfWeek];
             
-            // Check if this day is a working day
-            const availableDays = isTheater && companySettings?.theaterHoursEnabled 
-                ? [0, 1, 2, 3, 4, 5, 6] 
-                : workingHours.days;
+            // Check if this day is enabled in working hours
+            const dayConfig = workingHours[dayName];
+            const isDayEnabled = isTheater && companySettings?.theaterHoursEnabled 
+                ? true  // Theater kan elke dag
+                : (dayConfig?.enabled === true);
             
-            if (availableDays.includes(dayOfWeek)) {
+            if (isDayEnabled) {
+                // Bepaal de uren voor deze dag
+                const hoursForDay = isTheater && companySettings?.theaterHoursEnabled
+                    ? theaterHours
+                    : { start: dayConfig?.start || '09:00', end: dayConfig?.end || '17:00' };
+                
                 datePromises.push(
                     findSlotsForDay(
                         userId, 
@@ -643,7 +655,7 @@ router.post('/find-slots-batch', async (req, res) => {
                         service, 
                         destination, 
                         companyAddress,
-                        isTheater ? theaterHours : workingHours,
+                        hoursForDay,
                         maxSlotsPerDay
                     ).then(result => ({ date: dateStr, ...result }))
                 );
