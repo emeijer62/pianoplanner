@@ -1908,13 +1908,14 @@ async function generateSmartSuggestions(options) {
         
         const dayAppointments = appointmentsByDate[dateStr] || [];
         
-        // Vind slots voor deze dag
-        const daySlots = findOptimalSlotsForDay({
+        // Vind slots voor deze dag (async voor reistijd berekening)
+        const daySlots = await findOptimalSlotsForDay({
             date: dateStr,
             dayHours,
             service,
             dayAppointments,
-            customerLocation
+            customerLocation,
+            originAddress: options.originAddress
         });
         
         suggestions.push(...daySlots);
@@ -1937,17 +1938,18 @@ async function generateSmartSuggestions(options) {
 
 /**
  * Vind optimale slots voor een specifieke dag
+ * Nu ASYNC om echte reistijden te kunnen berekenen via Google Maps API
  */
-function findOptimalSlotsForDay(options) {
-    const { date, dayHours, service, dayAppointments, customerLocation } = options;
+async function findOptimalSlotsForDay(options) {
+    const { date, dayHours, service, dayAppointments, customerLocation, originAddress } = options;
     const slots = [];
     const addedSlots = new Set(); // Track already added slot times to prevent duplicates
     
-    console.log(`[FIND SLOTS] Day ${date}: ${dayAppointments.length} appointments`);
+    console.log(`[FIND SLOTS] Day ${date}: ${dayAppointments.length} appointments, customerLocation: ${customerLocation || 'unknown'}`);
     dayAppointments.forEach(apt => {
         const s = new Date(apt.start);
         const e = new Date(apt.end);
-        console.log(`[FIND SLOTS]   - "${apt.title || 'Unnamed'}" ${s.toTimeString().slice(0,5)}-${e.toTimeString().slice(0,5)}`);
+        console.log(`[FIND SLOTS]   - "${apt.title || 'Unnamed'}" ${s.toTimeString().slice(0,5)}-${e.toTimeString().slice(0,5)} @ ${apt.location || 'no location'}`);
     });
     
     const [startH, startM] = dayHours.start.split(':').map(Number);
@@ -1955,7 +1957,7 @@ function findOptimalSlotsForDay(options) {
     const dayStartMinutes = startH * 60 + startM;
     const dayEndMinutes = endH * 60 + endM;
     
-    // Default reistijd (kan later via API berekend worden)
+    // Default reistijd als we geen locaties kunnen berekenen
     const defaultTravelTime = 30;
     
     // BELANGRIJK: Sorteer afspraken op starttijd!
@@ -2001,8 +2003,37 @@ function findOptimalSlotsForDay(options) {
                 continue;
             }
             
-            // Slot VOOR deze afspraak
-            const beforeSlotEnd = aptStartMinutes - defaultTravelTime;
+            // Bereken echte reistijd van afspraak locatie naar klant locatie
+            let travelTimeToCustomer = defaultTravelTime;
+            let travelTimeFromCustomer = defaultTravelTime;
+            
+            if (customerLocation && apt.location) {
+                try {
+                    const travelInfo = await calculateTravelTime(apt.location, customerLocation);
+                    if (travelInfo && travelInfo.duration) {
+                        travelTimeToCustomer = travelInfo.duration;
+                        travelTimeFromCustomer = travelInfo.duration; // Assume same for return
+                        console.log(`[FIND SLOTS] 🚗 Real travel time from "${apt.location}" to customer: ${travelTimeToCustomer} min`);
+                    }
+                } catch (travelErr) {
+                    console.log(`[FIND SLOTS] ⚠️ Could not calculate travel time: ${travelErr.message}, using default ${defaultTravelTime} min`);
+                }
+            } else if (customerLocation && originAddress) {
+                // Als afspraak geen locatie heeft, gebruik origin adres
+                try {
+                    const travelInfo = await calculateTravelTime(originAddress, customerLocation);
+                    if (travelInfo && travelInfo.duration) {
+                        travelTimeToCustomer = travelInfo.duration;
+                        travelTimeFromCustomer = travelInfo.duration;
+                        console.log(`[FIND SLOTS] 🚗 Real travel time from origin to customer: ${travelTimeToCustomer} min`);
+                    }
+                } catch (travelErr) {
+                    console.log(`[FIND SLOTS] ⚠️ Could not calculate travel time: ${travelErr.message}, using default ${defaultTravelTime} min`);
+                }
+            }
+            
+            // Slot VOOR deze afspraak - klant moet op tijd bij volgende afspraak zijn
+            const beforeSlotEnd = aptStartMinutes - travelTimeFromCustomer;
             const beforeSlotStart = beforeSlotEnd - service.duration;
             
             if (beforeSlotStart >= dayStartMinutes + defaultTravelTime) {
@@ -2019,14 +2050,15 @@ function findOptimalSlotsForDay(options) {
                         reason: apt.distanceScore < 30 
                             ? `Direct before appointment in same area`
                             : `Efficient: before another appointment`,
-                        efficiency: 'high'
+                        efficiency: 'high',
+                        travelTime: travelTimeFromCustomer
                     });
-                    console.log(`[FIND SLOTS] Added slot BEFORE: ${formatMinutesToTime(beforeSlotStart)}-${formatMinutesToTime(beforeSlotEnd)}`);
+                    console.log(`[FIND SLOTS] Added slot BEFORE: ${formatMinutesToTime(beforeSlotStart)}-${formatMinutesToTime(beforeSlotEnd)} (travel: ${travelTimeFromCustomer} min)`);
                 }
             }
             
-            // Slot NA deze afspraak
-            const afterSlotStart = aptEndMinutes + defaultTravelTime;
+            // Slot NA deze afspraak - reistijd van vorige afspraak naar nieuwe klant
+            const afterSlotStart = aptEndMinutes + travelTimeToCustomer;
             const afterSlotEnd = afterSlotStart + service.duration;
             
             if (afterSlotEnd <= dayEndMinutes) {
@@ -2043,9 +2075,10 @@ function findOptimalSlotsForDay(options) {
                         reason: apt.distanceScore < 30 
                             ? `Direct after appointment in same area`
                             : `Efficient: after another appointment`,
-                        efficiency: 'high'
+                        efficiency: 'high',
+                        travelTime: travelTimeToCustomer
                     });
-                    console.log(`[FIND SLOTS] Added slot AFTER: ${formatMinutesToTime(afterSlotStart)}-${formatMinutesToTime(afterSlotEnd)}`);
+                    console.log(`[FIND SLOTS] Added slot AFTER: ${formatMinutesToTime(afterSlotStart)}-${formatMinutesToTime(afterSlotEnd)} (travel: ${travelTimeToCustomer} min)`);
                 }
             }
         }
