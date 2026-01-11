@@ -575,6 +575,9 @@ const findAllAvailableSlots = (existingEvents, travelTime, serviceDuration, date
     
     return slots;
 };
+
+/**
+ * Bereken distance matrix tussen locaties
  * @param {string[]} locations - Array van adressen
  * @returns {Promise<number[][]>} Matrix van reistijden in minuten
  */
