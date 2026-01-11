@@ -3073,112 +3073,85 @@ function setupSwTimeSlotListeners() {
     });
 }
 
-// Find Smart Picks - searches until we find enough good slots
-async function findSwSmartPicks(serviceId) {
+// Track current search state for "more options"
+let swSearchState = {
+    serviceId: null,
+    lastSearchDate: null,
+    totalSlotsFound: 0
+};
+
+// Find Smart Picks - uses batch API for performance
+async function findSwSmartPicks(serviceId, appendMode = false) {
     const container = document.getElementById('sw-smart-picks');
     const loadingEl = document.getElementById('sw-smart-picks-loading');
     const selectedSlotCard = document.getElementById('sw-selected-slot-card');
+    const moreBtn = document.getElementById('sw-more-options-btn');
     
-    // Hide selected slot card and reset
-    selectedSlotCard.style.display = 'none';
-    swSelectedSlot = null;
-    document.getElementById('sw-create-btn').disabled = true;
+    // Reset if new search (not append mode)
+    if (!appendMode) {
+        selectedSlotCard.style.display = 'none';
+        swSelectedSlot = null;
+        document.getElementById('sw-create-btn').disabled = true;
+        container.innerHTML = '';
+        swSearchState = {
+            serviceId,
+            lastSearchDate: new Date().toISOString().split('T')[0],
+            totalSlotsFound: 0
+        };
+    }
     
     // Show loading
-    container.innerHTML = '';
     loadingEl.style.display = 'block';
-    
-    // Keep searching until we have enough good options
-    const minSlotsWanted = 8;  // Minimum slots we want to show
-    const maxDaysToSearch = 30; // Don't search more than 30 days ahead
-    const allSlots = [];
-    let currentDate = new Date();
-    let daysChecked = 0;
-    let consecutiveEmptyDays = 0;
+    loadingEl.querySelector('p').textContent = appendMode ? 'Meer opties zoeken...' : 'Beste momenten zoeken...';
+    moreBtn.style.display = 'none';
     
     try {
-        // Get piano ID for location-aware routing
         const pianoIds = swSelectedPiano ? [swSelectedPiano.id] : [];
+        const startDate = appendMode ? swSearchState.lastSearchDate : new Date().toISOString().split('T')[0];
         
-        // Keep searching until we have enough slots OR hit the limit
-        while (daysChecked < maxDaysToSearch) {
-            const dateStr = currentDate.toISOString().split('T')[0];
-            
-            try {
-                const response = await fetch('/api/booking/find-slot', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        serviceId,
-                        customerId: swSelectedCustomer.id,
-                        pianoIds,
-                        date: dateStr,
-                        maxSlots: 3,
-                        skipSlots: 0
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.available && data.slots && data.slots.length > 0) {
-                    consecutiveEmptyDays = 0; // Reset counter
-                    
-                    // Add date info to each slot
-                    data.slots.forEach((slotData, idx) => {
-                        allSlots.push({
-                            ...slotData,
-                            date: dateStr,
-                            dateObj: new Date(dateStr),
-                            travelInfo: data.travelInfo,
-                            isFirst: idx === 0 && allSlots.length === 0 // First overall slot is recommended
-                        });
-                    });
-                    
-                    // Update loading message with progress
-                    const loadingText = loadingEl.querySelector('p');
-                    if (loadingText) {
-                        loadingText.textContent = `${allSlots.length} momenten gevonden...`;
-                    }
-                    
-                    // Stop if we have enough slots
-                    if (allSlots.length >= minSlotsWanted) {
-                        break;
-                    }
-                } else {
-                    consecutiveEmptyDays++;
-                }
-            } catch (dayErr) {
-                console.log(`No slots on ${dateStr}:`, dayErr.message);
-                consecutiveEmptyDays++;
-            }
-            
-            // Move to next day
-            currentDate.setDate(currentDate.getDate() + 1);
-            daysChecked++;
-        }
+        // Use batch API - much faster!
+        const response = await fetch('/api/booking/find-slots-batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                serviceId,
+                customerId: swSelectedCustomer.id,
+                pianoIds,
+                startDate,
+                daysToSearch: 14,
+                maxSlotsPerDay: 3,
+                minTotalSlots: 8
+            })
+        });
+        
+        const data = await response.json();
         
         loadingEl.style.display = 'none';
         
-        if (allSlots.length === 0) {
-            container.innerHTML = '<p class="sw-empty-state">Geen beschikbare momenten gevonden in de komende weken. Controleer je agenda-instellingen.</p>';
+        if (!data.available || data.totalSlots === 0) {
+            if (!appendMode) {
+                container.innerHTML = '<p class="sw-empty-state">Geen beschikbare momenten gevonden in de komende weken. Controleer je agenda-instellingen.</p>';
+            }
             return;
         }
         
-        // Group slots by date
-        const slotsByDate = {};
-        allSlots.forEach(slot => {
-            if (!slotsByDate[slot.date]) {
-                slotsByDate[slot.date] = [];
-            }
-            slotsByDate[slot.date].push(slot);
-        });
+        // Update search state
+        const dates = Object.keys(data.slotsByDate).sort();
+        if (dates.length > 0) {
+            // Set next search date to day after last found date
+            const lastDate = new Date(dates[dates.length - 1]);
+            lastDate.setDate(lastDate.getDate() + 1);
+            swSearchState.lastSearchDate = lastDate.toISOString().split('T')[0];
+        }
+        swSearchState.totalSlotsFound += data.totalSlots;
         
         // Build HTML grouped by day
         const days = ['zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'];
-        let html = '';
-        let isFirstSlot = true;
+        let html = appendMode ? container.innerHTML : '';
+        let isFirstSlot = !appendMode && swSearchState.totalSlotsFound === data.totalSlots;
         
-        Object.keys(slotsByDate).forEach(dateStr => {
+        dates.forEach(dateStr => {
+            const dayData = data.slotsByDate[dateStr];
             const dateObj = new Date(dateStr + 'T12:00:00');
             const dayName = days[dateObj.getDay()];
             const dateDisplay = dateObj.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
@@ -3192,17 +3165,17 @@ async function findSwSmartPicks(serviceId) {
                     <div class="sw-day-slots">
             `;
             
-            slotsByDate[dateStr].forEach(slotData => {
+            dayData.slots.forEach(slotData => {
                 const startTime = new Date(slotData.slot.appointmentStart);
                 const timeStr = startTime.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-                const travelText = slotData.travelInfo?.durationText ? `🚗 ${slotData.travelInfo.durationText}` : '';
+                const travelText = dayData.travelInfo?.durationText ? `🚗 ${dayData.travelInfo.durationText}` : '';
                 
                 html += `
                     <div class="sw-smart-slot ${isFirstSlot ? 'recommended' : ''}" 
                          data-start="${slotData.slot.appointmentStart}" 
                          data-end="${slotData.slot.appointmentEnd}"
                          data-date="${dateStr}"
-                         data-travel="${slotData.travelInfo?.durationText || ''}">
+                         data-travel="${dayData.travelInfo?.durationText || ''}">
                         <span class="time">${timeStr}</span>
                         ${travelText ? `<span class="travel">${travelText}</span>` : ''}
                     </div>
@@ -3223,12 +3196,22 @@ async function findSwSmartPicks(serviceId) {
             slot.addEventListener('click', () => selectSwSmartSlot(slot, serviceId));
         });
         
+        // Show "more options" button
+        moreBtn.style.display = 'block';
+        
         lucide.createIcons();
         
     } catch (err) {
         console.error('Error finding smart picks:', err);
         loadingEl.style.display = 'none';
         container.innerHTML = '<p class="sw-empty-state">Fout bij zoeken naar beschikbare momenten.</p>';
+    }
+}
+
+// Load more slot options
+function loadMoreSwSlots() {
+    if (swSearchState.serviceId) {
+        findSwSmartPicks(swSearchState.serviceId, true);
     }
 }
 

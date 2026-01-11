@@ -1777,6 +1777,10 @@
                             <div id="sw-smart-picks" class="sw-smart-picks-container">
                                 <p class="sw-empty-state">Selecteer een service om de slimste momenten te zien</p>
                             </div>
+                            <!-- More options button -->
+                            <button type="button" id="sw-more-options-btn" class="sw-btn sw-btn-outline" onclick="loadMoreSwSlots()" style="display: none; width: 100%; margin-top: 16px;">
+                                <i data-lucide="plus-circle"></i> Meer opties laden
+                            </button>
                         </div>
                         
                         <!-- Hidden date input for compatibility -->
@@ -2219,6 +2223,21 @@
     
     .sw-btn-secondary:hover {
         background: #e5e7eb;
+    }
+    
+    .sw-btn-outline {
+        background: transparent;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+    
+    .sw-btn-outline:hover {
+        background: #f5f3ff;
+    }
+    
+    .sw-btn-outline:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
     
     .sw-btn-success {

@@ -552,6 +552,189 @@ router.post('/travel-time', async (req, res) => {
 });
 
 /**
+ * Batch find slots for multiple days at once
+ * POST /api/booking/find-slots-batch
+ * Much faster than calling find-slot multiple times
+ */
+router.post('/find-slots-batch', async (req, res) => {
+    try {
+        const { 
+            serviceId, customerId, pianoIds,
+            startDate, daysToSearch = 14, maxSlotsPerDay = 3, minTotalSlots = 8
+        } = req.body;
+        
+        console.log('[BATCH] Request:', { serviceId, customerId, startDate, daysToSearch });
+        
+        if (!serviceId || !startDate) {
+            return res.status(400).json({ error: 'Service en startdatum zijn verplicht' });
+        }
+        
+        const service = await serviceStore.getService(req.session.user.id, serviceId);
+        if (!service) {
+            return res.status(404).json({ error: 'Dienst niet gevonden' });
+        }
+        
+        // Get customer and piano info for travel calculation
+        const companyAddress = await companyStore.getOriginAddress(req.session.user.id);
+        let destination = companyAddress;
+        let customer = null;
+        
+        // Check piano location first
+        if (pianoIds && pianoIds.length > 0) {
+            const piano = await pianoStore.getPiano(req.session.user.id, pianoIds[0]);
+            if (piano?.location?.trim()) {
+                destination = piano.location.trim();
+            }
+        }
+        
+        // Then customer address
+        if (customerId) {
+            customer = await customerStore.getCustomer(req.session.user.id, customerId);
+            if (!destination || destination === companyAddress) {
+                if (customer?.address?.city) {
+                    destination = `${customer.address.street}, ${customer.address.city}`;
+                }
+            }
+        }
+        
+        const isTheater = customer?.use_theater_availability === 1;
+        
+        // Get company settings for availability
+        const companySettings = await companyStore.getCompanySettings(req.session.user.id);
+        const workingHours = companySettings?.workingHours || { 
+            start: '09:00', end: '17:00',
+            days: [1, 2, 3, 4, 5]
+        };
+        const theaterHours = companySettings?.theaterHours || { start: '09:00', end: '23:00' };
+        
+        // Process multiple days in parallel
+        const allResults = [];
+        const datePromises = [];
+        
+        let currentDate = new Date(startDate);
+        for (let i = 0; i < daysToSearch; i++) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const dayOfWeek = currentDate.getDay();
+            
+            // Check if this day is a working day
+            const availableDays = isTheater && companySettings?.theaterHoursEnabled 
+                ? [0, 1, 2, 3, 4, 5, 6] 
+                : workingHours.days;
+            
+            if (availableDays.includes(dayOfWeek)) {
+                datePromises.push(
+                    findSlotsForDay(
+                        req.session.user.id, 
+                        dateStr, 
+                        service, 
+                        destination, 
+                        companyAddress,
+                        isTheater ? theaterHours : workingHours,
+                        maxSlotsPerDay
+                    ).then(result => ({ date: dateStr, ...result }))
+                );
+            }
+            
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        // Wait for all days to complete
+        const dayResults = await Promise.all(datePromises);
+        
+        // Flatten and collect all slots
+        let totalSlots = 0;
+        const slotsByDate = {};
+        
+        for (const result of dayResults) {
+            if (result.slots && result.slots.length > 0) {
+                slotsByDate[result.date] = {
+                    slots: result.slots,
+                    travelInfo: result.travelInfo
+                };
+                totalSlots += result.slots.length;
+            }
+        }
+        
+        console.log(`[BATCH] Found ${totalSlots} slots across ${Object.keys(slotsByDate).length} days`);
+        
+        res.json({
+            available: totalSlots > 0,
+            totalSlots,
+            slotsByDate,
+            service: { id: service.id, name: service.name, duration: service.duration }
+        });
+        
+    } catch (error) {
+        console.error('[BATCH] Error:', error);
+        res.status(500).json({ error: 'Fout bij zoeken naar beschikbare tijden' });
+    }
+});
+
+// Helper function for batch processing
+async function findSlotsForDay(userId, dateStr, service, destination, companyAddress, hours, maxSlots) {
+    try {
+        const appointmentStore = require('../utils/appointmentStore');
+        
+        // Get existing appointments for this day
+        const existingAppointments = await appointmentStore.getAppointmentsForDay(userId, dateStr);
+        
+        // Calculate available slots
+        const slots = [];
+        const slotDuration = service.duration + (service.bufferBefore || 0) + (service.bufferAfter || 0);
+        
+        const dayStart = new Date(`${dateStr}T${hours.start}:00`);
+        const dayEnd = new Date(`${dateStr}T${hours.end}:00`);
+        
+        let currentTime = new Date(dayStart);
+        
+        while (currentTime < dayEnd && slots.length < maxSlots) {
+            const slotEnd = new Date(currentTime.getTime() + slotDuration * 60000);
+            
+            if (slotEnd <= dayEnd) {
+                // Check for conflicts
+                const hasConflict = existingAppointments.some(apt => {
+                    const aptStart = new Date(apt.start);
+                    const aptEnd = new Date(apt.end);
+                    return currentTime < aptEnd && slotEnd > aptStart;
+                });
+                
+                if (!hasConflict) {
+                    const appointmentStart = new Date(currentTime.getTime() + (service.bufferBefore || 0) * 60000);
+                    const appointmentEnd = new Date(appointmentStart.getTime() + service.duration * 60000);
+                    
+                    slots.push({
+                        slot: {
+                            start: currentTime.toISOString(),
+                            end: slotEnd.toISOString(),
+                            appointmentStart: appointmentStart.toISOString(),
+                            appointmentEnd: appointmentEnd.toISOString()
+                        }
+                    });
+                }
+            }
+            
+            // Move to next slot (30 min increments)
+            currentTime = new Date(currentTime.getTime() + 30 * 60000);
+        }
+        
+        // Calculate travel info if we have slots
+        let travelInfo = null;
+        if (slots.length > 0 && destination !== companyAddress) {
+            try {
+                travelInfo = await calculateTravelTime(companyAddress, destination);
+            } catch (e) {
+                // Travel time calculation failed, continue without it
+            }
+        }
+        
+        return { slots, travelInfo };
+    } catch (error) {
+        console.error(`[BATCH] Error for ${dateStr}:`, error);
+        return { slots: [], travelInfo: null };
+    }
+}
+
+/**
  * Vind eerste beschikbare tijdslot
  * POST /api/booking/find-slot
  * Supports multi-piano appointments with combined duration
