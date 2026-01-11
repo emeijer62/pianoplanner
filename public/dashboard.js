@@ -1524,6 +1524,7 @@ function onServiceChange() {
 }
 
 // Show/hide smart appointment section based on customer and service selection
+// Bij bewerken: Smart Pick is optioneel, datum/tijd altijd zichtbaar
 function updateSmartAppointmentVisibility() {
     const customerId = document.getElementById('event-customer').value;
     const serviceId = document.getElementById('event-service').value;
@@ -1532,17 +1533,36 @@ function updateSmartAppointmentVisibility() {
     const datetimeRow = document.getElementById('datetime-row');
     
     if (smartSection) {
+        // Bij bewerken van bestaande afspraak: Smart Pick alleen tonen als optie
+        // Datum/tijd blijft altijd zichtbaar
+        const isEditing = editingAppointmentId !== null;
+        
         if (customerId && serviceId) {
             smartSection.style.display = 'block';
-            // Hide manual datetime when smart is active
-            if (datetimeRow) datetimeRow.style.display = 'none';
-            // Set default date to tomorrow
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            document.getElementById('smart-date').value = tomorrow.toISOString().split('T')[0];
+            
+            // Bij bewerken: datum/tijd ALTIJD zichtbaar, Smart Pick is optioneel hulpmiddel
+            // Bij nieuw: datum/tijd ook zichtbaar (gebruiker kan kiezen)
+            if (datetimeRow) datetimeRow.style.display = '';
+            
+            // Set default date
+            const smartDateInput = document.getElementById('smart-date');
+            if (smartDateInput && !smartDateInput.value) {
+                // Bij bewerken: neem datum van huidige afspraak
+                // Bij nieuw: morgen
+                if (isEditing) {
+                    const startInput = document.getElementById('event-start');
+                    if (startInput?.value) {
+                        smartDateInput.value = startInput.value.split('T')[0];
+                    }
+                } else {
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    smartDateInput.value = tomorrow.toISOString().split('T')[0];
+                }
+            }
         } else {
             smartSection.style.display = 'none';
-            // Show manual datetime when smart is not active
+            // Datum/tijd altijd zichtbaar
             if (datetimeRow) datetimeRow.style.display = '';
         }
         // Reset result

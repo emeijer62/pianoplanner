@@ -1236,6 +1236,47 @@
                 <button class="modal-close" onclick="closeModal(true)">&times;</button>
             </div>
             <form id="event-form">
+                <!-- SECTION 1: Basis info - Titel en Tijd -->
+                <div class="form-group">
+                    <label for="event-title">Title *</label>
+                    <input type="text" id="event-title" required placeholder="e.g. Tune Steinway">
+                </div>
+                
+                <div class="form-row" id="datetime-row">
+                    <div class="form-group">
+                        <label for="event-start">Start *</label>
+                        <input type="datetime-local" id="event-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-end">End *</label>
+                        <input type="datetime-local" id="event-end" required>
+                    </div>
+                </div>
+                
+                <!-- SECTION 2: Smart Pick - alleen voor nieuwe afspraken of bij wijzigen tijd -->
+                <div id="smart-appointment-section" class="form-group" style="display: none; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 12px; border-radius: 10px; border: 1px solid #f59e0b33;">
+                    <label style="margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="sparkles" style="width:16px;height:16px;color:#f59e0b;"></i>
+                        <span style="font-weight: 600; color: #92400e;">Smart Pick</span>
+                        <span style="font-size: 11px; color: #a16207; font-weight: normal;">— find optimal time</span>
+                    </label>
+                    <div style="display: flex; gap: 10px; align-items: flex-end;">
+                        <div style="flex: 1;">
+                            <input type="date" id="smart-date" style="width: 100%;">
+                        </div>
+                        <button type="button" id="find-smart-slot-btn" class="btn btn-primary" onclick="findSmartSlot()" style="white-space: nowrap; background: #f59e0b; border-color: #d97706;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                            </svg>
+                            Find time
+                        </button>
+                    </div>
+                    <div id="smart-result" style="margin-top: 10px; display: none;"></div>
+                </div>
+                
+                <hr style="border: none; border-top: 1px solid var(--gray-200); margin: 16px 0;">
+                
+                <!-- SECTION 3: Klant en Piano -->
                 <div class="form-group">
                     <label for="event-customer-search" data-i18n="dashboard.customer">Customer</label>
                     <div style="display: flex; gap: 0.5rem;">
@@ -1304,47 +1345,12 @@
                         <option value="">-- Select service --</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="event-title">Title *</label>
-                    <input type="text" id="event-title" required placeholder="e.g. Tune Steinway">
-                </div>
+                
+                <!-- SECTION 4: Locatie en Notes -->
                 <div class="form-group" style="position: relative;">
                     <label for="event-location">Location</label>
                     <input type="text" id="event-location" placeholder="Address" autocomplete="off">
                     <div id="location-suggestions" class="autocomplete-suggestions" style="display: none;"></div>
-                </div>
-                
-                <!-- Smart Appointment Section -->
-                <div id="smart-appointment-section" class="form-group" style="display: none;">
-                    <label><i data-lucide="sparkles" style="width:14px;height:14px;display:inline-block;vertical-align:middle;color:#f59e0b;"></i> Smart Pick</label>
-                    <div style="display: flex; gap: 10px; align-items: flex-end;">
-                        <div style="flex: 1;">
-                            <input type="date" id="smart-date" style="width: 100%;">
-                        </div>
-                        <button type="button" id="find-smart-slot-btn" class="btn btn-primary" onclick="findSmartSlot()" style="white-space: nowrap;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                                <path d="M2 17l10 5 10-5"/>
-                                <path d="M2 12l10 5 10-5"/>
-                            </svg>
-                            Find best time
-                        </button>
-                    </div>
-                    <div style="font-size: 11px; color: var(--gray-500); margin-top: 6px;">
-                        Pick a date, AI finds the optimal time slot
-                    </div>
-                    <div id="smart-result" style="margin-top: 10px; display: none;"></div>
-                </div>
-                
-                <div class="form-row" id="datetime-row">
-                    <div class="form-group">
-                        <label for="event-start">Start *</label>
-                        <input type="datetime-local" id="event-start" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="event-end">End *</label>
-                        <input type="datetime-local" id="event-end" required>
-                    </div>
                 </div>
                 <div class="form-group">
                     <label for="event-description">Notes</label>
