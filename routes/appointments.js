@@ -14,6 +14,7 @@ const userStore = require('../utils/userStore');
 const { checkAppointmentLimit, addSubscriptionInfo } = require('../middleware/subscription');
 const { XMLParser } = require('fast-xml-parser');
 const xmlParser = new XMLParser({ ignoreAttributes: false });
+const { pushAppointmentToCalendars } = require('../utils/backgroundSync');
 
 // Alle routes vereisen authenticatie
 router.use(requireAuth);
@@ -550,6 +551,28 @@ router.post('/', checkAppointmentLimit, async (req, res) => {
         // Stuur response DIRECT terug
         res.status(201).json(appointment);
         
+        // 🔄 REAL-TIME SYNC: Push naar externe calendars (async, non-blocking)
+        setImmediate(async () => {
+            try {
+                const syncResult = await pushAppointmentToCalendars(userId, {
+                    ...appointment,
+                    customerName,
+                    description,
+                    location
+                }, 'create');
+                
+                // Als Google een eventId heeft teruggestuurd, sla deze op
+                if (syncResult.google?.eventId) {
+                    await appointmentStore.updateAppointment(userId, appointment.id, {
+                        googleEventId: syncResult.google.eventId,
+                        lastSynced: new Date().toISOString()
+                    });
+                }
+            } catch (syncErr) {
+                console.error('❌ Real-time sync error:', syncErr.message);
+            }
+        });
+        
         // Send confirmation email ASYNC als vinkje is gezet
         if (emailService.isEmailConfigured() && customerId && sendConfirmation) {
             const emailContext = {
@@ -648,6 +671,15 @@ router.put('/:id', async (req, res) => {
         
         console.log(`📅 Afspraak bijgewerkt: ${updated.title}`);
         res.json(updated);
+        
+        // 🔄 REAL-TIME SYNC: Push update naar externe calendars (async, non-blocking)
+        setImmediate(async () => {
+            try {
+                await pushAppointmentToCalendars(userId, updated, 'update');
+            } catch (syncErr) {
+                console.error('❌ Real-time sync update error:', syncErr.message);
+            }
+        });
     } catch (error) {
         console.error('Error updating appointment:', error);
         res.status(500).json({ error: 'Kon afspraak niet bijwerken' });

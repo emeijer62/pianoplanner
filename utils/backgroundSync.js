@@ -545,9 +545,315 @@ const startBackgroundSync = () => {
     }, SYNC_INTERVAL);
 };
 
+// ==================== REAL-TIME SYNC ====================
+/**
+ * Push een enkele afspraak DIRECT naar externe calendars
+ * Wordt aangeroepen bij CREATE/UPDATE/DELETE van appointments
+ * @param {string} userId - De user ID
+ * @param {object} appointment - De afspraak data
+ * @param {string} action - 'create', 'update', of 'delete'
+ * @returns {Promise<object>} - Resultaat met googleEventId etc.
+ */
+const pushAppointmentToCalendars = async (userId, appointment, action = 'create') => {
+    const results = {
+        google: null,
+        apple: null,
+        microsoft: null,
+        errors: []
+    };
+    
+    try {
+        // Haal user op met tokens en sync settings
+        const user = await userStore.getUser(userId, { includeTokens: true });
+        if (!user) {
+            console.log(`⚠️ [PUSH SYNC] User ${userId} niet gevonden`);
+            return results;
+        }
+        
+        // Google Calendar sync
+        const syncSettings = await userStore.getCalendarSync(userId);
+        if (syncSettings?.enabled && user.tokens?.refresh_token) {
+            try {
+                const googleResult = await pushToGoogleCalendar(user, syncSettings, appointment, action);
+                results.google = googleResult;
+                console.log(`✅ [PUSH SYNC] Google: ${action} "${appointment.title}" - eventId: ${googleResult?.eventId || 'N/A'}`);
+            } catch (err) {
+                results.errors.push({ platform: 'google', error: err.message });
+                console.error(`❌ [PUSH SYNC] Google error:`, err.message);
+            }
+        }
+        
+        // Apple Calendar sync (CalDAV)
+        const appleCalSettings = await userStore.getAppleCalendarSettings(userId);
+        if (appleCalSettings?.enabled && appleCalSettings?.appleId && appleCalSettings?.appPassword) {
+            try {
+                const appleResult = await pushToAppleCalendar(appleCalSettings, appointment, action);
+                results.apple = appleResult;
+                console.log(`✅ [PUSH SYNC] Apple: ${action} "${appointment.title}"`);
+            } catch (err) {
+                results.errors.push({ platform: 'apple', error: err.message });
+                console.error(`❌ [PUSH SYNC] Apple error:`, err.message);
+            }
+        }
+        
+        // Microsoft Calendar sync
+        const microsoftSettings = await userStore.getMicrosoftCalendarSettings?.(userId);
+        if (microsoftSettings?.enabled && microsoftSettings?.accessToken) {
+            try {
+                const msResult = await pushToMicrosoftCalendar(microsoftSettings, appointment, action);
+                results.microsoft = msResult;
+                console.log(`✅ [PUSH SYNC] Microsoft: ${action} "${appointment.title}"`);
+            } catch (err) {
+                results.errors.push({ platform: 'microsoft', error: err.message });
+                console.error(`❌ [PUSH SYNC] Microsoft error:`, err.message);
+            }
+        }
+        
+    } catch (err) {
+        console.error(`❌ [PUSH SYNC] General error:`, err);
+        results.errors.push({ platform: 'general', error: err.message });
+    }
+    
+    return results;
+};
+
+/**
+ * Push naar Google Calendar
+ */
+const pushToGoogleCalendar = async (user, syncSettings, appointment, action) => {
+    const auth = createAuthClient(user.tokens);
+    const calendar = google.calendar({ version: 'v3', auth });
+    const calendarId = syncSettings.googleCalendarId || 'primary';
+    
+    // Valideer datums
+    const startDateTime = formatDateTimeForGoogle(appointment.start || appointment.startTime);
+    const endDateTime = formatDateTimeForGoogle(appointment.end || appointment.endTime);
+    
+    if (!startDateTime || !endDateTime) {
+        throw new Error('Ongeldige start of eind datum');
+    }
+    
+    const event = {
+        summary: appointment.title || appointment.serviceName || 'PianoPlanner Afspraak',
+        description: `Klant: ${appointment.customerName || 'Onbekend'}\n${appointment.description || appointment.notes || ''}`,
+        start: {
+            dateTime: startDateTime,
+            timeZone: 'Europe/Amsterdam'
+        },
+        end: {
+            dateTime: endDateTime,
+            timeZone: 'Europe/Amsterdam'
+        },
+        location: appointment.location || appointment.address || ''
+    };
+    
+    if (action === 'create') {
+        const response = await calendar.events.insert({
+            calendarId: calendarId,
+            resource: event
+        });
+        return { eventId: response.data.id, action: 'created' };
+        
+    } else if (action === 'update' && appointment.googleEventId) {
+        const response = await calendar.events.update({
+            calendarId: calendarId,
+            eventId: appointment.googleEventId,
+            resource: event
+        });
+        return { eventId: response.data.id, action: 'updated' };
+        
+    } else if (action === 'delete' && appointment.googleEventId) {
+        await calendar.events.delete({
+            calendarId: calendarId,
+            eventId: appointment.googleEventId
+        });
+        return { eventId: appointment.googleEventId, action: 'deleted' };
+    }
+    
+    return null;
+};
+
+/**
+ * Push naar Apple Calendar (CalDAV)
+ */
+const pushToAppleCalendar = async (settings, appointment, action) => {
+    const https = require('https');
+    
+    // Genereer unieke UID voor het event
+    const eventUid = appointment.appleEventId || `pianoplanner-${appointment.id}@pianoplanner.nl`;
+    
+    // Valideer datums
+    const startDate = new Date(appointment.start || appointment.startTime);
+    const endDate = new Date(appointment.end || appointment.endTime);
+    
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new Error('Ongeldige start of eind datum');
+    }
+    
+    // Format voor iCalendar (YYYYMMDDTHHMMSSZ)
+    const formatICalDate = (date) => {
+        return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    };
+    
+    // Bouw iCalendar event
+    const icalEvent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//PianoPlanner//EN',
+        'BEGIN:VEVENT',
+        `UID:${eventUid}`,
+        `DTSTAMP:${formatICalDate(new Date())}`,
+        `DTSTART:${formatICalDate(startDate)}`,
+        `DTEND:${formatICalDate(endDate)}`,
+        `SUMMARY:${(appointment.title || 'PianoPlanner Afspraak').replace(/[,;\\]/g, ' ')}`,
+        appointment.location ? `LOCATION:${appointment.location.replace(/[,;\\]/g, ' ')}` : '',
+        appointment.description ? `DESCRIPTION:${appointment.description.replace(/[,;\\]/g, ' ').replace(/\n/g, '\\n')}` : '',
+        'END:VEVENT',
+        'END:VCALENDAR'
+    ].filter(Boolean).join('\r\n');
+    
+    // CalDAV URL
+    const calendarUrl = settings.calendarUrl || 
+        `https://caldav.icloud.com/${settings.appleId}/calendars/${settings.selectedCalendar || 'home'}/`;
+    const eventUrl = `${calendarUrl}${eventUid}.ics`;
+    
+    const authHeader = Buffer.from(`${settings.appleId}:${settings.appPassword}`).toString('base64');
+    
+    return new Promise((resolve, reject) => {
+        const url = new URL(eventUrl);
+        
+        const options = {
+            hostname: url.hostname,
+            port: 443,
+            path: url.pathname,
+            method: action === 'delete' ? 'DELETE' : 'PUT',
+            headers: {
+                'Authorization': `Basic ${authHeader}`,
+                'Content-Type': 'text/calendar; charset=utf-8',
+                'Content-Length': Buffer.byteLength(icalEvent)
+            }
+        };
+        
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                    resolve({ eventId: eventUid, action: action === 'delete' ? 'deleted' : 'synced' });
+                } else {
+                    reject(new Error(`CalDAV error: ${res.statusCode} - ${data}`));
+                }
+            });
+        });
+        
+        req.on('error', reject);
+        
+        if (action !== 'delete') {
+            req.write(icalEvent);
+        }
+        req.end();
+    });
+};
+
+/**
+ * Push naar Microsoft Calendar (Graph API)
+ */
+const pushToMicrosoftCalendar = async (settings, appointment, action) => {
+    const https = require('https');
+    
+    // Valideer datums
+    const startDate = new Date(appointment.start || appointment.startTime);
+    const endDate = new Date(appointment.end || appointment.endTime);
+    
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new Error('Ongeldige start of eind datum');
+    }
+    
+    const calendarId = settings.selectedCalendar || 'me/calendar';
+    
+    const event = {
+        subject: appointment.title || 'PianoPlanner Afspraak',
+        body: {
+            contentType: 'Text',
+            content: `Klant: ${appointment.customerName || 'Onbekend'}\n${appointment.description || ''}`
+        },
+        start: {
+            dateTime: startDate.toISOString(),
+            timeZone: 'Europe/Amsterdam'
+        },
+        end: {
+            dateTime: endDate.toISOString(),
+            timeZone: 'Europe/Amsterdam'
+        },
+        location: {
+            displayName: appointment.location || ''
+        }
+    };
+    
+    return new Promise((resolve, reject) => {
+        let path, method;
+        
+        if (action === 'create') {
+            path = `/v1.0/${calendarId}/events`;
+            method = 'POST';
+        } else if (action === 'update' && appointment.microsoftEventId) {
+            path = `/v1.0/me/events/${appointment.microsoftEventId}`;
+            method = 'PATCH';
+        } else if (action === 'delete' && appointment.microsoftEventId) {
+            path = `/v1.0/me/events/${appointment.microsoftEventId}`;
+            method = 'DELETE';
+        } else {
+            return resolve(null);
+        }
+        
+        const postData = action === 'delete' ? '' : JSON.stringify(event);
+        
+        const options = {
+            hostname: 'graph.microsoft.com',
+            port: 443,
+            path: path,
+            method: method,
+            headers: {
+                'Authorization': `Bearer ${settings.accessToken}`,
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(postData)
+            }
+        };
+        
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                if (res.statusCode >= 200 && res.statusCode < 300) {
+                    try {
+                        const result = data ? JSON.parse(data) : {};
+                        resolve({ eventId: result.id || appointment.microsoftEventId, action });
+                    } catch {
+                        resolve({ action });
+                    }
+                } else {
+                    reject(new Error(`Microsoft Graph error: ${res.statusCode} - ${data}`));
+                }
+            });
+        });
+        
+        req.on('error', reject);
+        
+        if (action !== 'delete') {
+            req.write(postData);
+        }
+        req.end();
+    });
+};
+
 module.exports = {
     startBackgroundSync,
     runBackgroundSync,
     syncUserCalendar,
-    syncUserAppleCalendar
+    syncUserAppleCalendar,
+    // Real-time sync exports
+    pushAppointmentToCalendars,
+    pushToGoogleCalendar,
+    pushToAppleCalendar,
+    pushToMicrosoftCalendar
 };

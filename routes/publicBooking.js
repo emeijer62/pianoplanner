@@ -17,6 +17,7 @@ const { getDb } = require('../utils/database');
 const { XMLParser } = require('fast-xml-parser');
 const { google } = require('googleapis');
 const xmlParser = new XMLParser({ ignoreAttributes: false });
+const { pushAppointmentToCalendars } = require('../utils/backgroundSync');
 
 // ==================== EXTERNAL CALENDAR HELPERS ====================
 
@@ -499,6 +500,27 @@ router.post('/customer/:token/appointment', async (req, res) => {
         };
         
         const appointment = await appointmentStore.createAppointment(data.owner.id, appointmentData);
+        
+        // 🔄 REAL-TIME SYNC: Push naar externe calendars (async, non-blocking)
+        setImmediate(async () => {
+            try {
+                const syncResult = await pushAppointmentToCalendars(data.owner.id, {
+                    ...appointment,
+                    customerName: data.customer.name,
+                    location: appointmentData.address
+                }, 'create');
+                
+                if (syncResult.google?.eventId) {
+                    await appointmentStore.updateAppointment(data.owner.id, appointment.id, {
+                        googleEventId: syncResult.google.eventId,
+                        lastSynced: new Date().toISOString()
+                    });
+                }
+                console.log(`🔄 Customer booking synced to calendars for ${data.owner.email}`);
+            } catch (syncErr) {
+                console.error('❌ Customer booking sync error:', syncErr.message);
+            }
+        });
         
         // Stuur bevestigingsmail
         try {
@@ -1472,6 +1494,27 @@ router.post('/:slug', async (req, res) => {
             travelDistanceKm: travelInfo?.distance || null,
             travelStartTime: travelStartTime,
             originAddress: originAddress || null
+        });
+        
+        // 🔄 REAL-TIME SYNC: Push naar externe calendars (async, non-blocking)
+        setImmediate(async () => {
+            try {
+                const syncResult = await pushAppointmentToCalendars(user.id, {
+                    ...appointment,
+                    customerName: customer.name,
+                    location: customerAddress || customer.city
+                }, 'create');
+                
+                if (syncResult.google?.eventId) {
+                    await appointmentStore.updateAppointment(user.id, appointment.id, {
+                        googleEventId: syncResult.google.eventId,
+                        lastSynced: new Date().toISOString()
+                    });
+                }
+                console.log(`🔄 Public booking synced to calendars for ${user.email}`);
+            } catch (syncErr) {
+                console.error('❌ Public booking sync error:', syncErr.message);
+            }
         });
         
         // Stuur response DIRECT terug - emails worden async verstuurd
