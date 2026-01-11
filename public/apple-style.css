@@ -1464,11 +1464,91 @@
    Apple Modal - Clean Form Design
    ========================================== */
 .apple-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.apple-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.apple-modal-content {
+    position: relative;
+    z-index: 1;
     max-width: 520px;
-    width: 95%;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
     border-radius: 20px;
     background: #ffffff;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlideIn 0.25s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.apple-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f5;
+    background: #fafafa;
+    border-radius: 20px 20px 0 0;
+}
+
+.apple-modal-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin: 0;
+}
+
+.apple-modal-close {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e5e5ea;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #86868b;
+    transition: all 0.2s ease;
+}
+
+.apple-modal-close:hover {
+    background: #d1d1d6;
+    color: #1d1d1f;
+}
+
+.apple-modal-body {
+    padding: 20px;
 }
 
 .apple-modal .modal-header {

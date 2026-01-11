@@ -177,7 +177,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     // Event listeners
-    document.getElementById('add-event-btn').addEventListener('click', openModal);
+    const addEventBtn = document.getElementById('add-event-btn');
+    if (addEventBtn) addEventBtn.addEventListener('click', openModal);
     document.getElementById('event-form').addEventListener('submit', handleEventSubmit);
 });
 
