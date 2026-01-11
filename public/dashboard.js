@@ -3073,7 +3073,7 @@ function setupSwTimeSlotListeners() {
     });
 }
 
-// Find Smart Picks - searches multiple days automatically
+// Find Smart Picks - searches until we find enough good slots
 async function findSwSmartPicks(serviceId) {
     const container = document.getElementById('sw-smart-picks');
     const loadingEl = document.getElementById('sw-smart-picks-loading');
@@ -3088,17 +3088,20 @@ async function findSwSmartPicks(serviceId) {
     container.innerHTML = '';
     loadingEl.style.display = 'block';
     
-    // Search the next 10 workdays
-    const daysToSearch = 10;
+    // Keep searching until we have enough good options
+    const minSlotsWanted = 8;  // Minimum slots we want to show
+    const maxDaysToSearch = 30; // Don't search more than 30 days ahead
     const allSlots = [];
     let currentDate = new Date();
     let daysChecked = 0;
+    let consecutiveEmptyDays = 0;
     
     try {
         // Get piano ID for location-aware routing
         const pianoIds = swSelectedPiano ? [swSelectedPiano.id] : [];
         
-        while (allSlots.length < 12 && daysChecked < 21) {
+        // Keep searching until we have enough slots OR hit the limit
+        while (daysChecked < maxDaysToSearch) {
             const dateStr = currentDate.toISOString().split('T')[0];
             
             try {
@@ -3118,6 +3121,8 @@ async function findSwSmartPicks(serviceId) {
                 const data = await response.json();
                 
                 if (data.available && data.slots && data.slots.length > 0) {
+                    consecutiveEmptyDays = 0; // Reset counter
+                    
                     // Add date info to each slot
                     data.slots.forEach((slotData, idx) => {
                         allSlots.push({
@@ -3128,9 +3133,23 @@ async function findSwSmartPicks(serviceId) {
                             isFirst: idx === 0 && allSlots.length === 0 // First overall slot is recommended
                         });
                     });
+                    
+                    // Update loading message with progress
+                    const loadingText = loadingEl.querySelector('p');
+                    if (loadingText) {
+                        loadingText.textContent = `${allSlots.length} momenten gevonden...`;
+                    }
+                    
+                    // Stop if we have enough slots
+                    if (allSlots.length >= minSlotsWanted) {
+                        break;
+                    }
+                } else {
+                    consecutiveEmptyDays++;
                 }
             } catch (dayErr) {
                 console.log(`No slots on ${dateStr}:`, dayErr.message);
+                consecutiveEmptyDays++;
             }
             
             // Move to next day
