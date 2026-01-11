@@ -2521,22 +2521,17 @@ function closeSmartPickModal() {
     document.getElementById('smart-customer-results').style.display = 'none';
 }
 
-async function populateSmartPickServices() {
+function populateSmartPickServices() {
     const serviceSelect = document.getElementById('smart-service-select');
     serviceSelect.innerHTML = '<option value="">-- Select service --</option>';
     
-    try {
-        const response = await fetch('/api/services');
-        const services = await response.json();
-        services.forEach(service => {
-            const option = document.createElement('option');
-            option.value = service.id;
-            option.textContent = `${service.name} (${service.duration} min)`;
-            serviceSelect.appendChild(option);
-        });
-    } catch (err) {
-        console.error('Error loading services:', err);
-    }
+    // Use the existing servicesCache instead of fetching again
+    servicesCache.forEach(service => {
+        const option = document.createElement('option');
+        option.value = service.id;
+        option.textContent = `${service.name} (${service.duration} min)`;
+        serviceSelect.appendChild(option);
+    });
 }
 
 function setupSmartPickCustomerSearch() {
