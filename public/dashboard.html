@@ -1520,10 +1520,15 @@
                 <div style="display: flex; flex-direction: column; gap: 20px;">
                     <div class="apple-form-field">
                         <label class="apple-form-label" for="smart-customer-search" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Klant</label>
-                        <div style="position: relative;">
-                            <input type="text" id="smart-customer-search" class="apple-form-input" placeholder="Zoek klant..." autocomplete="off" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
-                            <input type="hidden" id="smart-customer-id">
-                            <div id="smart-customer-results" class="autocomplete-suggestions apple-autocomplete" style="display: none;"></div>
+                        <div style="display: flex; gap: 10px;">
+                            <div style="position: relative; flex: 1;">
+                                <input type="text" id="smart-customer-search" class="apple-form-input" placeholder="Zoek klant..." autocomplete="off" style="padding: 14px 16px; font-size: 16px; border-radius: 12px; width: 100%;">
+                                <input type="hidden" id="smart-customer-id">
+                                <div id="smart-customer-results" class="smart-pick-autocomplete" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e5e5ea; border-radius: 12px; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 200px; overflow-y: auto;"></div>
+                            </div>
+                            <button type="button" onclick="openNewCustomerFromSmartPick()" style="width: 52px; height: 52px; border-radius: 12px; background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; color: #16a34a; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" title="Nieuwe klant">
+                                <i data-lucide="user-plus" style="width: 22px; height: 22px;"></i>
+                            </button>
                         </div>
                     </div>
                     

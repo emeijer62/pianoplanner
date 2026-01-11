@@ -2566,14 +2566,28 @@ function setupSmartPickCustomerSearch() {
                 }
                 
                 resultsDiv.innerHTML = customers.slice(0, 8).map(customer => {
-                    const safeName = escapeHtml(customer.name).replace(/'/g, "\\'");
                     return `
-                    <div class="autocomplete-item" onclick="selectSmartPickCustomer(${customer.id}, '${safeName}')">
-                        <strong>${escapeHtml(customer.name)}</strong>
-                        ${customer.city ? `<span style="color: var(--gray-500); margin-left: 8px;">${escapeHtml(customer.city)}</span>` : ''}
+                    <div class="smart-pick-customer-item" data-id="${customer.id}" data-name="${escapeHtml(customer.name)}" style="padding: 14px 16px; cursor: pointer; border-bottom: 1px solid #f0f0f5; transition: background 0.15s ease;">
+                        <div style="font-weight: 500; color: #1d1d1f;">${escapeHtml(customer.name)}</div>
+                        ${customer.city ? `<div style="font-size: 13px; color: #86868b; margin-top: 2px;">${escapeHtml(customer.city)}</div>` : ''}
                     </div>
                 `;
                 }).join('');
+                
+                // Add click handlers
+                resultsDiv.querySelectorAll('.smart-pick-customer-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        const name = this.dataset.name;
+                        selectSmartPickCustomer(id, name);
+                    });
+                    item.addEventListener('mouseenter', function() {
+                        this.style.background = '#f5f5f7';
+                    });
+                    item.addEventListener('mouseleave', function() {
+                        this.style.background = 'white';
+                    });
+                });
                 resultsDiv.style.display = 'block';
             } catch (err) {
                 console.error('Search error:', err);
@@ -2593,6 +2607,24 @@ function selectSmartPickCustomer(id, name) {
     document.getElementById('smart-customer-search').value = name;
     document.getElementById('smart-customer-id').value = id;
     document.getElementById('smart-customer-results').style.display = 'none';
+}
+
+function openNewCustomerFromSmartPick() {
+    // Close Smart Pick modal
+    closeSmartPickModal();
+    
+    // Open main appointment modal in wizard mode
+    openModal();
+    
+    // Show the new customer form
+    setTimeout(() => {
+        const newCustomerForm = document.getElementById('new-customer-form');
+        if (newCustomerForm) {
+            newCustomerForm.style.display = 'block';
+            const nameInput = document.getElementById('new-customer-name');
+            if (nameInput) nameInput.focus();
+        }
+    }, 100);
 }
 
 async function findSmartSlotFromModal() {
