@@ -12,9 +12,257 @@ const { getDb, dbGet, dbRun, dbAll } = require('../utils/database');
 const { google } = require('googleapis');
 const userStore = require('../utils/userStore');
 const { checkAppointmentLimit, addSubscriptionInfo } = require('../middleware/subscription');
+const { XMLParser } = require('fast-xml-parser');
+const xmlParser = new XMLParser({ ignoreAttributes: false });
 
 // Alle routes vereisen authenticatie
 router.use(requireAuth);
+
+// ==================== CONFLICT CHECK HELPERS ====================
+
+/**
+ * Check of een tijdslot conflicteert met bestaande afspraken/events
+ * @param {Object} req - Express request object
+ * @param {string} startTime - Start tijd ISO string
+ * @param {string} endTime - Eind tijd ISO string
+ * @param {string} excludeId - ID van afspraak om uit te sluiten (bij updates)
+ * Returns: { hasConflict: boolean, conflictWith?: string }
+ */
+async function checkForConflicts(req, startTime, endTime, excludeId = null) {
+    const userId = req.session.user.id;
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    
+    // 1. Check interne database afspraken
+    const date = start.toISOString().split('T')[0];
+    const internalAppointments = await appointmentStore.getAppointmentsForDay(userId, date);
+    
+    for (const apt of internalAppointments) {
+        // Skip de afspraak die we aan het updaten zijn
+        if (excludeId && apt.id === excludeId) continue;
+        
+        const aptStart = new Date(apt.start);
+        const aptEnd = new Date(apt.end);
+        
+        // Check overlap
+        if (start < aptEnd && end > aptStart) {
+            console.log(`[CONFLICT] Internal conflict with: ${apt.title}`);
+            return { hasConflict: true, conflictWith: apt.title || 'bestaande afspraak' };
+        }
+    }
+    
+    // 2. Check externe kalender events
+    const dayStart = new Date(date + 'T00:00:00');
+    const dayEnd = new Date(date + 'T23:59:59');
+    const externalEvents = await getExternalCalendarEventsForConflictCheck(req, dayStart, dayEnd);
+    
+    for (const event of externalEvents) {
+        if (!event.start || !event.end) continue;
+        
+        const eventStart = new Date(event.start);
+        const eventEnd = new Date(event.end);
+        
+        // Check overlap
+        if (start < eventEnd && end > eventStart) {
+            console.log(`[CONFLICT] External conflict with: ${event.summary}`);
+            return { hasConflict: true, conflictWith: event.summary || 'extern kalender event' };
+        }
+    }
+    
+    return { hasConflict: false };
+}
+
+/**
+ * Haal externe calendar events op voor conflict checking
+ */
+async function getExternalCalendarEventsForConflictCheck(req, dayStart, dayEnd) {
+    const userId = req.session.user.id;
+    let events = [];
+    
+    try {
+        // 1. Google Calendar
+        const googleEvents = await getGoogleCalendarEventsForUser(req, dayStart, dayEnd);
+        events = events.concat(googleEvents);
+        
+        // 2. Microsoft Calendar
+        const microsoftCredentials = await userStore.getMicrosoftCalendarCredentials(userId);
+        if (microsoftCredentials?.connected && microsoftCredentials?.accessToken) {
+            if (!microsoftCredentials.expiresAt || microsoftCredentials.expiresAt > Date.now() + 300000) {
+                const msEvents = await getMicrosoftCalendarEvents(microsoftCredentials.accessToken, dayStart, dayEnd);
+                events = events.concat(msEvents);
+            }
+        }
+        
+        // 3. Apple Calendar
+        const appleCredentials = await userStore.getAppleCalendarCredentials(userId);
+        const appleSync = await userStore.getAppleCalendarSync(userId);
+        if (appleCredentials && appleSync?.enabled && appleSync?.appleCalendarUrl) {
+            const appleEvents = await getAppleCalendarEventsForUser(appleCredentials, appleSync.appleCalendarUrl, dayStart, dayEnd);
+            events = events.concat(appleEvents);
+        }
+    } catch (error) {
+        console.error('[CONFLICT CHECK] Error fetching external events:', error.message);
+    }
+    
+    return events;
+}
+
+/**
+ * Google Calendar events ophalen
+ */
+async function getGoogleCalendarEventsForUser(req, dayStart, dayEnd) {
+    try {
+        let tokens = req.session.tokens;
+        
+        if (!tokens) {
+            const user = await userStore.getUser(req.session.user.id);
+            if (user?.tokens) {
+                tokens = typeof user.tokens === 'string' ? JSON.parse(user.tokens) : user.tokens;
+            }
+        }
+        
+        if (!tokens?.access_token) return [];
+        
+        const oauth2Client = new google.auth.OAuth2(
+            process.env.GOOGLE_CLIENT_ID,
+            process.env.GOOGLE_CLIENT_SECRET,
+            process.env.GOOGLE_REDIRECT_URI
+        );
+        oauth2Client.setCredentials(tokens);
+        
+        const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+        const response = await calendar.events.list({
+            calendarId: 'primary',
+            timeMin: dayStart.toISOString(),
+            timeMax: dayEnd.toISOString(),
+            singleEvents: true,
+            orderBy: 'startTime'
+        });
+        
+        return (response.data.items || []).map(event => ({
+            id: event.id,
+            summary: event.summary || 'Bezet',
+            start: event.start?.dateTime || event.start?.date,
+            end: event.end?.dateTime || event.end?.date
+        }));
+    } catch (error) {
+        console.error('[CONFLICT] Google Calendar error:', error.message);
+        return [];
+    }
+}
+
+/**
+ * Microsoft Calendar events ophalen
+ */
+async function getMicrosoftCalendarEvents(accessToken, dayStart, dayEnd) {
+    try {
+        const url = new URL('https://graph.microsoft.com/v1.0/me/calendar/events');
+        url.searchParams.set('$filter', `start/dateTime ge '${dayStart.toISOString()}' and end/dateTime le '${dayEnd.toISOString()}'`);
+        url.searchParams.set('$orderby', 'start/dateTime');
+        url.searchParams.set('$top', '50');
+        
+        const response = await fetch(url.toString(), {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Prefer': 'outlook.timezone="Europe/Amsterdam"'
+            }
+        });
+        
+        const data = await response.json();
+        if (data.error) return [];
+        
+        return (data.value || []).map(event => ({
+            id: event.id,
+            summary: event.subject || 'Bezet',
+            start: event.start?.dateTime,
+            end: event.end?.dateTime
+        }));
+    } catch (error) {
+        console.error('[CONFLICT] Microsoft Calendar error:', error.message);
+        return [];
+    }
+}
+
+/**
+ * Apple Calendar events ophalen
+ */
+async function getAppleCalendarEventsForUser(credentials, calendarUrl, dayStart, dayEnd) {
+    try {
+        const authHeader = Buffer.from(`${credentials.appleId}:${credentials.appPassword}`).toString('base64');
+        const formatICalDate = (date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        
+        const reportBody = `<?xml version="1.0" encoding="UTF-8"?>
+<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+    <D:prop><D:getetag/><C:calendar-data/></D:prop>
+    <C:filter>
+        <C:comp-filter name="VCALENDAR">
+            <C:comp-filter name="VEVENT">
+                <C:time-range start="${formatICalDate(dayStart)}" end="${formatICalDate(dayEnd)}"/>
+            </C:comp-filter>
+        </C:comp-filter>
+    </C:filter>
+</C:calendar-query>`;
+        
+        const response = await fetch(calendarUrl, {
+            method: 'REPORT',
+            headers: {
+                'Authorization': `Basic ${authHeader}`,
+                'Content-Type': 'application/xml; charset=utf-8',
+                'Depth': '1'
+            },
+            body: reportBody
+        });
+        
+        if (!response.ok) return [];
+        
+        const xmlText = await response.text();
+        const parsed = xmlParser.parse(xmlText);
+        const events = [];
+        
+        const multistatus = parsed.multistatus || parsed['D:multistatus'] || parsed['d:multistatus'];
+        const responses = multistatus?.response || multistatus?.['D:response'] || multistatus?.['d:response'];
+        const responseArray = Array.isArray(responses) ? responses : [responses].filter(Boolean);
+        
+        for (const resp of responseArray) {
+            const propstat = resp.propstat || resp['D:propstat'] || resp['d:propstat'];
+            const propstatArray = Array.isArray(propstat) ? propstat : [propstat].filter(Boolean);
+            
+            for (const ps of propstatArray) {
+                const prop = ps?.prop || ps?.['D:prop'] || ps?.['d:prop'];
+                const calendarData = prop?.['calendar-data'] || prop?.['C:calendar-data'] || prop?.['cal:calendar-data'];
+                
+                if (calendarData && typeof calendarData === 'string') {
+                    const summaryMatch = calendarData.match(/SUMMARY:(.+)/);
+                    const dtStartMatch = calendarData.match(/DTSTART[^:]*:(\d{8}T?\d{0,6}Z?)/);
+                    const dtEndMatch = calendarData.match(/DTEND[^:]*:(\d{8}T?\d{0,6}Z?)/);
+                    
+                    if (dtStartMatch) {
+                        const parseICalDate = (icalDate) => {
+                            if (!icalDate) return null;
+                            if (icalDate.length === 8) {
+                                return new Date(icalDate.slice(0,4) + '-' + icalDate.slice(4,6) + '-' + icalDate.slice(6,8));
+                            }
+                            const year = icalDate.slice(0,4), month = icalDate.slice(4,6), day = icalDate.slice(6,8);
+                            const hour = icalDate.slice(9,11) || '00', min = icalDate.slice(11,13) || '00';
+                            return new Date(`${year}-${month}-${day}T${hour}:${min}:00Z`);
+                        };
+                        
+                        events.push({
+                            summary: summaryMatch ? summaryMatch[1].trim() : 'Bezet',
+                            start: parseICalDate(dtStartMatch[1]),
+                            end: parseICalDate(dtEndMatch?.[1])
+                        });
+                    }
+                }
+            }
+        }
+        
+        return events;
+    } catch (error) {
+        console.error('[CONFLICT] Apple Calendar error:', error.message);
+        return [];
+    }
+}
 
 // ==================== AFSPRAKEN CRUD ====================
 
@@ -254,7 +502,8 @@ router.post('/', checkAppointmentLimit, async (req, res) => {
             pianoId, pianoBrand, pianoModel,
             pianoIds,  // Multiple piano IDs support
             color,
-            sendConfirmation  // Expliciet vinkje van gebruiker
+            sendConfirmation,  // Expliciet vinkje van gebruiker
+            skipConflictCheck  // Optioneel: sla conflict check over (voor forceren)
         } = req.body;
         
         if (!title) {
@@ -263,6 +512,18 @@ router.post('/', checkAppointmentLimit, async (req, res) => {
         
         if (!start || !end) {
             return res.status(400).json({ error: 'Start en eind tijd zijn verplicht' });
+        }
+        
+        // CONFLICT CHECK: voorkom dubbele boekingen
+        if (!skipConflictCheck) {
+            const conflictResult = await checkForConflicts(req, start, end);
+            if (conflictResult.hasConflict) {
+                console.log(`⚠️ Conflict detected for ${title} - overlaps with: ${conflictResult.conflictWith}`);
+                return res.status(409).json({ 
+                    error: `Dit tijdslot overlapt met een bestaande afspraak: "${conflictResult.conflictWith}". Kies een ander moment.`,
+                    conflictWith: conflictResult.conflictWith
+                });
+            }
         }
         
         const appointment = await appointmentStore.createAppointment(userId, {
@@ -355,10 +616,32 @@ router.put('/:id', async (req, res) => {
     try {
         const userId = req.session.user.id;
         const appointmentId = req.params.id;
+        const { start, end, skipConflictCheck } = req.body;
         
         const existing = await appointmentStore.getAppointment(userId, appointmentId);
         if (!existing) {
             return res.status(404).json({ error: 'Afspraak niet gevonden' });
+        }
+        
+        // CONFLICT CHECK: als tijd is gewijzigd, check voor conflicten
+        // (behalve met zichzelf)
+        if (start && end && !skipConflictCheck) {
+            const newStart = new Date(start);
+            const newEnd = new Date(end);
+            const oldStart = new Date(existing.start);
+            const oldEnd = new Date(existing.end);
+            
+            // Alleen checken als de tijd daadwerkelijk is gewijzigd
+            if (newStart.getTime() !== oldStart.getTime() || newEnd.getTime() !== oldEnd.getTime()) {
+                const conflictResult = await checkForConflicts(req, start, end, appointmentId);
+                if (conflictResult.hasConflict) {
+                    console.log(`⚠️ Conflict detected for update - overlaps with: ${conflictResult.conflictWith}`);
+                    return res.status(409).json({ 
+                        error: `Dit tijdslot overlapt met een bestaande afspraak: "${conflictResult.conflictWith}". Kies een ander moment.`,
+                        conflictWith: conflictResult.conflictWith
+                    });
+                }
+            }
         }
         
         const updated = await appointmentStore.updateAppointment(userId, appointmentId, req.body);

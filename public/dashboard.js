@@ -2263,6 +2263,11 @@ async function handleEventSubmit(e) {
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                // Specifieke handling voor conflict (dubbele boeking)
+                if (response.status === 409) {
+                    alert('⚠️ ' + (errorData.error || 'Dit tijdslot is al bezet. Kies een ander moment.'));
+                    return; // Stop hier, modal blijft open zodat gebruiker kan aanpassen
+                }
                 throw new Error(errorData.error || `HTTP ${response.status}`);
             }
         } else {
@@ -2275,6 +2280,11 @@ async function handleEventSubmit(e) {
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
+                // Specifieke handling voor conflict (dubbele boeking)
+                if (response.status === 409) {
+                    alert('⚠️ ' + (errorData.error || 'Dit tijdslot is al bezet. Kies een ander moment.'));
+                    return; // Stop hier, modal blijft open zodat gebruiker kan aanpassen
+                }
                 throw new Error(errorData.error || `HTTP ${response.status}`);
             }
         }
