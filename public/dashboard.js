@@ -2881,7 +2881,8 @@ async function loadSwCustomerPianos() {
     
     try {
         const response = await fetch(`/api/pianos/customer/${swSelectedCustomer.id}`);
-        const pianos = await response.json();
+        const data = await response.json();
+        const pianos = Array.isArray(data) ? data : (data.pianos || []);
         
         if (pianos.length === 0) {
             container.innerHTML = '<p class="sw-empty-state">Deze klant heeft nog geen piano\'s. Voeg er een toe!</p>';
