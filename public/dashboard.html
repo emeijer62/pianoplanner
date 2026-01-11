@@ -1499,58 +1499,61 @@
     <!-- Smart Pick Modal -->
     <div id="smart-pick-modal" class="apple-modal" style="display: none;">
         <div class="apple-modal-backdrop" onclick="closeSmartPickModal()"></div>
-        <div class="apple-modal-content" style="max-width: 500px;">
-            <div class="apple-modal-header">
+        <div class="apple-modal-content" style="max-width: 440px;">
+            <div class="apple-modal-header" style="background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%); border-bottom: 1px solid #fcd34d;">
                 <button class="apple-modal-close" onclick="closeSmartPickModal()">
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
                         <path d="M1.41 0L5 3.59 8.59 0 10 1.41 6.41 5 10 8.59 8.59 10 5 6.41 1.41 10 0 8.59 3.59 5 0 1.41z"/>
                     </svg>
                 </button>
-                <h2 class="apple-modal-title" style="display: flex; align-items: center; gap: 8px;">
-                    <i data-lucide="sparkles" style="width: 20px; height: 20px; color: #f59e0b;"></i>
+                <h2 class="apple-modal-title" style="display: flex; align-items: center; gap: 10px; font-size: 18px;">
+                    <i data-lucide="sparkles" style="width: 22px; height: 22px; color: #f59e0b;"></i>
                     Smart Pick
                 </h2>
                 <div style="width: 30px;"></div>
             </div>
-            <div class="apple-modal-body">
-                <p style="color: var(--gray-600); margin-bottom: 16px; font-size: 14px;">
-                    Find the optimal time slot based on customer location and your existing appointments.
+            <div class="apple-modal-body" style="padding: 24px;">
+                <p style="color: var(--gray-500); margin-bottom: 24px; font-size: 14px; text-align: center; line-height: 1.5;">
+                    Vind de optimale tijd op basis van klantlocatie en je bestaande afspraken.
                 </p>
                 
-                <div class="apple-form-section">
+                <div style="display: flex; flex-direction: column; gap: 20px;">
                     <div class="apple-form-field">
-                        <label class="apple-form-label" for="smart-customer-search">Customer *</label>
+                        <label class="apple-form-label" for="smart-customer-search" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Klant</label>
                         <div style="position: relative;">
-                            <input type="text" id="smart-customer-search" class="apple-form-input" placeholder="Search customer..." autocomplete="off">
+                            <input type="text" id="smart-customer-search" class="apple-form-input" placeholder="Zoek klant..." autocomplete="off" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
                             <input type="hidden" id="smart-customer-id">
                             <div id="smart-customer-results" class="autocomplete-suggestions apple-autocomplete" style="display: none;"></div>
                         </div>
                     </div>
                     
                     <div class="apple-form-field">
-                        <label class="apple-form-label" for="smart-service-select">Service *</label>
-                        <select id="smart-service-select" class="apple-form-select">
-                            <option value="">-- Select service --</option>
+                        <label class="apple-form-label" for="smart-service-select" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Service</label>
+                        <select id="smart-service-select" class="apple-form-select" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
+                            <option value="">Kies een service...</option>
                         </select>
                     </div>
                     
                     <div class="apple-form-field">
-                        <label class="apple-form-label" for="smart-date-input">Date</label>
-                        <input type="date" id="smart-date-input" class="apple-form-input">
+                        <label class="apple-form-label" for="smart-date-input" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Datum</label>
+                        <input type="date" id="smart-date-input" class="apple-form-input" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
                     </div>
                 </div>
                 
-                <div id="smart-pick-result" style="display: none; margin-top: 16px;">
+                <div id="smart-pick-result" style="display: none; margin-top: 24px;">
                     <!-- Results will be shown here -->
                 </div>
                 
-                <div class="apple-form-actions" style="margin-top: 20px;">
-                    <button type="button" class="apple-btn-secondary" onclick="closeSmartPickModal()">Cancel</button>
-                    <button type="button" id="find-slot-btn" class="apple-btn-primary" onclick="findSmartSlotFromModal()" style="background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%); border-color: #d97706;">
-                        <i data-lucide="search" style="width: 16px; height: 16px;"></i>
-                        Find Time
+                <div style="margin-top: 28px;">
+                    <button type="button" id="find-slot-btn" onclick="findSmartSlotFromModal()" style="width: 100%; padding: 16px; font-size: 16px; font-weight: 600; color: #92400e; background: linear-gradient(180deg, #fde68a 0%, #fbbf24 100%); border: 1px solid #f59e0b; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25); transition: all 0.2s ease;">
+                        <i data-lucide="search" style="width: 18px; height: 18px;"></i>
+                        Zoek beschikbare tijd
                     </button>
                 </div>
+                
+                <button type="button" onclick="closeSmartPickModal()" style="width: 100%; margin-top: 12px; padding: 14px; font-size: 15px; color: #6b7280; background: transparent; border: none; cursor: pointer;">
+                    Annuleren
+                </button>
             </div>
         </div>
     </div>

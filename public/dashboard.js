@@ -2565,12 +2565,15 @@ function setupSmartPickCustomerSearch() {
                     return;
                 }
                 
-                resultsDiv.innerHTML = customers.slice(0, 8).map(customer => `
-                    <div class="autocomplete-item" onclick="selectSmartPickCustomer(${customer.id}, '${escapeHtml(customer.name)}')">
+                resultsDiv.innerHTML = customers.slice(0, 8).map(customer => {
+                    const safeName = escapeHtml(customer.name).replace(/'/g, "\\'");
+                    return `
+                    <div class="autocomplete-item" onclick="selectSmartPickCustomer(${customer.id}, '${safeName}')">
                         <strong>${escapeHtml(customer.name)}</strong>
                         ${customer.city ? `<span style="color: var(--gray-500); margin-left: 8px;">${escapeHtml(customer.city)}</span>` : ''}
                     </div>
-                `).join('');
+                `;
+                }).join('');
                 resultsDiv.style.display = 'block';
             } catch (err) {
                 console.error('Search error:', err);
