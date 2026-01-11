@@ -422,127 +422,6 @@
             gap: 10px;
         }
         
-        .suggestion-card {
-            display: flex;
-            align-items: center;
-            padding: 14px 16px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .suggestion-card:hover {
-            border-color: var(--primary);
-            background: #f8fbff;
-        }
-        
-        .suggestion-card.selected {
-            border-color: var(--primary);
-            background: linear-gradient(135deg, #e8f2ff 0%, #f0f7ff 100%);
-            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15);
-        }
-        
-        .suggestion-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 14px;
-            flex-shrink: 0;
-        }
-        
-        .suggestion-icon i {
-            color: white;
-            width: 20px;
-            height: 20px;
-        }
-        
-        .suggestion-icon.alt {
-            background: #FF9500;
-        }
-        
-        .suggestion-content {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .suggestion-date {
-            font-weight: 600;
-            color: var(--text);
-            font-size: 15px;
-            margin-bottom: 2px;
-        }
-        
-        .suggestion-time {
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-        
-        .suggestion-badge {
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 6px;
-            background: #e8f5e9;
-            color: #2e7d32;
-            font-weight: 500;
-            margin-left: 10px;
-            flex-shrink: 0;
-        }
-        
-        .suggestion-badge.next {
-            background: #fff3e0;
-            color: #e65100;
-        }
-        
-        .manual-time-btn,
-        .back-to-suggestions-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            margin-top: 16px;
-            padding: 12px;
-            background: transparent;
-            border: 1px dashed var(--border);
-            border-radius: 10px;
-            color: var(--text-muted);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .manual-time-btn:hover,
-        .back-to-suggestions-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: #f8fbff;
-        }
-        
-        .manual-time-btn i,
-        .back-to-suggestions-btn i {
-            width: 16px;
-            height: 16px;
-        }
-        
-        .no-suggestions {
-            text-align: center;
-            padding: 30px 20px;
-            color: var(--text-muted);
-        }
-        
-        .no-suggestions i {
-            width: 48px;
-            height: 48px;
-            color: var(--border);
-            margin-bottom: 12px;
-        }
-        
         /* Loading state */
         .loading {
             text-align: center;
@@ -599,11 +478,310 @@
             .datetime-row {
                 grid-template-columns: 1fr;
             }
-            
-            .suggestion-card {
-                padding: 12px 14px;
-            }
         }
+        
+        /* ========== ENHANCED CALENDAR PICKER ========== */
+        .calendar-picker {
+            user-select: none;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 8px;
+        }
+        
+        .calendar-nav-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-nav-btn:hover:not(:disabled) {
+            background: var(--bg);
+            border-color: var(--primary);
+        }
+        
+        .calendar-nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .calendar-nav-btn i {
+            width: 18px;
+            height: 18px;
+            color: var(--text);
+        }
+        
+        .calendar-month-select {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .calendar-month-select select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+        
+        .calendar-weekday {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            padding: 8px 0;
+            text-transform: uppercase;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            background: white;
+        }
+        
+        .calendar-day.empty {
+            visibility: hidden;
+        }
+        
+        .calendar-day.available {
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-weight: 500;
+        }
+        
+        .calendar-day.available:hover {
+            background: #c8e6c9;
+            transform: scale(1.05);
+        }
+        
+        .calendar-day.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary-dark);
+        }
+        
+        .calendar-day.closed,
+        .calendar-day.unavailable {
+            background: var(--bg);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .calendar-day.full {
+            background: #ffebee;
+            color: #c62828;
+            cursor: not-allowed;
+        }
+        
+        .calendar-day.too-soon,
+        .calendar-day.too-far {
+            background: var(--bg);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+        
+        .calendar-day.today {
+            border-color: var(--primary);
+        }
+        
+        /* First available banner */
+        .first-available-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%);
+            border-radius: 10px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .first-available-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .first-available-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--success);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .first-available-icon i {
+            color: white;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .first-available-content {
+            flex: 1;
+        }
+        
+        .first-available-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+        
+        .first-available-value {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 15px;
+        }
+        
+        .first-available-arrow {
+            color: var(--primary);
+        }
+        
+        .first-available-arrow i {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Time slots grid */
+        .time-slots-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .time-slots-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: var(--text);
+            font-weight: 600;
+        }
+        
+        .time-slots-header i {
+            width: 18px;
+            height: 18px;
+            color: var(--primary);
+        }
+        
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+        }
+        
+        .time-slot {
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .time-slot:hover {
+            border-color: var(--primary);
+            background: #f8fbff;
+        }
+        
+        .time-slot.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .no-times-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+        }
+        
+        .no-times-message i {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 8px;
+            opacity: 0.5;
+        }
+        
+        .calendar-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: var(--text-muted);
+            gap: 12px;
+        }
+        
+        .calendar-loading .spinner {
+            width: 24px;
+            height: 24px;
+            margin: 0;
+        }
+        
+        /* Calendar legend */
+        .calendar-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+        
+        .legend-dot.available { background: #e8f5e9; border: 1px solid #a5d6a7; }
+        .legend-dot.full { background: #ffebee; border: 1px solid #ef9a9a; }
+        .legend-dot.closed { background: var(--bg); border: 1px solid var(--border); }
     </style>
 </head>
 <body>
@@ -674,46 +852,91 @@
                 </div>
             </div>
             
-            <!-- Smart Suggestions -->
-            <div class="card" id="suggestionsCard" style="display: none;">
-                <h2 class="card-title">
-                    <i data-lucide="sparkles"></i>
-                    <span data-i18n="book.availableTimes">Available times</span>
-                </h2>
-                <p class="suggestions-subtitle" data-i18n="book.chooseSuggested">Choose one of the suggested time slots:</p>
-                <div id="suggestionsLoading" class="suggestions-loading" style="display: none;">
-                    <div class="spinner"></div>
-                    <p data-i18n="book.checkingAvailability">Checking availability...</p>
-                </div>
-                <div id="suggestionsList" class="suggestions-list">
-                    <!-- Suggestions loaded here -->
-                </div>
-                <button type="button" class="manual-time-btn" id="manualTimeBtn">
-                    <i data-lucide="clock"></i>
-                    <span data-i18n="book.otherTime">Choose another time</span>
-                </button>
-            </div>
-            
-            <!-- Manual Date/time selection (hidden by default) -->
-            <div class="card" id="manualTimeCard" style="display: none;">
+            <!-- Enhanced Calendar Picker -->
+            <div class="card" id="calendarCard" style="display: none;">
                 <h2 class="card-title">
                     <i data-lucide="calendar"></i>
                     <span data-i18n="book.chooseDateTime">Choose date & time</span>
                 </h2>
-                <div class="datetime-row">
-                    <div class="form-group">
-                        <label data-i18n="book.date">Date</label>
-                        <input type="date" id="dateInput" required>
+                
+                <!-- First Available Quick Select -->
+                <div id="firstAvailableBanner" class="first-available-banner" style="display: none;">
+                    <div class="first-available-icon">
+                        <i data-lucide="zap"></i>
                     </div>
-                    <div class="form-group">
-                        <label data-i18n="book.time">Time</label>
-                        <input type="time" id="timeInput" required>
+                    <div class="first-available-content">
+                        <div class="first-available-label" data-i18n="book.firstAvailable">First available</div>
+                        <div class="first-available-value" id="firstAvailableText">-</div>
+                    </div>
+                    <div class="first-available-arrow">
+                        <i data-lucide="chevron-right"></i>
                     </div>
                 </div>
-                <button type="button" class="back-to-suggestions-btn" id="backToSuggestionsBtn">
-                    <i data-lucide="arrow-left"></i>
-                    <span data-i18n="book.backToSuggestions">Back to suggestions</span>
-                </button>
+                
+                <!-- Calendar Picker -->
+                <div class="calendar-picker" id="calendarPicker">
+                    <div id="calendarLoading" class="calendar-loading">
+                        <div class="spinner"></div>
+                        <span data-i18n="book.loadingCalendar">Loading calendar...</span>
+                    </div>
+                    
+                    <div id="calendarContent" style="display: none;">
+                        <!-- Month Navigation -->
+                        <div class="calendar-header">
+                            <button type="button" class="calendar-nav-btn" id="prevMonthBtn">
+                                <i data-lucide="chevron-left"></i>
+                            </button>
+                            <div class="calendar-month-select">
+                                <select id="monthSelect"></select>
+                                <select id="yearSelect"></select>
+                            </div>
+                            <button type="button" class="calendar-nav-btn" id="nextMonthBtn">
+                                <i data-lucide="chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Calendar Grid -->
+                        <div class="calendar-grid" id="calendarGrid">
+                            <!-- Days filled by JS -->
+                        </div>
+                        
+                        <!-- Legend -->
+                        <div class="calendar-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot available"></div>
+                                <span data-i18n="book.legendAvailable">Available</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot full"></div>
+                                <span data-i18n="book.legendFull">Fully booked</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot closed"></div>
+                                <span data-i18n="book.legendClosed">Closed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Time Slots Section -->
+                <div class="time-slots-section" id="timeSlotsSection" style="display: none;">
+                    <div class="time-slots-header">
+                        <i data-lucide="clock"></i>
+                        <span data-i18n="book.availableTimesFor">Available times for</span>
+                        <span id="selectedDateText"></span>
+                    </div>
+                    <div id="timeSlotsLoading" class="calendar-loading" style="display: none;">
+                        <div class="spinner"></div>
+                        <span data-i18n="book.loadingTimes">Loading times...</span>
+                    </div>
+                    <div class="time-slots-grid" id="timeSlotsGrid">
+                        <!-- Time slots filled by JS -->
+                    </div>
+                    <div id="noTimesMessage" class="no-times-message" style="display: none;">
+                        <i data-lucide="calendar-x"></i>
+                        <p data-i18n="book.noTimesAvailable">No times available on this day</p>
+                    </div>
+                </div>
             </div>
             
             <!-- Notes -->
@@ -774,7 +997,15 @@
                 'book.service': 'Service',
                 'book.dateLabel': 'Date',
                 'book.timeLabel': 'Time',
-                'book.piano': 'Piano'
+                'book.piano': 'Piano',
+                'book.firstAvailable': 'First available',
+                'book.loadingCalendar': 'Loading calendar...',
+                'book.loadingTimes': 'Loading times...',
+                'book.availableTimesFor': 'Available times for',
+                'book.noTimesAvailable': 'No times available on this day',
+                'book.legendAvailable': 'Available',
+                'book.legendFull': 'Fully booked',
+                'book.legendClosed': 'Closed'
             },
             nl: {
                 'book.loading': 'Laden...',
@@ -808,7 +1039,15 @@
                 'book.service': 'Dienst',
                 'book.dateLabel': 'Datum',
                 'book.timeLabel': 'Tijd',
-                'book.piano': 'Piano'
+                'book.piano': 'Piano',
+                'book.firstAvailable': 'Eerste beschikbaar',
+                'book.loadingCalendar': 'Kalender laden...',
+                'book.loadingTimes': 'Tijden laden...',
+                'book.availableTimesFor': 'Beschikbare tijden voor',
+                'book.noTimesAvailable': 'Geen tijden beschikbaar op deze dag',
+                'book.legendAvailable': 'Beschikbaar',
+                'book.legendFull': 'Volgeboekt',
+                'book.legendClosed': 'Gesloten'
             },
             de: {
                 'book.loading': 'Laden...',
@@ -842,7 +1081,15 @@
                 'book.service': 'Service',
                 'book.dateLabel': 'Datum',
                 'book.timeLabel': 'Zeit',
-                'book.piano': 'Klavier'
+                'book.piano': 'Klavier',
+                'book.firstAvailable': 'Erster verfügbarer Termin',
+                'book.loadingCalendar': 'Kalender wird geladen...',
+                'book.loadingTimes': 'Zeiten werden geladen...',
+                'book.availableTimesFor': 'Verfügbare Zeiten für',
+                'book.noTimesAvailable': 'Keine Zeiten an diesem Tag verfügbar',
+                'book.legendAvailable': 'Verfügbar',
+                'book.legendFull': 'Ausgebucht',
+                'book.legendClosed': 'Geschlossen'
             },
             fr: {
                 'book.loading': 'Chargement...',
@@ -876,7 +1123,15 @@
                 'book.service': 'Service',
                 'book.dateLabel': 'Date',
                 'book.timeLabel': 'Heure',
-                'book.piano': 'Piano'
+                'book.piano': 'Piano',
+                'book.firstAvailable': 'Premier créneau disponible',
+                'book.loadingCalendar': 'Chargement du calendrier...',
+                'book.loadingTimes': 'Chargement des horaires...',
+                'book.availableTimesFor': 'Horaires disponibles pour le',
+                'book.noTimesAvailable': 'Aucun horaire disponible ce jour',
+                'book.legendAvailable': 'Disponible',
+                'book.legendFull': 'Complet',
+                'book.legendClosed': 'Fermé'
             }
         };
 
@@ -921,9 +1176,12 @@
         let bookingData = null;
         let selectedService = null;
         let selectedPiano = null;
-        let selectedSuggestion = null;
-        let suggestions = [];
-        let useManualTime = false;
+        let selectedDate = null;
+        let selectedTime = null;
+        let calendarData = null;
+        let firstAvailableSlot = null;
+        let currentMonth = new Date();
+        let bookingRange = null;
         
         // DOM elements
         const loadingScreen = document.getElementById('loadingScreen');
@@ -931,10 +1189,7 @@
         const successScreen = document.getElementById('successScreen');
         const bookingForm = document.getElementById('bookingForm');
         const submitBtn = document.getElementById('submitBtn');
-        const suggestionsCard = document.getElementById('suggestionsCard');
-        const manualTimeCard = document.getElementById('manualTimeCard');
-        const suggestionsLoading = document.getElementById('suggestionsLoading');
-        const suggestionsList = document.getElementById('suggestionsList');
+        const calendarCard = document.getElementById('calendarCard');
         
         // Initialize
         async function init() {
@@ -996,8 +1251,8 @@
                     opt.classList.add('selected');
                     opt.querySelector('input').checked = true;
                     selectedService = opt.dataset.id;
-                    // Load smart suggestions when service is selected
-                    loadSmartSuggestions();
+                    // Show calendar picker when service is selected
+                    showCalendarPicker();
                 });
             });
             
@@ -1035,16 +1290,6 @@
                 }
             }
             
-            // Set minimum date to today for manual picker
-            const dateInput = document.getElementById('dateInput');
-            const today = new Date().toISOString().split('T')[0];
-            dateInput.min = today;
-            dateInput.value = today;
-            
-            // Set default time
-            const timeInput = document.getElementById('timeInput');
-            timeInput.value = '10:00';
-            
             // Contact info
             const contactInfo = document.getElementById('contactInfo');
             const contactParts = [];
@@ -1057,14 +1302,6 @@
             if (contactParts.length > 0) {
                 contactInfo.innerHTML = `${t['book.contact']} ${contactParts.join(' • ')}`;
             }
-            
-            // Manual time form validation
-            dateInput.addEventListener('change', validateForm);
-            timeInput.addEventListener('change', validateForm);
-            
-            // Manual time toggle handlers
-            document.getElementById('manualTimeBtn').addEventListener('click', showManualTime);
-            document.getElementById('backToSuggestionsBtn').addEventListener('click', showSuggestions);
             
             // Submit handler
             submitBtn.addEventListener('click', submitBooking);
@@ -1081,127 +1318,298 @@
             lucide.createIcons();
         }
         
-        async function loadSmartSuggestions() {
-            // Show suggestions card with loading state
-            suggestionsCard.style.display = 'block';
-            manualTimeCard.style.display = 'none';
-            useManualTime = false;
-            suggestionsLoading.style.display = 'block';
-            suggestionsList.style.display = 'none';
-            selectedSuggestion = null;
+        // ========== ENHANCED CALENDAR PICKER ==========
+        
+        async function showCalendarPicker() {
+            calendarCard.style.display = 'block';
+            selectedDate = null;
+            selectedTime = null;
+            
+            // Show loading
+            document.getElementById('calendarLoading').style.display = 'flex';
+            document.getElementById('calendarContent').style.display = 'none';
+            document.getElementById('timeSlotsSection').style.display = 'none';
+            document.getElementById('firstAvailableBanner').style.display = 'none';
+            
             validateForm();
             lucide.createIcons();
             
             try {
-                const response = await fetch(`/api/book/customer/${token}/smart-suggestions?serviceId=${selectedService}`);
+                // Load first available slot
+                await loadFirstAvailable();
                 
-                if (!response.ok) {
-                    throw new Error('Failed to load suggestions');
-                }
+                // Initialize calendar controls
+                initCalendarControls();
                 
-                const data = await response.json();
-                suggestions = data.suggestions || [];
+                // Load current month
+                await loadMonth(currentMonth);
                 
-                renderSuggestions();
+                document.getElementById('calendarLoading').style.display = 'none';
+                document.getElementById('calendarContent').style.display = 'block';
                 
             } catch (error) {
-                console.error('Smart suggestions error:', error);
-                // Fallback to manual time selection
-                showManualTime();
-            }
-        }
-        
-        function renderSuggestions() {
-            suggestionsLoading.style.display = 'none';
-            suggestionsList.style.display = 'flex';
-            
-            if (suggestions.length === 0) {
-                suggestionsList.innerHTML = `
-                    <div class="no-suggestions">
-                        <i data-lucide="calendar-x"></i>
-                        <p>${t['book.noSlots']}<br>${t['book.chooseManually']}</p>
-                    </div>
+                console.error('Calendar load error:', error);
+                document.getElementById('calendarLoading').innerHTML = `
+                    <i data-lucide="alert-circle" style="width:24px;height:24px;color:var(--error);"></i>
+                    <span>${t['book.error']}</span>
                 `;
                 lucide.createIcons();
-                return;
             }
-            
-            suggestionsList.innerHTML = suggestions.map((slot, index) => {
-                const date = new Date(slot.date);
-                const dateStr = date.toLocaleDateString(getDateLocale(), { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long' 
-                });
+        }
+        
+        async function loadFirstAvailable() {
+            try {
+                const response = await fetch(`/api/book/customer/${token}/first-available?serviceId=${selectedService}`);
+                const data = await response.json();
                 
-                // Determine badge
-                let badge = '';
-                if (index === 0) {
-                    badge = `<span class="suggestion-badge">${t['book.recommended']}</span>`;
-                } else if (slot.isAlternativeDay) {
-                    badge = `<span class="suggestion-badge next">${t['book.alternative']}</span>`;
+                if (data.success && data.firstAvailable) {
+                    firstAvailableSlot = data.firstAvailable;
+                    
+                    // Show first available banner
+                    const banner = document.getElementById('firstAvailableBanner');
+                    const date = new Date(firstAvailableSlot.date);
+                    const dateStr = date.toLocaleDateString(getDateLocale(), { 
+                        weekday: 'long', 
+                        day: 'numeric', 
+                        month: 'long' 
+                    });
+                    
+                    document.getElementById('firstAvailableText').textContent = `${dateStr} ${t['book.time'].toLowerCase()} ${firstAvailableSlot.time}`;
+                    banner.style.display = 'flex';
+                    
+                    // Click handler for quick select
+                    banner.onclick = () => selectFirstAvailable();
+                    
+                    lucide.createIcons();
                 }
-                
-                // Determine icon color based on whether it's preferred or alternative
-                const iconClass = slot.isAlternativeDay ? 'alt' : '';
-                
-                return `
-                    <div class="suggestion-card" data-index="${index}">
-                        <div class="suggestion-icon ${iconClass}">
-                            <i data-lucide="calendar-check"></i>
-                        </div>
-                        <div class="suggestion-content">
-                            <div class="suggestion-date">${dateStr}</div>
-                            <div class="suggestion-time">${slot.time}</div>
-                        </div>
-                        ${badge}
-                    </div>
-                `;
-            }).join('');
+            } catch (error) {
+                console.error('First available error:', error);
+            }
+        }
+        
+        function selectFirstAvailable() {
+            if (!firstAvailableSlot) return;
             
-            // Add click handlers
-            document.querySelectorAll('.suggestion-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    document.querySelectorAll('.suggestion-card').forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
-                    selectedSuggestion = suggestions[parseInt(card.dataset.index)];
-                    validateForm();
-                });
+            selectedDate = firstAvailableSlot.date;
+            selectedTime = firstAvailableSlot.time;
+            
+            // Navigate to that month
+            const date = new Date(firstAvailableSlot.date);
+            currentMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+            
+            // Reload calendar and show times
+            loadMonth(currentMonth).then(() => {
+                loadTimeSlots(selectedDate);
             });
             
-            lucide.createIcons();
+            validateForm();
         }
         
-        function showManualTime() {
-            useManualTime = true;
-            suggestionsCard.style.display = 'none';
-            manualTimeCard.style.display = 'block';
-            selectedSuggestion = null;
-            validateForm();
-            lucide.createIcons();
+        function initCalendarControls() {
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+            const prevBtn = document.getElementById('prevMonthBtn');
+            const nextBtn = document.getElementById('nextMonthBtn');
+            
+            // Month names
+            const monthNames = getMonthNames();
+            
+            // Populate month dropdown
+            monthSelect.innerHTML = monthNames.map((name, i) => 
+                `<option value="${i}">${name}</option>`
+            ).join('');
+            monthSelect.value = currentMonth.getMonth();
+            
+            // Populate year dropdown (current year + 2 years)
+            const currentYear = new Date().getFullYear();
+            yearSelect.innerHTML = '';
+            for (let y = currentYear; y <= currentYear + 2; y++) {
+                yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+            }
+            yearSelect.value = currentMonth.getFullYear();
+            
+            // Event handlers
+            monthSelect.addEventListener('change', () => {
+                currentMonth = new Date(parseInt(yearSelect.value), parseInt(monthSelect.value), 1);
+                loadMonth(currentMonth);
+            });
+            
+            yearSelect.addEventListener('change', () => {
+                currentMonth = new Date(parseInt(yearSelect.value), parseInt(monthSelect.value), 1);
+                loadMonth(currentMonth);
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+                monthSelect.value = currentMonth.getMonth();
+                yearSelect.value = currentMonth.getFullYear();
+                loadMonth(currentMonth);
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+                monthSelect.value = currentMonth.getMonth();
+                yearSelect.value = currentMonth.getFullYear();
+                loadMonth(currentMonth);
+            });
         }
         
-        function showSuggestions() {
-            useManualTime = false;
-            manualTimeCard.style.display = 'none';
-            suggestionsCard.style.display = 'block';
+        function getMonthNames() {
+            const locale = getDateLocale();
+            return Array.from({length: 12}, (_, i) => 
+                new Date(2024, i, 1).toLocaleDateString(locale, { month: 'long' })
+            );
+        }
+        
+        function getWeekdayNames() {
+            const locale = getDateLocale();
+            // Start from Monday (1) to Sunday (0)
+            const days = [];
+            for (let i = 1; i <= 7; i++) {
+                const d = new Date(2024, 0, i); // Jan 2024 starts on Monday
+                days.push(d.toLocaleDateString(locale, { weekday: 'short' }));
+            }
+            return days;
+        }
+        
+        async function loadMonth(date) {
+            const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            
+            try {
+                const response = await fetch(`/api/book/customer/${token}/available-days?month=${monthStr}&serviceId=${selectedService}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    calendarData = data;
+                    bookingRange = data.bookingRange;
+                    renderCalendar(data.days);
+                }
+            } catch (error) {
+                console.error('Load month error:', error);
+            }
+        }
+        
+        function renderCalendar(days) {
+            const grid = document.getElementById('calendarGrid');
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Weekday headers
+            const weekdays = getWeekdayNames();
+            let html = weekdays.map(day => `<div class="calendar-weekday">${day}</div>`).join('');
+            
+            // Calculate empty cells at start
+            const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+            let startDay = firstDay.getDay();
+            // Convert Sunday (0) to 7, then subtract 1 for Monday-based week
+            startDay = startDay === 0 ? 6 : startDay - 1;
+            
+            // Add empty cells
+            for (let i = 0; i < startDay; i++) {
+                html += '<div class="calendar-day empty"></div>';
+            }
+            
+            // Add day cells
+            days.forEach(day => {
+                const isToday = day.date === today;
+                const isSelected = day.date === selectedDate;
+                let classes = ['calendar-day', day.status];
+                if (isToday) classes.push('today');
+                if (isSelected) classes.push('selected');
+                
+                const clickable = day.status === 'available';
+                
+                html += `
+                    <div class="${classes.join(' ')}" 
+                         data-date="${day.date}" 
+                         ${clickable ? 'onclick="selectDate(\'' + day.date + '\')"' : ''}>
+                        ${day.day}
+                    </div>
+                `;
+            });
+            
+            grid.innerHTML = html;
+        }
+        
+        async function selectDate(dateStr) {
+            selectedDate = dateStr;
+            selectedTime = null;
+            
+            // Update calendar UI
+            document.querySelectorAll('.calendar-day').forEach(el => {
+                el.classList.remove('selected');
+                if (el.dataset.date === dateStr) {
+                    el.classList.add('selected');
+                }
+            });
+            
+            // Load time slots
+            await loadTimeSlots(dateStr);
+            
             validateForm();
-            lucide.createIcons();
+        }
+        
+        async function loadTimeSlots(dateStr) {
+            const section = document.getElementById('timeSlotsSection');
+            const grid = document.getElementById('timeSlotsGrid');
+            const loading = document.getElementById('timeSlotsLoading');
+            const noTimes = document.getElementById('noTimesMessage');
+            
+            section.style.display = 'block';
+            loading.style.display = 'flex';
+            grid.style.display = 'none';
+            noTimes.style.display = 'none';
+            
+            // Update header with selected date
+            const date = new Date(dateStr);
+            document.getElementById('selectedDateText').textContent = date.toLocaleDateString(getDateLocale(), {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+            });
+            
+            try {
+                const response = await fetch(`/api/book/customer/${token}/available-times?date=${dateStr}&serviceId=${selectedService}`);
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                
+                if (data.success && data.slots && data.slots.length > 0) {
+                    grid.style.display = 'grid';
+                    grid.innerHTML = data.slots.map(slot => `
+                        <div class="time-slot ${slot.time === selectedTime ? 'selected' : ''}" 
+                             onclick="selectTime('${slot.time}')">
+                            ${slot.time}
+                        </div>
+                    `).join('');
+                } else {
+                    noTimes.style.display = 'block';
+                    lucide.createIcons();
+                }
+                
+            } catch (error) {
+                console.error('Load times error:', error);
+                loading.style.display = 'none';
+                noTimes.style.display = 'block';
+                lucide.createIcons();
+            }
+        }
+        
+        function selectTime(time) {
+            selectedTime = time;
+            
+            // Update UI
+            document.querySelectorAll('.time-slot').forEach(el => {
+                el.classList.remove('selected');
+                if (el.textContent.trim() === time) {
+                    el.classList.add('selected');
+                }
+            });
+            
+            validateForm();
         }
         
         function validateForm() {
-            let isValid = false;
-            
-            if (selectedService) {
-                if (useManualTime) {
-                    const date = document.getElementById('dateInput').value;
-                    const time = document.getElementById('timeInput').value;
-                    isValid = date && time;
-                } else {
-                    isValid = selectedSuggestion !== null;
-                }
-            }
-            
+            const isValid = selectedService && selectedDate && selectedTime;
             submitBtn.disabled = !isValid;
         }
         
@@ -1211,16 +1619,6 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<span class="spinner" style="width: 20px; height: 20px; margin: 0;"></span> ${t['book.processing']}`;
             
-            // Determine date and time based on selection mode
-            let date, time;
-            if (useManualTime) {
-                date = document.getElementById('dateInput').value;
-                time = document.getElementById('timeInput').value;
-            } else {
-                date = selectedSuggestion.date;
-                time = selectedSuggestion.time;
-            }
-            
             try {
                 const response = await fetch(`/api/book/customer/${token}/appointment`, {
                     method: 'POST',
@@ -1228,8 +1626,8 @@
                     body: JSON.stringify({
                         serviceId: selectedService,
                         pianoId: selectedPiano,
-                        date: date,
-                        time: time,
+                        date: selectedDate,
+                        time: selectedTime,
                         notes: document.getElementById('notesInput').value
                     })
                 });
@@ -1240,7 +1638,7 @@
                     throw new Error(result.error || 'Booking failed');
                 }
                 
-                showSuccess(result, date, time);
+                showSuccess(result);
                 
             } catch (error) {
                 console.error('Booking error:', error);
@@ -1251,14 +1649,14 @@
             }
         }
         
-        function showSuccess(result, date, time) {
+        function showSuccess(result) {
             bookingForm.style.display = 'none';
             successScreen.style.display = 'block';
             
             const service = bookingData.services.find(s => s.id == selectedService);
             const piano = selectedPiano ? bookingData.pianos.find(p => p.id == selectedPiano) : null;
             
-            const dateObj = new Date(date);
+            const dateObj = new Date(selectedDate);
             const dateStr = dateObj.toLocaleDateString(getDateLocale(), { 
                 weekday: 'long', 
                 day: 'numeric', 
@@ -1276,7 +1674,7 @@
                 </div>
                 <div class="summary-row">
                     <span class="summary-label">${t['book.timeLabel']}</span>
-                    <span>${time}</span>
+                    <span>${selectedTime}</span>
                 </div>
                 ${piano ? `
                 <div class="summary-row">

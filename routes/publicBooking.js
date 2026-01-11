@@ -319,6 +319,366 @@ router.get('/customer/:token/smart-suggestions', async (req, res) => {
     }
 });
 
+// ==================== ENHANCED CALENDAR PICKER ENDPOINTS ====================
+
+/**
+ * Haal beschikbare dagen op voor een maand (Enhanced Calendar Picker)
+ * GET /api/book/customer/:token/available-days
+ * Query params: month (YYYY-MM), serviceId
+ */
+router.get('/customer/:token/available-days', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { month, serviceId } = req.query;
+        
+        // Valideer klant token
+        const data = await customerStore.getCustomerWithOwnerByToken(token);
+        if (!data) {
+            return res.status(404).json({ error: 'Ongeldige boekingslink' });
+        }
+        
+        if (!serviceId) {
+            return res.status(400).json({ error: 'Service ID is verplicht' });
+        }
+        
+        // Haal service op voor duration
+        const service = await serviceStore.getService(data.owner.id, serviceId);
+        if (!service) {
+            return res.status(400).json({ error: 'Ongeldige service' });
+        }
+        
+        // Haal settings op
+        const bookingSettings = await userStore.getBookingSettings(data.owner.id);
+        const company = await companyStore.getCompanySettings(data.owner.id);
+        
+        // Bepaal werkuren (theater of normaal)
+        const useTheaterHours = data.customer.useTheaterHours && company?.theaterHoursEnabled;
+        let workingHours;
+        if (useTheaterHours && company?.theaterHours) {
+            workingHours = normalizeWorkingHours(company.theaterHours);
+        } else {
+            workingHours = normalizeWorkingHours(company?.workingHours);
+        }
+        
+        // Parse maand of gebruik huidige maand
+        const now = new Date();
+        let targetMonth;
+        if (month) {
+            const [year, monthNum] = month.split('-').map(Number);
+            targetMonth = new Date(year, monthNum - 1, 1);
+        } else {
+            targetMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        }
+        
+        // Bereken min/max datum range
+        const minDate = new Date(now.getTime() + (bookingSettings.minAdvanceHours * 60 * 60 * 1000));
+        const maxDate = new Date(now.getTime() + (bookingSettings.maxAdvanceDays * 24 * 60 * 60 * 1000));
+        
+        // Eerste en laatste dag van de maand
+        const firstDayOfMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), 1);
+        const lastDayOfMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0);
+        
+        // Haal alle afspraken voor deze maand
+        const appointments = await appointmentStore.getAppointmentsByDateRange(
+            data.owner.id,
+            firstDayOfMonth.toISOString().split('T')[0],
+            lastDayOfMonth.toISOString().split('T')[0]
+        );
+        
+        // Genereer dag-status array
+        const days = [];
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        
+        for (let d = 1; d <= lastDayOfMonth.getDate(); d++) {
+            const date = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), d);
+            const dateStr = date.toISOString().split('T')[0];
+            const dayName = dayNames[date.getDay()];
+            const daySettings = workingHours[dayName];
+            
+            let status = 'unavailable'; // default
+            let reason = '';
+            
+            // Check 1: Is het een werkdag?
+            if (!daySettings?.enabled) {
+                status = 'closed';
+                reason = 'Non-working day';
+            }
+            // Check 2: Is het binnen de booking range?
+            else if (date < minDate) {
+                status = 'too-soon';
+                reason = 'Too soon to book';
+            }
+            else if (date > maxDate) {
+                status = 'too-far';
+                reason = 'Too far in advance';
+            }
+            // Check 3: Heeft de dag nog vrije slots?
+            else {
+                // Tel afspraken op deze dag
+                const dayAppointments = appointments.filter(apt => {
+                    const aptDate = apt.start.split('T')[0];
+                    return aptDate === dateStr;
+                });
+                
+                // Bereken beschikbare tijd
+                const [startH, startM] = (daySettings.start || '09:00').split(':').map(Number);
+                const [endH, endM] = (daySettings.end || '17:00').split(':').map(Number);
+                const totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
+                const serviceDuration = service.duration || 60;
+                
+                // Ruwe schatting: hoeveel slots passen er?
+                const bookedMinutes = dayAppointments.reduce((sum, apt) => {
+                    const start = new Date(apt.start);
+                    const end = new Date(apt.end);
+                    return sum + (end - start) / 60000;
+                }, 0);
+                
+                const availableMinutes = totalMinutes - bookedMinutes;
+                
+                if (availableMinutes >= serviceDuration) {
+                    status = 'available';
+                } else {
+                    status = 'full';
+                    reason = 'Fully booked';
+                }
+            }
+            
+            days.push({
+                date: dateStr,
+                day: d,
+                dayOfWeek: date.getDay(),
+                status,
+                reason
+            });
+        }
+        
+        // Vind eerste beschikbare datum
+        const firstAvailable = days.find(d => d.status === 'available');
+        
+        res.json({
+            success: true,
+            month: targetMonth.toISOString().slice(0, 7),
+            days,
+            firstAvailable: firstAvailable?.date || null,
+            bookingRange: {
+                minDate: minDate.toISOString().split('T')[0],
+                maxDate: maxDate.toISOString().split('T')[0],
+                minAdvanceHours: bookingSettings.minAdvanceHours,
+                maxAdvanceDays: bookingSettings.maxAdvanceDays
+            }
+        });
+        
+    } catch (error) {
+        console.error('Available days error:', error);
+        res.status(500).json({ error: 'Kon beschikbare dagen niet ophalen' });
+    }
+});
+
+/**
+ * Haal beschikbare tijdslots op voor een specifieke dag (Enhanced Calendar Picker)
+ * GET /api/book/customer/:token/available-times
+ * Query params: date (YYYY-MM-DD), serviceId
+ */
+router.get('/customer/:token/available-times', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { date, serviceId } = req.query;
+        
+        // Valideer klant token
+        const data = await customerStore.getCustomerWithOwnerByToken(token);
+        if (!data) {
+            return res.status(404).json({ error: 'Ongeldige boekingslink' });
+        }
+        
+        if (!date || !serviceId) {
+            return res.status(400).json({ error: 'Datum en service ID zijn verplicht' });
+        }
+        
+        // Haal service op
+        const service = await serviceStore.getService(data.owner.id, serviceId);
+        if (!service) {
+            return res.status(400).json({ error: 'Ongeldige service' });
+        }
+        
+        // Haal settings op
+        const bookingSettings = await userStore.getBookingSettings(data.owner.id);
+        const company = await companyStore.getCompanySettings(data.owner.id);
+        
+        // Bepaal werkuren
+        const useTheaterHours = data.customer.useTheaterHours && company?.theaterHoursEnabled;
+        let workingHours;
+        if (useTheaterHours && company?.theaterHours) {
+            workingHours = normalizeWorkingHours(company.theaterHours);
+        } else {
+            workingHours = normalizeWorkingHours(company?.workingHours);
+        }
+        
+        // Parse datum
+        const targetDate = new Date(date + 'T00:00:00');
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const dayName = dayNames[targetDate.getDay()];
+        const daySettings = workingHours[dayName];
+        
+        if (!daySettings?.enabled) {
+            return res.json({
+                success: true,
+                date,
+                slots: [],
+                message: 'Geen werkdag'
+            });
+        }
+        
+        // Haal afspraken voor deze dag
+        const appointments = await appointmentStore.getAppointmentsByDateRange(
+            data.owner.id,
+            date,
+            date
+        );
+        
+        // Genereer tijdslots
+        const serviceDuration = service.duration || 60;
+        const bufferBefore = service.bufferBefore || 0;
+        const bufferAfter = service.bufferAfter || 0;
+        
+        // Haal travel settings op voor default travel time
+        const travelSettings = await companyStore.getTravelSettings(data.owner.id);
+        const defaultTravelTime = travelSettings?.enabled ? (travelSettings.defaultTravelTime || 30) : 0;
+        
+        const slots = generateTimeSlots(
+            targetDate,
+            daySettings.start || '09:00',
+            daySettings.end || '17:00',
+            serviceDuration,
+            bufferBefore,
+            bufferAfter,
+            appointments,
+            defaultTravelTime
+        );
+        
+        res.json({
+            success: true,
+            date,
+            dayName,
+            workingHours: {
+                start: daySettings.start,
+                end: daySettings.end
+            },
+            slots,
+            serviceDuration,
+            message: slots.length === 0 ? 'Geen beschikbare tijden' : `${slots.length} tijden beschikbaar`
+        });
+        
+    } catch (error) {
+        console.error('Available times error:', error);
+        res.status(500).json({ error: 'Kon beschikbare tijden niet ophalen' });
+    }
+});
+
+/**
+ * Haal eerste beschikbare tijdslot op (voor quick-select)
+ * GET /api/book/customer/:token/first-available
+ * Query params: serviceId
+ */
+router.get('/customer/:token/first-available', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { serviceId } = req.query;
+        
+        // Valideer klant token
+        const data = await customerStore.getCustomerWithOwnerByToken(token);
+        if (!data) {
+            return res.status(404).json({ error: 'Ongeldige boekingslink' });
+        }
+        
+        if (!serviceId) {
+            return res.status(400).json({ error: 'Service ID is verplicht' });
+        }
+        
+        // Haal service op
+        const service = await serviceStore.getService(data.owner.id, serviceId);
+        if (!service) {
+            return res.status(400).json({ error: 'Ongeldige service' });
+        }
+        
+        // Haal settings op
+        const bookingSettings = await userStore.getBookingSettings(data.owner.id);
+        const company = await companyStore.getCompanySettings(data.owner.id);
+        
+        // Bepaal werkuren
+        const useTheaterHours = data.customer.useTheaterHours && company?.theaterHoursEnabled;
+        let workingHours;
+        if (useTheaterHours && company?.theaterHours) {
+            workingHours = normalizeWorkingHours(company.theaterHours);
+        } else {
+            workingHours = normalizeWorkingHours(company?.workingHours);
+        }
+        
+        const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const now = new Date();
+        const minDate = new Date(now.getTime() + (bookingSettings.minAdvanceHours * 60 * 60 * 1000));
+        const maxDate = new Date(now.getTime() + (bookingSettings.maxAdvanceDays * 24 * 60 * 60 * 1000));
+        
+        // Travel settings
+        const travelSettings = await companyStore.getTravelSettings(data.owner.id);
+        const defaultTravelTime = travelSettings?.enabled ? (travelSettings.defaultTravelTime || 30) : 0;
+        
+        // Zoek door de komende dagen
+        let firstSlot = null;
+        const serviceDuration = service.duration || 60;
+        
+        for (let dayOffset = 0; dayOffset < bookingSettings.maxAdvanceDays && !firstSlot; dayOffset++) {
+            const checkDate = new Date(minDate.getTime() + (dayOffset * 24 * 60 * 60 * 1000));
+            if (checkDate > maxDate) break;
+            
+            const dayName = dayNames[checkDate.getDay()];
+            const daySettings = workingHours[dayName];
+            
+            if (!daySettings?.enabled) continue;
+            
+            const dateStr = checkDate.toISOString().split('T')[0];
+            
+            // Haal afspraken voor deze dag
+            const appointments = await appointmentStore.getAppointmentsByDateRange(
+                data.owner.id,
+                dateStr,
+                dateStr
+            );
+            
+            // Genereer slots
+            const slots = generateTimeSlots(
+                checkDate,
+                daySettings.start || '09:00',
+                daySettings.end || '17:00',
+                serviceDuration,
+                service.bufferBefore || 0,
+                service.bufferAfter || 0,
+                appointments,
+                defaultTravelTime
+            );
+            
+            if (slots.length > 0) {
+                firstSlot = {
+                    date: dateStr,
+                    time: slots[0].time,
+                    dayName: dayName
+                };
+            }
+        }
+        
+        res.json({
+            success: true,
+            firstAvailable: firstSlot,
+            message: firstSlot 
+                ? `Eerste beschikbaar: ${firstSlot.date} om ${firstSlot.time}`
+                : 'Geen beschikbare tijden gevonden'
+        });
+        
+    } catch (error) {
+        console.error('First available error:', error);
+        res.status(500).json({ error: 'Kon eerste beschikbare tijd niet ophalen' });
+    }
+});
+
 // ==================== PUBLIC ADDRESS AUTOCOMPLETE ====================
 
 /**
