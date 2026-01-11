@@ -1316,21 +1316,22 @@
                 
                 <!-- Smart Appointment Section -->
                 <div id="smart-appointment-section" class="form-group" style="display: none;">
-                    <label>Find available time</label>
+                    <label><i data-lucide="sparkles" style="width:14px;height:14px;display:inline-block;vertical-align:middle;color:#f59e0b;"></i> Smart Pick</label>
                     <div style="display: flex; gap: 10px; align-items: flex-end;">
                         <div style="flex: 1;">
                             <input type="date" id="smart-date" style="width: 100%;">
                         </div>
                         <button type="button" id="find-smart-slot-btn" class="btn btn-primary" onclick="findSmartSlot()" style="white-space: nowrap;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
-                                <circle cx="11" cy="11" r="8"></circle>
-                                <path d="m21 21-4.35-4.35"></path>
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
                             </svg>
-                            Find time
+                            Find best time
                         </button>
                     </div>
                     <div style="font-size: 11px; color: var(--gray-500); margin-top: 6px;">
-                        <i data-lucide="lightbulb" style="width:12px;height:12px;display:inline-block;vertical-align:middle;"></i> Want to pick a specific time? Click directly on the calendar view.
+                        Pick a date, AI finds the optimal time slot
                     </div>
                     <div id="smart-result" style="margin-top: 10px; display: none;"></div>
                 </div>
