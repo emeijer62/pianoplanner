@@ -1853,6 +1853,15 @@ async function generateSmartSuggestions(options) {
         maxSuggestions = 5
     } = options;
     
+    console.log(`[SMART SUGGESTIONS] Generating suggestions with ${existingAppointments.length} existing appointments`);
+    
+    // Debug: log alle appointments
+    existingAppointments.forEach(apt => {
+        const startDate = new Date(apt.start);
+        const endDate = new Date(apt.end);
+        console.log(`[SMART SUGGESTIONS] Appointment: "${apt.title || 'Unnamed'}" on ${startDate.toISOString().split('T')[0]} ${startDate.toTimeString().slice(0,5)}-${endDate.toTimeString().slice(0,5)}`);
+    });
+    
     const suggestions = [];
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     
@@ -1933,6 +1942,13 @@ function findOptimalSlotsForDay(options) {
     const { date, dayHours, service, dayAppointments, customerLocation } = options;
     const slots = [];
     
+    console.log(`[FIND SLOTS] Day ${date}: ${dayAppointments.length} appointments`);
+    dayAppointments.forEach(apt => {
+        const s = new Date(apt.start);
+        const e = new Date(apt.end);
+        console.log(`[FIND SLOTS]   - "${apt.title || 'Unnamed'}" ${s.toTimeString().slice(0,5)}-${e.toTimeString().slice(0,5)}`);
+    });
+    
     const [startH, startM] = dayHours.start.split(':').map(Number);
     const [endH, endM] = dayHours.end.split(':').map(Number);
     const dayStartMinutes = startH * 60 + startM;
@@ -1950,7 +1966,7 @@ function findOptimalSlotsForDay(options) {
     
     // Helper functie: check of een tijdsslot overlapt met ENIGE bestaande afspraak
     const hasOverlapWithAnyAppointment = (slotStartMinutes, slotEndMinutes) => {
-        return sortedAppointments.some(apt => {
+        const hasOverlap = sortedAppointments.some(apt => {
             const aptStart = new Date(apt.start);
             const aptEnd = new Date(apt.end);
             const aptStartMinutes = aptStart.getHours() * 60 + aptStart.getMinutes();
@@ -1961,8 +1977,13 @@ function findOptimalSlotsForDay(options) {
             const aptBlockEnd = aptEndMinutes + defaultTravelTime;
             
             // Check overlap: slot start voor apt block eindigt EN slot eindigt na apt block start
-            return slotStartMinutes < aptBlockEnd && slotEndMinutes > aptBlockStart;
+            const overlap = slotStartMinutes < aptBlockEnd && slotEndMinutes > aptBlockStart;
+            if (overlap) {
+                console.log(`[FIND SLOTS] Overlap detected: slot ${formatMinutesToTime(slotStartMinutes)}-${formatMinutesToTime(slotEndMinutes)} overlaps with "${apt.title}" (block ${formatMinutesToTime(aptBlockStart)}-${formatMinutesToTime(aptBlockEnd)})`);
+            }
+            return overlap;
         });
+        return hasOverlap;
     };
     
     // Als er afspraken zijn op deze dag, zoek slots direct voor/na
