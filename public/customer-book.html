@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/apple-style.css">
     <link rel="stylesheet" href="/icons.css?v=20260109b">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/language-picker.js" defer></script>
     <style>
         :root {
             --primary: #007AFF;
@@ -1054,6 +1055,14 @@
         .legend-dot.available { background: #e8f5e9; border: 1px solid #a5d6a7; }
         .legend-dot.full { background: #ffebee; border: 1px solid #ef9a9a; }
         .legend-dot.closed { background: var(--bg); border: 1px solid var(--border); }
+        
+        /* Language picker position */
+        .lang-trigger {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
