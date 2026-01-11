@@ -1941,6 +1941,7 @@ async function generateSmartSuggestions(options) {
 function findOptimalSlotsForDay(options) {
     const { date, dayHours, service, dayAppointments, customerLocation } = options;
     const slots = [];
+    const addedSlots = new Set(); // Track already added slot times to prevent duplicates
     
     console.log(`[FIND SLOTS] Day ${date}: ${dayAppointments.length} appointments`);
     dayAppointments.forEach(apt => {
@@ -2006,7 +2007,9 @@ function findOptimalSlotsForDay(options) {
             
             if (beforeSlotStart >= dayStartMinutes + defaultTravelTime) {
                 // Check overlap met ALLE afspraken, niet alleen de vorige
-                if (!hasOverlapWithAnyAppointment(beforeSlotStart, beforeSlotEnd)) {
+                const slotKey = `${date}-${formatMinutesToTime(beforeSlotStart)}`;
+                if (!addedSlots.has(slotKey) && !hasOverlapWithAnyAppointment(beforeSlotStart, beforeSlotEnd)) {
+                    addedSlots.add(slotKey);
                     const proximityScore = apt.distanceScore || 50;
                     slots.push({
                         date,
@@ -2018,6 +2021,7 @@ function findOptimalSlotsForDay(options) {
                             : `Efficient: before another appointment`,
                         efficiency: 'high'
                     });
+                    console.log(`[FIND SLOTS] Added slot BEFORE: ${formatMinutesToTime(beforeSlotStart)}-${formatMinutesToTime(beforeSlotEnd)}`);
                 }
             }
             
@@ -2027,7 +2031,9 @@ function findOptimalSlotsForDay(options) {
             
             if (afterSlotEnd <= dayEndMinutes) {
                 // Check overlap met ALLE afspraken, niet alleen de volgende
-                if (!hasOverlapWithAnyAppointment(afterSlotStart, afterSlotEnd)) {
+                const slotKey = `${date}-${formatMinutesToTime(afterSlotStart)}`;
+                if (!addedSlots.has(slotKey) && !hasOverlapWithAnyAppointment(afterSlotStart, afterSlotEnd)) {
+                    addedSlots.add(slotKey);
                     const proximityScore = apt.distanceScore || 50;
                     slots.push({
                         date,
@@ -2039,6 +2045,7 @@ function findOptimalSlotsForDay(options) {
                             : `Efficient: after another appointment`,
                         efficiency: 'high'
                     });
+                    console.log(`[FIND SLOTS] Added slot AFTER: ${formatMinutesToTime(afterSlotStart)}-${formatMinutesToTime(afterSlotEnd)}`);
                 }
             }
         }
