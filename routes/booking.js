@@ -558,30 +558,38 @@ router.post('/travel-time', async (req, res) => {
  */
 router.post('/find-slots-batch', async (req, res) => {
     try {
+        // Extra veiligheidscheck voor sessie
+        if (!req.session?.user?.id) {
+            console.error('[BATCH] No user session found');
+            return res.status(401).json({ error: 'Niet ingelogd' });
+        }
+        
+        const userId = req.session.user.id;
         const { 
             serviceId, customerId, pianoIds,
             startDate, daysToSearch = 14, maxSlotsPerDay = 3, minTotalSlots = 8
         } = req.body;
         
-        console.log('[BATCH] Request:', { serviceId, customerId, startDate, daysToSearch });
+        console.log('[BATCH] Request:', { userId, serviceId, customerId, startDate, daysToSearch });
         
         if (!serviceId || !startDate) {
             return res.status(400).json({ error: 'Service en startdatum zijn verplicht' });
         }
         
-        const service = await serviceStore.getService(req.session.user.id, serviceId);
+        const service = await serviceStore.getService(userId, serviceId);
         if (!service) {
+            console.error('[BATCH] Service not found:', serviceId);
             return res.status(404).json({ error: 'Dienst niet gevonden' });
         }
         
         // Get customer and piano info for travel calculation
-        const companyAddress = await companyStore.getOriginAddress(req.session.user.id);
+        const companyAddress = await companyStore.getOriginAddress(userId);
         let destination = companyAddress;
         let customer = null;
         
         // Check piano location first
         if (pianoIds && pianoIds.length > 0) {
-            const piano = await pianoStore.getPiano(req.session.user.id, pianoIds[0]);
+            const piano = await pianoStore.getPiano(userId, pianoIds[0]);
             if (piano?.location?.trim()) {
                 destination = piano.location.trim();
             }
@@ -589,7 +597,7 @@ router.post('/find-slots-batch', async (req, res) => {
         
         // Then customer address
         if (customerId) {
-            customer = await customerStore.getCustomer(req.session.user.id, customerId);
+            customer = await customerStore.getCustomer(userId, customerId);
             if (!destination || destination === companyAddress) {
                 if (customer?.address?.city) {
                     destination = `${customer.address.street}, ${customer.address.city}`;
@@ -600,11 +608,17 @@ router.post('/find-slots-batch', async (req, res) => {
         const isTheater = customer?.use_theater_availability === 1;
         
         // Get company settings for availability
-        const companySettings = await companyStore.getCompanySettings(req.session.user.id);
+        const companySettings = await companyStore.getCompanySettings(userId);
+        console.log('[BATCH] Company settings:', JSON.stringify(companySettings?.workingHours || 'none'));
+        
         const workingHours = companySettings?.workingHours || { 
             start: '09:00', end: '17:00',
             days: [1, 2, 3, 4, 5]
         };
+        // Zorg ervoor dat days altijd een array is
+        if (!Array.isArray(workingHours.days)) {
+            workingHours.days = [1, 2, 3, 4, 5];
+        }
         const theaterHours = companySettings?.theaterHours || { start: '09:00', end: '23:00' };
         
         // Process multiple days in parallel
@@ -624,7 +638,7 @@ router.post('/find-slots-batch', async (req, res) => {
             if (availableDays.includes(dayOfWeek)) {
                 datePromises.push(
                     findSlotsForDay(
-                        req.session.user.id, 
+                        userId, 
                         dateStr, 
                         service, 
                         destination, 
@@ -665,8 +679,8 @@ router.post('/find-slots-batch', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('[BATCH] Error:', error);
-        res.status(500).json({ error: 'Fout bij zoeken naar beschikbare tijden' });
+        console.error('[BATCH] Error:', error.message, error.stack);
+        res.status(500).json({ error: 'Fout bij zoeken naar beschikbare tijden', details: error.message });
     }
 });
 
