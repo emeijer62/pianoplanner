@@ -595,12 +595,28 @@ router.get('/customer/:token/smart-suggestions', async (req, res) => {
         const startDate = new Date(now.getTime() + (bookingSettings.minAdvanceHours * 60 * 60 * 1000));
         const endDate = new Date(now.getTime() + (bookingSettings.maxAdvanceDays * 24 * 60 * 60 * 1000));
         
-        // Haal alle afspraken in deze periode op
-        const allAppointments = await appointmentStore.getAppointmentsByDateRange(
+        // Haal alle DB afspraken in deze periode op
+        const dbAppointments = await appointmentStore.getAppointmentsByDateRange(
             data.owner.id, 
             startDate.toISOString().split('T')[0],
             endDate.toISOString().split('T')[0]
         );
+        
+        // Haal ook externe calendar events op (Apple/Google/Microsoft)
+        const externalEvents = await getExternalCalendarEvents(data.owner.id, startDate, endDate);
+        
+        // Combineer alle appointments
+        const allAppointments = [
+            ...dbAppointments,
+            ...externalEvents.filter(e => e.start && e.end).map(event => ({
+                start: event.start instanceof Date ? event.start.toISOString() : event.start,
+                end: event.end instanceof Date ? event.end.toISOString() : event.end,
+                title: event.summary || 'External event',
+                location: null
+            }))
+        ];
+        
+        console.log(`[CUSTOMER SMART] Period: ${dbAppointments.length} DB + ${externalEvents.length} external = ${allAppointments.length} total`);
         
         // Haal travel settings op
         const travelSettings = await companyStore.getTravelSettings(data.owner.id);
@@ -1770,12 +1786,28 @@ router.get('/:slug/smart-suggestions', async (req, res) => {
         const startDate = new Date(now.getTime() + (settings.minAdvanceHours * 60 * 60 * 1000));
         const endDate = new Date(now.getTime() + (settings.maxAdvanceDays * 24 * 60 * 60 * 1000));
         
-        // Haal alle afspraken in deze periode op
-        const allAppointments = await appointmentStore.getAppointmentsByDateRange(
+        // Haal alle DB afspraken in deze periode op
+        const dbAppointments = await appointmentStore.getAppointmentsByDateRange(
             user.id, 
             startDate.toISOString().split('T')[0],
             endDate.toISOString().split('T')[0]
         );
+        
+        // Haal ook externe calendar events op (Apple/Google/Microsoft)
+        const externalEvents = await getExternalCalendarEvents(user.id, startDate, endDate);
+        
+        // Combineer alle appointments
+        const allAppointments = [
+            ...dbAppointments,
+            ...externalEvents.filter(e => e.start && e.end).map(event => ({
+                start: event.start instanceof Date ? event.start.toISOString() : event.start,
+                end: event.end instanceof Date ? event.end.toISOString() : event.end,
+                title: event.summary || 'External event',
+                location: null // External events don't have reliable location
+            }))
+        ];
+        
+        console.log(`[PUBLIC SMART] Period ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}: ${dbAppointments.length} DB + ${externalEvents.length} external = ${allAppointments.length} total`);
         
         // Genereer suggesties met travel settings
         const suggestions = await generateSmartSuggestions({
