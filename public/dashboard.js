@@ -1778,9 +1778,15 @@ async function saveNewCustomer() {
         if (hiddenInput) hiddenInput.value = newCustomer.id;
         onCustomerChange();
         
-        // If a piano was created, select it
+        // If a piano was created, select it via checkbox
         if (newPiano) {
-            document.getElementById('event-piano').value = newPiano.id;
+            setTimeout(() => {
+                const checkbox = document.querySelector(`#piano-checkboxes input[value="${newPiano.id}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    onPianoCheckboxChange(checkbox);
+                }
+            }, 100);
         }
         
         // Hide form
@@ -2025,10 +2031,14 @@ async function openEditModal(appointmentId) {
             onCustomerChange(); // Load pianos for this customer
         }
         
-        // Set piano after pianos are loaded
+        // Set piano checkbox after pianos are loaded
         setTimeout(() => {
             if (appointment.pianoId) {
-                document.getElementById('event-piano').value = appointment.pianoId;
+                const checkbox = document.querySelector(`#piano-checkboxes input[value="${appointment.pianoId}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    onPianoCheckboxChange(checkbox);
+                }
             }
         }, 100);
     }
