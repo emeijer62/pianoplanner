@@ -1513,52 +1513,93 @@
                 <div style="width: 30px;"></div>
             </div>
             <div class="apple-modal-body" style="padding: 24px;">
-                <p style="color: var(--gray-500); margin-bottom: 24px; font-size: 14px; text-align: center; line-height: 1.5;">
-                    Vind de optimale tijd op basis van klantlocatie en je bestaande afspraken.
-                </p>
                 
-                <div style="display: flex; flex-direction: column; gap: 20px;">
-                    <div class="apple-form-field">
-                        <label class="apple-form-label" for="smart-customer-search" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Klant</label>
-                        <div style="display: flex; gap: 10px;">
-                            <div style="position: relative; flex: 1;">
-                                <input type="text" id="smart-customer-search" class="apple-form-input" placeholder="Zoek klant..." autocomplete="off" style="padding: 14px 16px; font-size: 16px; border-radius: 12px; width: 100%;">
-                                <input type="hidden" id="smart-customer-id">
-                                <div id="smart-customer-results" class="smart-pick-autocomplete" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e5e5ea; border-radius: 12px; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 200px; overflow-y: auto;"></div>
+                <!-- Main view -->
+                <div id="smart-pick-main">
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Klant</label>
+                            <div style="display: flex; gap: 10px;">
+                                <div style="position: relative; flex: 1;">
+                                    <input type="text" id="smart-customer-search" class="apple-form-input" placeholder="Zoek klant..." autocomplete="off" style="padding: 14px 16px; font-size: 16px; border-radius: 12px; width: 100%;">
+                                    <input type="hidden" id="smart-customer-id">
+                                    <div id="smart-customer-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e5e5ea; border-radius: 12px; margin-top: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; max-height: 200px; overflow-y: auto;"></div>
+                                </div>
+                                <button type="button" onclick="toggleSmartPickNewCustomer()" style="width: 52px; height: 52px; border-radius: 12px; background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; color: #16a34a; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" title="Nieuwe klant">
+                                    <i data-lucide="user-plus" style="width: 22px; height: 22px;"></i>
+                                </button>
                             </div>
-                            <button type="button" onclick="openNewCustomerFromSmartPick()" style="width: 52px; height: 52px; border-radius: 12px; background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; color: #16a34a; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" title="Nieuwe klant">
-                                <i data-lucide="user-plus" style="width: 22px; height: 22px;"></i>
-                            </button>
+                        </div>
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Service</label>
+                            <select id="smart-service-select" class="apple-form-select" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
+                                <option value="">Kies een service...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Datum</label>
+                            <input type="date" id="smart-date-input" class="apple-form-input" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
                         </div>
                     </div>
                     
-                    <div class="apple-form-field">
-                        <label class="apple-form-label" for="smart-service-select" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Service</label>
-                        <select id="smart-service-select" class="apple-form-select" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
-                            <option value="">Kies een service...</option>
-                        </select>
-                    </div>
+                    <div id="smart-pick-result" style="display: none; margin-top: 24px;"></div>
                     
-                    <div class="apple-form-field">
-                        <label class="apple-form-label" for="smart-date-input" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Datum</label>
-                        <input type="date" id="smart-date-input" class="apple-form-input" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
-                    </div>
-                </div>
-                
-                <div id="smart-pick-result" style="display: none; margin-top: 24px;">
-                    <!-- Results will be shown here -->
-                </div>
-                
-                <div style="margin-top: 28px;">
-                    <button type="button" id="find-slot-btn" onclick="findSmartSlotFromModal()" style="width: 100%; padding: 16px; font-size: 16px; font-weight: 600; color: #92400e; background: linear-gradient(180deg, #fde68a 0%, #fbbf24 100%); border: 1px solid #f59e0b; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25); transition: all 0.2s ease;">
+                    <button type="button" id="find-slot-btn" onclick="findSmartSlotFromModal()" style="width: 100%; margin-top: 24px; padding: 16px; font-size: 16px; font-weight: 600; color: #92400e; background: linear-gradient(180deg, #fde68a 0%, #fbbf24 100%); border: 1px solid #f59e0b; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);">
                         <i data-lucide="search" style="width: 18px; height: 18px;"></i>
                         Zoek beschikbare tijd
                     </button>
                 </div>
                 
-                <button type="button" onclick="closeSmartPickModal()" style="width: 100%; margin-top: 12px; padding: 14px; font-size: 15px; color: #6b7280; background: transparent; border: none; cursor: pointer;">
-                    Annuleren
-                </button>
+                <!-- New Customer view (hidden by default) -->
+                <div id="smart-pick-new-customer" style="display: none;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f0f0f5;">
+                        <button type="button" onclick="toggleSmartPickNewCustomer()" style="width: 36px; height: 36px; border-radius: 10px; background: #f5f5f7; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        </button>
+                        <span style="font-weight: 600; font-size: 16px;">Nieuwe klant toevoegen</span>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Naam *</label>
+                            <input type="text" id="smart-new-customer-name" class="apple-form-input" placeholder="Volledige naam" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div class="apple-form-field">
+                                <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Email</label>
+                                <input type="email" id="smart-new-customer-email" class="apple-form-input" placeholder="email@example.com" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
+                            </div>
+                            <div class="apple-form-field">
+                                <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Telefoon</label>
+                                <input type="tel" id="smart-new-customer-phone" class="apple-form-input" placeholder="06-12345678" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
+                            </div>
+                        </div>
+                        
+                        <div class="apple-form-field">
+                            <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Straat + nummer</label>
+                            <input type="text" id="smart-new-customer-street" class="apple-form-input" placeholder="Straatnaam 123" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div class="apple-form-field">
+                                <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Postcode</label>
+                                <input type="text" id="smart-new-customer-postalcode" class="apple-form-input" placeholder="1234 AB" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
+                            </div>
+                            <div class="apple-form-field">
+                                <label class="apple-form-label" style="font-size: 13px; color: #6b7280; margin-bottom: 8px;">Plaats</label>
+                                <input type="text" id="smart-new-customer-city" class="apple-form-input" placeholder="Stad" style="padding: 14px 16px; font-size: 16px; border-radius: 12px;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" onclick="saveSmartPickNewCustomer()" style="width: 100%; margin-top: 24px; padding: 16px; font-size: 16px; font-weight: 600; color: white; background: #16a34a; border: none; border-radius: 14px; cursor: pointer;">
+                        Klant opslaan
+                    </button>
+                </div>
+                
             </div>
         </div>
     </div>

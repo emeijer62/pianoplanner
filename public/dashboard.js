@@ -2501,6 +2501,10 @@ function openSmartPickModal() {
     document.getElementById('smart-customer-id').value = '';
     document.getElementById('smart-pick-result').style.display = 'none';
     
+    // Make sure main view is shown, not new customer form
+    document.getElementById('smart-pick-main').style.display = 'block';
+    document.getElementById('smart-pick-new-customer').style.display = 'none';
+    
     // Populate services dropdown
     populateSmartPickServices();
     
@@ -2520,19 +2524,113 @@ function closeSmartPickModal() {
     document.getElementById('smart-service-select').value = '';
     document.getElementById('smart-pick-result').style.display = 'none';
     document.getElementById('smart-customer-results').style.display = 'none';
+    
+    // Reset to main view
+    document.getElementById('smart-pick-main').style.display = 'block';
+    document.getElementById('smart-pick-new-customer').style.display = 'none';
 }
 
 function populateSmartPickServices() {
     const serviceSelect = document.getElementById('smart-service-select');
-    serviceSelect.innerHTML = '<option value="">-- Select service --</option>';
+    serviceSelect.innerHTML = '<option value="">Kies een service...</option>';
     
     // Use the existing servicesCache instead of fetching again
-    servicesCache.forEach(service => {
-        const option = document.createElement('option');
-        option.value = service.id;
-        option.textContent = `${service.name} (${service.duration} min)`;
-        serviceSelect.appendChild(option);
-    });
+    if (servicesCache && servicesCache.length > 0) {
+        servicesCache.forEach(service => {
+            const option = document.createElement('option');
+            option.value = service.id;
+            option.textContent = `${service.name} (${service.duration} min)`;
+            serviceSelect.appendChild(option);
+        });
+    } else {
+        // Fallback: fetch services if cache is empty
+        fetch('/api/services')
+            .then(r => r.json())
+            .then(data => {
+                const services = Array.isArray(data) ? data : (data.services || []);
+                services.forEach(service => {
+                    const option = document.createElement('option');
+                    option.value = service.id;
+                    option.textContent = `${service.name} (${service.duration} min)`;
+                    serviceSelect.appendChild(option);
+                });
+            })
+            .catch(err => console.error('Error loading services:', err));
+    }
+}
+
+// Toggle new customer form in Smart Pick
+function toggleSmartPickNewCustomer() {
+    const mainView = document.getElementById('smart-pick-main');
+    const newCustomerView = document.getElementById('smart-pick-new-customer');
+    
+    if (newCustomerView.style.display === 'none') {
+        mainView.style.display = 'none';
+        newCustomerView.style.display = 'block';
+        document.getElementById('smart-new-customer-name').focus();
+    } else {
+        mainView.style.display = 'block';
+        newCustomerView.style.display = 'none';
+    }
+}
+
+// Save new customer from Smart Pick
+async function saveSmartPickNewCustomer() {
+    const name = document.getElementById('smart-new-customer-name').value.trim();
+    const email = document.getElementById('smart-new-customer-email').value.trim();
+    const phone = document.getElementById('smart-new-customer-phone').value.trim();
+    const street = document.getElementById('smart-new-customer-street').value.trim();
+    const postalCode = document.getElementById('smart-new-customer-postalcode').value.trim();
+    const city = document.getElementById('smart-new-customer-city').value.trim();
+    
+    if (!name) {
+        alert('Vul een naam in');
+        document.getElementById('smart-new-customer-name').focus();
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/customers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name,
+                email,
+                phone,
+                address: street,
+                postalCode,
+                city
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to create customer');
+        }
+        
+        const newCustomer = await response.json();
+        
+        // Select the new customer in Smart Pick
+        document.getElementById('smart-customer-search').value = name;
+        document.getElementById('smart-customer-id').value = newCustomer.id;
+        
+        // Clear form
+        document.getElementById('smart-new-customer-name').value = '';
+        document.getElementById('smart-new-customer-email').value = '';
+        document.getElementById('smart-new-customer-phone').value = '';
+        document.getElementById('smart-new-customer-street').value = '';
+        document.getElementById('smart-new-customer-postalcode').value = '';
+        document.getElementById('smart-new-customer-city').value = '';
+        
+        // Go back to main view
+        toggleSmartPickNewCustomer();
+        
+        // Refresh customers cache
+        loadCustomers();
+        
+    } catch (error) {
+        console.error('Error creating customer:', error);
+        alert('Er ging iets mis bij het opslaan van de klant');
+    }
 }
 
 function setupSmartPickCustomerSearch() {
@@ -2609,24 +2707,6 @@ function selectSmartPickCustomer(id, name) {
     document.getElementById('smart-customer-results').style.display = 'none';
 }
 
-function openNewCustomerFromSmartPick() {
-    // Close Smart Pick modal
-    closeSmartPickModal();
-    
-    // Open main appointment modal in wizard mode
-    openModal();
-    
-    // Show the new customer form
-    setTimeout(() => {
-        const newCustomerForm = document.getElementById('new-customer-form');
-        if (newCustomerForm) {
-            newCustomerForm.style.display = 'block';
-            const nameInput = document.getElementById('new-customer-name');
-            if (nameInput) nameInput.focus();
-        }
-    }, 100);
-}
-
 async function findSmartSlotFromModal() {
     const customerId = document.getElementById('smart-customer-id').value;
     const serviceId = document.getElementById('smart-service-select').value;
@@ -2635,15 +2715,15 @@ async function findSmartSlotFromModal() {
     const btn = document.getElementById('find-slot-btn');
     
     if (!customerId) {
-        alert('Please select a customer');
+        alert('Selecteer eerst een klant');
         return;
     }
     if (!serviceId) {
-        alert('Please select a service');
+        alert('Selecteer eerst een service');
         return;
     }
     if (!date) {
-        alert('Please select a date');
+        alert('Selecteer eerst een datum');
         return;
     }
     
@@ -2652,7 +2732,7 @@ async function findSmartSlotFromModal() {
     resultDiv.innerHTML = `
         <div style="text-align: center; padding: 16px; color: var(--gray-500);">
             <i data-lucide="loader" class="spin" style="width:20px;height:20px;display:inline-block;vertical-align:middle;"></i>
-            <span style="margin-left: 8px;">Finding optimal time...</span>
+            <span style="margin-left: 8px;">Optimale tijd zoeken...</span>
         </div>
     `;
     btn.disabled = true;
