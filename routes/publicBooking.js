@@ -699,6 +699,27 @@ router.get('/customer/:token/available-days', async (req, res) => {
             lastDayOfMonth.toISOString().split('T')[0]
         );
         
+        // Haal ook externe calendar events op (Apple/Google/Microsoft)
+        const monthStart = new Date(firstDayOfMonth);
+        monthStart.setHours(0, 0, 0, 0);
+        const monthEnd = new Date(lastDayOfMonth);
+        monthEnd.setHours(23, 59, 59, 999);
+        const externalEvents = await getExternalCalendarEvents(data.owner.id, monthStart, monthEnd);
+        
+        console.log(`[CUSTOMER BOOKING] Month ${targetMonth.toISOString().slice(0, 7)}: ${appointments.length} DB appointments + ${externalEvents.length} external events`);
+        
+        // Combineer alle events
+        const allEvents = [
+            ...appointments.map(apt => ({
+                start: apt.start,
+                end: apt.end
+            })),
+            ...externalEvents.filter(e => e.start && e.end).map(event => ({
+                start: event.start instanceof Date ? event.start.toISOString() : event.start,
+                end: event.end instanceof Date ? event.end.toISOString() : event.end
+            }))
+        ];
+        
         // Genereer dag-status array
         const days = [];
         const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -728,10 +749,10 @@ router.get('/customer/:token/available-days', async (req, res) => {
             }
             // Check 3: Heeft de dag nog vrije slots?
             else {
-                // Tel afspraken op deze dag
-                const dayAppointments = appointments.filter(apt => {
-                    const aptDate = apt.start.split('T')[0];
-                    return aptDate === dateStr;
+                // Tel ALLE events op deze dag (DB + extern)
+                const dayEvents = allEvents.filter(evt => {
+                    const evtDate = evt.start.split('T')[0];
+                    return evtDate === dateStr;
                 });
                 
                 // Bereken beschikbare tijd
@@ -740,10 +761,10 @@ router.get('/customer/:token/available-days', async (req, res) => {
                 const totalMinutes = (endH * 60 + endM) - (startH * 60 + startM);
                 const serviceDuration = service.duration || 60;
                 
-                // Ruwe schatting: hoeveel slots passen er?
-                const bookedMinutes = dayAppointments.reduce((sum, apt) => {
-                    const start = new Date(apt.start);
-                    const end = new Date(apt.end);
+                // Ruwe schatting: hoeveel tijd is geboekt?
+                const bookedMinutes = dayEvents.reduce((sum, evt) => {
+                    const start = new Date(evt.start);
+                    const end = new Date(evt.end);
                     return sum + (end - start) / 60000;
                 }, 0);
                 
@@ -843,11 +864,26 @@ router.get('/customer/:token/available-times', async (req, res) => {
         }
         
         // Haal afspraken voor deze dag
-        const appointments = await appointmentStore.getAppointmentsByDateRange(
-            data.owner.id,
-            date,
-            date
-        );
+        const appointments = await appointmentStore.getAppointmentsForDay(data.owner.id, date);
+        
+        // Haal ook externe calendar events op (Apple/Google/Microsoft)
+        const dayStart = new Date(date + 'T00:00:00');
+        const dayEnd = new Date(date + 'T23:59:59');
+        const externalEvents = await getExternalCalendarEvents(data.owner.id, dayStart, dayEnd);
+        
+        // Combineer interne afspraken met externe events voor slot generatie
+        const allBlockedTimes = [
+            ...appointments.map(apt => ({
+                start: apt.start,
+                end: apt.end
+            })),
+            ...externalEvents.filter(e => e.start && e.end).map(event => ({
+                start: event.start instanceof Date ? event.start.toISOString() : event.start,
+                end: event.end instanceof Date ? event.end.toISOString() : event.end
+            }))
+        ];
+        
+        console.log(`[CUSTOMER BOOKING] ${date}: ${appointments.length} DB appointments + ${externalEvents.length} external events`);
         
         // Genereer tijdslots
         const serviceDuration = service.duration || 60;
@@ -865,7 +901,7 @@ router.get('/customer/:token/available-times', async (req, res) => {
             serviceDuration,
             bufferBefore,
             bufferAfter,
-            appointments,
+            allBlockedTimes,  // Nu inclusief externe events
             defaultTravelTime
         );
         
