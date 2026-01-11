@@ -1083,7 +1083,7 @@ function createEventElement(event, compact = false, slotStartMinutes = null) {
         return `
             <div class="calendar-event" style="background: ${color}; cursor: grab; min-height: ${weekEventHeight}px; height: ${weekEventHeight}px; ${offsetStyle}" 
                  title="${escapeHtml(event.summary || 'No title')}${hasTravelTime ? ` (🚗 ${event.travelTimeMinutes} min)` : ''}"
-                 onclick="openEditModal('${event.id}')"
+                 onclick="handleAppointmentClick('${event.id}', event)"
                  draggable="true"
                  ondragstart="handleDragStart(event, '${event.id}')"
                  ondragend="handleDragEnd(event)">
@@ -1111,7 +1111,7 @@ function createEventElement(event, compact = false, slotStartMinutes = null) {
     return `
         ${travelBlock}
         <div class="calendar-event" style="background: ${color}; cursor: grab; min-height: ${dayEventHeight}px; height: ${dayEventHeight}px; ${offsetStyle}" 
-             onclick="openEditModal('${event.id}')"
+             onclick="handleAppointmentClick('${event.id}', event)"
              draggable="true"
              ondragstart="handleDragStart(event, '${event.id}')"
              ondragend="handleDragEnd(event)">
@@ -2088,6 +2088,137 @@ async function openEditModal(appointmentId) {
     }
 }
 
+// ========== ACTION SHEET FOR APPOINTMENT CRUD ==========
+let actionSheetAppointmentId = null;
+
+// Check if mobile device
+function isMobileDevice() {
+    return window.innerWidth <= 768 || 'ontouchstart' in window;
+}
+
+// Open action sheet when clicking on an appointment (mobile) or direct edit (desktop)
+function handleAppointmentClick(appointmentId, event) {
+    if (event) {
+        event.stopPropagation();
+    }
+    
+    const appointment = allEvents.find(e => e.id === appointmentId);
+    if (!appointment) return;
+    
+    // On mobile: show action sheet
+    // On desktop: open edit modal directly
+    if (isMobileDevice()) {
+        openActionSheet(appointmentId);
+    } else {
+        openEditModal(appointmentId);
+    }
+}
+
+// Open the action sheet with appointment info
+function openActionSheet(appointmentId) {
+    const appointment = allEvents.find(e => e.id === appointmentId);
+    if (!appointment) return;
+    
+    actionSheetAppointmentId = appointmentId;
+    
+    // Set title and subtitle
+    const titleEl = document.getElementById('action-sheet-title');
+    const subtitleEl = document.getElementById('action-sheet-subtitle');
+    
+    titleEl.textContent = appointment.summary || 'Appointment';
+    
+    // Format date/time for subtitle
+    if (appointment.start?.dateTime) {
+        const startDate = new Date(appointment.start.dateTime);
+        const options = { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
+        subtitleEl.textContent = startDate.toLocaleDateString(undefined, options);
+    } else {
+        subtitleEl.textContent = '';
+    }
+    
+    // Show/hide customer button based on whether appointment has a customer
+    const customerBtn = document.querySelector('.action-sheet-btn[onclick="actionSheetViewCustomer()"]');
+    if (customerBtn) {
+        customerBtn.style.display = appointment.customerId ? 'flex' : 'none';
+    }
+    
+    // Show/hide navigate button based on whether appointment has a location
+    const navBtn = document.querySelector('.action-sheet-btn[onclick="actionSheetNavigate()"]');
+    if (navBtn) {
+        navBtn.style.display = appointment.location ? 'flex' : 'none';
+    }
+    
+    // Show the action sheet
+    const actionSheet = document.getElementById('appointment-action-sheet');
+    actionSheet.style.display = 'flex';
+    
+    // Re-init lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+// Close the action sheet
+function closeActionSheet() {
+    const actionSheet = document.getElementById('appointment-action-sheet');
+    if (actionSheet) {
+        actionSheet.style.display = 'none';
+    }
+    actionSheetAppointmentId = null;
+}
+
+// Action sheet: Edit
+function actionSheetEdit() {
+    const id = actionSheetAppointmentId;
+    closeActionSheet();
+    if (id) {
+        openEditModal(id);
+    }
+}
+
+// Action sheet: View Customer
+function actionSheetViewCustomer() {
+    const appointment = allEvents.find(e => e.id === actionSheetAppointmentId);
+    closeActionSheet();
+    if (appointment?.customerId) {
+        window.location.href = `/customer-detail.html?id=${appointment.customerId}`;
+    }
+}
+
+// Action sheet: Navigate to location
+function actionSheetNavigate() {
+    const appointment = allEvents.find(e => e.id === actionSheetAppointmentId);
+    closeActionSheet();
+    if (appointment?.location) {
+        const encodedLocation = encodeURIComponent(appointment.location);
+        // Use Apple Maps on iOS, Google Maps elsewhere
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        if (isIOS) {
+            window.open(`maps://maps.apple.com/?daddr=${encodedLocation}`, '_blank');
+        } else {
+            window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodedLocation}`, '_blank');
+        }
+    }
+}
+
+// Action sheet: Delete
+function actionSheetDelete() {
+    const id = actionSheetAppointmentId;
+    const appointment = allEvents.find(e => e.id === id);
+    closeActionSheet();
+    
+    if (appointment) {
+        const title = appointment.summary || 'Appointment';
+        let dateTime = '';
+        if (appointment.start?.dateTime) {
+            const startDate = new Date(appointment.start.dateTime);
+            const options = { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
+            dateTime = startDate.toLocaleDateString(undefined, options);
+        }
+        openDeleteConfirmModal(id, title, dateTime);
+    }
+}
+
 // Delete the currently editing appointment - opens confirmation modal
 function deleteCurrentAppointment() {
     if (!editingAppointmentId) return;
@@ -2571,15 +2702,17 @@ async function handleDrop(event, dateStr, hour) {
     let swipeStartTime = 0;
     
     function handleTouchStart(e) {
-        // Don't interfere with form inputs, buttons, or modals
+        // Don't interfere with form inputs, buttons, modals, or calendar events
         const target = e.target;
         if (target.tagName === 'INPUT' || 
             target.tagName === 'SELECT' || 
             target.tagName === 'TEXTAREA' ||
             target.tagName === 'BUTTON' ||
             target.closest('.modal') ||
+            target.closest('.action-sheet') ||
             target.closest('.btn') ||
             target.closest('.event') ||
+            target.closest('.calendar-event') ||
             target.closest('.appointment-block')) {
             isSwiping = false;
             return;

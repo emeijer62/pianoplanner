@@ -1365,7 +1365,39 @@
         </div>
     </div>
 
-    <script src="dashboard.js?v=2026010904"></script>
+    <!-- Appointment Action Sheet (Mobile) -->
+    <div id="appointment-action-sheet" class="action-sheet" style="display: none;">
+        <div class="action-sheet-backdrop" onclick="closeActionSheet()"></div>
+        <div class="action-sheet-content">
+            <div class="action-sheet-header">
+                <h3 id="action-sheet-title">Appointment</h3>
+                <p id="action-sheet-subtitle"></p>
+            </div>
+            <div class="action-sheet-actions">
+                <button class="action-sheet-btn" onclick="actionSheetEdit()">
+                    <i data-lucide="pencil"></i>
+                    <span data-i18n="actions.edit">Edit</span>
+                </button>
+                <button class="action-sheet-btn" onclick="actionSheetViewCustomer()">
+                    <i data-lucide="user"></i>
+                    <span data-i18n="actions.viewCustomer">View Customer</span>
+                </button>
+                <button class="action-sheet-btn" onclick="actionSheetNavigate()">
+                    <i data-lucide="navigation"></i>
+                    <span data-i18n="actions.navigate">Navigate</span>
+                </button>
+                <button class="action-sheet-btn danger" onclick="actionSheetDelete()">
+                    <i data-lucide="trash-2"></i>
+                    <span data-i18n="actions.delete">Delete</span>
+                </button>
+            </div>
+            <button class="action-sheet-cancel" onclick="closeActionSheet()">
+                <span data-i18n="actions.cancel">Cancel</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="dashboard.js?v=2026011101"></script>
     <script>
         // Update cockpit stats
         function updateCockpitStats() {
