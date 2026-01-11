@@ -694,6 +694,28 @@ app.get('/health', (req, res) => {
     });
 });
 
+// PWA Icon generator - serves SVG icons as PNG fallback
+app.get('/assets/icons/icon-:size.png', (req, res) => {
+    const size = parseInt(req.params.size);
+    const validSizes = [72, 96, 128, 144, 152, 167, 180, 192, 384, 512];
+    
+    if (!validSizes.some(s => `${s}x${s}` === req.params.size)) {
+        return res.status(404).send('Invalid icon size');
+    }
+    
+    // Serve SVG with correct content type - browsers will render it
+    const svgPath = path.join(__dirname, 'public/assets/icons/icon.svg');
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.sendFile(svgPath);
+});
+
+// Apple touch icon fallback
+app.get('/assets/icons/apple-touch-icon.png', (req, res) => {
+    const svgPath = path.join(__dirname, 'public/assets/icons/apple-touch-icon.svg');
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.sendFile(svgPath);
+});
+
 // Hoofdpagina
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));

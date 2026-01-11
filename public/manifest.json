@@ -1,0 +1,104 @@
+{
+  "name": "PianoPlanner",
+  "short_name": "PianoPlanner",
+  "description": "Professional piano tuner appointment scheduling",
+  "start_url": "/dashboard.html",
+  "display": "standalone",
+  "background_color": "#f5f5f7",
+  "theme_color": "#007AFF",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/assets/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Appointment",
+      "short_name": "New",
+      "description": "Create a new appointment",
+      "url": "/dashboard.html?action=new",
+      "icons": [{ "src": "/assets/icons/shortcut-add.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Customers",
+      "short_name": "Customers",
+      "description": "View all customers",
+      "url": "/customers.html",
+      "icons": [{ "src": "/assets/icons/shortcut-users.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Today's Schedule",
+      "short_name": "Today",
+      "description": "View today's appointments",
+      "url": "/dashboard.html?view=day",
+      "icons": [{ "src": "/assets/icons/shortcut-calendar.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/screenshots/dashboard-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard view"
+    },
+    {
+      "src": "/assets/screenshots/dashboard-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile dashboard"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

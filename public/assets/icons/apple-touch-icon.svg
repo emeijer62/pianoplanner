@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea"/>
+      <stop offset="100%" style="stop-color:#764ba2"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="36" fill="url(#grad)"/>
+  <g transform="translate(28, 50)">
+    <rect x="0" y="0" width="124" height="80" rx="6" fill="white" opacity="0.95"/>
+    <rect x="17" y="0" width="1" height="80" fill="#E5E5EA"/>
+    <rect x="35" y="0" width="1" height="80" fill="#E5E5EA"/>
+    <rect x="53" y="0" width="1" height="80" fill="#E5E5EA"/>
+    <rect x="71" y="0" width="1" height="80" fill="#E5E5EA"/>
+    <rect x="89" y="0" width="1" height="80" fill="#E5E5EA"/>
+    <rect x="107" y="0" width="1" height="80" fill="#E5E5EA"/>
+    <rect x="12" y="0" width="11" height="48" rx="2" fill="#1C1C1E"/>
+    <rect x="30" y="0" width="11" height="48" rx="2" fill="#1C1C1E"/>
+    <rect x="65" y="0" width="11" height="48" rx="2" fill="#1C1C1E"/>
+    <rect x="83" y="0" width="11" height="48" rx="2" fill="#1C1C1E"/>
+    <rect x="101" y="0" width="11" height="48" rx="2" fill="#1C1C1E"/>
+  </g>
+</svg>
