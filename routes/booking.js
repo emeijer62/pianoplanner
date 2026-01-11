@@ -657,10 +657,10 @@ router.post('/find-slot', async (req, res) => {
             ...dayAppointments.map(apt => ({
                 type: 'db',
                 title: apt.title,
-                start: new Date(apt.start_time || apt.startTime),
-                end: new Date(apt.end_time || apt.endTime),
+                start: new Date(apt.start),
+                end: new Date(apt.end),
                 location: apt.location,
-                customer_id: apt.customer_id,
+                customer_id: apt.customerId,
                 description: apt.description
             })),
             ...externalEvents.map(evt => ({
@@ -826,8 +826,8 @@ router.post('/find-slot', async (req, res) => {
             // DB appointments omzetten naar zelfde format als external events
             ...dayAppointments.map(apt => {
                 // Zorg dat we geldige ISO strings hebben
-                const startTime = apt.start_time || apt.startTime;
-                const endTime = apt.end_time || apt.endTime;
+                const startTime = apt.start;
+                const endTime = apt.end;
                 return {
                     start: { dateTime: new Date(startTime).toISOString() },
                     end: { dateTime: new Date(endTime).toISOString() },
