@@ -8,7 +8,59 @@ const serviceStore = require('../utils/serviceStore');
 const customerStore = require('../utils/customerStore');
 const companyStore = require('../utils/companyStore');
 const userStore = require('../utils/userStore');
+const appointmentStore = require('../utils/appointmentStore');
 const { requireAuth } = require('../middleware/auth');
+
+/**
+ * AI-slim adres extractie uit notities/description
+ * Zoekt naar patronen die op een adres lijken:
+ * - Straatnaam + huisnummer + stad
+ * - Stad alleen als fallback
+ * - Postcode patroon
+ */
+function extractAddressFromText(text) {
+    if (!text) return null;
+    
+    // Maak lowercase voor matching
+    const lowerText = text.toLowerCase();
+    
+    // Patroon 1: Nederlands adres format "Straatnaam 123, Stad" of "Straatnaam 123 Stad"
+    const streetPattern = /([a-zA-ZÀ-ÿ\s]+)\s+(\d+[a-zA-Z]?)\s*[,]?\s*([a-zA-ZÀ-ÿ\s\-]+)/g;
+    const streetMatch = streetPattern.exec(text);
+    if (streetMatch) {
+        const street = streetMatch[1].trim();
+        const number = streetMatch[2];
+        const city = streetMatch[3].trim();
+        // Valideer dat het een redelijk adres lijkt
+        if (street.length > 2 && city.length > 2 && !city.includes('\n')) {
+            return `${street} ${number}, ${city}`;
+        }
+    }
+    
+    // Patroon 2: Postcode + stad "1234 AB Stad"
+    const postcodePattern = /(\d{4}\s?[a-zA-Z]{2})\s+([a-zA-ZÀ-ÿ\s\-]+)/;
+    const postcodeMatch = postcodePattern.exec(text);
+    if (postcodeMatch) {
+        return `${postcodeMatch[1]} ${postcodeMatch[2].trim()}`;
+    }
+    
+    // Patroon 3: Bekende zoekwoorden voor locatie
+    const locationKeywords = ['locatie:', 'adres:', 'bij:', 'in:', 'te:', 'plaats:'];
+    for (const keyword of locationKeywords) {
+        const idx = lowerText.indexOf(keyword);
+        if (idx !== -1) {
+            // Pak de tekst na het keyword tot einde regel of max 50 chars
+            const afterKeyword = text.substring(idx + keyword.length).trim();
+            const endIdx = afterKeyword.search(/[\n\r]|$/);
+            const location = afterKeyword.substring(0, Math.min(endIdx, 50)).trim();
+            if (location.length > 3) {
+                return location;
+            }
+        }
+    }
+    
+    return null;
+}
 
 // Alle routes vereisen authenticatie
 router.use(requireAuth);
@@ -554,11 +606,85 @@ router.post('/find-slot', async (req, res) => {
             console.log('[SMART] Customer has theater availability enabled');
         }
         
-        // Bereken reistijd - standaard vanaf bedrijfsadres
-        // (wordt later dynamisch aangepast per slot op basis van vorige afspraak)
-        const defaultTravelInfo = await calculateTravelTime(origin || companyAddress, destination);
+        // ============================================
+        // AI-SLIM: Dynamische origin op basis van vorige afspraak
+        // ============================================
+        let dynamicOrigin = origin || companyAddress;
+        let previousAppointmentInfo = null;
         
-        console.log('[SMART] Default travel from', origin || companyAddress, 'to', destination, '=', defaultTravelInfo.duration, 'min');
+        // Haal alle afspraken van die dag op
+        const searchDateStr = date.split('T')[0]; // YYYY-MM-DD
+        const dayAppointments = await appointmentStore.getAppointmentsForDay(req.session.user.id, searchDateStr);
+        
+        if (dayAppointments && dayAppointments.length > 0) {
+            // Sorteer op eindtijd en pak de laatste afspraak die VOOR de zoekperiode eindigt
+            const sortedAppts = dayAppointments.sort((a, b) => 
+                new Date(a.end_time || a.endTime) - new Date(b.end_time || b.endTime)
+            );
+            
+            // We zoeken de meest recente afspraak die eindigt voor onze zoekochtend
+            // (of de eerste als we meerdere dagen zoeken)
+            const previousAppointment = sortedAppts[sortedAppts.length - 1];
+            
+            if (previousAppointment) {
+                console.log('[SMART] Found previous appointment on same day:', previousAppointment.title);
+                previousAppointmentInfo = previousAppointment;
+                
+                // Probeer adres te vinden - in volgorde van prioriteit:
+                let foundAddress = null;
+                let addressSource = null;
+                
+                // 1. Uit het location veld van de afspraak
+                if (previousAppointment.location && previousAppointment.location.trim()) {
+                    foundAddress = previousAppointment.location.trim();
+                    addressSource = 'appointment.location';
+                }
+                
+                // 2. Uit de klant gekoppeld aan de afspraak
+                if (!foundAddress && previousAppointment.customer_id) {
+                    const prevCustomer = await customerStore.getCustomer(req.session.user.id, previousAppointment.customer_id);
+                    if (prevCustomer && prevCustomer.address?.city) {
+                        foundAddress = `${prevCustomer.address.street}, ${prevCustomer.address.city}`;
+                        addressSource = 'customer.address';
+                    }
+                }
+                
+                // 3. AI-SLIM: Uit de notities/description van de afspraak
+                if (!foundAddress && previousAppointment.description) {
+                    const extractedAddress = extractAddressFromText(previousAppointment.description);
+                    if (extractedAddress) {
+                        foundAddress = extractedAddress;
+                        addressSource = 'description (AI extracted)';
+                    }
+                }
+                
+                // 4. AI-SLIM: Uit de titel van de afspraak
+                if (!foundAddress && previousAppointment.title) {
+                    const extractedFromTitle = extractAddressFromText(previousAppointment.title);
+                    if (extractedFromTitle) {
+                        foundAddress = extractedFromTitle;
+                        addressSource = 'title (AI extracted)';
+                    }
+                }
+                
+                if (foundAddress) {
+                    dynamicOrigin = foundAddress;
+                    console.log(`[SMART] 🎯 Dynamic origin from ${addressSource}: "${foundAddress}"`);
+                } else {
+                    console.log('[SMART] Previous appointment found but no address detected, using company address');
+                }
+            }
+        } else {
+            console.log('[SMART] No previous appointments on this day, using company address');
+        }
+        
+        // Bereken reistijd vanaf dynamische origin
+        const defaultTravelInfo = await calculateTravelTime(dynamicOrigin, destination);
+        
+        console.log('[SMART] Travel from', dynamicOrigin, 'to', destination, '=', defaultTravelInfo.duration, 'min');
+        if (dynamicOrigin !== companyAddress) {
+            console.log('[SMART] ✨ Using dynamic origin instead of company address!');
+        }
         
         // Bereken totale benodigde tijd (buffer voor + reistijd + dienst + buffer na)
         const totalServiceTime = effectiveBufferBefore + effectiveDuration + effectiveBufferAfter;
@@ -690,7 +816,16 @@ router.post('/find-slot', async (req, res) => {
                 totalDuration: defaultTravelInfo.duration + effectiveBufferBefore + effectiveDuration + effectiveBufferAfter,
                 pianoCount: pianoCount || 1,
                 searchedDate: date,
-                hasMoreSlots: daySlots.length === maxSlots // Hint dat er mogelijk meer zijn
+                hasMoreSlots: daySlots.length === maxSlots, // Hint dat er mogelijk meer zijn
+                // AI Smart info - waar kwam de origin vandaan?
+                smartOrigin: {
+                    address: dynamicOrigin,
+                    isFromPreviousAppointment: dynamicOrigin !== companyAddress,
+                    previousAppointment: previousAppointmentInfo ? {
+                        title: previousAppointmentInfo.title,
+                        endTime: previousAppointmentInfo.end_time || previousAppointmentInfo.endTime
+                    } : null
+                }
             });
         }
         
